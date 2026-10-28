@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
 <style>
-/* Versión 8 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
+/* Versión 9 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
 :root{
   --paper:#ecd7a6; --paper2:#dcc089; --ink:#2b1d0e; --muted:#6a4f2c; --line:#c4a46c;
   --moss:#4f6b2e; --amber:#e2a54a; --amber-ink:#8a4f0c; --glass:rgba(20,16,10,.74); --glass-ink:#f6edd6;
@@ -48,7 +48,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 .card b{display:block;font-size:1.6rem;line-height:1;font-variant-numeric:tabular-nums}
 .card span{font-size:.85rem;color:#d8ccb0}
 .sync{background:var(--amber);color:#221a0e;border:0;border-radius:10px;padding:12px 14px;font-size:.98rem;flex:none}
-.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .btns button{background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:10px;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.85rem;box-shadow:0 3px 0 rgba(0,0,0,.35)}
 .btns button svg{width:24px;height:24px}
 .btns button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
@@ -127,6 +127,19 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
 .papiro .mj{padding:calc(4px + env(safe-area-inset-top,0px)) 8px calc(6px + env(safe-area-inset-bottom,0px))}
 .btns button,.diary{box-shadow:inset 0 0 10px rgba(110,66,18,.45),0 3px 0 rgba(0,0,0,.35)}
 .bubble,.item .box{background:rgba(160,110,50,.18)}
+.map{position:absolute;inset:0;z-index:20;background:#2b1d0e;display:flex;flex-direction:column}
+.map .mh{flex:none;display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;color:#f3e2b4;background:#2b1d0e}
+.map .mh h2{font-family:var(--title);font-size:1.25rem;margin:0}
+.map .mh button{all:unset;cursor:pointer;font-size:1.6rem;padding:0 8px}
+.map .sc{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.map .wrap2{position:relative;width:170%}
+.map .fog{position:relative;width:100%;background:linear-gradient(#cdb889,#e2cc98 30%,#e7d4a3);display:flex;flex-direction:column;align-items:center;gap:8px;color:#5a3e1e;text-align:center}
+.map .fog .mt{width:40%;margin-top:40px}
+.map .fog p{font-family:var(--title);font-weight:700;margin:0;font-size:1.1rem}
+.map .fog small{font-size:.9rem;max-width:70%}
+.map svg.ov{position:absolute;left:0;bottom:0;width:100%;height:auto;overflow:visible}
+.map .lbl{font-family:'Cinzel',Georgia,serif;font-weight:700;font-size:30px;fill:#2b1d0e;paint-order:stroke;stroke:#f3e2b4;stroke-width:7px;stroke-linejoin:round}
+.map .lbl.off{fill:#7a6a50}
 </style>
 </head>
 <body>
@@ -148,6 +161,7 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
       <button class="sync" id="sync" type="button">Sincronizar</button>
     </div>
     <div class="btns">
+      <button type="button" data-tab="mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
       <button type="button" data-tab="libro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></svg>Libro Rojo</button>
       <button type="button" data-tab="comunidad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-3 2.5-5 5-5s5 2 5 5M14 20c0-2.5 1.5-4 3.5-4S21 17.5 21 20"/></svg>Comunidad</button>
       <button type="button" data-tab="zurron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 9h14l-1 11H6z"/><path d="M9 9V7a3 3 0 0 1 6 0v2M5 13h14"/></svg>Zurrón</button>
@@ -282,7 +296,7 @@ loadWeather(); setInterval(loadWeather, 30*60*1000);
 
 /* ---------- imágenes y lienzo a pantalla completa ---------- */
 var load=function(s){return new Promise(function(r){var i=new Image();i.onload=function(){r(i);};i.onerror=function(){r(null);};i.src=s;});};
-var TI=[],AR=[],VE=[],SKY=[];
+var TI=[],AR=[],VE=[],SKY=[],WALK=null;
 var cv=$('c'),ctx=cv.getContext('2d'),W=200,H=420,OY=0;
 function fit(){
   var r=app.getBoundingClientRect(); W=200; H=Math.max(242,Math.round(W*r.height/Math.max(1,r.width)));
@@ -391,9 +405,9 @@ function enter(){ $('login').hidden=true; app.classList.remove('out'); fit(); st
 /* ---------- arranque ---------- */
 Promise.all([
   Promise.all(M.tramos.map(function(ls){return Promise.all(ls.map(function(l){return load(l.src).then(function(im){return {im:im,y:l.y,v:l.v};});}));})),
-  Promise.all(M.arturo.map(load)), Promise.all(M.vecinos.map(load))
+  Promise.all(M.arturo.map(load)), Promise.all(M.vecinos.map(load)), M.andar?load(M.andar.src):Promise.resolve(null)
 ]).then(function(a){
-  TI=a[0];AR=a[1];VE=a[2];
+  TI=a[0];AR=a[1];VE=a[2];WALK=a[3];
   SKY=TI.map(function(ls){return ls[0]&&ls[0].im?skyColor(ls[0].im):[95,155,224];});
   curT=tramoAt(km); reached=curT; renderHud();
   if(AUTH) afterLogin(); else view('in');
@@ -447,7 +461,13 @@ function tint(h){
   if(weather==='calor'&&h!=='noche'){ctx.fillStyle='rgba(255,200,90,.13)';ctx.fillRect(0,0,W,H);}
 }
 function walker(t,h){
-  var idx=h==='noche'?2:weather==='lluvia'?1:weather==='calor'?3:0, im=AR[idx]; if(!im) return;
+  var idx=h==='noche'?2:weather==='lluvia'?1:weather==='calor'?3:0;
+  if(WALK && idx===0){
+    var n=M.andar.n, fw=M.andar.fw, fh=WALK.height, f=Math.floor(t/(reduce?400:130))%n, wx=Math.round(W*0.3), wb=OY+228;
+    ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(wx+fw/2,wb,fw*.38,3,0,0,Math.PI*2); ctx.fill();
+    ctx.drawImage(WALK,Math.round(f*fw),0,Math.round(fw),fh,wx,wb-fh,Math.round(fw),fh); return;
+  }
+  var im=AR[idx]; if(!im) return;
   var x=Math.round(W*0.3), base=OY+228, step=Math.floor(t/150)%4, bob=(step%2)?-1:0;
   ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x+im.width/2,base,im.width*.38,3,0,0,Math.PI*2); ctx.fill();
   var cut=Math.round(im.height*.8);
@@ -514,6 +534,41 @@ function pageHtml(i){
   return f.map(function(s,j){ return j<k ? s : '<span class="hid">'+s+'</span>'; }).join(' ');
 }
 
+/* ---------- mapa ---------- */
+function rutaPunto(k){
+  var Lg=M.mapa.lugares, r=M.mapa.ruta, y;
+  k=Math.max(0,Math.min(TOTAL_KM,k));
+  for(var i=0;i<Lg.length-1;i++){ if(k<=Lg[i+1][0]){ var t=(k-Lg[i][0])/(Lg[i+1][0]-Lg[i][0]); y=Lg[i][2]+(Lg[i+1][2]-Lg[i][2])*t; break; } }
+  if(y==null) y=Lg[Lg.length-1][2];
+  for(var j=0;j<r.length-1;j++){ var a=r[j],b=r[j+1]; if((a[1]-y)*(b[1]-y)<=0){ var u=a[1]===b[1]?0:(y-a[1])/(b[1]-a[1]); return [a[0]+(b[0]-a[0])*u, y, j]; } }
+  return [r[r.length-1][0], y, r.length-1];
+}
+function openMap(){
+  if(!M.mapa){ return; }
+  var mp=M.mapa, el=document.createElement('section'); el.className='map'; el.setAttribute('role','dialog'); el.setAttribute('aria-label','Mapa del viaje');
+  var mine=rutaPunto(km), path=mp.ruta.map(function(p){return p.join(',');}).join(' ');
+  var done=mp.ruta.slice(0,mine[2]+1).map(function(p){return p.join(',');}).join(' ')+' '+mine[0]+','+mine[1];
+  var lbl=mp.lugares.map(function(l){ var p=rutaPunto(l[0]), right=p[0]<mp.w/2; var off=l[0]>km;
+    return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="11" fill="'+(off?'#f3e2b4':'#9c2f22')+'" stroke="#2b1d0e" stroke-width="4"/>'+
+      '<text class="lbl'+(off?' off':'')+'" x="'+(p[0]+(right?22:-22))+'" y="'+(p[1]+9)+'" text-anchor="'+(right?'start':'end')+'">'+l[1]+'</text>'; }).join('');
+  var faces=people.map(function(pp){ var isMe=me&&pp.nombre===me.nombre, k=isMe?km:Math.min(TOTAL_KM,Number(pp.pasos_totales)/STEPS_PER_KM), q=rutaPunto(k), s=isMe?84:62;
+    return {k:k,html:'<g><circle cx="'+q[0]+'" cy="'+(q[1]-s/2-6)+'" r="'+(s/2+4)+'" fill="'+(isMe?'#e2a54a':'#f3e2b4')+'" stroke="#2b1d0e" stroke-width="4"/>'+
+      '<svg x="'+(q[0]-s/2)+'" y="'+(q[1]-s-6)+'" width="'+s+'" height="'+s+'" viewBox="'+((FACE[pp.hobbit]||0)*72)+' 0 72 72"><image href="'+M.faces+'" width="504" height="72" style="image-rendering:pixelated"/></svg></g>'};
+  }).sort(function(a,b){return a.k-b.k;}).map(function(f){return f.html;}).join('');
+  var mtSvg='<svg class="mt" viewBox="0 0 300 160"><path d="M10 150L120 40c10-10 20-12 30-12s20 2 30 12l110 110z" fill="#5a4636"/><path d="M120 40c10-10 20-12 30-12s20 2 30 12l-14 14-16-8-16 10z" fill="#3a2a1e"/><path d="M146 30c-6-14 2-26 10-28-4 10 6 14 2 28z" fill="#9c2f22" opacity=".8"/><path d="M140 20c-10-12-30-10-40-4M160 18c14-10 34-8 44-2" stroke="#6a5a4a" stroke-width="4" fill="none" opacity=".6"/></svg>';
+  el.innerHTML='<div class="mh"><h2>El viaje</h2><button type="button" aria-label="Cerrar">×</button></div><div class="sc"><div class="wrap2">'+
+    '<div class="fog" style="height:'+(window.innerWidth*4|0)+'px">'+mtSvg+'<p>El Monte del Destino</p><small>Unos 2.800 km de camino. El resto del mapa se irá dibujando según avancéis.</small></div>'+
+    '<div style="position:relative;line-height:0"><img src="'+mp.src+'" alt="Mapa de la Comarca hasta Cricava" style="width:100%;display:block">'+
+    '<svg class="ov" viewBox="0 0 '+mp.w+' '+mp.h+'" preserveAspectRatio="none" style="height:100%;top:0">'+
+    '<polyline points="'+path+'" fill="none" stroke="rgba(43,29,14,.35)" stroke-width="10" stroke-linecap="round" stroke-dasharray="2 22"/>'+
+    '<polyline points="'+done+'" fill="none" stroke="#9c2f22" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>'+lbl+faces+'</svg></div></div></div>';
+  $('app').appendChild(el);
+  el.querySelector('.mh button').onclick=function(){ el.remove(); };
+  var sc=el.querySelector('.sc'), img=el.querySelector('img');
+  var go=function(){ requestAnimationFrame(function(){ var y=img.parentNode.offsetTop+mine[1]/mp.h*img.clientHeight, x=mine[0]/mp.w*img.clientWidth; sc.scrollTop=Math.max(0,y-sc.clientHeight*0.6); sc.scrollLeft=Math.max(0,x-sc.clientWidth/2); }); };
+  if(img.complete) go(); else img.onload=go;
+}
+
 /* ---------- hojas ---------- */
 var sheet=$('sheet'), veil=$('veil');
 function openSheet(html){ sheet.innerHTML='<div class="grab"></div>'+html; sheet.hidden=false; veil.hidden=false; $('diary').hidden=true; sheet.scrollTop=0; }
@@ -560,6 +615,7 @@ function bindSheet(){
     if(navigator.clipboard) navigator.clipboard.writeText(k).then(done).catch(function(){ ck.textContent=k; }); else ck.textContent=k; };
 }
 function openTab(tab){
+  if(tab==='mapa'){ openMap(); return; }
   openSheet(TABS[tab]()); bindSheet();
   if(tab==='comunidad') refresh().then(function(){ if(!sheet.hidden && $('logout')){ sheet.innerHTML='<div class="grab"></div>'+TABS.comunidad(); bindSheet(); } });
 }
