@@ -13,9 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
 <style>
-/* Versión 6 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
+/* Versión 7 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
 :root{
-  --paper:#f6efdc; --paper2:#ece2c8; --ink:#2b2418; --muted:#6d6250; --line:#d6ccb4;
+  --paper:#ecd7a6; --paper2:#dcc089; --ink:#2b1d0e; --muted:#6a4f2c; --line:#c4a46c;
   --moss:#4f6b2e; --amber:#e2a54a; --amber-ink:#8a4f0c; --glass:rgba(20,16,10,.74); --glass-ink:#f6edd6;
   --title:"Cinzel",Georgia,"Times New Roman",serif; --body:"Alegreya Sans","Trebuchet MS",sans-serif;
   color-scheme:light;
@@ -116,6 +116,14 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
 .item.no{color:var(--muted)}
 .item.no .box{border-style:dashed;border-color:var(--line);background:none}
 .item.no .box svg{opacity:.18;filter:grayscale(1) brightness(0)}
+/* papiro: color base + fibras + bordes tostados */
+.sheet,.mj,.btns button,.diary{background-color:#ecd7a6;
+  background-image:radial-gradient(ellipse at 50% 45%,rgba(255,244,214,.55),rgba(255,244,214,0) 65%),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .3 0 0 0 0 .12 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.sheet,.mj{box-shadow:inset 0 0 28px rgba(110,66,18,.55),inset 0 0 90px rgba(140,90,30,.25)}
+.sheet{border-top:3px solid #5a3e1e}
+.btns button,.diary{box-shadow:inset 0 0 10px rgba(110,66,18,.45),0 3px 0 rgba(0,0,0,.35)}
+.bubble,.item .box{background:rgba(160,110,50,.18)}
 </style>
 </head>
 <body>
