@@ -44,7 +44,7 @@ function mjIcon(it){ var k=it.k||it; if(M.mj&&M.mj[k]) return '<img src="'+M.mj[
   '.mj .intro p{margin:0;font-size:1.05rem;line-height:1.45}'+
   '.mj .ex{display:flex;gap:10px;flex-wrap:wrap}'+
   '.mj .ex div{display:flex;align-items:center;gap:6px;background:rgba(255,244,214,.45);border:2px solid #2b2418;border-radius:10px;padding:6px 10px;font-weight:700;font-size:.9rem}'+
-  '.mj .ex svg,.mj .ex img{width:30px;height:30px;object-fit:contain;image-rendering:pixelated}'+
+  '.mj .ex svg,.mj .ex img{width:30px!important;height:30px!important;object-fit:contain;image-rendering:pixelated}'+
   '.mj .ex .no{opacity:.75;border-style:dashed}'+
   '.mj .go{background:#4f6b2e;color:#fbf6e8;border:0;border-radius:10px;padding:14px;font-size:1.05rem}'+
   '.mj .field{position:relative;flex:1;min-height:260px;border:3px solid #2b2418;border-radius:12px;overflow:hidden;background:#a8763a;image-rendering:pixelated}'+
@@ -154,24 +154,24 @@ function jugarZurron(el,cerrar){
 
 /* ---------- piezas comunes de los minijuegos 2-4 ---------- */
 (function(){ var c=document.createElement('style'); c.textContent=
-  '.mj .hold{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:150px;height:150px;border-radius:50%;border:4px solid #2b2418;background:radial-gradient(#6d8a3a,#3f5a22);color:#fbf6e8;font-weight:800;font-size:1rem;display:grid;place-items:center;text-align:center;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 5px 0 rgba(0,0,0,.4)}'+
+  '.mj .hold{z-index:5;position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:150px;height:150px;border-radius:50%;border:4px solid #2b2418;background:radial-gradient(#6d8a3a,#3f5a22);color:#fbf6e8;font-weight:800;font-size:1rem;display:grid;place-items:center;text-align:center;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 5px 0 rgba(0,0,0,.4)}'+
   '.mj .hold.on{background:radial-gradient(#4a6a2a,#2a3e16);transform:translateX(-50%) scale(.95)}'+
-  '.mj .meter{position:absolute;left:12px;right:12px;top:12px;display:flex;flex-direction:column;gap:4px;font-weight:800;font-size:.85rem;color:#fbf6e8;text-shadow:0 1px 2px #000}'+
+  '.mj .meter{z-index:5;position:absolute;left:12px;right:12px;top:12px;display:flex;flex-direction:column;gap:4px;font-weight:800;font-size:.85rem;color:#fbf6e8;text-shadow:0 1px 2px #000}'+
   '.mj .meter .b{height:12px;border-radius:6px;background:rgba(0,0,0,.45);overflow:hidden;border:2px solid #2b2418}'+
   '.mj .meter .b i{display:block;height:100%;width:0;background:#c9402d;transition:width .1s}'+
-  '.mj .rider{position:absolute;top:34%;width:120px;height:110px;margin-left:-60px}'+
-  '.mj .whisper{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--title);font-weight:700;font-size:1.15rem;color:#f2d27a;text-shadow:0 0 12px #e2a54a,0 2px 2px #000;opacity:0;transition:opacity .4s;pointer-events:none;text-align:center;width:90%}'+
+  '.mj .rider{position:absolute;top:50%;width:150px;height:130px;margin-left:-75px;z-index:2}'+'.mj .tree{position:absolute;left:-4%;right:-4%;top:8%;bottom:30%;z-index:1}'+
+  '.mj .whisper{z-index:4;position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--title);font-weight:700;font-size:1.15rem;color:#f2d27a;text-shadow:0 0 12px #e2a54a,0 2px 2px #000;opacity:0;transition:opacity .4s;pointer-events:none;text-align:center;width:90%}'+
   '.mj .whisper.on{opacity:1}'+
-  '.mj .dark{position:absolute;inset:0;background:radial-gradient(circle at 50% 75%,transparent 20%,rgba(0,0,0,.75));opacity:0;pointer-events:none;transition:opacity .2s}'+
+  '.mj .dark{position:absolute;inset:0;z-index:3;background:radial-gradient(circle at 50% 75%,transparent 20%,rgba(0,0,0,.75));opacity:0;pointer-events:none;transition:opacity .2s}'+
   '.mj .grid{position:absolute;left:8%;right:8%;top:30%;bottom:8%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:10px}'+
   '.mj .hole{position:relative;border-radius:50%;background:radial-gradient(ellipse at 50% 70%,#3a2614 40%,#5a3e1e 41%,#6d8a3a 62%,transparent 63%)}'+
   '.mj .pop{position:absolute;left:50%;bottom:30%;transform:translateX(-50%) translateY(30%) scale(.2);transition:transform .15s ease-out;background:none;border:0;padding:0;width:72px;height:72px;touch-action:manipulation}'+
   '.mj .pop.up{transform:translateX(-50%) translateY(0) scale(1)}'+
   '.mj .pop svg{width:100%;height:100%}'+
-  '.mj .river{position:absolute;left:0;right:0;top:40%;bottom:30%;background:repeating-linear-gradient(90deg,#3f6fa8 0 30px,#4a7cb8 30px 60px)}'+
-  '.mj .shore{position:absolute;top:34%;bottom:24%;width:16%;background:#6d8a3a;border:3px solid #2b2418}'+
-  '.mj .raft{position:absolute;top:46%;width:86px;height:34px;margin-left:-43px;background:repeating-linear-gradient(90deg,#8a5a2a 0 12px,#6d4a24 12px 14px);border:3px solid #2b2418;border-radius:4px;transition:left .25s ease-out}'+
-  '.mj .shadow{position:absolute;top:24%;width:44px;height:64px;margin-left:-22px;background:#120e0a;border-radius:22px 22px 6px 6px;opacity:.85}'+
+  '.mj .river{position:absolute;left:0;right:0;top:18%;bottom:30%;z-index:0;background:repeating-linear-gradient(90deg,#3f6fa8 0 30px,#4a7cb8 30px 60px)}'+
+  '.mj .shore{position:absolute;top:auto;height:30%;bottom:26%;width:34%;'+(M.mj&&M.mj.muelle?'':'background:#6d8a3a;border:3px solid #2b2418;')+'z-index:1}'+
+  '.mj .raft{position:absolute;top:auto;bottom:29%;width:190px;height:96px;margin-left:-95px;z-index:2;transition:left .25s ease-out;'+(M.mj&&M.mj.balsa1?'':'background:repeating-linear-gradient(90deg,#8a5a2a 0 12px,#6d4a24 12px 14px);border:3px solid #2b2418;border-radius:4px;')+'}'+
+  '.mj .shadow{position:absolute;top:auto;bottom:44%;width:46px;height:80px;margin-left:-23px;z-index:3;'+(M.mj&&M.mj.sombra?'':'background:#120e0a;border-radius:22px 22px 6px 6px;opacity:.85;')+'}'+
   '.mj .rhythm{position:absolute;left:10%;right:10%;bottom:110px;height:26px;border:3px solid #2b2418;border-radius:13px;background:#f3e2b4;overflow:hidden}'+
   '.mj .rhythm .z{position:absolute;top:0;bottom:0;background:#8fb85a}'+
   '.mj .rhythm .k{position:absolute;top:-3px;bottom:-3px;width:6px;margin-left:-3px;background:#2b2418}'+
@@ -181,6 +181,7 @@ var SVG_SETA='<svg viewBox="0 0 40 40"><path d="M6 20a14 12 0 0 1 28 0z" fill="#
 var SVG_PERRO='<svg viewBox="0 0 40 40"><ellipse cx="20" cy="24" rx="13" ry="11" fill="#7a5426" stroke="#2b2418" stroke-width="2"/><path d="M8 16l-2-10 9 6zM32 16l2-10-9 6z" fill="#5a3e1e" stroke="#2b2418" stroke-width="2"/><circle cx="15" cy="22" r="2" fill="#2b2418"/><circle cx="25" cy="22" r="2" fill="#2b2418"/><ellipse cx="20" cy="29" rx="4" ry="3" fill="#2b2418"/></svg>';
 var SVG_JINETE='<svg viewBox="0 0 120 110"><path d="M10 100l12-40c4-14 18-22 34-22h20c14 0 24 8 28 20l8 42h-12l-6-26-10 6v20H72V80H44v20H32V78l-8 22z" fill="#120e0a"/><path d="M60 40c-4-18 0-34 12-38 10 6 12 22 6 38z" fill="#1d1712"/></svg>';
 
+function mjImg(k,alt){ return (M.mj&&M.mj[k])?'<img src="'+M.mj[k]+'" alt="" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated">':(alt||''); }
 function mjCabecera(t,extra){ return '<div class="hd"><h2>'+t+'</h2>'+(extra||'<button class="x" type="button" aria-label="Cerrar">×</button>')+'</div>'; }
 function mjIntro(el,id,titulo,html,go,cerrar){
   el.innerHTML=mjCabecera(titulo)+'<div class="intro">'+html+(mjBest(id)?'<p class="note">Tu mejor resultado: '+mjStars(mjBest(id))+'</p>':'')+'<button class="go" type="button" id="mjGo">Empezar</button></div>';
@@ -203,7 +204,7 @@ function jugarArbol(el,cerrar){
   function intro(){ mjIntro(el,ID,TIT,'<p>Se oyen cascos. Frodo y los suyos se esconden entre las raíces del árbol. <b>Mantén el dedo pulsado en «Escondido» y no lo muevas</b> hasta que el jinete se vaya.</p><p>Si sueltas o mueves el dedo, el jinete sospecha. Y el Anillo te va a pedir que sueltes: <b>no le hagas caso</b>.</p>',jugar,cerrar); }
   function jugar(){
     el.innerHTML=mjCabecera(TIT,'<div class="stat"><span id="mjT">'+DUR+'</span></div>')+
-      '<div class="field" id="mjF"><div class="meter"><span>Sospecha del jinete</span><div class="b"><i id="mjB"></i></div></div><div class="rider" id="mjJ">'+SVG_JINETE+'</div><div class="dark" id="mjD"></div><div class="whisper" id="mjW"></div><button class="hold" id="mjH" type="button">Escondido</button></div>';
+      '<div class="field" id="mjF"><div class="tree">'+mjImg('arbol')+'</div><div class="meter"><span>Sospecha del jinete</span><div class="b"><i id="mjB"></i></div></div><div class="rider" id="mjJ">'+(M.mj&&M.mj.jinete1?'<img id="mjJi" src="'+M.mj.jinete1+'" alt="" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated">':SVG_JINETE)+'</div><div class="dark" id="mjD"></div><div class="whisper" id="mjW"></div><button class="hold" id="mjH" type="button">Escondido</button></div>';
     var F=el.querySelector('#mjF'), H=el.querySelector('#mjH'), B=el.querySelector('#mjB'), J=el.querySelector('#mjJ'), D=el.querySelector('#mjD'), Wh=el.querySelector('#mjW');
     mjFondo(F);
     var sus=0, maxSus=0, holding=false, sx=0, sy=0, t0=performance.now(), last=t0, raf=0, done=false, wT=0;
@@ -215,11 +216,12 @@ function jugarArbol(el,cerrar){
     function tick(now){
       var dt=(now-last)/1000; last=now; var t=(now-t0)/1000, p=t/DUR;
       var x=-0.2+1.4*p; J.style.left=(x*100)+'%';
+      var ji=el.querySelector('#mjJi'); if(ji&&M.mj.jinete2) ji.src=(Math.floor(t*2.2)%2&&near>0.3)?M.mj.jinete2:M.mj.jinete1;
       var near=Math.max(0,1-Math.abs(x-0.5)*2.2);       /* 1 cuando el jinete está encima */
       if(!holding) sus+=dt*(18+60*near); else sus=Math.max(0,sus-dt*4);
       sus=Math.min(100,sus); maxSus=Math.max(maxSus,sus); B.style.width=sus+'%';
       D.style.opacity=(0.25+0.6*near).toFixed(2);
-      if(now-wT>2600 && near>0.2){ wT=now; Wh.textContent=FR[Math.floor(Math.random()*FR.length)]; Wh.classList.add('on'); setTimeout(function(){Wh.classList.remove('on');},1500); }
+      if(now-wT>2600 && near>0.2){ wT=now; Wh.innerHTML=(M.mj&&M.mj.anillo?'<img src="'+M.mj.anillo+'" alt="" style="width:40px;height:40px;display:block;margin:0 auto 4px;image-rendering:pixelated">':'')+FR[Math.floor(Math.random()*FR.length)]; Wh.classList.add('on'); setTimeout(function(){Wh.classList.remove('on');},1500); }
       el.querySelector('#mjT').textContent=Math.max(0,Math.ceil(DUR-t));
       if(sus>=100) return fin(true);
       if(t>=DUR) return fin(false);
@@ -241,17 +243,17 @@ function jugarArbol(el,cerrar){
    Topo clásico: toca las setas que asoman, nunca a los perros del granjero. */
 function jugarSetas(el,cerrar){
   var ID='setas', TIT='Setas a escondidas', DUR=30;
-  function intro(){ mjIntro(el,ID,TIT,'<p>En los campos del granjero asoman setas. <b>Tócalas antes de que se escondan</b>, pero cuidado: a veces asoma uno de sus perros. <b>Si tocas un perro, pierdes 2 setas.</b></p><div class="ex"><div>'+SVG_SETA+'Seta +1</div><div class="no">'+SVG_PERRO+'Perro −2</div></div>',jugar,cerrar); }
+  function intro(){ mjIntro(el,ID,TIT,'<p>En los campos del granjero asoman setas. <b>Tócalas antes de que se escondan</b>, pero cuidado: a veces asoma uno de sus perros. <b>Si tocas un perro, pierdes 2 setas.</b></p><div class="ex"><div>'+mjImg('seta1',SVG_SETA)+'Seta +1</div><div class="no">'+mjImg('perro1',SVG_PERRO)+'Perro −2</div></div>',jugar,cerrar); }
   function jugar(){
     el.innerHTML=mjCabecera(TIT,'<div class="stat"><span id="mjT">'+DUR+'</span><span id="mjP">0</span></div>')+'<div class="field" id="mjF"><div class="msg" id="mjM"></div><div class="grid" id="mjG"></div></div>';
     var F=el.querySelector('#mjF'), G=el.querySelector('#mjG'), Msg=el.querySelector('#mjM'); mjFondo(F);
-    var holes=[]; for(var i=0;i<9;i++){ var h=document.createElement('div'); h.className='hole'; G.appendChild(h); holes.push({el:h,busy:false}); }
+    var holes=[]; for(var i=0;i<9;i++){ var h=document.createElement('div'); h.className='hole'; if(M.mj&&M.mj.hoyo){ h.style.background='url('+M.mj.hoyo+') center 85%/100% auto no-repeat'; } G.appendChild(h); holes.push({el:h,busy:false}); }
     var pts=0, t0=performance.now(), raf=0, done=false, lastPop=-9, mT=0;
     function say(t,bad){ Msg.textContent=t; Msg.className='msg on'+(bad?' bad':''); clearTimeout(mT); mT=setTimeout(function(){Msg.className='msg';},1100); }
     function pop(t){
       var free=holes.filter(function(h){return !h.busy;}); if(!free.length) return;
       var h=free[Math.floor(Math.random()*free.length)], dog=Math.random()<0.25+0.1*(t/DUR);
-      var b=document.createElement('button'); b.type='button'; b.className='pop'; b.innerHTML=dog?SVG_PERRO:SVG_SETA; b.setAttribute('aria-label',dog?'Perro':'Seta');
+      var b=document.createElement('button'); b.type='button'; b.className='pop'; b.innerHTML=dog?mjImg('perro'+(1+Math.floor(Math.random()*3)),SVG_PERRO):mjImg('seta'+(1+Math.floor(Math.random()*3)),SVG_SETA); b.setAttribute('aria-label',dog?'Perro':'Seta');
       h.el.appendChild(b); h.busy=true; requestAnimationFrame(function(){ b.classList.add('up'); });
       var life=1100-500*(t/DUR), gone=false;
       var quit=function(){ if(gone) return; gone=true; b.classList.remove('up'); setTimeout(function(){ b.remove(); h.busy=false; },160); };
@@ -282,7 +284,7 @@ function jugarBalsa(el,cerrar){
   function intro(){ mjIntro(el,ID,TIT,'<p>Una sombra se acerca al embarcadero. Cruzad el río en la balsa: <b>pulsa «Empujar» justo cuando la marca pase por la zona verde</b>. Si fallas, la balsa apenas avanza.</p><p>Tienes que llegar a la otra orilla antes de que la sombra llegue al agua.</p>',jugar,cerrar); }
   function jugar(){
     el.innerHTML=mjCabecera(TIT,'<div class="stat"><span id="mjT">'+DUR+'</span></div>')+
-      '<div class="field" id="mjF"><div class="river"></div><div class="shore" style="left:0"></div><div class="shore" style="right:0"></div><div class="shadow" id="mjS"></div><div class="raft" id="mjR"></div><div class="msg" id="mjM"></div>'+
+      '<div class="field" id="mjF"><div class="river"'+(M.mj&&M.mj.rio?' style="background:url('+M.mj.rio+') center/auto 100% repeat-x"':'')+'></div><div class="shore" style="left:0">'+mjImg('muelle')+'</div><div class="shore" style="right:0">'+mjImg('juncos')+'</div><div class="shadow" id="mjS">'+mjImg('sombra')+'</div><div class="raft" id="mjR">'+mjImg('balsa1')+'</div><div class="msg" id="mjM"></div>'+
       '<div class="rhythm"><div class="z" id="mjZ"></div><div class="k" id="mjK"></div></div><button class="push" id="mjP" type="button">Empujar</button></div>';
     var F=el.querySelector('#mjF'), R=el.querySelector('#mjR'), S=el.querySelector('#mjS'), K=el.querySelector('#mjK'), Z=el.querySelector('#mjZ'), Msg=el.querySelector('#mjM');
     var prog=0, t0=performance.now(), raf=0, done=false, zone=[0.4,0.6], mT=0, pos=0;
@@ -290,6 +292,7 @@ function jugarBalsa(el,cerrar){
     function say(t,bad){ Msg.textContent=t; Msg.className='msg on'+(bad?' bad':''); clearTimeout(mT); mT=setTimeout(function(){Msg.className='msg';},800); }
     newZone();
     el.querySelector('#mjP').onpointerdown=function(e){ e.preventDefault(); if(done) return;
+      var ri=R.querySelector('img'); if(ri&&M.mj.balsa2){ ri.src=M.mj.balsa2; setTimeout(function(){ ri.src=M.mj.balsa1; },350); }
       if(pos>=zone[0]&&pos<=zone[1]){ prog+=0.11; say('¡Buen empujón!'); } else { prog+=0.02; say('Casi…',true); }
       newZone(); if(prog>=1) fin(true); };
     function tick(now){

@@ -180,6 +180,24 @@
 "cucharas": "assets/mj/zurron_cucharas.webp",
 "paraguas": "assets/mj/zurron_paraguas.webp",
 "jarron": "assets/mj/zurron_jarron.webp",
-"libraco": "assets/mj/zurron_libraco.webp"
-}
+"libraco": "assets/mj/zurron_libraco.webp",
+"arbol": "assets/mj/arbol.webp",
+"jinete1": "assets/mj/jinete1.webp",
+"jinete2": "assets/mj/jinete2.webp",
+"anillo": "assets/mj/anillo.webp",
+"seta1": "assets/mj/seta1.webp",
+"seta2": "assets/mj/seta2.webp",
+"seta3": "assets/mj/seta3.webp",
+"perro1": "assets/mj/perro1.webp",
+"perro2": "assets/mj/perro2.webp",
+"perro3": "assets/mj/perro3.webp",
+"hoyo": "assets/mj/hoyo.webp",
+"balsa1": "assets/mj/balsa1.webp",
+"balsa2": "assets/mj/balsa2.webp",
+"rio": "assets/mj/rio.webp",
+"muelle": "assets/mj/muelle.webp",
+"sombra": "assets/mj/sombra.webp",
+"juncos": "assets/mj/juncos.webp"
+},
+"papiro": "assets/papiro.webp"
 }
