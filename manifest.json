@@ -740,5 +740,17 @@
 "broche": "assets/eq/broche.webp",
 "panuelo_rojo": "assets/eq/panuelo_rojo.webp",
 "cantimplora_cinto": "assets/eq/cantimplora_cinto.webp"
+},
+"prologo": {
+"video": "assets/prologo/prologo.mp4"
+},
+"ilustraciones": {
+"forja": "assets/prologo/forja.webp",
+"anillo": "assets/prologo/anillo.webp",
+"guerra": "assets/prologo/guerra.webp",
+"caido": "assets/prologo/caido.webp",
+"rio": "assets/prologo/rio.webp",
+"puerta": "assets/prologo/puerta.webp",
+"camino": "assets/prologo/camino.webp"
 }
 }

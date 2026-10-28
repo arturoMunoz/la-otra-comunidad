@@ -29,6 +29,9 @@ if '--demo' in sys.argv:
     if 'andar' in m: m['andar']['src'] = uri(m['andar']['src'])
     if 'mapa' in m: m['mapa']['src'] = uri(m['mapa']['src'])
     if 'equipo' in m: m['equipo'] = {k: uri(v) for k, v in m['equipo'].items()}
+    if 'prologo' in m:
+        m['prologo']['video'] = 'data:video/mp4;base64,' + base64.b64encode(open(os.path.join(ROOT, 'public', m['prologo']['video']), 'rb').read()).decode()
+    m.pop('ilustraciones', None)
     html = fill(src, m, True)
     head = re.search(r'<head>(.*?)</head>', html, re.S).group(1)
     head = re.sub(r'<meta[^>]*>\n?|<link rel="apple-touch-icon"[^>]*>\n?', '', head)

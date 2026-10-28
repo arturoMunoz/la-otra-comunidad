@@ -487,3 +487,36 @@ TABS.zurron=function(){
 document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.eqb'); if(!b) return;
   var k=b.dataset.eq, p=eqPuesto().slice(), i=p.indexOf(k); if(i>=0) p.splice(i,1); else p.push(k);
   store.set('equipo_puesto',p); openTab('zurron'); });
+
+/* ================= PRÓLOGO (se ve una vez al empezar, para todos; se puede volver a ver desde el Libro Rojo) ================= */
+(function(){ var c=document.createElement('style'); c.textContent=
+  '.pro{position:absolute;inset:0;z-index:40;background:#000;overflow:hidden;color:#f3e2b4}'+
+  '.pro img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;opacity:0;transform:scale(1.02);transition:opacity 1.6s ease}'+
+  '.pro img.on{opacity:1}'+
+  '.pro .bar{position:absolute;left:16px;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));height:3px;background:rgba(243,226,180,.25);border-radius:2px;overflow:hidden}'+
+  '.pro .bar i{display:block;height:100%;width:0;background:#e2a54a}'+
+  '.pro .skip{position:absolute;right:14px;top:calc(12px + env(safe-area-inset-top,0px));background:rgba(0,0,0,.55);color:#f3e2b4;border:1px solid rgba(243,226,180,.4);border-radius:8px;padding:7px 12px;font-weight:700;z-index:2}'+
+  '.pro .start{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(circle,rgba(0,0,0,.35),rgba(0,0,0,.85));z-index:1;text-align:center;padding:24px}'+
+  '.pro .start h2{font-family:var(--title);font-size:1.6rem;margin:0}'+
+  '.pro .start button{background:#e2a54a;color:#221a0e;border:0;border-radius:10px;padding:14px 22px;font-size:1.05rem}'+
+  '.pro .start p{margin:0;color:#c9bc9c;font-size:.92rem}';
+  document.head.appendChild(c); })();
+function verPrologo(alAcabar){
+  var P=M.prologo; if(!P||!P.video){ if(alAcabar) alAcabar(); return; }
+  var el=document.createElement('section'); el.className='pro'; el.setAttribute('role','dialog'); el.setAttribute('aria-label','Prólogo');
+  el.innerHTML='<video playsinline webkit-playsinline preload="auto" src="'+P.video+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000"></video>'+
+    '<button class="skip" type="button">Saltar</button><div class="bar"><i></i></div>'+
+    '<div class="start"><h2>Prólogo</h2><p>La historia del anillo, antes de que llegara a la Comarca. Sube el volumen.</p><button type="button">Empezar</button></div>';
+  $('app').appendChild(el);
+  var v=el.querySelector('video'), bar=el.querySelector('.bar i'), done=false;
+  function fin(){ if(done) return; done=true; try{v.pause();}catch(e){} store.set('prologo',true); el.style.transition='opacity .8s'; el.style.opacity='0'; setTimeout(function(){ el.remove(); if(alAcabar) alAcabar(); },800); }
+  v.ontimeupdate=function(){ if(v.duration) bar.style.width=(v.currentTime/v.duration*100)+'%'; };
+  v.onended=fin;
+  el.querySelector('.skip').onclick=fin;
+  el.querySelector('.start button').onclick=function(){ el.querySelector('.start').remove(); var p=v.play(); if(p&&p.catch) p.catch(function(){ v.muted=true; v.play().catch(function(){}); }); };
+}
+/* sale la primera vez que entras al juego */
+(function(){ var _enter=enter; enter=function(){ _enter(); if(!store.get('prologo',false)) verPrologo(); }; })();
+/* volver a verlo desde el Libro Rojo */
+(function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('</ol>','</ol><button class="ghost" type="button" id="verPro">Volver a ver el prólogo</button>'); }; })();
+document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verPro'){ closeSheet(); verPrologo(); } });
