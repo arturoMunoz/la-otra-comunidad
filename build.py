@@ -12,7 +12,7 @@ key = open(os.path.join(ROOT, 'supabase', 'clave_publica.txt')).read().strip()
 
 def fill(html, man, demo):
     return (html.replace('__KEY__', key).replace('__MAN__', json.dumps(man)).replace('__DATA__', data)
-                .replace('__LOGO__', man['logo']).replace('__DEMO__', 'true' if demo else 'false'))
+                .replace('__LOGO__', man['logo']).replace('__DEMO__', 'true' if demo else 'false').replace('__MINI__', open(os.path.join(ROOT, 'minijuegos.js'), encoding='utf-8').read()))
 
 if '--demo' in sys.argv:
     out = sys.argv[sys.argv.index('--demo') + 1]

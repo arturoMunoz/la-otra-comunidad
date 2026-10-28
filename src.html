@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
 <style>
-/* Versión 5 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
+/* Versión 6 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
 :root{
   --paper:#f6efdc; --paper2:#ece2c8; --ink:#2b2418; --muted:#6d6250; --line:#d6ccb4;
   --moss:#4f6b2e; --amber:#e2a54a; --amber-ink:#8a4f0c; --glass:rgba(20,16,10,.74); --glass-ink:#f6edd6;
@@ -514,17 +514,20 @@ function openArrival(i){
     '<p class="page">'+pageHtml(i)+'</p>'+
     '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+
     '<p class="note">El resto de la página se escribe en tu Libro Rojo mientras caminas. Al zurrón: <b>'+ITEMS[i].n+'</b>.</p>'+
-    (s.mini?'<span class="mini">'+s.mini+' · próximamente</span>':'')+
+    miniBtn(i)+
     '<button class="primary" id="shOk" type="button">Seguir andando</button>');
-  $('shOk').onclick=closeSheet;
+  $('shOk').onclick=closeSheet; bindMini();
 }
+function miniBtn(i){ var id=miniDe(i); if(!id) return ''; var b=mjBest(id);
+  return '<button class="mini-go" type="button" data-mini="'+id+'">Jugar: '+MINI[id].titulo+(b?' · '+mjStars(b):'')+'</button>'; }
+function bindMini(){ sheet.querySelectorAll('[data-mini]').forEach(function(x){ x.onclick=function(){ abrirMinijuego(x.dataset.mini); }; }); }
 function openPage(i){
   var s=T[i], k=leidas(i), n=frases(i).length;
   openSheet('<button class="back" id="bk" type="button">‹ Libro Rojo</button><span class="eyebrow">Página '+(i+1)+' · '+s.cap+' · km '+s.km+'–'+ends[i]+'</span><h2>'+s.title+'</h2>'+
     '<p class="page">'+pageHtml(i)+'</p>'+
     (k<n?'<p class="note">Faltan '+fmt(Math.max(0,ends[i]-km))+' km de este tramo para leer la página entera.</p>':'')+
-    '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>');
-  $('bk').onclick=function(){ openTab('libro'); };
+    '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+miniBtn(i));
+  $('bk').onclick=function(){ openTab('libro'); }; bindMini();
 }
 function faceStyle(h,size){ return 'background-image:url('+M.faces+');background-size:'+(size*7)+'px '+size+'px;background-position:-'+((FACE[h]||0)*size)+'px 0'; }
 var TABS={
@@ -549,6 +552,7 @@ function openTab(tab){
   if(tab==='comunidad') refresh().then(function(){ if(!sheet.hidden && $('logout')){ sheet.innerHTML='<div class="grab"></div>'+TABS.comunidad(); bindSheet(); } });
 }
 document.querySelectorAll('.btns button').forEach(function(b){ b.onclick=function(){ openTab(b.dataset.tab); }; });
+__MINI__
 </script>
 </body>
 </html>
