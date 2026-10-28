@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="La Otra Comunidad">
+<meta name="theme-color" content="#14110b">
+<link rel="apple-touch-icon" href="assets/icono.png">
+<title>La Otra Comunidad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
+<style>
+/* Versión 1 · app de una pantalla: entrada con código, escena arriba, estado y barra inferior; todo lo demás en hojas */
+:root{
+  --bg:#efe9da; --surface:#f8f4ea; --ink:#2b2418; --muted:#6d6250; --line:#d6ccb4;
+  --moss:#4f6b2e; --amber:#b86a12; --chip:#e6dcc4; --on:#2b2418; --on-ink:#f8f4ea; --night:#14110b;
+  --title:"Cinzel",Georgia,"Times New Roman",serif; --body:"Alegreya Sans","Trebuchet MS",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#17150f; --surface:#211e16; --ink:#efe6d0; --muted:#a99c80; --line:#3a3427;
+  --moss:#9cbf5f; --amber:#eaa04a; --chip:#2f2a1f; --on:#efe6d0; --on-ink:#17150f; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;padding-top:env(safe-area-inset-top,0px)}
+.app{height:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow:hidden}
+button{font-family:var(--body);font-weight:700;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+.login{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;background:var(--night);color:#f3ead2;overflow:auto}
+.login .hero{position:relative}
+.login canvas{display:block;width:100%;height:auto;image-rendering:pixelated}
+.login .hero::after{content:"";position:absolute;inset:auto 0 0 0;height:45%;background:linear-gradient(to bottom,rgba(20,17,11,0),var(--night))}
+.login .in{padding:0 max(20px,env(safe-area-inset-left,0px)) 28px;display:flex;flex-direction:column;gap:14px;margin-top:-64px;position:relative;z-index:1}
+.logo{margin:0 -8px 4px;line-height:0}
+.logo img{width:100%;height:auto;display:block}
+.tl{margin:0;color:#c9bc9c;text-align:center}
+.lab{font-size:.95rem;color:#c9bc9c}
+.code input{width:100%;font:800 1.5rem var(--body);letter-spacing:.35em;text-align:center;background:#2a241a;border:2px solid #3e3526;border-radius:8px;color:#f3ead2;padding:12px}
+.enter{background:#e2a54a;color:#221a0e;border:0;border-radius:8px;padding:14px;font-size:1.05rem}
+.enter:disabled{opacity:.45;cursor:default}
+.err{color:#f0a08a;margin:0;min-height:1.2em;text-align:center}
+.hint{font-size:.85rem;color:#a99c80;margin:0}
+
+.scene{position:relative;flex:none;background:#7fb6ec}
+.scene canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
+.hud{position:absolute;left:0;right:0;top:0;padding:10px 12px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;pointer-events:none}
+.pill{background:rgba(20,16,10,.76);color:#f6edd6;border-radius:6px;padding:5px 9px;font-weight:700;font-size:.9rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.pill small{display:block;font-weight:500;font-size:.75rem;color:#d8ccb0}
+.next{flex:none;background:#2b2418;color:#f6edd6;padding:9px 16px 10px;display:flex;flex-direction:column;gap:6px}
+.next .l{font-size:.88rem;font-weight:700;font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:3px;background:rgba(246,237,214,.25);overflow:hidden}
+.bar i{display:block;height:100%;background:#e2a54a;width:0}
+.status{flex:1;min-height:0;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.today{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.today b{font-size:1.5rem;font-variant-numeric:tabular-nums;display:block;line-height:1}
+.today span{color:var(--muted);font-size:.88rem}
+.sync{background:var(--moss);color:#fbf6e8;border:0;border-radius:8px;padding:10px 14px;font-size:.95rem;flex:none}
+@media (prefers-color-scheme: dark){.sync,.primary{color:#17150f!important}}
+.info{color:var(--muted);font-size:.85rem;margin:0}
+.diary{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:6px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--ink);font-size:.95rem;text-align:left;width:100%}
+.road{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.road .h{font-size:.85rem;color:var(--muted)}
+.track{position:relative;height:46px;margin:0 16px}
+.track .ln{position:absolute;left:0;right:0;bottom:6px;height:4px;background:var(--line);border-radius:2px}
+.dot{position:absolute;bottom:12px;width:30px;height:30px;transform:translateX(-50%);border-radius:50%;background-color:var(--surface);background-size:210px 30px;background-repeat:no-repeat;image-rendering:pixelated;border:2px solid var(--line)}
+.dot.me{border-color:var(--amber);z-index:2}
+.nav{flex:none;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--surface);padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav button{background:none;border:0;color:var(--muted);padding:9px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.78rem}
+.nav button svg{width:22px;height:22px}
+.nav button[aria-current="true"]{color:var(--ink)}
+
+.veil{position:absolute;inset:0;background:rgba(10,8,4,.45);z-index:10}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:11;max-height:80%;overflow:auto;background:var(--bg);border-top:2px solid var(--ink);border-radius:14px 14px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);align-self:center}
+.sheet h2{font-family:var(--title);font-weight:700;font-size:1.3rem;line-height:1.15;margin:0}
+.eyebrow{font-weight:800;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--amber)}
+.sheet p{margin:0}
+.bubble{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;background:var(--chip);border-radius:8px;padding:10px}
+.bubble svg{width:30px;height:30px}
+.bubble b{display:block;font-size:.88rem}
+.mini{font-weight:700;color:var(--moss)}
+.primary{background:var(--moss);color:#fbf6e8;border:0;border-radius:8px;padding:12px;font-size:1rem}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:10px}
+ol.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+ol.list li{display:grid;grid-template-columns:2em 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+ol.list li .n{font-family:var(--title);color:var(--muted)}
+ol.list li .k{color:var(--muted);font-size:.88rem;font-variant-numeric:tabular-nums;text-align:right}
+ol.list li.locked .t{color:var(--muted)}
+ol.list li button{all:unset;cursor:pointer;font-weight:700}
+ol.list li .face{width:36px;height:36px;background-size:252px 36px;image-rendering:pixelated}
+ol.list.people li{grid-template-columns:36px 1fr auto}
+ol.list li.me .t{color:var(--amber);font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--chip);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:.9rem}
+.chip[aria-pressed="true"]{background:var(--on);color:var(--on-ink);border-color:var(--on)}
+.note{color:var(--muted);font-size:.85rem}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:14px;color:var(--muted)}
+.slab{font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <section class="login" id="login" aria-label="Entrada">
+    <div class="hero"><canvas id="lc" width="280" height="230" aria-hidden="true"></canvas></div>
+    <div class="in">
+      <h1 class="logo"><img src="assets/logo.webp" alt="La Otra Comunidad" width="800" height="300"></h1>
+      <p class="tl">Detrás de Frodo, paso a paso, hasta el Monte del Destino.</p>
+      <label class="lab" for="code">Tu código de 6 cifras</label>
+      <div class="code"><input id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="······"></div>
+      <button class="enter" id="enter" type="button" disabled>Empezar a andar</button>
+      <p class="err" id="err" role="alert"></p>
+      <p class="hint">El código te lo da Henar. Sin cuentas ni contraseñas.</p>
+    </div>
+  </section>
+
+  <div class="scene">
+    <canvas id="c" width="280" height="242" aria-label="Tu hobbit caminando por el tramo actual"></canvas>
+    <div class="hud">
+      <span class="pill" id="hudName">Bolsón Cerrado<small>Tramo 1 · Cap. 3</small></span>
+      <span class="pill" id="hudKm">0,0 km<small>de 115</small></span>
+    </div>
+  </div>
+  <div class="next"><div class="l" id="nextTxt">Cargando el camino…</div><div class="bar"><i id="nextBar"></i></div></div>
+
+  <div class="status">
+    <div class="today">
+      <div><b id="steps">0</b><span>pasos hoy · <span id="todayKm">0,0</span> km</span></div>
+      <button class="sync" id="sync" type="button">Sincronizar</button>
+    </div>
+    <p class="info" id="info"></p>
+    <button class="diary" id="diary" type="button" hidden><span id="diaryTxt"></span><span aria-hidden="true">›</span></button>
+    <div class="road">
+      <div class="h">La Comunidad en el camino</div>
+      <div class="track" id="track"><div class="ln"></div></div>
+    </div>
+  </div>
+
+  <nav class="nav" aria-label="Menú">
+    <button type="button" data-tab="libro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></svg>Libro Rojo</button>
+    <button type="button" data-tab="comunidad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-3 2.5-5 5-5s5 2 5 5M14 20c0-2.5 1.5-4 3.5-4S21 17.5 21 20"/></svg>Comunidad</button>
+    <button type="button" data-tab="zurron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 9h14l-1 11H6z"/><path d="M9 9V7a3 3 0 0 1 6 0v2M5 13h14"/></svg>Zurrón</button>
+    <button type="button" data-tab="ajustes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Ajustes</button>
+  </nav>
+
+  <div class="veil" id="veil" hidden></div>
+  <section class="sheet" id="sheet" hidden role="dialog" aria-modal="true"></section>
+</div>
+
+<script>
+/* ---------- configuración ---------- */
+var SB_URL = 'https://egdnytvckttgvybdbvmw.supabase.co';
+var SB_KEY = 'sb_publishable_1-eGqPkYOPKsW-ZEtUBo7A_16RQQGdK';
+var ATAJO = 'La Otra Comunidad';
+var STEPS_PER_KM = 1350, TOTAL_KM = 115;
+var M = {"tramos": [[{"src": "assets/tramos/t1_0.webp", "y": 0, "v": 0.08}, {"src": "assets/tramos/t1_1.webp", "y": 31, "v": 0.3}, {"src": "assets/tramos/t1_2.webp", "y": 93, "v": 0.55}, {"src": "assets/tramos/t1_3.webp", "y": 190, "v": 1.0}], [{"src": "assets/tramos/t2_0.webp", "y": 0, "v": 0.08}, {"src": "assets/tramos/t2_1.webp", "y": 32, "v": 0.3}, {"src": "assets/tramos/t2_2.webp", "y": 75, "v": 0.55}, {"src": "assets/tramos/t2_3.webp", "y": 188, "v": 1.0}], [{"src": "assets/tramos/t3_0.webp", "y": 0, "v": 0.08}, {"src": "assets/tramos/t3_1.webp", "y": 38, "v": 0.3}, {"src": "assets/tramos/t3_2.webp", "y": 81, "v": 0.55}, {"src": "assets/tramos/t3_3.webp", "y": 191, "v": 1.0}], [{"src": "assets/tramos/t4_0.webp", "y": 0, "v": 0.08}, {"src": "assets/tramos/t4_1.webp", "y": 48, "v": 0.3}, {"src": "assets/tramos/t4_2.webp", "y": 96, "v": 0.55}, {"src": "assets/tramos/t4_3.webp", "y": 192, "v": 1.0}], [{"src": "assets/tramos/t5_0.webp", "y": 0, "v": 0.08}, {"src": "assets/tramos/t5_1.webp", "y": 31, "v": 0.3}, {"src": "assets/tramos/t5_2.webp", "y": 85, "v": 0.55}, {"src": "assets/tramos/t5_3.webp", "y": 192, "v": 1.0}], [{"src": "assets/tramos/t6_0.webp", "y": 0, "v": 0.08}, {"src": "assets/tramos/t6_1.webp", "y": 50, "v": 0.55}, {"src": "assets/tramos/t6_2.webp", "y": 188, "v": 1.0}], [{"src": "assets/tramos/t7_0.webp", "y": 0, "v": 0.35}, {"src": "assets/tramos/t7_1.webp", "y": 202, "v": 1.0}], [{"src": "assets/tramos/t8_0.webp", "y": 0, "v": 0.35}, {"src": "assets/tramos/t8_1.webp", "y": 203, "v": 1.0}]], "arturo": ["assets/pj/arturo_normal.webp", "assets/pj/arturo_lluvia.webp", "assets/pj/arturo_noche.webp", "assets/pj/arturo_calor.webp"], "vecinos": ["assets/pj/vecino_1.webp", "assets/pj/vecino_2.webp", "assets/pj/vecino_3.webp", "assets/pj/vecino_4.webp"], "faces": "assets/pj/caras.webp", "logo": "assets/logo.webp"};
+var FACE = {porru:0, adrian:1, carlos:2, fer:3, edo:4, rodri:5, arturo:6};
+var ICON = {
+  cohete:'<svg viewBox="0 0 28 28"><path d="M14 3c4 3 5 8 4 13h-8C9 11 10 6 14 3z" fill="#c9402d"/><circle cx="14" cy="11" r="2.2" fill="#f6edd6"/><path d="M10 16l-3 4h4zM18 16l3 4h-4z" fill="#7a5a2e"/><path d="M12 21h4l-2 5z" fill="#f2b233"/></svg>',
+  libro:'<svg viewBox="0 0 28 28"><rect x="6" y="5" width="16" height="19" rx="2" fill="#9c2f22"/><rect x="8" y="7" width="12" height="15" rx="1" fill="none" stroke="#e8c26a" stroke-width="1.2"/><path d="M19 3l3 3-9 12-2 1 1-2z" fill="#f6edd6" stroke="#6d6250" stroke-width=".8"/></svg>',
+  estrella:'<svg viewBox="0 0 28 28"><path d="M14 3l2.6 7.4H24l-6 4.6 2.3 7.5L14 18l-6.3 4.5L10 15 4 10.4h7.4z" fill="#e8d9a0" stroke="#8aa0c8" stroke-width="1"/></svg>',
+  cesta:'<svg viewBox="0 0 28 28"><path d="M5 13h18l-2 11H7z" fill="#a8763a"/><path d="M8 13a6 6 0 0 1 12 0" fill="none" stroke="#7a5426" stroke-width="2"/><circle cx="11" cy="12" r="3" fill="#c9402d"/><circle cx="17" cy="11.5" r="3" fill="#e0b48a"/><path d="M7 17h14M8 21h12" stroke="#7a5426"/></svg>',
+  hoja:'<svg viewBox="0 0 28 28"><path d="M6 22C6 11 13 5 23 5c0 10-6 17-17 17z" fill="#5f8a32"/><path d="M6 22L18 10" stroke="#2f4a18" stroke-width="1.4"/></svg>',
+  casa:'<svg viewBox="0 0 28 28"><path d="M3 20a11 11 0 0 1 22 0z" fill="#6c9a3a"/><circle cx="14" cy="17" r="4.5" fill="#3f6b2a" stroke="#7a5426" stroke-width="1.4"/><circle cx="15.8" cy="17.3" r=".9" fill="#e8c26a"/><rect x="2" y="20" width="24" height="4" fill="#a8763a"/></svg>',
+  pipa:'<svg viewBox="0 0 28 28"><path d="M4 12h12l4 3" stroke="#7a5426" stroke-width="2.4" fill="none"/><path d="M18 13h7v6a4 4 0 0 1-7 0z" fill="#8a5a2a"/><path d="M20 10c0-2 2-2 2-4M23 10c0-2 2-2 2-4" stroke="#b8ad98" fill="none"/></svg>',
+  balsa:'<svg viewBox="0 0 28 28"><rect x="3" y="15" width="22" height="5" rx="1.5" fill="#8a5a2a"/><path d="M3 22c3 2 5-2 8 0s5-2 8 0 4-1 6 0" stroke="#4a78b8" stroke-width="1.6" fill="none"/><rect x="18" y="5" width="2" height="10" fill="#7a5426"/><path d="M20 6h3v4h-3z" fill="#f2b233"/></svg>'
+};
+var T = [
+  {km:0, name:"Bolsón Cerrado", title:"Frodo deja Bolsón Cerrado", cap:"Cap. 3",
+   text:"Frodo ha vendido su casa y dice a todos que se muda a Cricava. La verdad es otra: el anillo que le dejó Bilbo es el Anillo Único, y su dueño lo busca. Una noche de otoño cruza la puerta redonda con Sam y Pippin.",
+   who:"Gandalf", icon:"cohete", say:"«Vete en cuanto puedas. Y no lo uses.»", mini:"Minijuego: Hacer el zurrón"},
+  {km:5, name:"Camino de Delagua", title:"La Comarca dormida", cap:"Cap. 3",
+   text:"Caminan de noche junto al molino y el estanque. En la posada del Dragón Verde todavía se habla de la fiesta de Bilbo y de cómo desapareció delante de todos.",
+   who:"Un vecino de Delagua", icon:"pipa", say:"«¿El señor Bolsón, a vivir con los de la otra orilla? Qué cosa más rara.»", mini:""},
+  {km:15, name:"Colinas Verdes", title:"Un jinete en el camino", cap:"Cap. 3",
+   text:"Se oyen cascos. Se esconden entre las raíces de un árbol junto al camino. Un jinete envuelto en negro se detiene y olfatea el aire, y Frodo siente unas ganas enormes de ponerse el Anillo.",
+   who:"Sam", icon:"hoja", say:"«Señor Frodo, eso no era un hobbit.»", mini:"Minijuego: Quieto bajo el árbol"},
+  {km:35, name:"Bosque Cerrado", title:"Noche con los elfos", cap:"Cap. 3",
+   text:"El jinete vuelve a acercarse, pero se retira al oír unas voces que cantan: son elfos de paso hacia el oeste. Los hobbits cenan con ellos y duermen bajo los árboles.",
+   who:"Gildor, el elfo", icon:"estrella", say:"«Los caminos ya no son seguros. No vayas solo.»", mini:""},
+  {km:55, name:"Atajo campo a través", title:"El atajo", cap:"Cap. 4",
+   text:"Para no volver a la calzada, Frodo decide ir campo a través. Zanjas, zarzas y un arroyo detrás de otro: el atajo resulta más largo que el camino.",
+   who:"Pippin", icon:"hoja", say:"«¿Seguro que esto era más corto?»", mini:""},
+  {km:75, name:"La granja", title:"Las setas del granjero", cap:"Cap. 4",
+   text:"Llegan a la granja del granjero Maggot, a quien Frodo temía desde niño por robarle setas. Resulta amable: les cuenta que un jinete negro ha preguntado por «Bolsón» y les regala una cesta de setas.",
+   who:"El granjero Maggot", icon:"cesta", say:"«En mis tierras no quiero jinetes de esos.»", mini:"Minijuego: Setas a escondidas"},
+  {km:90, name:"Calzada hacia el río", title:"Cascos en la niebla", cap:"Cap. 4-5",
+   text:"Maggot los lleva en su carro hacia la Balsadera. Cae la niebla y se oyen cascos detrás de ellos... pero esta vez es Merry, que había salido a buscarlos.",
+   who:"Merry", icon:"casa", say:"«¡Por fin! Llevaba toda la tarde esperándoos.»", mini:""},
+  {km:110, name:"Balsadera y Cricava", title:"Una conspiración desenmascarada", cap:"Cap. 5",
+   text:"Cruzan el río en la balsa y, en la otra orilla, una sombra llega al embarcadero demasiado tarde. En Cricava, Merry, Sam y Pippin confiesan: lo sabían todo y no piensan dejar solo a Frodo.",
+   who:"Merry", icon:"balsa", say:"«Somos tus amigos. Vamos contigo.»", mini:"Minijuego: La balsa · Fin de la fase 1"}
+];
+
+var ends=[5,15,35,55,75,90,110,115];
+
+/* ---------- utilidades ---------- */
+var $=function(id){return document.getElementById(id);};
+var fmt=function(n){return n.toFixed(1).replace('.',',');};
+var store={get:function(k,d){try{var v=localStorage.getItem('loc.'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set:function(k,v){try{localStorage.setItem('loc.'+k,JSON.stringify(v));}catch(e){}},del:function(k){try{localStorage.removeItem('loc.'+k);}catch(e){}}};
+function rpc(fn,body){
+  var ctl=new AbortController(); var tm=setTimeout(function(){ctl.abort();},10000);
+  return fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',signal:ctl.signal,headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body||{})})
+    .then(function(r){return r.text().then(function(t){clearTimeout(tm);var j=null;try{j=t?JSON.parse(t):null;}catch(e){} if(!r.ok){var e=new Error((j&&j.message)||('Error '+r.status));e.status=r.status;throw e;} return j;});});
+}
+
+/* ---------- estado ---------- */
+var me=store.get('me',null);           /* {id,nombre,hobbit,codigo} */
+var km=store.get('km',0), target=km, stepsToday=0, people=[];
+var weather=store.get('weather','sol'), hourMode=store.get('hour','real');
+var shown=new Set(), reached=0, pending=[];
+var off=0, curT=0, prevT=-1, fade=1, last=performance.now(), drops=[], walking=false;
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- imágenes ---------- */
+var load=function(s){return new Promise(function(r){var i=new Image();i.onload=function(){r(i);};i.onerror=function(){r(null);};i.src=s;});};
+var TI=[],AR=[],VE=[];
+var cv=$('c'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+var lc=$('lc'),lctx=lc.getContext('2d');
+ctx.imageSmoothingEnabled=false; lctx.imageSmoothingEnabled=false;
+
+/* ---------- entrada ---------- */
+var code=$('code');
+function check(){ $('enter').disabled=!/^\d{6}$/.test(code.value); $('err').textContent=''; }
+code.addEventListener('input',function(){code.value=code.value.replace(/\D/g,'').slice(0,6);check();});
+code.addEventListener('keydown',function(e){ if(e.key==='Enter' && !$('enter').disabled) $('enter').click(); });
+$('enter').onclick=function(){
+  var c=code.value; $('enter').disabled=true; $('enter').textContent='Comprobando…';
+  rpc('loc_entrar',{p_codigo:c}).then(function(r){
+    $('enter').textContent='Empezar a andar';
+    if(!r||!r.length){ check(); $('err').textContent='Ese código no existe. Revísalo con Henar.'; return; }
+    me={id:r[0].id,nombre:r[0].nombre,hobbit:r[0].hobbit,codigo:c}; store.set('me',me);
+    $('login').hidden=true; start();
+  }).catch(function(){ $('enter').textContent='Empezar a andar'; check(); $('err').textContent='No hay conexión. Prueba otra vez en un momento.'; });
+};
+
+/* ---------- arranque ---------- */
+Promise.all([
+  Promise.all(M.tramos.map(function(ls){return Promise.all(ls.map(function(l){return load(l.src).then(function(im){return {im:im,y:l.y,v:l.v};});}));})),
+  Promise.all(M.arturo.map(load)), Promise.all(M.vecinos.map(load))
+]).then(function(a){
+  TI=a[0];AR=a[1];VE=a[2];
+  curT=tramoAt(km); reached=curT; renderHud();
+  if(me){ $('login').hidden=true; start(); }
+  requestAnimationFrame(loop);
+});
+function start(){
+  rpc('loc_mis_historias',{p_codigo:me.codigo}).then(function(r){ shown=new Set((r||[]).map(Number)); refresh(); }).catch(function(){ refresh(); });
+}
+function refresh(){
+  $('info').textContent='Actualizando…';
+  return rpc('loc_comunidad').then(function(r){
+    people=r||[];
+    var mine=people.find(function(p){return p.nombre===me.nombre;});
+    var total=mine?Number(mine.pasos_totales):0; stepsToday=mine?Number(mine.pasos_hoy):0;
+    target=Math.min(TOTAL_KM,total/STEPS_PER_KM);
+    if(target<km){ km=target; }   /* por si se corrigieron pasos */
+    var t=tramoAt(target); for(var i=0;i<=t;i++){ if(!shown.has(i)&&pending.indexOf(i)<0) pending.push(i); }
+    var d=new Date(); $('info').textContent='Actualizado a las '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'.';
+    if(km>=target-0.001) flushPending();
+    renderHud();
+  }).catch(function(){ $('info').textContent='Sin conexión: se actualizará cuando vuelva la cobertura.'; });
+}
+document.addEventListener('visibilitychange',function(){ if(!document.hidden && me) refresh(); });
+
+/* Sincronizar: en iPhone abre el atajo, que lee Salud y sube los pasos. Al volver, refresh(). */
+$('sync').onclick=function(){
+  var ios=/iPhone|iPad|iPod/.test(navigator.userAgent);
+  if(ios){ location.href='shortcuts://run-shortcut?name='+encodeURIComponent(ATAJO); }
+  else { $('info').textContent='En Android la sincronización llega pronto. De momento se actualiza al abrir el juego.'; refresh(); }
+};
+
+/* ---------- dibujo ---------- */
+function tramoAt(k){for(var i=T.length-1;i>=0;i--) if(k>=T[i].km) return i; return 0;}
+function hourNow(){ if(hourMode!=='real') return hourMode; var h=new Date().getHours(); if(h>=8&&h<18) return 'dia'; if((h>=18&&h<21)||(h>=6&&h<8)) return 'tarde'; return 'noche'; }
+function sky(c,h){
+  var g=c.createLinearGradient(0,0,0,H);
+  if(h==='noche'){g.addColorStop(0,'#0b1430');g.addColorStop(1,'#24345e');}
+  else if(h==='tarde'){g.addColorStop(0,'#5b6fb3');g.addColorStop(.6,'#e79a6a');g.addColorStop(1,'#f3c78a');}
+  else if(weather==='lluvia'){g.addColorStop(0,'#7d8794');g.addColorStop(1,'#b5bcc4');}
+  else {g.addColorStop(0,'#5f9be0');g.addColorStop(.7,'#a9d0f2');}
+  c.fillStyle=g; c.fillRect(0,0,W,H);
+  if(h==='noche'){c.fillStyle='#e8ecff';for(var i=0;i<30;i++) c.fillRect((i*97)%W,(i*53)%110,1,1);}
+}
+function drawTramo(c,i,alpha,o){
+  c.globalAlpha=alpha;
+  TI[i].forEach(function(L){ if(!L.im) return; var w=L.im.width, x=-((o*L.v)%w); for(;x<W;x+=w) c.drawImage(L.im,Math.round(x),L.y); });
+  if(i<=1) VE.forEach(function(im,j){ if(!im) return; var gap=760,x=Math.round(((j*230+200-o)%gap+gap)%gap)-60; if(x<W) c.drawImage(im,x,226-im.height+4); });
+  c.globalAlpha=1;
+}
+function tint(c,h){
+  if(h==='noche'){c.fillStyle='rgba(10,18,55,.55)';c.fillRect(0,0,W,H);}
+  else if(h==='tarde'){c.fillStyle='rgba(230,120,60,.18)';c.fillRect(0,0,W,H);}
+  if(weather==='lluvia'){c.fillStyle='rgba(70,80,95,.25)';c.fillRect(0,0,W,H);}
+  if(weather==='calor'&&h!=='noche'){c.fillStyle='rgba(255,200,90,.14)';c.fillRect(0,0,W,H);}
+}
+function walker(c,t,h,x,moving){
+  var idx=h==='noche'?2:weather==='lluvia'?1:weather==='calor'?3:0, im=AR[idx]; if(!im) return;
+  var base=228, step=moving?Math.floor(t/150)%4:0, bob=moving&&(step%2)?-1:0;
+  c.fillStyle='rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(x+im.width/2,base,im.width*.38,3,0,0,Math.PI*2); c.fill();
+  var cut=Math.round(im.height*.8);
+  c.drawImage(im,0,0,im.width,cut,x,base-im.height+bob,im.width,cut);
+  c.drawImage(im,0,cut,im.width,im.height-cut,x+(moving?[0,1,0,-1][step]:0),base-im.height+cut+bob,im.width,im.height-cut);
+  if(idx===2){var lx=x+im.width*.82,ly=base-im.height*.42,g=c.createRadialGradient(lx,ly,2,lx,ly,55);g.addColorStop(0,'rgba(255,200,100,.45)');g.addColorStop(1,'rgba(255,200,100,0)');c.fillStyle=g;c.fillRect(lx-55,ly-55,110,110);}
+}
+function rain(c,dt){
+  if(weather!=='lluvia') return;
+  while(drops.length<100) drops.push({x:Math.random()*W,y:Math.random()*H,s:2+Math.random()*2});
+  c.strokeStyle='rgba(200,215,235,.55)'; c.lineWidth=1; c.beginPath();
+  drops.forEach(function(d){d.y+=d.s*dt*.12; d.x-=dt*.03; if(d.y>H){d.y=-6;d.x=Math.random()*W;} c.moveTo(d.x,d.y); c.lineTo(d.x-1.5,d.y+6);});
+  c.stroke();
+}
+var loginOff=0;
+function loop(now){
+  var dt=Math.min(50,now-last); last=now; var h=hourNow();
+  if(!$('login').hidden){
+    loginOff+=dt*0.03; sky(lctx,'tarde'); drawTramo(lctx,0,1,loginOff); tint(lctx,'tarde'); walker(lctx,now,'tarde',95,true);
+  } else {
+    walking = target>km+0.001 && $('sheet').hidden;
+    if(walking){ off+=dt*0.05; setKm(km+Math.min(target-km, dt*0.0015)); }
+    sky(ctx,h);
+    if(fade<1&&prevT>=0){drawTramo(ctx,prevT,1,off);drawTramo(ctx,curT,fade,off);fade=Math.min(1,fade+dt/700);} else drawTramo(ctx,curT,1,off);
+    tint(ctx,h); walker(ctx,now,h,95,walking); rain(ctx,dt);
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- avance ---------- */
+function setKm(v){
+  km=v; store.set('km',km);
+  var t=tramoAt(km);
+  if(t!==curT){ prevT=curT; curT=t; fade=reduce?1:0; }
+  if(t>reached) reached=t;
+  renderHud();
+  if(km>=target-0.001) flushPending();
+}
+function flushPending(){
+  if(!$('sheet').hidden) return;
+  pending=pending.filter(function(i){return !shown.has(i) && i<=tramoAt(km);});
+  if(pending.length) openStory(pending.shift());
+}
+function renderHud(){
+  var t=T[curT], nxt=T[curT+1], a=t.km, b=ends[curT];
+  $('hudName').innerHTML=t.name+'<small>Tramo '+(curT+1)+' · '+t.cap+'</small>';
+  $('hudKm').innerHTML=fmt(km)+' km<small>de '+TOTAL_KM+'</small>';
+  $('nextTxt').textContent = nxt ? 'Faltan '+fmt(Math.max(0,b-km))+' km para '+nxt.name : (km>=TOTAL_KM?'Has llegado a Cricava · fin de la fase 1':'Faltan '+fmt(TOTAL_KM-km)+' km para Cricava');
+  $('nextBar').style.width=Math.min(100,(km-a)/(b-a)*100)+'%';
+  $('steps').textContent=stepsToday.toLocaleString('es-ES');
+  $('todayKm').textContent=fmt(stepsToday/STEPS_PER_KM);
+  var unread=[]; for(var i=0;i<=reached;i++) if(!shown.has(i)) unread.push(i);
+  $('diary').hidden=!unread.length || !$('sheet').hidden || !me;
+  $('diaryTxt').textContent=unread.length===1?'Te espera una historia en el diario':'Te esperan '+unread.length+' historias en el diario';
+  renderTrack();
+}
+$('diary').onclick=function(){ for(var i=0;i<=reached;i++) if(!shown.has(i)){ openStory(i); return; } };
+function faceStyle(h,size){ return 'background-image:url('+M.faces+');background-position:-'+((FACE[h]||0)*size)+'px 0'; }
+function renderTrack(){
+  var tr=$('track'); tr.querySelectorAll('.dot').forEach(function(d){d.remove();});
+  people.slice().sort(function(x,y){return (x.nombre===(me&&me.nombre))-(y.nombre===(me&&me.nombre));}).forEach(function(p){
+    var mine=me&&p.nombre===me.nombre, k=mine?km:Math.min(TOTAL_KM,Number(p.pasos_totales)/STEPS_PER_KM);
+    var d=document.createElement('span'); d.className='dot'+(mine?' me':'');
+    d.style.cssText='left:'+(k/TOTAL_KM*100)+'%;'+faceStyle(p.hobbit,30); d.title=p.nombre+' · '+fmt(k)+' km'; tr.appendChild(d);
+  });
+}
+
+/* ---------- hojas ---------- */
+var sheet=$('sheet'), veil=$('veil');
+function openSheet(html){ sheet.innerHTML='<div class="grab"></div>'+html; sheet.hidden=false; veil.hidden=false; $('diary').hidden=true; }
+function closeSheet(){ sheet.hidden=true; veil.hidden=true; document.querySelectorAll('.nav button').forEach(function(b){b.removeAttribute('aria-current');}); renderHud(); setTimeout(flushPending,400); }
+veil.onclick=closeSheet;
+function openStory(i){
+  if(!shown.has(i)){ shown.add(i); if(me) rpc('loc_marcar_historia',{p_codigo:me.codigo,p_tramo:i}).catch(function(){}); }
+  var s=T[i];
+  openSheet('<span class="eyebrow">Tramo '+(i+1)+' · km '+s.km+' · '+s.cap+'</span><h2>'+s.title+'</h2><p>'+s.text+'</p>'+
+    '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+
+    (s.mini?'<span class="mini">'+s.mini+' · próximamente</span>':'')+'<button class="primary" id="shOk" type="button">Seguir andando</button>');
+  $('shOk').onclick=closeSheet;
+}
+var TABS={
+  libro:function(){return '<h2>Libro Rojo</h2><p class="note">Cada tramo que alcanzas añade su página.</p><ol class="list">'+T.map(function(s,i){var o=i<=reached;return '<li class="'+(o?'':'locked')+'"><span class="n">'+(i+1)+'</span><span class="t">'+(o?'<button type="button" data-page="'+i+'">'+s.title+'</button>':'Página por descubrir')+'</span><span class="k">'+s.km+'–'+ends[i]+' km</span></li>';}).join('')+'</ol>';},
+  comunidad:function(){var l=people.slice().sort(function(a,b){return b.pasos_totales-a.pasos_totales;});
+    return '<h2>La Comunidad</h2><ol class="list people">'+l.map(function(p){var k=Math.min(TOTAL_KM,Number(p.pasos_totales)/STEPS_PER_KM);return '<li class="'+(me&&p.nombre===me.nombre?'me':'')+'"><span class="face" style="'+faceStyle(p.hobbit,36)+'"></span><span class="t">'+p.nombre+'</span><span class="k">'+fmt(k)+' km<br>'+T[tramoAt(k)].name+'</span></li>';}).join('')+'</ol>';},
+  zurron:function(){return '<h2>Zurrón</h2><div class="empty">Aquí irán las recompensas del camino. Está por decidir qué da cada cosa.</div>';},
+  ajustes:function(){return '<h2>Ajustes</h2><p class="note">Has entrado como <b>'+(me?me.nombre:'')+'</b>.</p>'+
+    '<div class="slab">Tiempo (de momento se elige a mano)</div><div class="chips" data-g="weather">'+[['sol','Despejado'],['lluvia','Lluvia'],['calor','Calor']].map(function(x){return '<button class="chip" type="button" data-v="'+x[0]+'" aria-pressed="'+(weather===x[0])+'">'+x[1]+'</button>';}).join('')+'</div>'+
+    '<div class="slab">Hora del día</div><div class="chips" data-g="hour">'+[['real','Hora real'],['dia','Día'],['tarde','Atardecer'],['noche','Noche']].map(function(x){return '<button class="chip" type="button" data-v="'+x[0]+'" aria-pressed="'+(hourMode===x[0])+'">'+x[1]+'</button>';}).join('')+'</div>'+
+    '<button class="ghost" type="button" id="logout">Salir</button><p class="note">Versión 1</p>';}
+};
+document.querySelectorAll('.nav button').forEach(function(b){ b.onclick=function(){
+  openSheet(TABS[b.dataset.tab]()); document.querySelectorAll('.nav button').forEach(function(x){x.removeAttribute('aria-current');}); b.setAttribute('aria-current','true');
+  if(b.dataset.tab==='comunidad') refresh().then(function(){ if(!sheet.hidden&&b.getAttribute('aria-current')) sheet.innerHTML='<div class="grab"></div>'+TABS.comunidad(); });
+  sheet.querySelectorAll('[data-page]').forEach(function(x){x.onclick=function(){openStory(+x.dataset.page);};});
+  sheet.querySelectorAll('.chips').forEach(function(g){g.querySelectorAll('.chip').forEach(function(c){c.onclick=function(){
+    if(g.dataset.g==='weather'){weather=c.dataset.v;store.set('weather',weather);} else {hourMode=c.dataset.v;store.set('hour',hourMode);}
+    g.querySelectorAll('.chip').forEach(function(x){x.setAttribute('aria-pressed',x===c);});
+  };});});
+  var lo=$('logout'); if(lo) lo.onclick=function(){ store.del('me'); store.del('km'); me=null; km=0; target=0; people=[]; shown=new Set(); closeSheet(); code.value=''; check(); $('login').hidden=false; };
+};});
+</script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+{
+"tramos": [
+[
+{
+"src": "assets/tramos/t1_0.webp",
+"y": 0,
+"v": 0.08
+},
+{
+"src": "assets/tramos/t1_1.webp",
+"y": 31,
+"v": 0.3
+},
+{
+"src": "assets/tramos/t1_2.webp",
+"y": 93,
+"v": 0.55
+},
+{
+"src": "assets/tramos/t1_3.webp",
+"y": 190,
+"v": 1.0
+}
+],
+[
+{
+"src": "assets/tramos/t2_0.webp",
+"y": 0,
+"v": 0.08
+},
+{
+"src": "assets/tramos/t2_1.webp",
+"y": 32,
+"v": 0.3
+},
+{
+"src": "assets/tramos/t2_2.webp",
+"y": 75,
+"v": 0.55
+},
+{
+"src": "assets/tramos/t2_3.webp",
+"y": 188,
+"v": 1.0
+}
+],
+[
+{
+"src": "assets/tramos/t3_0.webp",
+"y": 0,
+"v": 0.08
+},
+{
+"src": "assets/tramos/t3_1.webp",
+"y": 38,
+"v": 0.3
+},
+{
+"src": "assets/tramos/t3_2.webp",
+"y": 81,
+"v": 0.55
+},
+{
+"src": "assets/tramos/t3_3.webp",
+"y": 191,
+"v": 1.0
+}
+],
+[
+{
+"src": "assets/tramos/t4_0.webp",
+"y": 0,
+"v": 0.08
+},
+{
+"src": "assets/tramos/t4_1.webp",
+"y": 48,
+"v": 0.3
+},
+{
+"src": "assets/tramos/t4_2.webp",
+"y": 96,
+"v": 0.55
+},
+{
+"src": "assets/tramos/t4_3.webp",
+"y": 192,
+"v": 1.0
+}
+],
+[
+{
+"src": "assets/tramos/t5_0.webp",
+"y": 0,
+"v": 0.08
+},
+{
+"src": "assets/tramos/t5_1.webp",
+"y": 31,
+"v": 0.3
+},
+{
+"src": "assets/tramos/t5_2.webp",
+"y": 85,
+"v": 0.55
+},
+{
+"src": "assets/tramos/t5_3.webp",
+"y": 192,
+"v": 1.0
+}
+],
+[
+{
+"src": "assets/tramos/t6_0.webp",
+"y": 0,
+"v": 0.08
+},
+{
+"src": "assets/tramos/t6_1.webp",
+"y": 50,
+"v": 0.55
+},
+{
+"src": "assets/tramos/t6_2.webp",
+"y": 188,
+"v": 1.0
+}
+],
+[
+{
+"src": "assets/tramos/t7_0.webp",
+"y": 0,
+"v": 0.35
+},
+{
+"src": "assets/tramos/t7_1.webp",
+"y": 202,
+"v": 1.0
+}
+],
+[
+{
+"src": "assets/tramos/t8_0.webp",
+"y": 0,
+"v": 0.35
+},
+{
+"src": "assets/tramos/t8_1.webp",
+"y": 203,
+"v": 1.0
+}
+]
+],
+"arturo": [
+"assets/pj/arturo_normal.webp",
+"assets/pj/arturo_lluvia.webp",
+"assets/pj/arturo_noche.webp",
+"assets/pj/arturo_calor.webp"
+],
+"vecinos": [
+"assets/pj/vecino_1.webp",
+"assets/pj/vecino_2.webp",
+"assets/pj/vecino_3.webp",
+"assets/pj/vecino_4.webp"
+],
+"faces": "assets/pj/caras.webp",
+"logo": "assets/logo.webp"
+}

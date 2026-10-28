@@ -1,0 +1,36 @@
+const ICON = {
+  cohete:'<svg viewBox="0 0 28 28"><path d="M14 3c4 3 5 8 4 13h-8C9 11 10 6 14 3z" fill="#c9402d"/><circle cx="14" cy="11" r="2.2" fill="#f6edd6"/><path d="M10 16l-3 4h4zM18 16l3 4h-4z" fill="#7a5a2e"/><path d="M12 21h4l-2 5z" fill="#f2b233"/></svg>',
+  libro:'<svg viewBox="0 0 28 28"><rect x="6" y="5" width="16" height="19" rx="2" fill="#9c2f22"/><rect x="8" y="7" width="12" height="15" rx="1" fill="none" stroke="#e8c26a" stroke-width="1.2"/><path d="M19 3l3 3-9 12-2 1 1-2z" fill="#f6edd6" stroke="#6d6250" stroke-width=".8"/></svg>',
+  estrella:'<svg viewBox="0 0 28 28"><path d="M14 3l2.6 7.4H24l-6 4.6 2.3 7.5L14 18l-6.3 4.5L10 15 4 10.4h7.4z" fill="#e8d9a0" stroke="#8aa0c8" stroke-width="1"/></svg>',
+  cesta:'<svg viewBox="0 0 28 28"><path d="M5 13h18l-2 11H7z" fill="#a8763a"/><path d="M8 13a6 6 0 0 1 12 0" fill="none" stroke="#7a5426" stroke-width="2"/><circle cx="11" cy="12" r="3" fill="#c9402d"/><circle cx="17" cy="11.5" r="3" fill="#e0b48a"/><path d="M7 17h14M8 21h12" stroke="#7a5426"/></svg>',
+  hoja:'<svg viewBox="0 0 28 28"><path d="M6 22C6 11 13 5 23 5c0 10-6 17-17 17z" fill="#5f8a32"/><path d="M6 22L18 10" stroke="#2f4a18" stroke-width="1.4"/></svg>',
+  casa:'<svg viewBox="0 0 28 28"><path d="M3 20a11 11 0 0 1 22 0z" fill="#6c9a3a"/><circle cx="14" cy="17" r="4.5" fill="#3f6b2a" stroke="#7a5426" stroke-width="1.4"/><circle cx="15.8" cy="17.3" r=".9" fill="#e8c26a"/><rect x="2" y="20" width="24" height="4" fill="#a8763a"/></svg>',
+  pipa:'<svg viewBox="0 0 28 28"><path d="M4 12h12l4 3" stroke="#7a5426" stroke-width="2.4" fill="none"/><path d="M18 13h7v6a4 4 0 0 1-7 0z" fill="#8a5a2a"/><path d="M20 10c0-2 2-2 2-4M23 10c0-2 2-2 2-4" stroke="#b8ad98" fill="none"/></svg>',
+  balsa:'<svg viewBox="0 0 28 28"><rect x="3" y="15" width="22" height="5" rx="1.5" fill="#8a5a2a"/><path d="M3 22c3 2 5-2 8 0s5-2 8 0 4-1 6 0" stroke="#4a78b8" stroke-width="1.6" fill="none"/><rect x="18" y="5" width="2" height="10" fill="#7a5426"/><path d="M20 6h3v4h-3z" fill="#f2b233"/></svg>'
+};
+const T = [
+  {km:0, name:"Bolsón Cerrado", title:"Frodo deja Bolsón Cerrado", cap:"Cap. 3",
+   text:"Frodo ha vendido su casa y dice a todos que se muda a Cricava. La verdad es otra: el anillo que le dejó Bilbo es el Anillo Único, y su dueño lo busca. Una noche de otoño cruza la puerta redonda con Sam y Pippin.",
+   who:"Gandalf", icon:"cohete", say:"«Vete en cuanto puedas. Y no lo uses.»", mini:"Minijuego: Hacer el zurrón"},
+  {km:5, name:"Camino de Delagua", title:"La Comarca dormida", cap:"Cap. 3",
+   text:"Caminan de noche junto al molino y el estanque. En la posada del Dragón Verde todavía se habla de la fiesta de Bilbo y de cómo desapareció delante de todos.",
+   who:"Un vecino de Delagua", icon:"pipa", say:"«¿El señor Bolsón, a vivir con los de la otra orilla? Qué cosa más rara.»", mini:""},
+  {km:15, name:"Colinas Verdes", title:"Un jinete en el camino", cap:"Cap. 3",
+   text:"Se oyen cascos. Se esconden entre las raíces de un árbol junto al camino. Un jinete envuelto en negro se detiene y olfatea el aire, y Frodo siente unas ganas enormes de ponerse el Anillo.",
+   who:"Sam", icon:"hoja", say:"«Señor Frodo, eso no era un hobbit.»", mini:"Minijuego: Quieto bajo el árbol"},
+  {km:35, name:"Bosque Cerrado", title:"Noche con los elfos", cap:"Cap. 3",
+   text:"El jinete vuelve a acercarse, pero se retira al oír unas voces que cantan: son elfos de paso hacia el oeste. Los hobbits cenan con ellos y duermen bajo los árboles.",
+   who:"Gildor, el elfo", icon:"estrella", say:"«Los caminos ya no son seguros. No vayas solo.»", mini:""},
+  {km:55, name:"Atajo campo a través", title:"El atajo", cap:"Cap. 4",
+   text:"Para no volver a la calzada, Frodo decide ir campo a través. Zanjas, zarzas y un arroyo detrás de otro: el atajo resulta más largo que el camino.",
+   who:"Pippin", icon:"hoja", say:"«¿Seguro que esto era más corto?»", mini:""},
+  {km:75, name:"La granja", title:"Las setas del granjero", cap:"Cap. 4",
+   text:"Llegan a la granja del granjero Maggot, a quien Frodo temía desde niño por robarle setas. Resulta amable: les cuenta que un jinete negro ha preguntado por «Bolsón» y les regala una cesta de setas.",
+   who:"El granjero Maggot", icon:"cesta", say:"«En mis tierras no quiero jinetes de esos.»", mini:"Minijuego: Setas a escondidas"},
+  {km:90, name:"Calzada hacia el río", title:"Cascos en la niebla", cap:"Cap. 4-5",
+   text:"Maggot los lleva en su carro hacia la Balsadera. Cae la niebla y se oyen cascos detrás de ellos... pero esta vez es Merry, que había salido a buscarlos.",
+   who:"Merry", icon:"casa", say:"«¡Por fin! Llevaba toda la tarde esperándoos.»", mini:""},
+  {km:110, name:"Balsadera y Cricava", title:"Una conspiración desenmascarada", cap:"Cap. 5",
+   text:"Cruzan el río en la balsa y, en la otra orilla, una sombra llega al embarcadero demasiado tarde. En Cricava, Merry, Sam y Pippin confiesan: lo sabían todo y no piensan dejar solo a Frodo.",
+   who:"Merry", icon:"balsa", say:"«Somos tus amigos. Vamos contigo.»", mini:"Minijuego: La balsa · Fin de la fase 1"}
+];
