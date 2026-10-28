@@ -742,7 +742,9 @@
 "cantimplora_cinto": "assets/eq/cantimplora_cinto.webp"
 },
 "prologo": {
-"video": "assets/prologo/prologo.mp4"
+"video": "assets/prologo/prologo.mp4",
+"poster": "assets/prologo/poster.webp",
+"casa": "assets/prologo/puerta.webp"
 },
 "ilustraciones": [
 "assets/prologo/forja.webp",

@@ -501,20 +501,62 @@ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.
   '.pro .start button{background:#e2a54a;color:#221a0e;border:0;border-radius:10px;padding:14px 22px;font-size:1.05rem}'+
   '.pro .start p{margin:0;color:#c9bc9c;font-size:.92rem}';
   document.head.appendChild(c); })();
+var INSTR=[
+  {t:'Bienvenido a Bolsón Cerrado',p:'Frodo acaba de salir por esta puerta con el Anillo. Tú y tu Comunidad vais detrás de él, siguiendo su camino hasta el Monte del Destino.'},
+  {t:'Avanzas andando',p:'Cada paso que das en la vida real cuenta. Lleva el móvil encima: al pulsar «Sincronizar», tus pasos del día se convierten en kilómetros del viaje.'},
+  {t:'El camino cuenta la historia',p:'Al llegar a cada sitio descubres lo que le pasó a Frodo allí. La página se va escribiendo en tu Libro Rojo mientras recorres el tramo.'},
+  {t:'Tus decisiones pesan',p:'Por el camino tendrás que elegir y jugar pequeñas pruebas. Lo que decidas cambia lo que te llevas al final de cada acto.'},
+  {t:'No vas solo',p:'En el mapa ves por dónde va cada uno de la Comunidad. Frodo siempre va por delante: nunca le alcanzaréis, pero entre vosotros sí hay carrera.'},
+  {t:'Primera decisión',p:'Antes de salir, hay que hacer el zurrón. Elige bien: lo que lleves se pondrá a prueba por el camino.'}
+];
 function verPrologo(alAcabar){
   var P=M.prologo; if(!P||!P.video){ if(alAcabar) alAcabar(); return; }
   var el=document.createElement('section'); el.className='pro'; el.setAttribute('role','dialog'); el.setAttribute('aria-label','Prólogo');
-  el.innerHTML='<video playsinline webkit-playsinline preload="auto" src="'+P.video+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000"></video>'+
-    '<button class="skip" type="button">Saltar</button><div class="bar"><i></i></div>'+
-    '<div class="start"><h2>Prólogo</h2><p>La historia del anillo, antes de que llegara a la Comarca. Sube el volumen.</p><button type="button">Empezar</button></div>';
+  el.innerHTML='<video playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback" poster="'+(P.poster||'')+'" src="'+P.video+'"></video>'+
+    '<div class="bar"><i></i></div>';
   $('app').appendChild(el);
   var v=el.querySelector('video'), bar=el.querySelector('.bar i'), done=false;
-  function fin(){ if(done) return; done=true; try{v.pause();}catch(e){} store.set('prologo',true); el.style.transition='opacity .8s'; el.style.opacity='0'; setTimeout(function(){ el.remove(); if(alAcabar) alAcabar(); },800); }
   v.ontimeupdate=function(){ if(v.duration) bar.style.width=(v.currentTime/v.duration*100)+'%'; };
-  v.onended=fin;
-  el.querySelector('.skip').onclick=fin;
-  el.querySelector('.start button').onclick=function(){ el.querySelector('.start').remove(); var p=v.play(); if(p&&p.catch) p.catch(function(){ v.muted=true; v.play().catch(function(){}); }); };
+  v.onended=function(){ if(done) return; done=true; instrucciones(el,alAcabar); };
+  v.onpause=function(){ if(!done && !v.ended) setTimeout(function(){ if(!done) v.play().catch(pedirToque); },50); };
+  function pedirToque(){
+    if(el.querySelector('.tap')) return;
+    var t=document.createElement('button'); t.type='button'; t.className='tap';
+    t.innerHTML='<span class="ring"></span><b>Comenzar el viaje</b><small>Sube el volumen</small>';
+    t.onclick=function(){ t.remove(); v.muted=false; v.play().catch(function(){ v.muted=true; v.play().catch(function(){}); }); };
+    el.appendChild(t);
+  }
+  var p=v.play(); if(p&&p.catch) p.catch(pedirToque);
 }
+function instrucciones(el,alAcabar){
+  var i=0;
+  el.innerHTML='<img class="casa" src="'+(M.prologo.casa||'')+'" alt=""><div class="ins"><span class="eyebrow" id="insN"></span><h2 id="insT"></h2><p id="insP"></p><div class="dots" id="insD"></div><button class="go" type="button" id="insB"></button></div>';
+  function pinta(){ var s=INSTR[i];
+    el.querySelector('#insN').textContent='Antes de salir · '+(i+1)+' de '+INSTR.length;
+    el.querySelector('#insT').textContent=s.t; el.querySelector('#insP').textContent=s.p;
+    el.querySelector('#insD').innerHTML=INSTR.map(function(_,j){return '<i class="'+(j===i?'on':'')+'"></i>';}).join('');
+    el.querySelector('#insB').textContent=i<INSTR.length-1?'Siguiente':'Hacer el zurrón';
+    var c=el.querySelector('.ins'); c.classList.remove('in'); void c.offsetWidth; c.classList.add('in'); }
+  el.querySelector('#insB').onclick=function(){ if(i<INSTR.length-1){ i++; pinta(); return; }
+    store.set('prologo',true); el.style.transition='opacity .7s'; el.style.opacity='0';
+    setTimeout(function(){ el.remove(); if(alAcabar) alAcabar(); else if(!zEstado()) abrirMinijuego('zurron'); },700); };
+  pinta();
+}
+(function(){ var c=document.createElement('style'); c.textContent=
+  '.pro video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;pointer-events:none}'+
+  '.pro video::-webkit-media-controls,.pro video::-webkit-media-controls-overlay-play-button,.pro video::-webkit-media-controls-start-playback-button{display:none!important;-webkit-appearance:none}'+
+  '.pro .tap{position:absolute;inset:0;border:0;background:radial-gradient(circle at 50% 55%,rgba(20,12,4,.35),rgba(0,0,0,.85));color:#f3e2b4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-family:var(--title)}'+
+  '.pro .tap .ring{width:110px;height:110px;border-radius:50%;border:10px solid #e2a54a;box-shadow:0 0 30px rgba(226,165,74,.8),inset 0 0 18px rgba(255,210,120,.6);animation:latido 2.2s ease-in-out infinite}'+
+  '.pro .tap b{font-size:1.5rem;letter-spacing:.04em;text-shadow:0 2px 6px #000}'+
+  '.pro .tap small{font-family:var(--body);color:#c9bc9c;font-size:.9rem}'+
+  '@keyframes latido{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}'+
+  '.pro .casa{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;image-rendering:pixelated;filter:brightness(.8)}'+
+  '.pro .ins{position:absolute;left:14px;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));padding:18px 18px 16px;color:#2b1d0e;display:flex;flex-direction:column;gap:10px;border:24px solid transparent;border-image:var(--papiro) 72 fill / 24px stretch;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}'+
+  '.pro .ins.in{animation:up .4s ease-out}'+
+  '.pro .ins h2{font-family:var(--title);font-size:1.3rem;margin:0}.pro .ins p{margin:0;font-size:1rem;line-height:1.45}'+
+  '.pro .ins .go{background:#4f6b2e;color:#fbf6e8;border:0;border-radius:10px;padding:13px;font-size:1rem}'+
+  '.pro .dots{display:flex;gap:6px;justify-content:center}.pro .dots i{width:8px;height:8px;border-radius:50%;background:#c4a46c}.pro .dots i.on{background:#2b1d0e}';
+  document.head.appendChild(c); })();
 /* sale la primera vez que entras al juego */
 (function(){ var _enter=enter; enter=function(){ _enter(); if(!store.get('prologo',false)) verPrologo(); }; })();
 /* volver a verlo desde el Libro Rojo */
