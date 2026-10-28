@@ -731,5 +731,14 @@
 90
 ]
 ]
+},
+"equipo": {
+"capa": "assets/eq/capa.webp",
+"sombrero": "assets/eq/sombrero.webp",
+"panuelo_sam": "assets/eq/panuelo_sam.webp",
+"cazo": "assets/eq/cazo.webp",
+"broche": "assets/eq/broche.webp",
+"panuelo_rojo": "assets/eq/panuelo_rojo.webp",
+"cantimplora_cinto": "assets/eq/cantimplora_cinto.webp"
 }
 }

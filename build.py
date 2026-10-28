@@ -28,6 +28,7 @@ if '--demo' in sys.argv:
     if 'papiro' in m: m['papiro'] = uri(m['papiro'])
     if 'andar' in m: m['andar']['src'] = uri(m['andar']['src'])
     if 'mapa' in m: m['mapa']['src'] = uri(m['mapa']['src'])
+    if 'equipo' in m: m['equipo'] = {k: uri(v) for k, v in m['equipo'].items()}
     html = fill(src, m, True)
     head = re.search(r'<head>(.*?)</head>', html, re.S).group(1)
     head = re.sub(r'<meta[^>]*>\n?|<link rel="apple-touch-icon"[^>]*>\n?', '', head)

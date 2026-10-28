@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
 <style>
-/* Versión 10 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
+/* Versión 11 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
 :root{
   --paper:#ecd7a6; --paper2:#dcc089; --ink:#2b1d0e; --muted:#6a4f2c; --line:#c4a46c;
   --moss:#4f6b2e; --amber:#e2a54a; --amber-ink:#8a4f0c; --glass:rgba(20,16,10,.74); --glass-ink:#f6edd6;
@@ -465,7 +465,9 @@ function walker(t,h){
   if(WALK && idx===0){
     var n=M.andar.n, fw=M.andar.fw, fh=WALK.height, f=Math.floor(t/(reduce?400:130))%n, wx=Math.round(W*0.3), wb=OY+228;
     ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(wx+fw/2,wb,fw*.38,3,0,0,Math.PI*2); ctx.fill();
-    ctx.drawImage(WALK,Math.round(f*fw),0,Math.round(fw),fh,wx,wb-fh,Math.round(fw),fh); return;
+    if(typeof dibujaEquipo==='function') dibujaEquipo(ctx,wx,wb-fh,f,true);
+    ctx.drawImage(WALK,Math.round(f*fw),0,Math.round(fw),fh,wx,wb-fh,Math.round(fw),fh);
+    if(typeof dibujaEquipo==='function') dibujaEquipo(ctx,wx,wb-fh,f,false); return;
   }
   var im=AR[idx]; if(!im) return;
   var x=Math.round(W*0.3), base=OY+228, step=Math.floor(t/150)%4, bob=(step%2)?-1:0;

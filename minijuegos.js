@@ -410,7 +410,7 @@ function jugarDecisiones(el,cerrar){
   '.mj .opt{text-align:left;background:rgba(255,244,214,.55);border:2px solid #2b1d0e;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;color:#2b1d0e;box-shadow:0 3px 0 rgba(0,0,0,.25)}'+
   '.mj .opt b{font-size:1rem}.mj .opt span{font-weight:500;font-size:.88rem;color:#6a4f2c}'+
   '.mj .opt:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25)}'+
-  '.sello{width:92px;height:92px;border-radius:50%;margin:0 auto;display:grid;place-items:center;border:4px solid #2b1d0e;box-shadow:inset 0 0 0 6px rgba(255,255,255,.35),0 4px 0 rgba(0,0,0,.3);font-family:var(--title);font-weight:700;font-size:1.6rem;color:#2b1d0e}';
+  '.sello{flex:none;width:92px;height:92px;border-radius:50%;margin:0 auto;display:grid;place-items:center;border:4px solid #2b1d0e;box-shadow:inset 0 0 0 6px rgba(255,255,255,.35),0 4px 0 rgba(0,0,0,.3);font-family:var(--title);font-weight:700;font-size:1.6rem;color:#2b1d0e}';
   document.head.appendChild(c); })();
 MINI.zurron={titulo:'Hacer el zurrón', tramo:0, jugar:jugarDecisiones};
 
@@ -423,7 +423,7 @@ function finActo(){
   openSheet('<span class="eyebrow">Cricava · 115 km</span><h2>Fin del Acto I</h2>'+
     '<div class="sello" style="background:'+s.c+'">I</div><p style="text-align:center"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>'+
     (z?'<p>Así os ha ido con lo que llevabas:</p><ul class="note" style="margin:0;padding-left:1.2em">'+lineas+'</ul>':'<p class="note">No hiciste el zurrón en Bolsón Cerrado, así que el viaje fue a la buena de Dios.</p>')+
-    '<p class="note">El sello y el título se quedan en tu Zurrón. Qué más da cada sello está por decidir.</p>'+
+    (function(){ store.set('fin1',true); var g=eqGanado(); return g.length?'<p><b>Has ganado:</b></p><div class="got">'+g.map(function(k){return '<div style="display:flex;flex-direction:column;align-items:center;font-weight:700;font-size:.8rem;max-width:90px;text-align:center"><img src="'+M.equipo[k]+'" alt="" style="width:44px;height:44px;object-fit:contain;image-rendering:pixelated">'+EQ[k].n+'</div>';}).join('')+'</div><p class="note">Ya lo llevas puesto. Puedes quitártelo o volver a ponértelo en el Zurrón.</p>':''; })()+
     '<button class="primary" id="shOk" type="button">Seguir hacia el Bosque Viejo</button>');
   $('shOk').onclick=closeSheet; return true;
 }
@@ -433,3 +433,57 @@ TABS.zurron=function(){ var z=zEstado(), done=store.get('fin1',false), s=done?zS
     (z?'<p class="note">Lo que metiste al salir de Bolsón Cerrado:</p><div class="bag">'+z.items.map(function(k){return '<div class="item"><div class="box">'+mjIcon(ZICO[k])+'</div>'+ZNOM[k]+'</div>';}).join('')+'</div>'
       :'<div class="empty">Todavía no has hecho el zurrón. Se hace al salir de Bolsón Cerrado.</div>')+
     '<p class="note">Objetos del camino:</p><div class="bag">'+ITEMS.map(function(it,i){var o=i<=reached;return '<div class="item'+(o?'':' no')+'"><div class="box">'+ICON[it.i]+'</div>'+(o?it.n:'¿?')+'</div>';}).join('')+'</div>'; };
+
+/* ================= RECOMPENSAS DEL ACTO I (personalización) =================
+   Se ganan al llegar a Cricava según el zurrón. Se guardan en loc.equipo_ganado / loc.equipo_puesto. */
+var EQ={
+  capa:{n:'Capa de viajero',por:'Zurrón ligero',w:24,dx:-24,dy:14},
+  sombrero:{n:'Sombrero de ala ancha',por:'Zurrón bien preparado',w:30,dx:-14,dy:-3},
+  panuelo_sam:{n:'Pañuelo de Sam',por:'Hiciste caso a Sam',w:14,dx:-6,dy:18},
+  cazo:{n:'Cazo abollado',por:'Discutiste con Sam',w:9,dx:-15,dy:30},
+  broche:{n:'Broche del mapa',por:'Cogiste el mapa de Bilbo',w:8,dx:0,dy:27},
+  panuelo_rojo:{n:'Pañuelo rojo de Bilbo',por:'Cogiste los pañuelos de Bilbo',w:10,dx:-2,dy:42},
+  cantimplora_cinto:{n:'Cantimplora al cinto',por:'Cogiste la cantimplora de Bilbo',w:12,dx:-10,dy:40}
+};
+function eqGanado(){
+  var z=zEstado(); if(!z||!store.get('fin1',false)) return [];
+  var g=[];
+  if(z.flags.ligero) g.push('capa'); else if(z.flags.pesado) g.push('sombrero');
+  if(z.flags.samFeliz) g.push('panuelo_sam'); if(z.flags.samEnfadado) g.push('cazo');
+  if(z.items.indexOf('mapa')>=0) g.push('broche'); if(z.items.indexOf('panuelo')>=0) g.push('panuelo_rojo'); if(z.items.indexOf('cantimplora')>=0) g.push('cantimplora_cinto');
+  return g;
+}
+function eqPuesto(){ var p=store.get('equipo_puesto',null); return p==null?eqGanado():p.filter(function(k){return eqGanado().indexOf(k)>=0;}); }
+var EQIMG={}; (function(){ if(!M.equipo) return; Object.keys(M.equipo).forEach(function(k){ var i=new Image(); i.src=M.equipo[k]; EQIMG[k]=i; }); })();
+/* cabeza de cada fotograma del ciclo, sacada de los píxeles */
+var ANCLA=null;
+function anclas(){
+  if(ANCLA||!WALK||!WALK.complete) return ANCLA;
+  try{
+    var n=M.andar.n, fw=M.andar.fw, c=document.createElement('canvas'); c.width=WALK.width; c.height=WALK.height;
+    var x=c.getContext('2d'); x.drawImage(WALK,0,0); var d=x.getImageData(0,0,c.width,c.height).data; ANCLA=[];
+    for(var f=0;f<n;f++){ var x0=Math.round(f*fw), x1=Math.round((f+1)*fw), top=-1, sx=0, cnt=0;
+      for(var y=0;y<c.height&&top<0;y++) for(var xx=x0;xx<x1;xx++) if(d[(y*c.width+xx)*4+3]>128){ top=y; break; }
+      for(var y2=top;y2<top+14;y2++) for(var x2=x0;x2<x1;x2++) if(d[(y2*c.width+x2)*4+3]>128){ sx+=x2-x0; cnt++; }
+      ANCLA.push({top:top,cx:cnt?sx/cnt:fw/2}); }
+  }catch(e){ ANCLA=null; }
+  return ANCLA;
+}
+function dibujaEquipo(ctx,x,y,f,detras){
+  var A=anclas(); if(!A) return; var a=A[f%A.length];
+  eqPuesto().forEach(function(k){ var e=EQ[k], im=EQIMG[k]; if(!e||!im||!im.complete||!!e.detras!==detras) return;
+    var w=e.w, h=Math.round(im.height*w/im.width);
+    ctx.drawImage(im,Math.round(x+a.cx+e.dx),Math.round(y+a.top+e.dy),w,h); });
+}
+/* zurrón: lo ganado, para ponérselo o quitárselo */
+var _zurronTab=TABS.zurron;
+TABS.zurron=function(){
+  var g=eqGanado(), p=eqPuesto();
+  var vest=g.length?'<p class="note">Lo que has ganado en el Acto I. Toca para ponértelo o quitártelo:</p><div class="bag">'+g.map(function(k){var on=p.indexOf(k)>=0;
+      return '<button type="button" class="item eqb" data-eq="'+k+'" style="all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:.78rem;font-weight:700"><div class="box" style="'+(on?'border-color:#4f6b2e;box-shadow:0 0 0 3px #8fb85a':'opacity:.6')+'"><img src="'+M.equipo[k]+'" alt="" style="width:70%;height:70%;object-fit:contain;image-rendering:pixelated"></div>'+EQ[k].n+'<span style="font-weight:500;color:#6a4f2c">'+(on?'Puesto':'Guardado')+'</span></button>';}).join('')+'</div>'
+    :(zEstado()?'<div class="empty">Las recompensas del Acto I se ganan al llegar a Cricava andando. Dependen de cómo hiciste el zurrón.</div>':'');
+  return _zurronTab().replace('<p class="note">Lo que metiste','<h2 style="font-size:1.1rem;margin-top:6px">Tu equipo</h2>'+vest+'<p class="note">Lo que metiste');
+};
+document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.eqb'); if(!b) return;
+  var k=b.dataset.eq, p=eqPuesto().slice(), i=p.indexOf(k); if(i>=0) p.splice(i,1); else p.push(k);
+  store.set('equipo_puesto',p); openTab('zurron'); });
