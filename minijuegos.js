@@ -551,7 +551,7 @@ function instrucciones(el,alAcabar){
   '.pro .tap b{font-size:1.5rem;letter-spacing:.04em;text-shadow:0 2px 6px #000}'+
   '.pro .tap small{font-family:var(--body);color:#c9bc9c;font-size:.9rem}'+
   '@keyframes latido{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}'+
-  '.pro .casa{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;image-rendering:pixelated;filter:brightness(.8)}'+
+  '.pro .casa{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;opacity:1;image-rendering:pixelated}'+
   '.pro .ins{position:absolute;left:14px;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));padding:18px 18px 16px;color:#2b1d0e;display:flex;flex-direction:column;gap:10px;border:24px solid transparent;border-image:var(--papiro) 72 fill / 24px stretch;filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))}'+
   '.pro .ins.in{animation:up .4s ease-out}'+
   '.pro .ins h2{font-family:var(--title);font-size:1.3rem;margin:0}.pro .ins p{margin:0;font-size:1rem;line-height:1.45}'+
