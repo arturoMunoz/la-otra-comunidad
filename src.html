@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
 <style>
-/* Versión 3 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
+/* Versión 4 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
 :root{
   --paper:#f6efdc; --paper2:#ece2c8; --ink:#2b2418; --muted:#6d6250; --line:#d6ccb4;
   --moss:#4f6b2e; --amber:#e2a54a; --amber-ink:#8a4f0c; --glass:rgba(20,16,10,.74); --glass-ink:#f6edd6;
@@ -54,7 +54,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 .btns button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
 .info{margin:0;text-align:center;font-size:.78rem;color:#efe4c8;text-shadow:0 1px 2px #000}
 
-.login{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(to bottom,rgba(20,17,11,0) 25%,rgba(20,17,11,.85) 52%,#14110b 70%);color:#f3ead2;overflow:auto}
+.login{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(to bottom,rgba(20,17,11,0) 52%,rgba(20,17,11,.8) 62%,#14110b 72%);color:#f3ead2;overflow:auto}
 .login .in{padding:0 max(20px,env(safe-area-inset-left,0px)) calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
 .logo{margin:0 -8px;line-height:0}
 .logo img{width:100%;height:auto;display:block}
@@ -143,7 +143,7 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
       <p class="tl">Detrás de Frodo, paso a paso, hasta el Monte del Destino.</p>
       <div class="form" id="authBox"></div>
       <p class="err" id="err" role="alert"></p>
-      <p class="hint" id="hint">Es la misma cuenta que la de Stadada: si ya tienes una, entra con ella.</p>
+      
     </div>
   </section>
 
@@ -221,7 +221,7 @@ function rpc(fn,body){
 function authErr(e){ var m=String(e&&e.message||e||'');
   if(/invalid login/i.test(m)) return 'Correo o contraseña incorrectos.';
   if(/not confirmed/i.test(m)) return 'Aún no has confirmado tu correo. Busca el email de confirmación (mira también en spam).';
-  if(/already registered|already been registered|exists/i.test(m)) return 'Ya hay una cuenta con ese correo (puede ser la de Stadada). Entra con ella.';
+  if(/already registered|already been registered|exists/i.test(m)) return 'Ya hay una cuenta con ese correo. Entra con ella.';
   if(/password/i.test(m)&&/6|short|characters/i.test(m)) return 'La contraseña tiene que tener al menos 6 caracteres.';
   if(/valid email|invalid.*email/i.test(m)) return 'Ese correo no parece válido.';
   if(/rate limit|too many/i.test(m)) return 'Demasiados intentos seguidos. Espera unos minutos.';
@@ -268,7 +268,7 @@ var cv=$('c'),ctx=cv.getContext('2d'),W=200,H=420,OY=0;
 function fit(){
   var r=app.getBoundingClientRect(); W=200; H=Math.max(242,Math.round(W*r.height/Math.max(1,r.width)));
   cv.width=W; cv.height=H; ctx.imageSmoothingEnabled=false;
-  OY=Math.round(Math.min(H-242, Math.max(0, H*0.66-228)));
+  OY=Math.round(Math.min(H-242, Math.max(0, H*(app.classList.contains('out')?0.5:0.66)-228)));
 }
 addEventListener('resize',fit); fit();
 function skyColor(im){
@@ -364,9 +364,9 @@ function afterLogin(){
 }
 function logout(){
   saveAuth(null); store.del('km'); store.del('demoMe'); me=null; km=0; target=0; people=[]; shown=new Set(); pending=[]; curT=0; reached=0;
-  if(!sheet.hidden) closeSheet(); $('login').hidden=false; app.classList.add('out'); view('in');
+  if(!sheet.hidden) closeSheet(); $('login').hidden=false; app.classList.add('out'); fit(); view('in');
 }
-function enter(){ $('login').hidden=true; app.classList.remove('out'); start(); }
+function enter(){ $('login').hidden=true; app.classList.remove('out'); fit(); start(); }
 
 /* ---------- arranque ---------- */
 Promise.all([
@@ -421,7 +421,7 @@ function drawTramo(i,alpha,o){
   ctx.globalAlpha=1;
 }
 function tint(h){
-  if(h==='noche'){ctx.fillStyle='rgba(10,18,55,.55)';ctx.fillRect(0,0,W,H);}
+  if(h==='noche'){ctx.fillStyle='rgba(18,30,80,.36)';ctx.fillRect(0,0,W,H);}
   else if(h==='tarde'){ctx.fillStyle='rgba(230,120,60,.16)';ctx.fillRect(0,0,W,H);}
   if(weather==='lluvia'){ctx.fillStyle='rgba(70,80,95,.28)';ctx.fillRect(0,0,W,H);}
   if(weather==='calor'&&h!=='noche'){ctx.fillStyle='rgba(255,200,90,.13)';ctx.fillRect(0,0,W,H);}
@@ -442,7 +442,7 @@ function rain(dt){
   drops.forEach(function(d){d.y+=d.s*dt*.12; d.x-=dt*.03; if(d.y>H){d.y=-6;d.x=Math.random()*W;} ctx.moveTo(d.x,d.y); ctx.lineTo(d.x-1.5,d.y+6);});
   ctx.stroke();
 }
-function stars(h){ if(h!=='noche') return; ctx.fillStyle='rgba(232,236,255,.9)'; for(var i=0;i<45;i++) ctx.fillRect((i*97)%W,(i*53)%Math.max(60,OY+90),1,1); }
+function stars(h){ if(h!=='noche') return; ctx.fillStyle='rgba(232,236,255,.9)'; for(var i=0;i<45;i++) ctx.fillRect((i*97)%W,(i*53)%Math.max(30,OY+40),1,1); }
 function loop(now){
   var dt=Math.min(50,now-last); last=now; var h=hourNow();
   off+=dt*(reduce?0.01:0.035);
