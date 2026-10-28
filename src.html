@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
 <style>
-/* Versión 11 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
+/* Versión 13 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
 :root{
   --paper:#ecd7a6; --paper2:#dcc089; --ink:#2b1d0e; --muted:#6a4f2c; --line:#c4a46c;
   --moss:#4f6b2e; --amber:#e2a54a; --amber-ink:#8a4f0c; --glass:rgba(20,16,10,.74); --glass-ink:#f6edd6;
@@ -490,7 +490,7 @@ function loop(now){
   off+=dt*(reduce?0.01:0.035);
   if(me && target>km+0.001 && $('sheet').hidden){ off+=dt*0.04; setKm(km+Math.min(target-km, dt*0.0015)); }
   if(fade<1&&prevT>=0){drawTramo(prevT,1,off);drawTramo(curT,fade,off);fade=Math.min(1,fade+dt/700);} else drawTramo(curT,1,off);
-  tint(h); stars(h); walker(now,h); rain(dt);
+  tint(h); stars(h); if(typeof dibujaNPC==='function') dibujaNPC(ctx,now,h); walker(now,h); rain(dt);
   requestAnimationFrame(loop);
 }
 

@@ -744,13 +744,28 @@
 "prologo": {
 "video": "assets/prologo/prologo.mp4"
 },
-"ilustraciones": {
-"forja": "assets/prologo/forja.webp",
-"anillo": "assets/prologo/anillo.webp",
-"guerra": "assets/prologo/guerra.webp",
-"caido": "assets/prologo/caido.webp",
-"rio": "assets/prologo/rio.webp",
-"puerta": "assets/prologo/puerta.webp",
-"camino": "assets/prologo/camino.webp"
+"ilustraciones": [
+"assets/prologo/forja.webp",
+"assets/prologo/anillo.webp",
+"assets/prologo/guerra.webp",
+"assets/prologo/caido.webp",
+"assets/prologo/rio.webp",
+"assets/prologo/cueva.webp",
+"assets/prologo/puerta.webp",
+"assets/prologo/camino.webp"
+],
+"npc": {
+"mago": [
+"assets/pj/mago_normal.webp",
+"assets/pj/mago_lluvia.webp",
+"assets/pj/mago_noche.webp",
+"assets/pj/mago_calor.webp"
+],
+"sombrero_azul": [
+"assets/pj/sombrero_azul_normal.webp",
+"assets/pj/sombrero_azul_lluvia.webp",
+"assets/pj/sombrero_azul_noche.webp",
+"assets/pj/sombrero_azul_calor.webp"
+]
 }
 }

@@ -520,3 +520,20 @@ function verPrologo(alAcabar){
 /* volver a verlo desde el Libro Rojo */
 (function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('</ol>','</ol><button class="ghost" type="button" id="verPro">Volver a ver el prólogo</button>'); }; })();
 document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verPro'){ closeSheet(); verPrologo(); } });
+
+/* ================= PERSONAJES DEL CAMINO (dibujos de Henar) =================
+   Aparecen en la escena en su tramo, con el mismo estado de tiempo que el hobbit. */
+var NPC_TRAMO={0:'mago',7:'sombrero_azul'};
+var NPCIMG={}; (function(){ if(!M.npc) return; Object.keys(M.npc).forEach(function(k){ NPCIMG[k]=M.npc[k].map(function(s){ var i=new Image(); i.src=s; return i; }); }); })();
+function dibujaNPC(ctx,t,h){
+  var k=NPC_TRAMO[curT]; if(!k||!NPCIMG[k]) return;
+  var idx=h==='noche'?2:weather==='lluvia'?1:weather==='calor'?3:0, im=NPCIMG[k][idx]; if(!im||!im.complete) return;
+  var x=Math.round(W*0.58), base=OY+228, bob=Math.round(Math.sin(t/600));
+  ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x+im.width/2,base,im.width*.36,3,0,0,Math.PI*2); ctx.fill();
+  ctx.drawImage(im,x,base-im.height+bob);
+}
+/* Libro Rojo: «Antes del viaje», las ilustraciones del prólogo */
+(function(){ var _lib=TABS.libro; TABS.libro=function(){
+  var g=(M.ilustraciones||[]).length?'<h2 style="font-size:1.1rem;margin-top:6px">Antes del viaje</h2><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+
+    M.ilustraciones.map(function(s){return '<img src="'+s+'" alt="" style="width:100%;aspect-ratio:9/16;object-fit:cover;border:2px solid #2b1d0e;border-radius:6px;image-rendering:pixelated">';}).join('')+'</div>':'';
+  return _lib().replace('<button class="ghost" type="button" id="verPro">',g+'<button class="ghost" type="button" id="verPro">'); }; })();
