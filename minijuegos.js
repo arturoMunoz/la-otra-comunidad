@@ -315,3 +315,121 @@ function jugarBalsa(el,cerrar){
 MINI.arbol={titulo:'Quieto bajo el árbol', tramo:2, jugar:jugarArbol};
 MINI.setas={titulo:'Setas a escondidas', tramo:5, jugar:jugarSetas};
 MINI.balsa={titulo:'La balsa', tramo:7, jugar:jugarBalsa};
+
+/* ================= DECISIONES DEL ZURRÓN (sustituye al minijuego del tramo 1) =================
+   Árbol de 3 decisiones en Bolsón Cerrado. Lo que eliges se guarda (loc.zurron) y se comprueba
+   en 5 momentos del acto. Al llegar a Cricava, el final del acto depende de esos momentos. */
+var ZDEC={
+  inicio:{t:'Esta noche os vais de Bolsón Cerrado',
+    p:'Gandalf no ha vuelto y no se puede esperar más. Queda hacer el zurrón. ¿Cómo lo haces?',
+    o:[{l:'Ligero, para ir deprisa',d:'Una sola cosa grande, y a correr.',set:{ligero:1},go:'ligero'},
+       {l:'Bien preparado, aunque pese',d:'Mejor que sobre a que falte.',set:{pesado:1},go:'pesado'},
+       {l:'Lo que diga Sam',d:'Sam lleva días preparándolo todo.',go:'sam'}]},
+  ligero:{t:'Solo cabe una cosa grande',p:'El zurrón va casi vacío. ¿Qué metes?',
+    o:[{l:'La manta de lana',d:'Las noches de otoño son frías.',add:['manta'],go:'bilbo'},
+       {l:'El farol de viaje',d:'Para no perderse a oscuras.',add:['farol'],go:'bilbo'},
+       {l:'Un buen rollo de cuerda',d:'Una cuerda siempre hace falta.',add:['cuerda'],go:'bilbo'}]},
+  pesado:{t:'Toca elegir qué lote llevas',p:'Cabe mucho, pero el zurrón pesa como un saco de patatas.',
+    o:[{l:'Cocina',d:'Sartén, pan y queso.',add:['sarten','pan'],go:'bilbo'},
+       {l:'Abrigo',d:'Manta y capa de lluvia.',add:['manta','capa'],go:'bilbo'},
+       {l:'Herramientas',d:'Cuerda y farol.',add:['cuerda','farol'],go:'bilbo'}]},
+  sam:{t:'Sam ha llenado el zurrón de cacharros',p:'Sartén, cazos, sal, una caja de cerillas… «Por si acaso, señor Frodo».',
+    o:[{l:'Dejarle hacer',d:'Sam sabe lo que hace.',add:['sarten','pan'],set:{samFeliz:1},go:'bilbo'},
+       {l:'Sacar los cazos y meter la manta',d:'A Sam no le va a hacer gracia.',add:['manta'],set:{samEnfadado:1},go:'bilbo'},
+       {l:'Sacar los cazos y meter el farol',d:'A Sam no le va a hacer gracia.',add:['farol'],set:{samEnfadado:1},go:'bilbo'}]},
+  bilbo:{t:'Bilbo dejó algo en la repisa',p:'Antes de cerrar la puerta redonda ves tres cosas que Bilbo no se llevó. Solo te da tiempo a coger una.',
+    o:[{l:'Su mapa de la Comarca',d:'Lleno de notas a lápiz.',add:['mapa'],go:null},
+       {l:'Sus pañuelos',d:'Bilbo nunca salía sin ellos.',add:['panuelo'],go:null},
+       {l:'Su cantimplora',d:'Vieja, pero no pierde agua.',add:['cantimplora'],go:null}]}
+};
+var ZNOM={manta:'Manta',farol:'Farol',cuerda:'Cuerda',sarten:'Sartén',pan:'Pan y queso',capa:'Capa de lluvia',mapa:'Mapa de Bilbo',panuelo:'Pañuelos de Bilbo',cantimplora:'Cantimplora'};
+var ZICO={manta:'manta',farol:'farol',cuerda:'cuerda',sarten:'cucharas',pan:'pan',capa:'paraguas',mapa:'mapa',panuelo:'libraco',cantimplora:'cantimplora'};
+/* momentos del acto: tramo → qué se comprueba */
+var ZMOM={
+  3:{need:['manta'],ok:'Dormís al raso con los elfos. Gracias a la manta, pasas la noche caliente.',ko:'Dormís al raso con los elfos. Sin manta, tiritas hasta el amanecer.'},
+  4:{need:['mapa'],ok:'Con el mapa de Bilbo encontráis los pasos buenos de las zanjas.',ko:'Sin mapa, os metéis en todas las zarzas del atajo.'},
+  5:{need:['sarten'],ok:'Con la sartén de Sam, las setas del granjero acaban en una cena de reyes.',ko:'Tenéis setas, pero nada en qué cocinarlas.'},
+  6:{need:['farol'],ok:'Cae la niebla en la calzada y el farol os mantiene en el camino.',ko:'Cae la niebla y no veis ni vuestros pies.'},
+  7:{need:['cuerda'],ok:'Con tu cuerda amarráis bien la balsa y cruzáis sin sustos.',ko:'La balsa da bandazos: nadie trajo cuerda para atarla.'}
+};
+function zEstado(){ return store.get('zurron',null); }
+function zTiene(k){ var z=zEstado(); return !!(z&&z.items.indexOf(k)>=0); }
+function zMomentoHtml(i){
+  var m=ZMOM[i], z=zEstado(); if(!m||!z) return '';
+  var ok=m.need.some(zTiene);
+  return '<div class="bubble">'+mjIcon(ZICO[m.need[0]])+'<div><b>'+(ok?'Tu zurrón te ha salvado':'Te faltó algo en el zurrón')+'</b><i>'+(ok?m.ok:m.ko)+'</i></div></div>';
+}
+function zPuntos(){
+  var z=zEstado(); if(!z) return {p:0,tot:5,acier:[]};
+  var acier=Object.keys(ZMOM).filter(function(i){ return ZMOM[i].need.some(zTiene); });
+  var p=acier.length+(z.flags.samFeliz?1:0)-(z.flags.samEnfadado?1:0)-(z.flags.pesado?1:0)+(z.flags.ligero?1:0);
+  return {p:Math.max(0,p),acier:acier};
+}
+function zSello(){ var p=zPuntos().p; return p>=4?{n:'oro',t:'Sello de oro del Acto I',c:'#d4a531'}:p>=2?{n:'plata',t:'Sello de plata del Acto I',c:'#b8bfc6'}:{n:'bronce',t:'Sello de bronce del Acto I',c:'#b07a43'}; }
+function zTitulo(){ var z=zEstado()||{flags:{},items:[]};
+  if(z.flags.samFeliz) return 'El que hizo caso a Sam';
+  if(z.flags.samEnfadado) return 'El que discutió con Sam';
+  if(z.flags.ligero) return 'Pies ligeros';
+  return 'El previsor'; }
+
+function jugarDecisiones(el,cerrar){
+  var path=[], items=[], flags={};
+  function pinta(id){
+    var n=ZDEC[id];
+    el.innerHTML=mjCabecera('Hacer el zurrón')+'<div class="intro"><span class="eyebrow">Decisión '+(path.length+1)+' de 3</span><h2 style="font-size:1.2rem">'+n.t+'</h2><p>'+n.p+'</p>'+
+      (items.length?'<div class="got">'+items.map(function(k){return mjIcon(ZICO[k]);}).join('')+'</div>':'')+
+      '<div class="opts">'+n.o.map(function(o,i){return '<button class="opt" type="button" data-i="'+i+'"><b>'+o.l+'</b><span>'+o.d+'</span></button>';}).join('')+'</div></div>';
+    el.querySelector('.x').onclick=cerrar;
+    el.querySelectorAll('.opt').forEach(function(b){ b.onclick=function(){
+      var o=n.o[+b.dataset.i]; path.push(id+':'+b.dataset.i);
+      (o.add||[]).forEach(function(k){ if(items.indexOf(k)<0) items.push(k); });
+      Object.keys(o.set||{}).forEach(function(k){ flags[k]=o.set[k]; });
+      if(o.go) pinta(o.go); else fin();
+    }; });
+  }
+  function fin(){
+    store.set('zurron',{items:items,flags:flags,path:path});
+    el.innerHTML=mjCabecera('Hacer el zurrón')+'<div class="end"><h2>Zurrón cerrado</h2><div class="got">'+items.map(function(k){return '<div style="display:flex;flex-direction:column;align-items:center;font-weight:700;font-size:.8rem">'+mjIcon(ZICO[k])+ZNOM[k]+'</div>';}).join('')+'</div>'+
+      '<p>'+(flags.samFeliz?'Sam va silbando: es su zurrón y está orgulloso.':flags.samEnfadado?'Sam refunfuña por lo bajo por sus cazos.':flags.pesado?'Pesa como un saco de patatas, pero no falta de nada.':'Va ligero: se camina mejor así.')+'</p>'+
+      '<p class="note">Lo que llevas se pondrá a prueba durante el camino. Lo que te dé el final del acto, en Cricava, depende de ello.</p>'+
+      '<button class="go" type="button" id="mjOk">Salir por la puerta redonda</button></div>';
+    el.querySelector('.x').onclick=cerrar; el.querySelector('#mjOk').onclick=cerrar;
+  }
+  if(zEstado()){
+    var z=zEstado();
+    el.innerHTML=mjCabecera('Hacer el zurrón')+'<div class="end"><h2>Tu zurrón ya está hecho</h2><div class="got">'+z.items.map(function(k){return mjIcon(ZICO[k]);}).join('')+'</div><p class="note">Las decisiones del zurrón solo se toman una vez por viaje.</p>'+
+      (DEMO?'<button class="ghost" type="button" id="mjR">Rehacerlo (solo en la prueba)</button>':'')+'<button class="go" type="button" id="mjOk">Volver</button></div>';
+    el.querySelector('.x').onclick=cerrar; el.querySelector('#mjOk').onclick=cerrar;
+    var r=el.querySelector('#mjR'); if(r) r.onclick=function(){ store.del('zurron'); store.del('fin1'); pinta('inicio'); };
+    return;
+  }
+  pinta('inicio');
+}
+(function(){ var c=document.createElement('style'); c.textContent=
+  '.mj .opts{display:flex;flex-direction:column;gap:8px}'+
+  '.mj .opt{text-align:left;background:rgba(255,244,214,.55);border:2px solid #2b1d0e;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;color:#2b1d0e;box-shadow:0 3px 0 rgba(0,0,0,.25)}'+
+  '.mj .opt b{font-size:1rem}.mj .opt span{font-weight:500;font-size:.88rem;color:#6a4f2c}'+
+  '.mj .opt:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25)}'+
+  '.sello{width:92px;height:92px;border-radius:50%;margin:0 auto;display:grid;place-items:center;border:4px solid #2b1d0e;box-shadow:inset 0 0 0 6px rgba(255,255,255,.35),0 4px 0 rgba(0,0,0,.3);font-family:var(--title);font-weight:700;font-size:1.6rem;color:#2b1d0e}';
+  document.head.appendChild(c); })();
+MINI.zurron={titulo:'Hacer el zurrón', tramo:0, jugar:jugarDecisiones};
+
+/* final del acto I al llegar a Cricava */
+function finActo(){
+  if(store.get('fin1',false)) return false;
+  store.set('fin1',true);
+  var z=zEstado(), s=zSello(), pz=zPuntos();
+  var lineas=Object.keys(ZMOM).map(function(i){ var ok=pz.acier.indexOf(i)>=0; return '<li>'+(ok?'✔':'✘')+' '+T[i].name+'</li>'; }).join('');
+  openSheet('<span class="eyebrow">Cricava · 115 km</span><h2>Fin del Acto I</h2>'+
+    '<div class="sello" style="background:'+s.c+'">I</div><p style="text-align:center"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>'+
+    (z?'<p>Así os ha ido con lo que llevabas:</p><ul class="note" style="margin:0;padding-left:1.2em">'+lineas+'</ul>':'<p class="note">No hiciste el zurrón en Bolsón Cerrado, así que el viaje fue a la buena de Dios.</p>')+
+    '<p class="note">El sello y el título se quedan en tu Zurrón. Qué más da cada sello está por decidir.</p>'+
+    '<button class="primary" id="shOk" type="button">Seguir hacia el Bosque Viejo</button>');
+  $('shOk').onclick=closeSheet; return true;
+}
+/* el zurrón muestra lo que llevas y el sello */
+TABS.zurron=function(){ var z=zEstado(), done=store.get('fin1',false), s=done?zSello():null;
+  return '<h2>Zurrón</h2>'+(s?'<div class="sello" style="background:'+s.c+'">I</div><p style="text-align:center;margin:0"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>':'')+
+    (z?'<p class="note">Lo que metiste al salir de Bolsón Cerrado:</p><div class="bag">'+z.items.map(function(k){return '<div class="item"><div class="box">'+mjIcon(ZICO[k])+'</div>'+ZNOM[k]+'</div>';}).join('')+'</div>'
+      :'<div class="empty">Todavía no has hecho el zurrón. Se hace al salir de Bolsón Cerrado.</div>')+
+    '<p class="note">Objetos del camino:</p><div class="bag">'+ITEMS.map(function(it,i){var o=i<=reached;return '<div class="item'+(o?'':' no')+'"><div class="box">'+ICON[it.i]+'</div>'+(o?it.n:'¿?')+'</div>';}).join('')+'</div>'; };
