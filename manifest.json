@@ -165,5 +165,21 @@
 "assets/pj/vecino_4.webp"
 ],
 "faces": "assets/pj/caras.webp",
-"logo": "assets/logo.webp"
+"logo": "assets/logo.webp",
+"mj": {
+"pan": "assets/mj/zurron_pan.webp",
+"manta": "assets/mj/zurron_manta.webp",
+"cuerda": "assets/mj/zurron_cuerda.webp",
+"cantimplora": "assets/mj/zurron_cantimplora.webp",
+"queso": "assets/mj/zurron_queso.webp",
+"mapa": "assets/mj/zurron_mapa.webp",
+"farol": "assets/mj/zurron_farol.webp",
+"pipa": "assets/mj/zurron_pipa.webp",
+"sillon": "assets/mj/zurron_sillon.webp",
+"reloj": "assets/mj/zurron_reloj.webp",
+"cucharas": "assets/mj/zurron_cucharas.webp",
+"paraguas": "assets/mj/zurron_paraguas.webp",
+"jarron": "assets/mj/zurron_jarron.webp",
+"libraco": "assets/mj/zurron_libraco.webp"
+}
 }

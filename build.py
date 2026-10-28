@@ -24,6 +24,7 @@ if '--demo' in sys.argv:
     m['arturo'] = [uri(p) for p in m['arturo']]
     m['vecinos'] = [uri(p) for p in m['vecinos']]
     m['faces'] = uri(m['faces']); m['logo'] = uri(m['logo'])
+    m['mj'] = {k: uri(v) for k, v in m.get('mj', {}).items()}
     html = fill(src, m, True)
     head = re.search(r'<head>(.*?)</head>', html, re.S).group(1)
     head = re.sub(r'<meta[^>]*>\n?|<link rel="apple-touch-icon"[^>]*>\n?', '', head)

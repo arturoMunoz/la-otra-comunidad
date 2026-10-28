@@ -28,7 +28,7 @@ var ZURRON_ITEMS=[
   {k:'jarron',n:'Jarrón',ok:false,q:'El jarrón de la tía abuela se rompería en la primera zanja.'},
   {k:'libraco',n:'Libro de cuentas',ok:false,q:'Las cuentas de la casa pueden esperar a la vuelta.'}
 ];
-function mjIcon(it){ return it.icon ? ICON[it.k] : MJ_SVG[it.k]; }
+function mjIcon(it){ var k=it.k||it; if(M.mj&&M.mj[k]) return '<img src="'+M.mj[k]+'" alt="">'; return ICON[k]||MJ_SVG[k]; }
 
 /* pantalla común */
 (function(){
@@ -44,13 +44,13 @@ function mjIcon(it){ return it.icon ? ICON[it.k] : MJ_SVG[it.k]; }
   '.mj .intro p{margin:0;font-size:1.05rem;line-height:1.45}'+
   '.mj .ex{display:flex;gap:10px;flex-wrap:wrap}'+
   '.mj .ex div{display:flex;align-items:center;gap:6px;background:#f8f1dc;border:2px solid #2b2418;border-radius:10px;padding:6px 10px;font-weight:700;font-size:.9rem}'+
-  '.mj .ex svg{width:28px;height:28px}'+
+  '.mj .ex svg,.mj .ex img{width:30px;height:30px;object-fit:contain;image-rendering:pixelated}'+
   '.mj .ex .no{opacity:.75;border-style:dashed}'+
   '.mj .go{background:#4f6b2e;color:#fbf6e8;border:0;border-radius:10px;padding:14px;font-size:1.05rem}'+
   '.mj .field{position:relative;flex:1;min-height:260px;border:3px solid #2b2418;border-radius:12px;overflow:hidden;background:#a8763a;image-rendering:pixelated}'+
   '.mj .table{position:absolute;left:0;right:0;top:56%;height:26%;box-shadow:0 -6px 12px rgba(0,0,0,.25);background:repeating-linear-gradient(90deg,#8a5a2a 0 46px,#7a4e24 46px 48px);border-top:4px solid #5a3e1e;border-bottom:4px solid #5a3e1e}'+
   '.mj .it{position:absolute;top:calc(56% + 6px);width:84px;margin-left:-42px;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;color:#fbf6e8;font-weight:800;font-size:.78rem;text-shadow:0 1px 2px #000;padding:4px 0;touch-action:manipulation}'+
-  '.mj .it svg{width:58px;height:58px;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}'+
+  '.mj .it svg,.mj .it img{width:64px;height:64px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}'+
   '.mj .it.fly{transition:transform .35s ease-in,opacity .35s;transform:translateY(140px) scale(.4)!important;opacity:0}'+
   '.mj .bag{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px}'+
   '.mj .bag svg{width:86px;height:70px}'+
@@ -64,7 +64,7 @@ function mjIcon(it){ return it.icon ? ICON[it.k] : MJ_SVG[it.k]; }
   '.mj .stars{font-size:2.6rem;letter-spacing:.15em;color:#c9a03a}'+
   '.mj .off{color:#d6ccb4}'+
   '.mj .got{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}'+
-  '.mj .got svg{width:34px;height:34px}'+
+  '.mj .got svg,.mj .got img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated}'+
   '.mj .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}'+
   '.mj .ghost{background:none;border:2px solid #2b2418;color:#2b2418;border-radius:10px;padding:12px;font-size:1rem}'+
   '.mini-go{background:none;border:2px solid #4f6b2e;color:#4f6b2e;border-radius:10px;padding:11px;font-size:1rem}';
@@ -93,7 +93,7 @@ function jugarZurron(el,cerrar){
   function intro(){
     el.innerHTML='<div class="hd"><h2>Hacer el zurrón</h2><button class="x" type="button" aria-label="Cerrar">×</button></div>'+
       '<div class="intro"><p>Frodo se va mañana y el zurrón solo tiene <b>'+CAP+' huecos</b>. Por la mesa van pasando cosas de Bolsón Cerrado: <b>toca las que sirven para el camino</b> y deja pasar las demás.</p>'+
-      '<div class="ex"><div>'+MJ_SVG.pan+'Pan</div><div>'+MJ_SVG.cuerda+'Cuerda</div><div>'+ICON.farol+'Farol</div><div class="no">'+MJ_SVG.sillon+'Sillón</div><div class="no">'+MJ_SVG.reloj+'Reloj</div></div>'+
+      '<div class="ex"><div>'+mjIcon('pan')+'Pan</div><div>'+mjIcon('cuerda')+'Cuerda</div><div>'+mjIcon('farol')+'Farol</div><div class="no">'+mjIcon('sillon')+'Sillón</div><div class="no">'+mjIcon('reloj')+'Reloj</div></div>'+
       '<p class="note">Acierto +1 · cosa inútil −1 · '+DUR+' segundos. '+(mjBest('zurron')?'Tu mejor resultado: '+mjStars(mjBest('zurron')):'')+'</p>'+
       '<button class="go" type="button" id="mjGo">Empezar</button></div>';
     el.querySelector('.x').onclick=cerrar; el.querySelector('#mjGo').onclick=jugar;
