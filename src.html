@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="La Otra Comunidad">
 <meta name="theme-color" content="#14110b">
 <link rel="apple-touch-icon" href="assets/icono.png">
+<link rel="manifest" href="manifest.webmanifest">
 <title>La Otra Comunidad</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
@@ -624,6 +625,7 @@ function openTab(tab){
 }
 document.querySelectorAll('.btns button').forEach(function(b){ b.onclick=function(){ openTab(b.dataset.tab); }; });
 __MINI__
+if('serviceWorker' in navigator && !DEMO && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
 </script>
 </body>
 </html>

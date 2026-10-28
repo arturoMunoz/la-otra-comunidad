@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="La Otra Comunidad">
 <meta name="theme-color" content="#14110b">
 <link rel="apple-touch-icon" href="assets/icono.png">
+<link rel="manifest" href="manifest.webmanifest">
 <title>La Otra Comunidad</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
@@ -1242,6 +1243,7 @@ function dibujaNPC(ctx,t,h){
     M.ilustraciones.map(function(s){return '<img src="'+s+'" alt="" style="width:100%;aspect-ratio:9/16;object-fit:cover;border:2px solid #2b1d0e;border-radius:6px;image-rendering:pixelated">';}).join('')+'</div>':'';
   return _lib().replace('<button class="ghost" type="button" id="verPro">',g+'<button class="ghost" type="button" id="verPro">'); }; })();
 
+if('serviceWorker' in navigator && !DEMO && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
 </script>
 </body>
 </html>
