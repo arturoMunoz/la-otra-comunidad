@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" media="print" onload="this.media='all'">
 <style>
-/* Versión 2 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
+/* Versión 3 · pantalla completa: la escena es el juego; arriba dónde estás, abajo pasos y tres botones; todo lo demás en hojas */
 :root{
   --paper:#f6efdc; --paper2:#ece2c8; --ink:#2b2418; --muted:#6d6250; --line:#d6ccb4;
   --moss:#4f6b2e; --amber:#e2a54a; --amber-ink:#8a4f0c; --glass:rgba(20,16,10,.74); --glass-ink:#f6edd6;
@@ -60,7 +60,16 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 .logo img{width:100%;height:auto;display:block}
 .tl{margin:0;color:#c9bc9c;text-align:center}
 .lab{font-size:.95rem;color:#c9bc9c}
-.code{width:100%;font:800 1.5rem var(--body);letter-spacing:.35em;text-align:center;background:#2a241a;border:2px solid #3e3526;border-radius:10px;color:#f3ead2;padding:12px}
+.fld{width:100%;font:500 1.05rem var(--body);background:#2a241a;border:2px solid #3e3526;border-radius:10px;color:#f3ead2;padding:12px}
+.fld:focus{border-color:var(--amber);outline:none}
+.links{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.link{all:unset;cursor:pointer;color:#e2c28a;font-weight:700;font-size:.92rem;text-decoration:underline;text-underline-offset:3px}
+.pick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pick button{background:#2a241a;border:2px solid #3e3526;border-radius:10px;padding:6px 2px 4px;color:#f3ead2;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.85rem}
+.pick button[aria-pressed="true"]{border-color:var(--amber);background:#3a2f1c}
+.pick .f{width:48px;height:48px;image-rendering:pixelated;background-repeat:no-repeat}
+.ok{color:#b9d98a;margin:0;text-align:center}
+.form{display:flex;flex-direction:column;gap:10px}
 .enter{background:var(--amber);color:#221a0e;border:0;border-radius:10px;padding:14px;font-size:1.05rem}
 .enter:disabled{opacity:.45;cursor:default}
 .err{color:#f0a08a;margin:0;min-height:1.2em;text-align:center}
@@ -132,11 +141,9 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
     <div class="in">
       <h1 class="logo"><img src="__LOGO__" alt="La Otra Comunidad" width="800" height="300"></h1>
       <p class="tl">Detrás de Frodo, paso a paso, hasta el Monte del Destino.</p>
-      <label class="lab" for="code">Tu código de 6 cifras</label>
-      <input class="code" id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="······">
-      <button class="enter" id="enter" type="button" disabled>Empezar a andar</button>
+      <div class="form" id="authBox"></div>
       <p class="err" id="err" role="alert"></p>
-      <p class="hint" id="hint">El código te lo da Henar. Sin cuentas ni contraseñas.</p>
+      <p class="hint" id="hint">Es la misma cuenta que la de Stadada: si ya tienes una, entra con ella.</p>
     </div>
   </section>
 
@@ -174,25 +181,55 @@ var $=function(id){return document.getElementById(id);};
 var fmt=function(n){return n.toFixed(1).replace('.',',');};
 var store={get:function(k,d){try{var v=localStorage.getItem('loc.'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set:function(k,v){try{localStorage.setItem('loc.'+k,JSON.stringify(v));}catch(e){}},del:function(k){try{localStorage.removeItem('loc.'+k);}catch(e){}}};
 
-/* datos de prueba (solo en el prototipo) */
+/* ---------- datos de prueba (solo en el prototipo) ---------- */
+var FACE_OF={'Porru':'porru','Adrián':'adrian','Carlos':'carlos','Fer':'fer','Edo':'edo','Rodri':'rodri','Arturo':'arturo'};
 var demoSteps=store.get('demoSteps',0), demoRead=store.get('demoRead',[]);
-var DEMO_PEOPLE=[['Fer','fer',52000],['Rodri','rodri',41000],['Adrián','adrian',36000],['Carlos','carlos',30000],['Edo','edo',18000],['Porru','porru',6000]];
+var DEMO_PEOPLE=[['Fer','fer',52000],['Rodri','rodri',41000],['Adrián','adrian',36000],['Carlos','carlos',30000],['Edo','edo',18000],['Porru','porru',6000],['Arturo','arturo',9000]];
 function demoRpc(fn,b){
-  if(fn==='loc_entrar') return [{id:7,nombre:'Arturo',hobbit:'arturo'}];
-  if(fn==='loc_mis_historias') return demoRead;
-  if(fn==='loc_marcar_historia'){ if(demoRead.indexOf(b.p_tramo)<0) demoRead.push(b.p_tramo); store.set('demoRead',demoRead); return null; }
-  if(fn==='loc_comunidad') return DEMO_PEOPLE.map(function(p){return {nombre:p[0],hobbit:p[1],pasos_totales:p[2],pasos_hoy:0};}).concat([{nombre:'Arturo',hobbit:'arturo',pasos_totales:demoSteps,pasos_hoy:store.get('demoToday',0)}]);
+  var dm=store.get('demoMe',null);
+  if(fn==='loc_yo') return dm?[dm]:[];
+  if(fn==='loc_libres') return Object.keys(FACE_OF).map(function(n){return {nombre:n,hobbit:FACE_OF[n]};});
+  if(fn==='loc_reclamar'){ var m={id:1,nombre:b.p_nombre,hobbit:FACE_OF[b.p_nombre]||'arturo',clave_atajo:'clave-de-prueba'}; store.set('demoMe',m); return [m]; }
+  if(fn==='loc_leidas') return demoRead;
+  if(fn==='loc_leer'){ if(demoRead.indexOf(b.p_tramo)<0) demoRead.push(b.p_tramo); store.set('demoRead',demoRead); return null; }
+  if(fn==='loc_comunidad'){ var meN=dm&&dm.nombre;
+    return DEMO_PEOPLE.filter(function(p){return p[0]!==meN;}).map(function(p){return {nombre:p[0],hobbit:p[1],pasos_totales:p[2],pasos_hoy:0};})
+      .concat(meN?[{nombre:meN,hobbit:FACE_OF[meN],pasos_totales:demoSteps,pasos_hoy:store.get('demoToday',0)}]:[]); }
   return null;
+}
+
+/* ---------- cuentas (Supabase Auth, las mismas que Stadada) ---------- */
+var AUTH=store.get('auth',null);   /* {at, rt, exp} */
+function saveAuth(j){ AUTH = j&&j.access_token ? {at:j.access_token, rt:j.refresh_token, exp:Date.now()+(j.expires_in||3600)*1000} : null; if(AUTH) store.set('auth',AUTH); else store.del('auth'); }
+function timed(url,opt){ var ctl=new AbortController(), tm=setTimeout(function(){ctl.abort();},10000); opt.signal=ctl.signal;
+  return fetch(url,opt).then(function(r){ return r.text().then(function(t){ clearTimeout(tm); var j=null; try{j=t?JSON.parse(t):null;}catch(e){}
+    if(!r.ok){ var e=new Error((j&&(j.msg||j.message||j.error_description||j.error))||('Error '+r.status)); e.status=r.status; throw e; } return j; }); }); }
+function authReq(path,body){ return timed(SB_URL+'/auth/v1/'+path,{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)}); }
+function fresh(){
+  if(DEMO||!AUTH) return Promise.resolve(AUTH);
+  if(Date.now()<AUTH.exp-60000) return Promise.resolve(AUTH);
+  return authReq('token?grant_type=refresh_token',{refresh_token:AUTH.rt}).then(function(j){saveAuth(j);return AUTH;})
+    .catch(function(e){ if(e.status===400||e.status===401) saveAuth(null); return AUTH; });
 }
 function rpc(fn,body){
   if(DEMO) return Promise.resolve(demoRpc(fn,body||{}));
-  var ctl=new AbortController(); var tm=setTimeout(function(){ctl.abort();},10000);
-  return fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',signal:ctl.signal,headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body||{})})
-    .then(function(r){return r.text().then(function(t){clearTimeout(tm);var j=null;try{j=t?JSON.parse(t):null;}catch(e){} if(!r.ok){var e=new Error((j&&j.message)||('Error '+r.status));e.status=r.status;throw e;} return j;});});
+  return fresh().then(function(a){
+    var h={apikey:SB_KEY,'Content-Type':'application/json'}; if(a) h.Authorization='Bearer '+a.at;
+    return timed(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:h,body:JSON.stringify(body||{})});
+  });
 }
+function authErr(e){ var m=String(e&&e.message||e||'');
+  if(/invalid login/i.test(m)) return 'Correo o contraseña incorrectos.';
+  if(/not confirmed/i.test(m)) return 'Aún no has confirmado tu correo. Busca el email de confirmación (mira también en spam).';
+  if(/already registered|already been registered|exists/i.test(m)) return 'Ya hay una cuenta con ese correo (puede ser la de Stadada). Entra con ella.';
+  if(/password/i.test(m)&&/6|short|characters/i.test(m)) return 'La contraseña tiene que tener al menos 6 caracteres.';
+  if(/valid email|invalid.*email/i.test(m)) return 'Ese correo no parece válido.';
+  if(/rate limit|too many/i.test(m)) return 'Demasiados intentos seguidos. Espera unos minutos.';
+  if(/abort|fetch|network/i.test(m)) return 'No hay conexión. Prueba otra vez en un momento.';
+  return m; }
 
 /* ---------- estado ---------- */
-var me=store.get('me',null);
+var me=null;   /* {id,nombre,hobbit,clave_atajo} */
 var km=store.get('km',0), target=km, stepsToday=0, people=[];
 var weather='sol', isDay=null, temp=null;
 var shown=new Set(), pending=[], reached=0;
@@ -240,20 +277,95 @@ function skyColor(im){
     return n?[r/n|0,g/n|0,b/n|0]:[95,155,224]; }catch(e){ return [95,155,224]; }
 }
 
-/* ---------- entrada ---------- */
-var code=$('code');
-if(DEMO){ $('hint').textContent='Prototipo: vale cualquier código y los pasos son inventados.'; }
-function check(){ $('enter').disabled=!/^\d{6}$/.test(code.value); $('err').textContent=''; }
-code.addEventListener('input',function(){code.value=code.value.replace(/\D/g,'').slice(0,6);check();});
-code.addEventListener('keydown',function(e){ if(e.key==='Enter' && !$('enter').disabled) $('enter').click(); });
-$('enter').onclick=function(){
-  var c=code.value; $('enter').disabled=true; $('enter').textContent='Comprobando…';
-  rpc('loc_entrar',{p_codigo:c}).then(function(r){
-    $('enter').textContent='Empezar a andar';
-    if(!r||!r.length){ check(); $('err').textContent='Ese código no existe. Revísalo con Henar.'; return; }
-    me={id:r[0].id,nombre:r[0].nombre,hobbit:r[0].hobbit,codigo:c}; store.set('me',me); enter();
-  }).catch(function(){ $('enter').textContent='Empezar a andar'; check(); $('err').textContent='No hay conexión. Prueba otra vez en un momento.'; });
-};
+/* ---------- entrada: entrar, crear cuenta, recuperar, elegir hobbit ---------- */
+var box=$('authBox'), pickName=null;
+function err(t){ $('err').textContent=t||''; }
+function busy(btn,on,txt){ btn.disabled=on; if(txt) btn.textContent=txt; }
+function onEnter(ids,btn){ ids.forEach(function(id){ var el=$(id); if(el) el.addEventListener('keydown',function(e){ if(e.key==='Enter') $(btn).click(); }); }); }
+function view(mode,msg){
+  err(''); pickName=null;
+  if(mode==='in'){
+    box.innerHTML='<input class="fld" id="em" type="email" autocomplete="email" inputmode="email" placeholder="Tu correo" aria-label="Correo">'+
+      '<input class="fld" id="pw" type="password" autocomplete="current-password" placeholder="Contraseña" aria-label="Contraseña">'+
+      '<button class="enter" id="go" type="button">Entrar</button>'+(msg?'<p class="ok">'+msg+'</p>':'')+
+      '<div class="links"><button class="link" type="button" id="toUp">Crear cuenta</button><button class="link" type="button" id="toRec">He olvidado la contraseña</button></div>';
+    $('toUp').onclick=function(){view('up');}; $('toRec').onclick=function(){view('rec');};
+    onEnter(['em','pw'],'go');
+    $('go').onclick=function(){
+      var em=$('em').value.trim(), pw=$('pw').value; if(!em||!pw){ err('Pon tu correo y tu contraseña.'); return; }
+      busy($('go'),true,'Entrando…');
+      (DEMO?Promise.resolve({access_token:'x'}):authReq('token?grant_type=password',{email:em,password:pw}))
+        .then(function(j){ saveAuth(j); return afterLogin(); })
+        .catch(function(e){ busy($('go'),false,'Entrar'); err(authErr(e)); });
+    };
+  }
+  if(mode==='up'){
+    box.innerHTML='<input class="fld" id="em" type="email" autocomplete="email" inputmode="email" placeholder="Tu correo" aria-label="Correo">'+
+      '<input class="fld" id="pw" type="password" autocomplete="new-password" placeholder="Contraseña (mínimo 6)" aria-label="Contraseña">'+
+      '<div class="lab">¿Quién eres?</div><div class="pick" id="pick"><span class="lab">Cargando…</span></div>'+
+      '<button class="enter" id="go" type="button">Crear cuenta</button>'+
+      '<div class="links"><button class="link" type="button" id="toIn">Ya tengo cuenta</button></div>';
+    $('toIn').onclick=function(){view('in');};
+    fillPick();
+    $('go').onclick=function(){
+      var em=$('em').value.trim(), pw=$('pw').value;
+      if(!em||!pw){ err('Pon tu correo y una contraseña.'); return; }
+      if(!pickName){ err('Elige tu hobbit.'); return; }
+      busy($('go'),true,'Creando…'); store.set('pend',pickName);
+      (DEMO?Promise.resolve({access_token:'x'}):authReq('signup',{email:em,password:pw,data:{nombre:pickName}}))
+        .then(function(j){
+          if(j&&j.access_token){ saveAuth(j); return afterLogin(); }
+          view('in','Cuenta creada. Te hemos enviado un correo para confirmarla: ábrelo y luego entra aquí.');
+        }).catch(function(e){ busy($('go'),false,'Crear cuenta'); err(authErr(e)); });
+    };
+  }
+  if(mode==='rec'){
+    box.innerHTML='<input class="fld" id="em" type="email" autocomplete="email" inputmode="email" placeholder="Tu correo" aria-label="Correo">'+
+      '<button class="enter" id="go" type="button">Enviarme un enlace</button>'+
+      '<div class="links"><button class="link" type="button" id="toIn">Volver</button></div>';
+    $('toIn').onclick=function(){view('in');};
+    onEnter(['em'],'go');
+    $('go').onclick=function(){
+      var em=$('em').value.trim(); if(!em){ err('Pon tu correo.'); return; }
+      busy($('go'),true,'Enviando…');
+      (DEMO?Promise.resolve():authReq('recover',{email:em}))
+        .then(function(){ view('in','Si ese correo tiene cuenta, te llegará un enlace para cambiar la contraseña.'); })
+        .catch(function(e){ busy($('go'),false,'Enviarme un enlace'); err(authErr(e)); });
+    };
+  }
+  if(mode==='pick'){
+    box.innerHTML='<p class="tl">Ya has entrado. Falta lo más importante:</p><div class="lab">¿Quién eres?</div><div class="pick" id="pick"><span class="lab">Cargando…</span></div>'+
+      '<button class="enter" id="go" type="button">Este soy yo</button><div class="links"><button class="link" type="button" id="toOut">Salir</button></div>';
+    fillPick();
+    $('toOut').onclick=logout;
+    $('go').onclick=function(){ if(!pickName){ err('Elige tu hobbit.'); return; } busy($('go'),true,'Un momento…'); claim(pickName); };
+  }
+}
+function fillPick(){
+  rpc('loc_libres').then(function(r){
+    var p=$('pick'); if(!p) return; p.innerHTML='';
+    if(!r||!r.length){ p.innerHTML='<span class="lab">Ya no quedan hobbits libres. Habla con Henar.</span>'; return; }
+    r.forEach(function(x){ var b=document.createElement('button'); b.type='button'; b.setAttribute('aria-pressed','false');
+      b.innerHTML='<span class="f" style="'+faceStyle(x.hobbit,48)+'"></span>'+x.nombre;
+      b.onclick=function(){ pickName=x.nombre; p.querySelectorAll('button').forEach(function(y){y.setAttribute('aria-pressed',y===b);}); err(''); };
+      p.appendChild(b); });
+  }).catch(function(e){ var p=$('pick'); if(p) p.innerHTML='<span class="lab">'+authErr(e)+'</span>'; });
+}
+function claim(nombre){
+  return rpc('loc_reclamar',{p_nombre:nombre}).then(function(){ store.del('pend'); return afterLogin(); })
+    .catch(function(e){ store.del('pend'); view('pick'); err(/dueño/.test(e.message)?'Ese hobbit ya tiene dueño. Elige otro.':authErr(e)); });
+}
+function afterLogin(){
+  return rpc('loc_yo').then(function(r){
+    if(r&&r.length){ me=r[0]; enter(); return; }
+    var p=store.get('pend',null); if(p) return claim(p);
+    view('pick');
+  }).catch(function(e){ if(e.status===401){ saveAuth(null); } view('in'); err(authErr(e)); });
+}
+function logout(){
+  saveAuth(null); store.del('km'); store.del('demoMe'); me=null; km=0; target=0; people=[]; shown=new Set(); pending=[]; curT=0; reached=0;
+  if(!sheet.hidden) closeSheet(); $('login').hidden=false; app.classList.add('out'); view('in');
+}
 function enter(){ $('login').hidden=true; app.classList.remove('out'); start(); }
 
 /* ---------- arranque ---------- */
@@ -264,11 +376,11 @@ Promise.all([
   TI=a[0];AR=a[1];VE=a[2];
   SKY=TI.map(function(ls){return ls[0]&&ls[0].im?skyColor(ls[0].im):[95,155,224];});
   curT=tramoAt(km); reached=curT; renderHud();
-  if(me) enter();
+  if(AUTH) afterLogin(); else view('in');
   requestAnimationFrame(loop);
 });
 function start(){
-  rpc('loc_mis_historias',{p_codigo:me.codigo}).then(function(r){ shown=new Set((r||[]).map(Number)); refresh(); }).catch(function(){ refresh(); });
+  rpc('loc_leidas').then(function(r){ shown=new Set((r||[]).map(Number)); refresh(); }).catch(function(){ refresh(); });
 }
 function refresh(){
   $('info').textContent='Actualizando…';
@@ -387,7 +499,7 @@ var sheet=$('sheet'), veil=$('veil');
 function openSheet(html){ sheet.innerHTML='<div class="grab"></div>'+html; sheet.hidden=false; veil.hidden=false; $('diary').hidden=true; sheet.scrollTop=0; }
 function closeSheet(){ sheet.hidden=true; veil.hidden=true; renderHud(); setTimeout(flushPending,400); }
 veil.onclick=closeSheet;
-function mark(i){ if(!shown.has(i)){ shown.add(i); if(me) rpc('loc_marcar_historia',{p_codigo:me.codigo,p_tramo:i}).catch(function(){}); } }
+function mark(i){ if(!shown.has(i)){ shown.add(i); if(me) rpc('loc_leer',{p_tramo:i}).catch(function(){}); } }
 function openArrival(i){
   mark(i); var s=T[i];
   openSheet('<span class="eyebrow">Has llegado · Tramo '+(i+1)+' · '+s.cap+'</span><h2>'+s.title+'</h2>'+
@@ -411,13 +523,18 @@ var TABS={
   libro:function(){return '<h2>Libro Rojo</h2><p class="note">Cada tramo escribe su página mientras lo recorres.</p><ol class="list">'+T.map(function(s,i){var o=i<=reached, k=leidas(i), n=frases(i).length;return '<li class="'+(o?'':'locked')+'"><span class="n">'+(i+1)+'</span><span class="t">'+(o?'<button type="button" data-page="'+i+'">'+s.title+'</button>':'Página en blanco')+'</span><span class="k">'+(o?(k<n?'escribiéndose':'completa'):'km '+s.km)+'</span></li>';}).join('')+'</ol>';},
   comunidad:function(){var l=people.slice().sort(function(a,b){return b.pasos_totales-a.pasos_totales;});
     return '<h2>La Comunidad</h2><ol class="list people">'+l.map(function(p){var mine=me&&p.nombre===me.nombre, k=mine?km:Math.min(TOTAL_KM,Number(p.pasos_totales)/STEPS_PER_KM);return '<li class="'+(mine?'me':'')+'"><span class="face" style="'+faceStyle(p.hobbit,36)+'"></span><span class="t">'+p.nombre+'</span><span class="k">'+fmt(k)+' km<br>'+T[tramoAt(k)].name+'</span></li>';}).join('')+'</ol>'+
+    '<div class="bubble">'+ICON.balsa+'<div><b>Tu clave del atajo</b><i>Solo hace falta una vez, al instalar el atajo del iPhone. No se la pases a nadie.</i></div></div>'+
+    '<button class="ghost" type="button" id="copyKey">Copiar mi clave del atajo</button>'+
     '<button class="ghost" type="button" id="logout">Salir ('+(me?me.nombre:'')+')</button>';},
   zurron:function(){var got=ITEMS.filter(function(_,i){return i<=reached;}).length;
     return '<h2>Zurrón</h2><p class="note">'+got+' de '+ITEMS.length+' objetos del camino. Cada sitio nuevo te deja uno.</p><div class="bag">'+ITEMS.map(function(it,i){var o=i<=reached;return '<div class="item'+(o?'':' no')+'"><div class="box">'+ICON[it.i]+'</div>'+(o?it.n:'¿?')+'</div>';}).join('')+'</div>';}
 };
 function bindSheet(){
   sheet.querySelectorAll('[data-page]').forEach(function(x){x.onclick=function(){openPage(+x.dataset.page);};});
-  var lo=$('logout'); if(lo) lo.onclick=function(){ store.del('me'); store.del('km'); me=null; km=0; target=0; people=[]; shown=new Set(); pending=[]; curT=0; reached=0; closeSheet(); code.value=''; check(); $('login').hidden=false; app.classList.add('out'); };
+  var lo=$('logout'); if(lo) lo.onclick=logout;
+  var ck=$('copyKey'); if(ck) ck.onclick=function(){ var k=String(me&&me.clave_atajo||'');
+    var done=function(){ ck.textContent='Copiada'; setTimeout(function(){ck.textContent='Copiar mi clave del atajo';},1600); };
+    if(navigator.clipboard) navigator.clipboard.writeText(k).then(done).catch(function(){ ck.textContent=k; }); else ck.textContent=k; };
 }
 function openTab(tab){
   openSheet(TABS[tab]()); bindSheet();
