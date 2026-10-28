@@ -518,15 +518,16 @@ function verPrologo(alAcabar){
   var v=el.querySelector('video'), bar=el.querySelector('.bar i'), done=false;
   v.ontimeupdate=function(){ if(v.duration) bar.style.width=(v.currentTime/v.duration*100)+'%'; };
   v.onended=function(){ if(done) return; done=true; instrucciones(el,alAcabar); };
-  v.onpause=function(){ if(!done && !v.ended) setTimeout(function(){ if(!done) v.play().catch(pedirToque); },50); };
+  var empezado=false;
+  v.onpause=function(){ if(empezado && !done && !v.ended) setTimeout(function(){ if(!done) v.play().catch(pedirToque); },50); };
   function pedirToque(){
     if(el.querySelector('.tap')) return;
     var t=document.createElement('button'); t.type='button'; t.className='tap';
     t.innerHTML='<span class="ring"></span><b>Comenzar el viaje</b><small>Sube el volumen</small>';
-    t.onclick=function(){ t.remove(); v.muted=false; v.play().catch(function(){ v.muted=true; v.play().catch(function(){}); }); };
+    t.onclick=function(){ t.remove(); empezado=true; v.muted=false; v.play().catch(function(){ v.muted=true; v.play().catch(function(){}); }); };
     el.appendChild(t);
   }
-  var p=v.play(); if(p&&p.catch) p.catch(pedirToque);
+  pedirToque();
 }
 function instrucciones(el,alAcabar){
   var i=0;
