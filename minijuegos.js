@@ -961,7 +961,7 @@ function menuPinta(pant){
   } else if(pant==='cuenta'){
     h='<div class="menu"><p class="hola">Tu cuenta</p>'+
       '<p class="dato">'+(me?'<b>'+me.nombre+'</b>':'')+(AUTH&&AUTH.em?'<br>'+AUTH.em:'')+'</p>'+
-      '<button type="button" class="sec" id="mClave">Copiar mi clave del atajo</button>'+
+      (window.LocAndroid?'<button type="button" class="sec" id="mApp">Ajustes de la app de pasos</button>':'<button type="button" class="sec" id="mClave">Copiar mi clave del atajo</button>')+
       '<button type="button" id="mSalir">Salir y entrar con otra cuenta</button>'+
       '<button type="button" class="sec" id="mVolver">‹ Volver</button></div>';
   }
@@ -972,6 +972,7 @@ function menuPinta(pant){
   on('mCuenta',function(){ menuPinta('cuenta'); });
   on('mVolver',function(){ menuPinta('inicio'); });
   on('mSalir',function(){ logout(); });
+  on('mApp',function(){ try{ LocAndroid.ajustes(); }catch(e){} });
   on('mClave',function(){ var b=$('mClave'), k=String(me&&me.clave_atajo||''); var ok=function(){ b.textContent='Copiada'; setTimeout(function(){ if($('mClave')) b.textContent='Copiar mi clave del atajo'; },1600); };
     if(navigator.clipboard) navigator.clipboard.writeText(k).then(ok).catch(function(){ b.textContent=k; }); else b.textContent=k; });
   var s1=$('ajSon'); if(s1) s1.onchange=function(){ store.set('aj_sonido',s1.checked); };
@@ -1053,6 +1054,7 @@ function decideParado(){
 /* ================= ANDROID: apuntar los pasos de hoy a mano (el número que marca el móvil) =================
    Una web no puede leer Health Connect; mientras no haya app, se apunta el número del día. */
 function apuntaPasos(){
+  if(window.LocAndroid){ $('info').textContent='Leyendo tus pasos…'; window.locAndroidHecho=function(t){ $('info').textContent=t; refresh(); }; try{ LocAndroid.sincroniza(); return; }catch(e){} }
   var hoy=Number(String($('steps')&&$('steps').textContent||'0').replace(/\D/g,''))||0;
   openSheet('<h2>Tus pasos de hoy</h2><p class="note">Mira cuántos pasos lleva hoy tu móvil (en Salud de Samsung, Google Fit o la app de pasos que uses) y apúntalos aquí. Se guarda el total del día: si lo apuntas varias veces, vale el último.</p>'+
     '<input class="fld" id="apP" type="number" inputmode="numeric" min="0" max="150000" placeholder="Por ejemplo, 8420" value="'+(hoy||'')+'" style="background:#fff8e6;color:#2b1d0e;border-color:#c4a46c;font-size:1.4rem;text-align:center">'+
