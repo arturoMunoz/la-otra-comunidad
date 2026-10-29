@@ -1,5 +1,5 @@
 /* La Otra Comunidad · caché básica para que abra rápido y funcione con mala cobertura */
-var C='loc-v34';
+var C='loc-v35';
 self.addEventListener('install',function(e){ self.skipWaiting(); });
 self.addEventListener('activate',function(e){ e.waitUntil(caches.keys().then(function(k){ return Promise.all(k.filter(function(x){return x!==C;}).map(function(x){return caches.delete(x);})); }).then(function(){ return self.clients.claim(); })); });
 self.addEventListener('fetch',function(e){

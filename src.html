@@ -486,7 +486,7 @@ function tint(h){
 function walker(t,h){
   var idx=h==='noche'?2:weather==='lluvia'?1:weather==='calor'?3:0;
   if(WALK){
-    var n=M.andar.n, fw=M.andar.fw, fh=WALK.height, f=Math.floor(t/(reduce?400:200))%n, wx=Math.round(W*0.3), wb=OY+228;
+    var n=M.andar.n, fw=M.andar.fw, fh=WALK.height, f=Math.floor(t/(reduce?400:(M.andar.ms||200)))%n, wx=Math.round(W*0.3)+((M.andar.dx&&M.andar.dx[f])||0), wb=OY+228;
     ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(wx+fw/2,wb,fw*.38,3,0,0,Math.PI*2); ctx.fill();
     if(typeof dibujaEquipo==='function') dibujaEquipo(ctx,wx,wb-fh,f,true);
     ctx.drawImage(WALK,Math.round(f*fw),0,Math.round(fw),fh,wx,wb-fh,Math.round(fw),fh);
@@ -518,7 +518,7 @@ function rain(dt){
 function stars(h){ if(h!=='noche') return; ctx.fillStyle='rgba(232,236,255,.9)'; for(var i=0;i<45;i++) ctx.fillRect((i*97)%W,(i*53)%Math.max(30,OY+40),1,1); }
 function loop(now){
   var dt=Math.min(50,now-last); last=now; var h=hourNow();
-  off+=dt*(reduce?0.01:0.058);
+  off+=dt*(reduce?0.01:(M.andar.vel||0.058));
   if(me && target>km+0.001 && $('sheet').hidden){ off+=dt*0.04; setKm(km+Math.min(target-km, dt*0.0015)); }
   var e=escAt(km); if(curE<0) curE=e; if(e!==curE){ prevE=curE; curE=e; fade=reduce?1:0; }
   if(fade<1&&prevE>=0){drawTramo(prevE,1,off);drawTramo(curE,fade,off);fade=Math.min(1,fade+dt/700);} else drawTramo(curE,1,off);

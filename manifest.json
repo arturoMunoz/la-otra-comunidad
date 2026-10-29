@@ -1134,7 +1134,20 @@
 "src": "assets/pj/andar_fer.webp",
 "pantalon": "assets/pj/ropa_pantalon_fer.webp",
 "capa": "assets/pj/ropa_capa_fer.webp",
-"capa_f": "assets/pj/ropa_capa_f_fer.webp"
+"capa_f": "assets/pj/ropa_capa_f_fer.webp",
+"n": 8,
+"ms": 160,
+"vel": 0.0356,
+"dx": [
+0,
+-3,
+2,
+2,
+-3,
+-3,
+3,
+4
+]
 }
 }
 }

@@ -825,6 +825,6 @@ document.addEventListener('click',function(e){ var t=e.target.closest&&e.target.
 
 /* ================= ANDAR DE CADA HOBBIT: si tiene el suyo (M.andarPJ), se usa con su pantalón y su capa ================= */
 function usaAndar(h){ var P=M.andarPJ&&M.andarPJ[h]; if(!P) return;
-  load(P.src).then(function(im){ if(im){ WALK=im; ANCLA=null; } }).catch(function(){});
+  load(P.src).then(function(im){ if(im){ M.andar=Object.assign({},M.andar,{n:P.n||M.andar.n,ms:P.ms,vel:P.vel,dx:P.dx}); WALK=im; ANCLA=null; } }).catch(function(){});
   ['pantalon','capa','capa_f'].forEach(function(k){ if(!P[k]) return; var i=new Image(); i.onload=function(){ ROPAIMG[k]=i; TINTC={}; }; i.src=P[k]; }); }
 (function(){ var _st=start; start=function(){ if(me&&me.hobbit) usaAndar(me.hobbit); return _st.apply(this,arguments); }; })();
