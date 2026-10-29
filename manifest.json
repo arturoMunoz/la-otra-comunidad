@@ -1023,7 +1023,8 @@
 "panuelo_rojo": "assets/eq/panuelo_rojo.webp",
 "cantimplora_cinto": "assets/eq/cantimplora_cinto.webp",
 "pluma": "assets/eq/pluma.webp",
-"gafas": "assets/eq/gafas.webp"
+"gafas": "assets/eq/gafas.webp",
+"tiara": "assets/eq/tiara.webp"
 },
 "prologo": {
 "video": "assets/prologo/prologo.mp4",
@@ -1293,5 +1294,10 @@
 ]
 ]
 }
+],
+"escenaElfos": [
+"assets/escenas/elfos1.webp",
+"assets/escenas/elfos2.webp",
+"assets/escenas/elfos3.webp"
 ]
 }

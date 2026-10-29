@@ -1111,3 +1111,43 @@ var FP=(function(){
   }
   requestAnimationFrame(frame); return {activo:activo};
 })();
+
+/* ================= ESCENA DE LOS ELFOS (al acabar el Bosque Cerrado): fotos, texto, 3 preguntas, Huella de Frodo y tiara ================= */
+EQ.tiara={n:'Tiara élfica',por:'Acertar las 3 preguntas de los elfos',w:18,dx:-9,dy:3,hueco:'cabeza'};
+(function(){ var _g=eqGanado; eqGanado=function(){ var g=_g(); if(store.get('elfos_ok',false)&&g.indexOf('tiara')<0) g.push('tiara'); return g; }; })();
+var ELFOS_TXT=['Al caer la noche en el Bosque Cerrado, los hobbits oyeron un canto entre los árboles. Era una compañía de Altos Elfos que viajaba hacia el oeste, hacia los Puertos, cantando a Elbereth, la reina de las estrellas. Su jefe se llamaba Gildor.',
+ 'Al saber que a Frodo lo seguía un jinete negro, Gildor no quiso dejarlos solos. Los llevaron a un claro en lo alto de la colina y les dieron un banquete de pan, fruta y una bebida clara y fresca. Pippin se durmió feliz entre las hojas; Sam no podía dejar de mirar, había soñado con elfos toda su vida.',
+ 'Frodo habló con Gildor hasta muy tarde. El elfo no le contó todo lo que sabía, pero le aconsejó que no viajara solo, que confiara en sus amigos y que se diera prisa. Antes del amanecer ya se habían ido: solo dejaron comida para el camino… y algo más.'];
+var ELFOS_P=[{q:'¿A quién cantaban los elfos en el bosque?',o:['A Elbereth, la reina de las estrellas','A la Dama del Bosque','Al Señor de los Mares'],ok:0},
+ {q:'¿Hacia dónde viajaban Gildor y los suyos?',o:['Hacia Rivendel','Hacia el oeste, hacia los Puertos','Hacia Bree'],ok:1},
+ {q:'¿Qué consejo le da Gildor a Frodo?',o:['Que vuelva a Bolsón Cerrado','Que se ponga el Anillo para esconderse','Que no viaje solo y que se dé prisa'],ok:2}];
+function huella(){ return store.get('huella',0); }
+function escenaElfos(alAcabar){
+  var F=M.escenaElfos||[], k=0, res=store.get('elfos_res',null);
+  function foto(){ openSheet('<span class="eyebrow">Bosque Cerrado · Cap. 3</span><h2>Noche con los elfos</h2>'+
+      (F[k]?'<img src="'+F[k]+'" alt="" style="width:100%;border:3px solid #2b1d0e;image-rendering:pixelated;display:block;margin:6px 0">':'')+
+      '<p class="page">'+ELFOS_TXT[k]+'</p><button class="primary" id="elSig" type="button">'+(k<2?'Seguir ▶':'Responder a los elfos')+'</button>');
+    $('elSig').onclick=function(){ if(k<2){ k++; foto(); } else preg(0, []); }; }
+  function preg(i, r){
+    if(i>=ELFOS_P.length){ fin(r); return; }
+    var P=ELFOS_P[i];
+    openSheet('<span class="eyebrow">Los elfos te preguntan · '+(i+1)+' de 3</span><h2>'+P.q+'</h2><div class="preg">'+P.o.map(function(o,j){return '<button type="button" class="opt" data-j="'+j+'">'+o+'</button>';}).join('')+'<span class="note">Solo hay un intento.</span></div>');
+    sheet.querySelectorAll('[data-j]').forEach(function(b){ b.onclick=function(){ var ok=+b.dataset.j===P.ok; r.push(ok);
+      b.style.background=ok?'#8fb85a':'#d9775a'; setTimeout(function(){ preg(i+1,r); },700); }; }); }
+  function fin(r){
+    var n=r.filter(Boolean).length; store.set('elfos_res',r); store.set('huella',huella()+n); if(n===3) store.set('elfos_ok',true);
+    openSheet('<span class="eyebrow">Al amanecer</span><h2>'+(n===3?'Los elfos te dejan un regalo':n?'Los elfos se despiden':'Los elfos se han ido')+'</h2>'+
+      (F[2]?'<img src="'+F[2]+'" alt="" style="width:100%;border:3px solid #2b1d0e;image-rendering:pixelated;display:block;margin:6px 0">':'')+
+      '<p class="page">Has acertado <b>'+n+' de 3</b>. '+(n?'Tu <b>Huella de Frodo</b> sube '+n+(n>1?' pasos':' paso')+': vas más cerca de él que nunca.':'Esta vez no te has acercado a Frodo.')+'</p>'+
+      (n===3?'<div class="got" style="display:flex;justify-content:center"><div style="display:flex;flex-direction:column;align-items:center;font-weight:700"><img src="'+M.equipo.tiara+'" alt="" style="width:72px;image-rendering:pixelated">Tiara élfica</div></div><p class="note">Ya la llevas puesta. La tienes en Zurrón › Vestuario.</p>':'<p class="note">Con las 3 te habrías llevado la tiara élfica.</p>')+
+      '<button class="primary" id="elFin" type="button">Seguir el camino</button>');
+    if(n===3&&typeof eqPoner==='function') eqPoner('tiara');
+    $('elFin').onclick=function(){ closeSheet(); if(alAcabar) alAcabar(); }; }
+  if(res){ if(alAcabar) alAcabar(); return; }
+  foto();
+}
+/* salta al llegar al tramo siguiente al Bosque Cerrado (o con ?elfos=1 para probar) */
+(function(){ var _oa=openArrival; openArrival=function(i){ if(i===4 && !store.get('elfos_res',null)) { escenaElfos(function(){ _oa(i); }); return; } return _oa(i); }; })();
+if(/[?&]elfos=1/.test(location.search)) setTimeout(function(){ store.del('elfos_res'); escenaElfos(); },2500);
+/* la Huella de Frodo en tu fila de la Comunidad */
+(function(){ var _c=TABS.comunidad; TABS.comunidad=function(){ var h=huella(); return _c().replace('<ol class="list people">',(h?'<p class="note">👣 Tu Huella de Frodo: <b>'+h+'</b>. Sube acertando lo que pasa en el camino.</p>':'')+'<ol class="list people">'); }; })();
