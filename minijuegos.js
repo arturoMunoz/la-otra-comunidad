@@ -200,40 +200,61 @@ function mjFondo(F){ try{ F.style.background='url('+cv.toDataURL()+') center 30%
    Mantén el dedo pulsado y quieto mientras pasa el jinete. Si sueltas o mueves el dedo, sube la sospecha.
    El Anillo susurra para que sueltes. */
 function jugarArbol(el,cerrar){
-  var ID='arbol', TIT='Quieto bajo el árbol', DUR=22;
-  function intro(){ mjIntro(el,ID,TIT,'<p>Se oyen cascos. Frodo y los suyos se esconden entre las raíces del árbol. <b>Mantén el dedo pulsado en «Escondido» y no lo muevas</b> hasta que el jinete se vaya.</p><p>Si sueltas o mueves el dedo, el jinete sospecha. Y el Anillo te va a pedir que sueltes: <b>no le hagas caso</b>.</p>',jugar,cerrar); }
+  var ID='arbol', TIT='Quieto bajo el árbol', DUR=18, conSensor=!!window.DeviceMotionEvent;
+  function intro(){ mjIntro(el,ID,TIT,'<p>Se oyen cascos. Frodo y los suyos se esconden entre las raíces del árbol.</p><p><b>Quédate quieto de verdad, con el móvil en la mano y sin dar un paso,</b> hasta que el jinete se vaya. El móvil nota si te mueves.</p><p>El Anillo te va a tentar para que te muevas. Si el jinete te descubre… <b>te pones el Anillo.</b></p>',empezar,cerrar); }
+  function empezar(){
+    var D=window.DeviceMotionEvent;
+    var prueba=function(){ if(!conSensor){ jugar(); return; } var vio=false, f=function(){ vio=true; }; addEventListener('devicemotion',f);
+      setTimeout(function(){ removeEventListener('devicemotion',f); conSensor=vio; jugar(); },700); };
+    if(D && typeof D.requestPermission==='function') D.requestPermission().then(function(r){ conSensor=r==='granted'; prueba(); }).catch(function(){ conSensor=false; jugar(); });
+    else prueba();
+  }
   function jugar(){
     el.innerHTML=mjCabecera(TIT,'<div class="stat"><span id="mjT">'+DUR+'</span></div>')+
-      '<div class="field" id="mjF"><div class="tree">'+mjImg('arbol')+'</div><div class="meter"><span>Sospecha del jinete</span><div class="b"><i id="mjB"></i></div></div><div class="rider" id="mjJ">'+(M.mj&&M.mj.jinete1?'<img id="mjJi" src="'+M.mj.jinete1+'" alt="" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated">':SVG_JINETE)+'</div><div class="dark" id="mjD"></div><div class="whisper" id="mjW"></div><button class="hold" id="mjH" type="button">Escondido</button></div>';
-    var F=el.querySelector('#mjF'), H=el.querySelector('#mjH'), B=el.querySelector('#mjB'), J=el.querySelector('#mjJ'), D=el.querySelector('#mjD'), Wh=el.querySelector('#mjW');
+      '<div class="field" id="mjF"><div class="tree">'+mjImg('arbol')+'</div><div class="meter"><span>Sospecha del jinete</span><div class="b"><i id="mjB"></i></div></div><div class="rider" id="mjJ">'+(M.mj&&M.mj.jinete1?'<img id="mjJi" src="'+M.mj.jinete1+'" alt="" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated">':SVG_JINETE)+'</div><div class="dark" id="mjD"></div><div class="whisper" id="mjW"></div>'+
+      (conSensor?'<div class="hold" id="mjH" style="pointer-events:none">No te muevas</div>':'<button class="hold" id="mjH" type="button">Escondido</button>')+'</div>';
+    var F=el.querySelector('#mjF'), H=el.querySelector('#mjH'), B=el.querySelector('#mjB'), J=el.querySelector('#mjJ'), Dk=el.querySelector('#mjD'), Wh=el.querySelector('#mjW');
     mjFondo(F);
-    var sus=0, maxSus=0, holding=false, sx=0, sy=0, t0=performance.now(), last=t0, raf=0, done=false, wT=0;
-    var FR=['Póntelo… nadie te verá','Suelta… será solo un momento','Él no puede encontrarte si te lo pones','¿Por qué esconderse? Póntelo'];
-    H.onpointerdown=function(e){ e.preventDefault(); holding=true; sx=e.clientX; sy=e.clientY; H.classList.add('on'); try{H.setPointerCapture(e.pointerId);}catch(_){} };
-    H.onpointermove=function(e){ if(holding && Math.hypot(e.clientX-sx,e.clientY-sy)>18){ sus+=6; sx=e.clientX; sy=e.clientY; } };
-    var up=function(){ holding=false; H.classList.remove('on'); };
-    H.onpointerup=up; H.onpointercancel=up; H.onlostpointercapture=up;
+    var sus=0, maxSus=0, mov=0, base=null, t0=performance.now(), last=t0, raf=0, done=false, wT=0, holding=false, sx=0, sy=0;
+    var FR=['Póntelo… nadie te verá','Muévete, será solo un momento','Él no puede encontrarte si te lo pones','¿Por qué esconderse? Póntelo','Sal corriendo…'];
+    function onMov(e){ var a=e.accelerationIncludingGravity; if(!a||a.x==null) return; var m=Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
+      base=base==null?m:base*0.9+m*0.1; mov=Math.max(mov*0.85, Math.abs(m-base)); }
+    if(conSensor) addEventListener('devicemotion',onMov);
+    else { H.onpointerdown=function(e){ e.preventDefault(); holding=true; sx=e.clientX; sy=e.clientY; H.classList.add('on'); try{H.setPointerCapture(e.pointerId);}catch(_){} };
+      H.onpointermove=function(e){ if(holding && Math.hypot(e.clientX-sx,e.clientY-sy)>18){ sus+=6; sx=e.clientX; sy=e.clientY; } };
+      var up=function(){ holding=false; H.classList.remove('on'); }; H.onpointerup=up; H.onpointercancel=up; H.onlostpointercapture=up; }
     function tick(now){
       var dt=(now-last)/1000; last=now; var t=(now-t0)/1000, p=t/DUR;
       var x=-0.2+1.4*p; J.style.left=(x*100)+'%';
+      var near=Math.max(0,1-Math.abs(x-0.5)*2.2);
       var ji=el.querySelector('#mjJi'); if(ji&&M.mj.jinete2) ji.src=(Math.floor(t*2.2)%2&&near>0.3)?M.mj.jinete2:M.mj.jinete1;
-      var near=Math.max(0,1-Math.abs(x-0.5)*2.2);       /* 1 cuando el jinete está encima */
-      if(!holding) sus+=dt*(18+60*near); else sus=Math.max(0,sus-dt*4);
+      if(conSensor){ var quieto=mov<0.6; if(!quieto) sus+=dt*(25+90*near)*Math.min(3,mov); else sus=Math.max(0,sus-dt*6);
+        H.textContent=quieto?'No te muevas':'¡Te estás moviendo!'; H.classList.toggle('on',quieto); }
+      else { if(!holding) sus+=dt*(18+60*near); else sus=Math.max(0,sus-dt*4); }
       sus=Math.min(100,sus); maxSus=Math.max(maxSus,sus); B.style.width=sus+'%';
-      D.style.opacity=(0.25+0.6*near).toFixed(2);
+      Dk.style.opacity=(0.25+0.6*near).toFixed(2);
       if(now-wT>2600 && near>0.2){ wT=now; Wh.innerHTML=(M.mj&&M.mj.anillo?'<img src="'+M.mj.anillo+'" alt="" style="width:40px;height:40px;display:block;margin:0 auto 4px;image-rendering:pixelated">':'')+FR[Math.floor(Math.random()*FR.length)]; Wh.classList.add('on'); setTimeout(function(){Wh.classList.remove('on');},1500); }
       el.querySelector('#mjT').textContent=Math.max(0,Math.ceil(DUR-t));
-      if(sus>=100) return fin(true);
+      if(sus>=100) return anillo();
       if(t>=DUR) return fin(false);
       raf=requestAnimationFrame(tick);
     }
+    /* te ha pillado: te pones el Anillo y el mundo se vuelve gris y borroso */
+    function anillo(){
+      if(done) return; done=true; cancelAnimationFrame(raf); removeEventListener('devicemotion',onMov);
+      F.style.transition='filter 1.6s ease'; F.style.filter='grayscale(1) blur(2.5px) contrast(1.3) brightness(.8)';
+      var o=document.createElement('div'); o.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#f3e2b4;padding:20px;background:radial-gradient(circle,rgba(0,0,0,.2),rgba(0,0,0,.75));opacity:0;transition:opacity 1.2s';
+      o.innerHTML=(M.mj&&M.mj.anillo?'<img src="'+M.mj.anillo+'" alt="" style="width:90px;image-rendering:pixelated;filter:drop-shadow(0 0 14px #e2a54a)">':'')+'<b style="font-family:var(--title);font-size:1.2rem">Te has puesto el Anillo</b><span>Todo se vuelve gris. El jinete se gira hacia ti… y sientes que te ve, aunque nadie más pueda.</span>';
+      F.parentNode.appendChild(o); requestAnimationFrame(function(){ o.style.opacity='1'; });
+      setTimeout(function(){ o.remove(); F.style.filter=''; fin(true); },3600);
+    }
     function fin(visto){
-      if(done) return; done=true; cancelAnimationFrame(raf);
+      done=true; cancelAnimationFrame(raf); removeEventListener('devicemotion',onMov);
       var st=visto?0:maxSus<30?3:maxSus<60?2:1;
-      var txt=visto?'<b>El jinete os ha visto.</b> Frodo tiene que salir corriendo campo a través.':['','Se ha ido… por los pelos.','Se ha ido sin veros. Sam respira.','Ni una hoja se ha movido. El jinete se pierde en la noche.'][st];
+      var txt=visto?'<b>Te pusiste el Anillo.</b> El jinete se acercó demasiado; por suerte, se oyeron voces en el camino y se marchó. Esta vez no te ha salido.':['','Se ha ido… por los pelos.','Se ha ido sin veros. Sam respira.','Ni una hoja se ha movido. El jinete se pierde en la noche.'][st];
       mjFin(el,ID,TIT,st,txt,jugar,cerrar);
     }
-    el._stop=function(){ done=true; cancelAnimationFrame(raf); };
+    el._stop=function(){ done=true; cancelAnimationFrame(raf); removeEventListener('devicemotion',onMov); };
     raf=requestAnimationFrame(tick);
   }
   intro();
