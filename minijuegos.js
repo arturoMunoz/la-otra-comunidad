@@ -980,3 +980,19 @@ function menuPinta(pant){
   '.menu .aj input{width:24px;height:24px;accent-color:#3f6b33;flex:none}'+
   '.menu .dato{text-align:center;margin:0 0 6px;color:#e8dcc0;line-height:1.5}';
   document.head.appendChild(st); })();
+
+/* ================= NAVEGACIÓN ARRIBA: los 4 iconos sueltos bajo la barra, el camino libre hasta abajo ================= */
+(function(){ var U=M.ui; if(!U) return;
+  var st=document.createElement('style'); st.textContent=
+    '.bottom{top:auto;bottom:0;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))!important}.bottom .btns{display:none!important}'+
+    '.nav{pointer-events:auto;display:flex;justify-content:space-around;gap:4px;margin-top:2px}'+
+    '.nav button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;width:22%;color:#fff8e6;font:700 .74rem var(--body);text-shadow:0 1px 2px rgba(0,0,0,.85),0 0 8px rgba(0,0,0,.55);-webkit-tap-highlight-color:transparent}'+
+    '.nav img{width:44px;height:44px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 2px 2px rgba(0,0,0,.55));transition:transform .12s}'+
+    '.nav button:active img{transform:translateY(2px) scale(.94)}';
+  document.head.appendChild(st);
+  var nav=document.createElement('div'); nav.className='nav';
+  [['mapa','i_mapa','Mapa'],['libro','i_libro','Libro de Bilbo'],['comunidad','i_comunidad','Comunidad'],['zurron','i_zurron','Zurrón']].forEach(function(d){
+    var b=document.createElement('button'); b.type='button'; b.innerHTML='<img src="'+U[d[1]]+'" alt="">'+d[2]; b.onclick=function(){ openTab(d[0]); }; nav.appendChild(b); });
+  var top=document.querySelector('.top'), row=top.querySelector('.row'); row.parentNode.insertBefore(nav,row.nextSibling);
+  if(typeof fit==='function') fit();
+})();

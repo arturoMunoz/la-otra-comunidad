@@ -320,7 +320,8 @@ function fit(){
   cv.width=W; cv.height=H; ctx.imageSmoothingEnabled=false;
   var bt=document.querySelector('.bottom'), bh=(!app.classList.contains('out')&&bt)?bt.offsetHeight:0;
   /* jugando: la escena llega hasta los botones (sin hueco); en la entrada, como antes */
-  OY=Math.round(Math.min(H-242, Math.max(0, bh? (r.height-bh-6)*H/Math.max(1,r.height)-242 : H*0.6-228)));
+  /* jugando: la escena apoyada en el borde de abajo, su propio suelo llega hasta el final; el cielo rellena arriba */
+  OY=Math.round(Math.min(H-242, Math.max(0, app.classList.contains('out') ? H*0.6-228 : H-242)));
 }
 addEventListener('resize',fit); fit();
 function skyColor(im){
