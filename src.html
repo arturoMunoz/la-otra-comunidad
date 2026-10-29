@@ -474,7 +474,7 @@ function drawTramo(i,alpha,o){
   var bottom=OY;
   TI[i].forEach(function(L){ if(!L.im) return; var w=L.im.width, x=-((o*L.v)%w); for(;x<W;x+=w) ctx.drawImage(L.im,Math.round(x),L.y+OY); bottom=Math.max(bottom,L.y+OY+L.im.height); });
   if(bottom<H){ var e=ctx.createLinearGradient(0,bottom-1,0,H); e.addColorStop(0,'#4a3320'); e.addColorStop(.35,'#33231a'); e.addColorStop(1,'#1c140d'); ctx.fillStyle=e; ctx.fillRect(0,bottom-1,W,H-bottom+1); }
-  if(i<=1) VE.forEach(function(im,j){ if(!im) return; var gap=640,x=Math.round(((j*190+150-o)%gap+gap)%gap)-60; if(x<W) ctx.drawImage(im,x,OY+226-im.height+4); });
+  if(i<=1) VE.forEach(function(im,j){ if(!im) return; var gap=640,x=Math.round(((j*190+150-o)%gap+gap)%gap)-60; if(x>=W) return; var wx=W*0.3, d=Math.abs(x+im.width/2-(wx+26)); ctx.globalAlpha=alpha*Math.max(0,Math.min(1,(d-24)/30)); ctx.drawImage(im,x,OY+226-im.height+4); ctx.globalAlpha=alpha; });
   ctx.globalAlpha=1;
 }
 function tint(h){

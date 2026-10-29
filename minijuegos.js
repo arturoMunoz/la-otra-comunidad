@@ -544,7 +544,7 @@ function instrucciones(el,alAcabar){
     el.querySelector('#insB').textContent=i<INSTR.length-1?'Siguiente':'Hacer el zurrón';
     var c=el.querySelector('.ins'); c.classList.remove('in'); void c.offsetWidth; c.classList.add('in'); }
   el.querySelector('#insB').onclick=function(){ if(i<INSTR.length-1){ i++; pinta(); return; }
-    store.set('prologo',true); el.style.transition='opacity .7s'; el.style.opacity='0';
+    store.set(proKey(),true); el.style.transition='opacity .7s'; el.style.opacity='0';
     setTimeout(function(){ el.remove(); if(alAcabar) alAcabar(); else if(!zEstado()) abrirMinijuego('zurron'); },700); };
   pinta();
 }
@@ -564,7 +564,9 @@ function instrucciones(el,alAcabar){
   '.pro .dots{display:flex;gap:6px;justify-content:center}.pro .dots i{width:8px;height:8px;border-radius:50%;background:#c4a46c}.pro .dots i.on{background:#2b1d0e}';
   document.head.appendChild(c); })();
 /* sale la primera vez que entras al juego */
-(function(){ var _enter=enter; enter=function(){ _enter(); if(!store.get('prologo',false)) verPrologo(); }; })();
+/* el prólogo sale una vez por cuenta, justo después de registrarte y elegir hobbit (enter solo llega con cuenta y hobbit) */
+function proKey(){ return 'prologo_'+(me&&me.nombre||''); }
+(function(){ var _enter=enter; enter=function(){ _enter(); if(me&&!store.get(proKey(),false)) verPrologo(); }; })();
 /* volver a verlo desde el Libro de Bilbo */
 (function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('</ol>','</ol><button class="ghost" type="button" id="verPro">Volver a ver el prólogo</button>'); }; })();
 document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verPro'){ closeSheet(); verPrologo(); } });
