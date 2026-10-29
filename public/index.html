@@ -401,7 +401,7 @@ function view(mode,msg){
       if(!em||!pw){ err('Pon tu correo y una contraseña.'); return; }
       if(!pickName){ err('Elige tu hobbit.'); return; }
       busy($('go'),true,'Creando…'); store.set('pend',pickName);
-      (DEMO?Promise.resolve({access_token:'x'}):authReq('signup',{email:em,password:pw,data:{nombre:pickName}}))
+      (DEMO?Promise.resolve({access_token:'x'}):authReq('signup?redirect_to='+encodeURIComponent(location.origin+'/'),{email:em,password:pw,data:{nombre:pickName}}))
         .then(function(j){
           if(j&&j.access_token){ saveAuth(j); return afterLogin(); }
           view('in','Cuenta creada. Te hemos enviado un correo para confirmarla: ábrelo y luego entra aquí.');
