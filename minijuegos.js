@@ -1012,3 +1012,40 @@ function menuPinta(pant){
   var _r=renderHud; renderHud=function(){ var x=_r.apply(this,arguments); pinta(); return x; };
   if(info) new MutationObserver(pinta).observe(info,{childList:true,characterData:true,subtree:true}); pinta();
 })();
+
+/* ================= QUIETO / ANDANDO según te muevas (acelerómetro, solo con el juego en pantalla) =================
+   Si tu hobbit tiene su andar propio y su animación de quieto, se para cuando tú te paras.
+   Los km del viaje siguen saliendo de Salud; esto es solo lo que se ve. */
+var PARADO=false; window.PARADO=false;
+var MOV={ok:false, pasos:[], ultimo:0, base:null, ahora:0};
+function movimiento(e){ var a=e.accelerationIncludingGravity; if(!a||a.x==null) return; MOV.ok=true;
+  var m=Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z), now=performance.now();
+  MOV.base=MOV.base==null?m:MOV.base*0.92+m*0.08; var d=m-MOV.base;
+  if(d>1.6 && now-MOV.ultimo>280){ MOV.ultimo=now; MOV.pasos.push(now); MOV.ahora++; }
+  MOV.pasos=MOV.pasos.filter(function(t){return now-t<3000;}); }
+function activaMovimiento(){
+  var D=window.DeviceMotionEvent; if(!D) return;
+  if(typeof D.requestPermission==='function'){ D.requestPermission().then(function(r){ if(r==='granted') addEventListener('devicemotion',movimiento); }).catch(function(){}); }
+  else addEventListener('devicemotion',movimiento);
+}
+/* en iPhone el permiso hay que pedirlo con un toque: al pulsar «Continuar el viaje» */
+(function(){ var _aj=aJugar, pedido=false; aJugar=function(){ if(!pedido){ pedido=true; activaMovimiento(); } return _aj.apply(this,arguments); }; })();
+if(window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission!=='function') activaMovimiento();
+var QPOSE=null;
+function cargaQuieto(h){ var Q=M.quietoPJ&&M.quietoPJ[h]; QPOSE=null; if(!Q||!(M.andarPJ&&M.andarPJ[h])) return;
+  var P={n:Q.n,ms:Q.ms,img:null,ropa:{},tintc:{},ancla:null};
+  load(Q.src).then(function(im){ if(im){ P.img=im; QPOSE=P; } });
+  ['pantalon','capa','capa_f'].forEach(function(k){ if(!Q[k]) return; var i=new Image(); i.onload=function(){ P.ropa[k]=i; }; i.src=Q[k]; }); }
+(function(){ var _ua=usaAndar; usaAndar=function(h){ _ua(h); cargaQuieto(h); }; })();
+function decideParado(){
+  var andando = MOV.pasos.length>=2 && performance.now()-MOV.ultimo<1500;
+  var poniendoAlDia = me && target>km+0.001;
+  PARADO = !!(QPOSE && MOV.ok && !andando && !poniendoAlDia); window.PARADO=PARADO;
+}
+(function(){ var _w=walker; walker=function(t,h){
+  decideParado();
+  if(!PARADO||!QPOSE) return _w(t,h);
+  var sW=WALK, sA=M.andar, sR=ROPAIMG, sT=TINTC, sN=ANCLA;
+  WALK=QPOSE.img; M.andar={n:QPOSE.n,fw:53,h:74,ms:QPOSE.ms,dx:null,vel:0}; ROPAIMG=QPOSE.ropa; TINTC=QPOSE.tintc; ANCLA=QPOSE.ancla;
+  try{ _w(t,h); QPOSE.ancla=ANCLA; } finally { WALK=sW; M.andar=sA; ROPAIMG=sR; TINTC=sT; ANCLA=sN; }
+}; })();

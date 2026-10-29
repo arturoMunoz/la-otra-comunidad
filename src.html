@@ -214,7 +214,7 @@ var ATAJO = 'La Otra Comunidad';
 var STEPS_PER_KM = 1350, TOTAL_KM = 115;
 var LUGAR = {nombre:'Madrid', lat:40.43, lon:-3.81};
 var M = __MAN__;
-var FACE = {porru:0, adrian:1, carlos:2, fer:3, edo:4, rodri:5, arturo:6, patri:7};
+var FACE = {porru:0, adrian:1, carlos:2, fer:3, edo:4, rodri:5, arturo:6, patri:7, juanpablo:8};
 var FACEN = M.facesN||7;
 __DATA__
 var ends=[5,15,35,55,75,90,110,115];
@@ -239,9 +239,9 @@ var fmt=function(n){return n.toFixed(1).replace('.',',');};
 var store={get:function(k,d){try{var v=localStorage.getItem('loc.'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set:function(k,v){try{localStorage.setItem('loc.'+k,JSON.stringify(v));}catch(e){}},del:function(k){try{localStorage.removeItem('loc.'+k);}catch(e){}}};
 
 /* ---------- datos de prueba (solo en el prototipo) ---------- */
-var FACE_OF={'Porru':'porru','Adrián':'adrian','Carlos':'carlos','Fer':'fer','Edo':'edo','Rodri':'rodri','Arturo':'arturo','Patri':'patri'};
+var FACE_OF={'Porru':'porru','Adrián':'adrian','Carlos':'carlos','Fer':'fer','Edo':'edo','Rodri':'rodri','Arturo':'arturo','Patri':'patri','Juan Pablo':'juanpablo'};
 var demoSteps=store.get('demoSteps',0), demoRead=store.get('demoRead',[]);
-var DEMO_PEOPLE=[['Fer','fer',52000],['Rodri','rodri',41000],['Adrián','adrian',36000],['Carlos','carlos',30000],['Edo','edo',18000],['Porru','porru',6000],['Arturo','arturo',9000],['Patri','patri',12000]];
+var DEMO_PEOPLE=[['Fer','fer',52000],['Rodri','rodri',41000],['Adrián','adrian',36000],['Carlos','carlos',30000],['Edo','edo',18000],['Porru','porru',6000],['Arturo','arturo',9000],['Patri','patri',12000],['Juan Pablo','juanpablo',15000]];
 function demoRpc(fn,b){
   var dm=store.get('demoMe',null);
   if(fn==='loc_yo') return dm?[dm]:[];
@@ -540,7 +540,7 @@ function rain(dt){
 function stars(h){ if(h!=='noche') return; ctx.fillStyle='rgba(232,236,255,.9)'; for(var i=0;i<45;i++) ctx.fillRect((i*97)%W,(i*53)%Math.max(30,OY+40),1,1); }
 function loop(now){
   var dt=Math.min(50,now-last); last=now; var h=hourNow();
-  off+=dt*(reduce?0.01:(M.andar.vel||0.058));
+  off+=(window.PARADO?0:dt*(reduce?0.01:(M.andar.vel||0.058)));
   if(me && target>km+0.001 && $('sheet').hidden){ off+=dt*0.04; setKm(km+Math.min(target-km, dt*0.0015)); }
   var e=escAt(km); if(curE<0) curE=e; if(e!==curE){ prevE=curE; curE=e; fade=reduce?1:0; }
   if(fade<1&&prevE>=0){drawTramo(prevE,1,off);drawTramo(curE,fade,off);fade=Math.min(1,fade+dt/700);} else drawTramo(curE,1,off);
