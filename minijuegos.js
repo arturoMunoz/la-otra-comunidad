@@ -575,7 +575,7 @@ var RECIEN=false;
 (function(){ var _enter=enter; enter=function(){ _enter(); if(me&&RECIEN&&!store.get(proKey(),false)){ RECIEN=false; verPrologo(); } }; })();
 /* volver a verlo desde el Libro de Bilbo */
 (function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('</ol>','</ol><button class="ghost" type="button" id="verPro">Volver a ver el prólogo</button>'); }; })();
-document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verPro'){ closeSheet(); verPrologo(); } });
+document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verPro'){ closeSheet(); verPrologo(function(){}); } });
 
 /* ================= PERSONAJES DEL CAMINO (dibujos de Henar) =================
    Aparecen en la escena en su tramo, con el mismo estado de tiempo que el hobbit. */
@@ -893,15 +893,7 @@ function aJugar(){ if(FORJA) FORJA.off(); _enterJuego(); }
 enter=function(){ if(me&&RECIEN&&!store.get(proKey(),false)){ if(FORJA) FORJA.off(); return _enterJuego(); } muestraMenu(); };
 (function(){ var _view=view; view=function(mode,msg){
   if(mode!=='menu'){ var tl=document.querySelector('.login .tl'); if(tl) tl.hidden=false; return _view(mode,msg); }
-  err(''); var tl=document.querySelector('.login .tl'); if(tl) tl.hidden=true; $('authBox').innerHTML='<div class="menu"><p class="hola">'+(me?me.nombre+', tu viaje te espera':'')+'</p>'+
-    '<button type="button" id="mJugar">Continuar el viaje</button>'+
-    '<button type="button" id="mLibro">Libro de Bilbo</button>'+
-    '<button type="button" id="mPro">Ver el prólogo</button>'+
-    '<button type="button" class="sec" id="mSalir">Salir de la cuenta</button></div>';
-  $('mJugar').onclick=aJugar;
-  $('mLibro').onclick=function(){ aJugar(); setTimeout(function(){ openTab('libro'); },60); };
-  $('mPro').onclick=function(){ verPrologo(function(){}); };
-  $('mSalir').onclick=logout;
+  err(''); var tl=document.querySelector('.login .tl'); if(tl) tl.hidden=true; menuPinta(msg||'inicio');
 }; })();
 (function(){ var _lo=logout; logout=function(){ _lo(); if(FORJA) FORJA.on(); }; })();
 (function(){ var top=document.querySelector('.top .row'); if(!top) return; var b=document.createElement('button'); b.type='button'; b.className='alMenu'; b.textContent='‹ Menú'; b.setAttribute('aria-label','Volver al menú'); b.onclick=function(){ muestraMenu(); }; top.insertBefore(b,top.firstChild); })();
@@ -938,3 +930,45 @@ enter=function(){ if(me&&RECIEN&&!store.get(proKey(),false)){ if(FORJA) FORJA.of
 (function(){ var pr=document.querySelector('.top .prog'), wx=$('wx'); if(!pr) return;
   var st=document.createElement('style'); st.textContent='.top .prog{display:none}.wxl{pointer-events:none;align-self:flex-end;margin:-2px 4px 0 0;font:600 .78rem var(--body);color:#f3ead2;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.7)}'; document.head.appendChild(st);
   if(wx){ wx.classList.add('wxl'); pr.parentNode.insertBefore(wx,pr); } })();
+
+/* ================= MENÚ: Continuar el viaje · Ajustes · Tu cuenta (salir y entrar con otra) ================= */
+function ajuste(k,def){ return store.get('aj_'+k,def); }
+reduce = reduce || ajuste('suave',false);
+(function(){ var _b=blip; blip=function(){ if(ajuste('sonido',true)) _b(); }; })();
+function menuPinta(pant){
+  var B=$('authBox'), h='';
+  if(pant==='inicio'){
+    h='<div class="menu"><p class="hola">'+(me?me.nombre+', tu viaje te espera':'')+'</p>'+
+      '<button type="button" id="mJugar">Continuar el viaje</button>'+
+      '<button type="button" id="mAjustes">Ajustes</button>'+
+      '<button type="button" id="mCuenta">Tu cuenta</button></div>';
+  } else if(pant==='ajustes'){
+    var t=function(id,txt,on){ return '<label class="aj"><span>'+txt+'</span><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'></label>'; };
+    h='<div class="menu"><p class="hola">Ajustes</p>'+
+      t('ajSon','Sonido de los diálogos',ajuste('sonido',true))+
+      t('ajSuave','Animaciones suaves (menos movimiento)',ajuste('suave',false))+
+      '<button type="button" class="sec" id="mVolver">‹ Volver</button></div>';
+  } else if(pant==='cuenta'){
+    h='<div class="menu"><p class="hola">Tu cuenta</p>'+
+      '<p class="dato">'+(me?'<b>'+me.nombre+'</b>':'')+(AUTH&&AUTH.em?'<br>'+AUTH.em:'')+'</p>'+
+      '<button type="button" class="sec" id="mClave">Copiar mi clave del atajo</button>'+
+      '<button type="button" id="mSalir">Salir y entrar con otra cuenta</button>'+
+      '<button type="button" class="sec" id="mVolver">‹ Volver</button></div>';
+  }
+  B.innerHTML=h;
+  var on=function(id,f){ var e=$(id); if(e) e.onclick=f; };
+  on('mJugar',function(){ aJugar(); });
+  on('mAjustes',function(){ menuPinta('ajustes'); });
+  on('mCuenta',function(){ menuPinta('cuenta'); });
+  on('mVolver',function(){ menuPinta('inicio'); });
+  on('mSalir',function(){ logout(); });
+  on('mClave',function(){ var b=$('mClave'), k=String(me&&me.clave_atajo||''); var ok=function(){ b.textContent='Copiada'; setTimeout(function(){ if($('mClave')) b.textContent='Copiar mi clave del atajo'; },1600); };
+    if(navigator.clipboard) navigator.clipboard.writeText(k).then(ok).catch(function(){ b.textContent=k; }); else b.textContent=k; });
+  var s1=$('ajSon'); if(s1) s1.onchange=function(){ store.set('aj_sonido',s1.checked); };
+  var s2=$('ajSuave'); if(s2) s2.onchange=function(){ store.set('aj_suave',s2.checked); reduce=s2.checked||matchMedia('(prefers-reduced-motion: reduce)').matches; };
+}
+(function(){ var st=document.createElement('style'); st.textContent=
+  '.menu .aj{display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(20,14,8,.75);border:1px solid rgba(243,234,210,.25);border-radius:12px;padding:13px 14px;font-weight:600;color:#f3ead2}'+
+  '.menu .aj input{width:24px;height:24px;accent-color:#3f6b33;flex:none}'+
+  '.menu .dato{text-align:center;margin:0 0 6px;color:#e8dcc0;line-height:1.5}';
+  document.head.appendChild(st); })();

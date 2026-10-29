@@ -242,7 +242,7 @@ function demoRpc(fn,b){
 
 /* ---------- cuentas (Supabase Auth, las mismas que Stadada) ---------- */
 var AUTH=store.get('auth',null);   /* {at, rt, exp} */
-function saveAuth(j){ AUTH = j&&j.access_token ? {at:j.access_token, rt:j.refresh_token, exp:Date.now()+(j.expires_in||3600)*1000} : null; if(AUTH) store.set('auth',AUTH); else store.del('auth'); }
+function saveAuth(j){ AUTH = j&&j.access_token ? {at:j.access_token, rt:j.refresh_token, exp:Date.now()+(j.expires_in||3600)*1000, em:(j.user&&j.user.email)||(AUTH&&AUTH.em)||''} : null; if(AUTH) store.set('auth',AUTH); else store.del('auth'); }
 function timed(url,opt){ var ctl=new AbortController(), tm=setTimeout(function(){ctl.abort();},10000); opt.signal=ctl.signal;
   return fetch(url,opt).then(function(r){ return r.text().then(function(t){ clearTimeout(tm); var j=null; try{j=t?JSON.parse(t):null;}catch(e){}
     if(!r.ok){ var e=new Error((j&&(j.msg||j.message||j.error_description||j.error))||('Error '+r.status)); e.status=r.status; throw e; } return j; }); }); }
