@@ -1879,6 +1879,28 @@ if(/[?&]elfos=1/.test(location.search)) setTimeout(function(){ store.del('elfos_
 /* la Huella de Frodo en tu fila de la Comunidad */
 (function(){ var _c=TABS.comunidad; TABS.comunidad=function(){ var h=huella(); return _c().replace('<ol class="list people">',(h?'<p class="note">👣 Tu Huella de Frodo: <b>'+h+'</b>. Sube acertando lo que pasa en el camino.</p>':'')+'<ol class="list people">'); }; })();
 
+/* ================= SOLO EN EL PROTOTIPO (DEMO): mover los km desde el menú para probar ================= */
+if(DEMO){ (function(){ var _mp=menuPinta; menuPinta=function(pant){
+  if(pant==='km'){ var B=$('authBox'), k=Math.round(km*10)/10;
+    B.innerHTML='<div class="menu"><p class="hola">Kilómetros (solo prototipo)</p>'+
+      '<input class="fld" id="kmN" type="number" inputmode="decimal" min="0" max="'+TOTAL_KM+'" step="0.5" value="'+k+'" style="font-size:1.4rem;text-align:center">'+
+      '<input id="kmR" type="range" min="0" max="'+TOTAL_KM+'" step="0.5" value="'+k+'" style="width:100%;accent-color:#3f6b33">'+
+      '<p class="dato" id="kmSitio"></p>'+
+      '<button type="button" id="kmOk">Ir a ese km</button>'+
+      '<button type="button" class="sec" id="kmReset">Empezar de cero (km 0, sin escenas vistas)</button>'+
+      '<button type="button" class="sec" id="mVolver">‹ Volver</button></div>';
+    var n=$('kmN'), r=$('kmR'), si=function(){ var v=+n.value||0; $('kmSitio').textContent=T[tramoAt(v)].name+' · '+T[tramoAt(v)].title; };
+    n.oninput=function(){ r.value=n.value; si(); }; r.oninput=function(){ n.value=r.value; si(); }; si();
+    $('kmOk').onclick=function(){ var v=Math.max(0,Math.min(TOTAL_KM,+n.value||0)); demoSteps=Math.round(v*STEPS_PER_KM); store.set('demoSteps',demoSteps);
+      km=v; target=v; store.set('km',v); curT=tramoAt(v); if(curT>reached) reached=curT; aJugar(); setTimeout(function(){ refresh(); },300); };
+    $('kmReset').onclick=function(){ ['demoSteps','demoToday','demoRead','km','elfos_res','elfos_ok','huella','fin1','equipo_puesto','zurron'].forEach(function(x){store.del(x);});
+      demoSteps=0; demoRead=[]; km=0; target=0; shown=new Set(); reached=0; curT=0; aJugar(); setTimeout(function(){ refresh(); },300); };
+    $('mVolver').onclick=function(){ menuPinta('inicio'); }; return; }
+  _mp(pant);
+  if(pant==='inicio'){ var b=document.createElement('button'); b.type='button'; b.className='sec'; b.textContent='⚙ Kilómetros (prueba)'; b.onclick=function(){ menuPinta('km'); };
+    var m=$('authBox').querySelector('.menu'); if(m) m.appendChild(b); }
+}; })(); }
+
 if('serviceWorker' in navigator && !DEMO && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
 </script>
 </body>
