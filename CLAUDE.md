@@ -1,6 +1,6 @@
 # La Otra Comunidad — notas de traspaso
 
-Juego web privado para 7 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri): cada uno avanza con sus pasos reales por el camino de Frodo, siempre detrás de él, y descubre la historia de cada tramo al llegar. Lo lleva Henar.
+Juego web privado para 8 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri, Patri): cada uno avanza con sus pasos reales por el camino de Frodo, siempre detrás de él, y descubre la historia de cada tramo al llegar. Lo lleva Henar.
 
 ## Dónde está cada cosa
 - `src.html` → fuente de la página, con huecos `__KEY__`, `__MAN__`, `__DATA__`, `__LOGO__`.

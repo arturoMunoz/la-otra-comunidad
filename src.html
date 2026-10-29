@@ -200,7 +200,8 @@ var ATAJO = 'La Otra Comunidad';
 var STEPS_PER_KM = 1350, TOTAL_KM = 115;
 var LUGAR = {nombre:'Madrid', lat:40.43, lon:-3.81};
 var M = __MAN__;
-var FACE = {porru:0, adrian:1, carlos:2, fer:3, edo:4, rodri:5, arturo:6};
+var FACE = {porru:0, adrian:1, carlos:2, fer:3, edo:4, rodri:5, arturo:6, patri:7};
+var FACEN = M.facesN||7;
 __DATA__
 var ends=[5,15,35,55,75,90,110,115];
 if(M.papiro){ document.documentElement.style.setProperty('--papiro','url("'+M.papiro+'")'); document.documentElement.classList.add('papiro'); }
@@ -224,9 +225,9 @@ var fmt=function(n){return n.toFixed(1).replace('.',',');};
 var store={get:function(k,d){try{var v=localStorage.getItem('loc.'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set:function(k,v){try{localStorage.setItem('loc.'+k,JSON.stringify(v));}catch(e){}},del:function(k){try{localStorage.removeItem('loc.'+k);}catch(e){}}};
 
 /* ---------- datos de prueba (solo en el prototipo) ---------- */
-var FACE_OF={'Porru':'porru','Adrián':'adrian','Carlos':'carlos','Fer':'fer','Edo':'edo','Rodri':'rodri','Arturo':'arturo'};
+var FACE_OF={'Porru':'porru','Adrián':'adrian','Carlos':'carlos','Fer':'fer','Edo':'edo','Rodri':'rodri','Arturo':'arturo','Patri':'patri'};
 var demoSteps=store.get('demoSteps',0), demoRead=store.get('demoRead',[]);
-var DEMO_PEOPLE=[['Fer','fer',52000],['Rodri','rodri',41000],['Adrián','adrian',36000],['Carlos','carlos',30000],['Edo','edo',18000],['Porru','porru',6000],['Arturo','arturo',9000]];
+var DEMO_PEOPLE=[['Fer','fer',52000],['Rodri','rodri',41000],['Adrián','adrian',36000],['Carlos','carlos',30000],['Edo','edo',18000],['Porru','porru',6000],['Arturo','arturo',9000],['Patri','patri',12000]];
 function demoRpc(fn,b){
   var dm=store.get('demoMe',null);
   if(fn==='loc_yo') return dm?[dm]:[];
@@ -597,7 +598,7 @@ function openMap(){
       '<text class="lbl'+(off?' off':'')+'" x="'+(p[0]+(right?22:-22))+'" y="'+(p[1]+9)+'" text-anchor="'+(right?'start':'end')+'">'+l[1]+'</text>'; }).join('');
   var faces=people.map(function(pp){ var isMe=me&&pp.nombre===me.nombre, k=isMe?km:Math.min(TOTAL_KM,Number(pp.pasos_totales)/STEPS_PER_KM), q=rutaPunto(k), s=isMe?84:62;
     return {k:k,html:'<g><circle cx="'+q[0]+'" cy="'+(q[1]-s/2-6)+'" r="'+(s/2+4)+'" fill="'+(isMe?'#e2a54a':'#f3e2b4')+'" stroke="#2b1d0e" stroke-width="4"/>'+
-      '<svg x="'+(q[0]-s/2)+'" y="'+(q[1]-s-6)+'" width="'+s+'" height="'+s+'" viewBox="'+((FACE[pp.hobbit]||0)*72)+' 0 72 72"><image href="'+M.faces+'" width="504" height="72" style="image-rendering:pixelated"/></svg></g>'};
+      '<svg x="'+(q[0]-s/2)+'" y="'+(q[1]-s-6)+'" width="'+s+'" height="'+s+'" viewBox="'+((FACE[pp.hobbit]||0)*72)+' 0 72 72"><image href="'+M.faces+'" width="'+(72*FACEN)+'" height="72" style="image-rendering:pixelated"/></svg></g>'};
   }).sort(function(a,b){return a.k-b.k;}).map(function(f){return f.html;}).join('');
   var mtSvg='<svg class="mt" viewBox="0 0 300 160"><path d="M10 150L120 40c10-10 20-12 30-12s20 2 30 12l110 110z" fill="#5a4636"/><path d="M120 40c10-10 20-12 30-12s20 2 30 12l-14 14-16-8-16 10z" fill="#3a2a1e"/><path d="M146 30c-6-14 2-26 10-28-4 10 6 14 2 28z" fill="#9c2f22" opacity=".8"/><path d="M140 20c-10-12-30-10-40-4M160 18c14-10 34-8 44-2" stroke="#6a5a4a" stroke-width="4" fill="none" opacity=".6"/></svg>';
   el.innerHTML='<div class="mh"><h2>El viaje</h2><button type="button" aria-label="Cerrar">×</button></div><div class="sc"><div class="wrap2">'+
@@ -649,7 +650,7 @@ function openPage(i){
     '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof pregHtml==='function'?pregHtml(i):'')+miniBtn(i));
   $('bk').onclick=function(){ openTab('libro'); }; bindMini();
 }
-function faceStyle(h,size){ return 'background-image:url('+M.faces+');background-size:'+(size*7)+'px '+size+'px;background-position:-'+((FACE[h]||0)*size)+'px 0'; }
+function faceStyle(h,size){ if((FACE[h]||0)>=FACEN) return 'background:#5a7a3a;border-radius:50%'; return 'background-image:url('+M.faces+');background-size:'+(size*FACEN)+'px '+size+'px;background-position:-'+((FACE[h]||0)*size)+'px 0'; }
 var TABS={
   libro:function(){return '<h2>Libro de Bilbo</h2><p class="note">Cada tramo escribe su página mientras lo recorres.</p><ol class="list">'+T.map(function(s,i){var o=i<=reached, k=leidas(i), n=frases(i).length;return '<li class="'+(o?'':'locked')+'"><span class="n">'+(i+1)+'</span><span class="t">'+(o?'<button type="button" data-page="'+i+'">'+s.title+'</button>':'Página en blanco')+'</span><span class="k">'+(o?(k<n?'escribiéndose':'completa'):'km '+s.km)+'</span></li>';}).join('')+'</ol>';},
   comunidad:function(){var l=people.slice().sort(function(a,b){return b.pasos_totales-a.pasos_totales;});
