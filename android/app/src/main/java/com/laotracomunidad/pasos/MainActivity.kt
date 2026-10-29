@@ -74,6 +74,9 @@ class MainActivity : ComponentActivity() {
         val boton = Button(this).apply { text = "Activar y mandar mis pasos" }; col.addView(boton)
         estado = texto("", 16f, Color.rgb(201,188,156)); col.addView(estado)
         val juego = Button(this).apply { text = "Abrir el juego" }; col.addView(juego)
+        val diag = Button(this).apply { text = "¿Qué ve la app? (diagnóstico)" }; col.addView(diag)
+        val diagT = texto("", 14f, Color.rgb(201,188,156)); col.addView(diagT)
+        diag.setOnClickListener { diagT.text = "Mirando…"; lifecycleScope.launch { diagT.text = try { Pasos.diagnostico(this@MainActivity) } catch (e: Exception) { "Error: " + e } } }
         setContentView(ScrollView(this).apply { setBackgroundColor(Color.rgb(20,17,11)); addView(col) })
         if (Pasos.nombre(this).isNotEmpty()) estado?.text = "Activada para " + Pasos.nombre(this) + "."
 

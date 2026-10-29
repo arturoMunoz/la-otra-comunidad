@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateRequest
+import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.work.*
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,18 @@ object Pasos {
         val desde = LocalDate.now(z).atStartOfDay(z).toInstant()
         val r = hc.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), TimeRangeFilter.between(desde, Instant.now())))
         return r[StepsRecord.COUNT_TOTAL] ?: 0L
+    }
+
+    /** Qué hay en Health Connect: pasos de hoy y de qué apps vienen, y de los últimos 7 días. */
+    suspend fun diagnostico(c: Context): String {
+        val hc = HealthConnectClient.getOrCreate(c); val z = ZoneId.of("Europe/Madrid")
+        val hoy = LocalDate.now(z).atStartOfDay(z).toInstant(); val semana = LocalDate.now(z).minusDays(7).atStartOfDay(z).toInstant()
+        val rh = hc.readRecords(ReadRecordsRequest(StepsRecord::class, TimeRangeFilter.between(hoy, Instant.now()))).records
+        val rs = hc.readRecords(ReadRecordsRequest(StepsRecord::class, TimeRangeFilter.between(semana, Instant.now()))).records
+        val apps = rs.map { it.metadata.dataOrigin.packageName }.toSet()
+        val ult = rs.maxByOrNull { it.endTime }?.endTime?.atZone(z)?.toLocalDateTime()?.toString()?.replace('T',' ')?.take(16) ?: "nunca"
+        return "Health Connect: hoy " + rh.size + " registros (" + rh.sumOf { it.count } + " pasos); últimos 7 días " + rs.size +
+            " registros. Último paso: " + ult + ". Apps que escriben pasos: " + (if (apps.isEmpty()) "ninguna" else apps.joinToString(", "))
     }
 
     /** Devuelve un texto para enseñar: "8.420 pasos enviados" o el error. */
