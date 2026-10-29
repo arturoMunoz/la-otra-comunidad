@@ -1,0 +1,62 @@
+package com.laotracomunidad.pasos
+
+import android.content.Context
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.request.AggregateRequest
+import androidx.health.connect.client.time.TimeRangeFilter
+import androidx.work.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.concurrent.TimeUnit
+
+/** Lee los pasos de hoy en Health Connect y los manda al juego (la misma función que el atajo del iPhone). */
+object Pasos {
+    const val URL_RPC = "https://egdnytvckttgvybdbvmw.supabase.co/rest/v1/rpc/loc_pasos_hoy"
+    const val CLAVE = "sb_publishable_1-eGqPkYOPKsW-ZEtUBo7A_16RQQGdK"
+    const val JUEGO = "https://la-otra-comunidad.benbarek1903.workers.dev/"
+
+    fun prefs(c: Context) = c.getSharedPreferences("loc", Context.MODE_PRIVATE)
+    fun nombre(c: Context) = prefs(c).getString("nombre", "") ?: ""
+
+    suspend fun pasosHoy(c: Context): Long {
+        val hc = HealthConnectClient.getOrCreate(c)
+        val z = ZoneId.of("Europe/Madrid")
+        val desde = LocalDate.now(z).atStartOfDay(z).toInstant()
+        val r = hc.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), TimeRangeFilter.between(desde, Instant.now())))
+        return r[StepsRecord.COUNT_TOTAL] ?: 0L
+    }
+
+    /** Devuelve un texto para enseñar: "8.420 pasos enviados" o el error. */
+    suspend fun sincroniza(c: Context): String {
+        val n = nombre(c); if (n.isBlank()) return "Pon tu nombre primero."
+        val pasos = pasosHoy(c)
+        return withContext(Dispatchers.IO) {
+            val con = URL(URL_RPC).openConnection() as HttpURLConnection
+            con.requestMethod = "POST"; con.doOutput = true; con.connectTimeout = 15000; con.readTimeout = 15000
+            con.setRequestProperty("apikey", CLAVE); con.setRequestProperty("Content-Type", "application/json")
+            con.outputStream.use { it.write(JSONObject().put("p_clave", n).put("p_pasos", pasos.toString()).toString().toByteArray()) }
+            val code = con.responseCode
+            val txt = (if (code < 300) con.inputStream else con.errorStream)?.bufferedReader()?.readText() ?: ""
+            prefs(c).edit().putLong("ultima", System.currentTimeMillis()).putLong("pasos", pasos).apply()
+            if (code < 300) "%,d pasos de hoy enviados".format(pasos).replace(',', '.')
+            else "Error " + code + ": " + (try { JSONObject(txt).optString("message", txt) } catch (e: Exception) { txt })
+        }
+    }
+
+    fun programa(c: Context) {
+        val req = PeriodicWorkRequestBuilder<Trabajo>(1, TimeUnit.HOURS)
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
+        WorkManager.getInstance(c).enqueueUniquePeriodicWork("pasos", ExistingPeriodicWorkPolicy.UPDATE, req)
+    }
+}
+
+class Trabajo(c: Context, p: WorkerParameters) : CoroutineWorker(c, p) {
+    override suspend fun doWork(): Result = try { Pasos.sincroniza(applicationContext); Result.success() } catch (e: Exception) { Result.retry() }
+}
