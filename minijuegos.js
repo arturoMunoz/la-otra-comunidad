@@ -1049,3 +1049,19 @@ function decideParado(){
   WALK=QPOSE.img; M.andar={n:QPOSE.n,fw:53,h:74,ms:QPOSE.ms,dx:null,vel:0}; ROPAIMG=QPOSE.ropa; TINTC=QPOSE.tintc; ANCLA=QPOSE.ancla;
   try{ _w(t,h); QPOSE.ancla=ANCLA; } finally { WALK=sW; M.andar=sA; ROPAIMG=sR; TINTC=sT; ANCLA=sN; }
 }; })();
+
+/* ================= ANDROID: apuntar los pasos de hoy a mano (el número que marca el móvil) =================
+   Una web no puede leer Health Connect; mientras no haya app, se apunta el número del día. */
+function apuntaPasos(){
+  var hoy=Number(String($('steps')&&$('steps').textContent||'0').replace(/\D/g,''))||0;
+  openSheet('<h2>Tus pasos de hoy</h2><p class="note">Mira cuántos pasos lleva hoy tu móvil (en Salud de Samsung, Google Fit o la app de pasos que uses) y apúntalos aquí. Se guarda el total del día: si lo apuntas varias veces, vale el último.</p>'+
+    '<input class="fld" id="apP" type="number" inputmode="numeric" min="0" max="150000" placeholder="Por ejemplo, 8420" value="'+(hoy||'')+'" style="background:#fff8e6;color:#2b1d0e;border-color:#c4a46c;font-size:1.4rem;text-align:center">'+
+    '<button class="primary" id="apOk" type="button">Guardar mis pasos</button><p class="note" id="apMsg"></p>');
+  var i=$('apP'); setTimeout(function(){ try{i.focus();}catch(e){} },200);
+  $('apOk').onclick=function(){ var n=Math.round(Number(i.value)); if(!(n>=0)){ $('apMsg').textContent='Pon un número.'; return; }
+    if(n>150000){ $('apMsg').textContent='Eso son demasiados pasos para un día.'; return; }
+    $('apOk').disabled=true; $('apMsg').textContent='Guardando…';
+    (DEMO?Promise.resolve():rpc('loc_pasos_hoy',{p_clave:String(me&&me.clave_atajo||me&&me.nombre||''),p_pasos:String(n)}))
+      .then(function(){ closeSheet(); return refresh(); })
+      .catch(function(e){ $('apOk').disabled=false; $('apMsg').textContent='No se ha podido guardar: '+authErr(e); }); };
+}
