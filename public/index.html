@@ -1292,6 +1292,62 @@ function iluHtml(i){ return (M.libro&&M.libro[i])?'<img class="ilu" src="'+M.lib
 /* lector en el final del acto y en el libro */
 (function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('<ol class="list">','<p class="note">Preguntas acertadas: <b>'+pregAciertos()+' de '+PREG.length+'</b>.'+(pregAciertos()>=PREG.length?' Eres <b>Erudito de la Comarca</b>.':' Con 5 ganas la pluma de escribano; con las 8, las gafas y el título de Erudito de la Comarca.')+'</p><ol class="list">'); }; })();
 
+/* ================= TOQUE JRPG: cuadro de diálogo con texto letra a letra, ▼ para pasar y menús con ▶ =================
+   dialogo([{who:'Gildor',icon:'elfo',t:'…'},{t:'texto del narrador'}], alAcabar)  */
+(function(){ var c=document.createElement('style'); c.textContent=
+  '.dlg{position:absolute;left:10px;right:10px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:35;color:#2b1d0e;'+
+    'background:#f1dfae;border:3px solid #2b1d0e;box-shadow:inset 0 0 0 3px #e2c27c,inset 0 0 0 5px #2b1d0e,0 6px 0 rgba(0,0,0,.35);'+
+    'padding:16px 18px 22px;min-height:112px;cursor:pointer;user-select:none;-webkit-user-select:none;animation:dlgIn .18s steps(3)}'+
+  '@keyframes dlgIn{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}'+
+  '.dlg .who{position:absolute;left:14px;top:-2px;transform:translateY(-100%);display:flex;align-items:center;gap:6px;background:#2b1d0e;color:#f3e2b4;'+
+    'font-family:var(--title);font-weight:700;font-size:.9rem;padding:4px 10px 3px 6px;clip-path:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% 100%,0 100%)}'+
+  '.dlg .who svg,.dlg .who img{width:22px;height:22px;image-rendering:pixelated}'+
+  '.dlg p{margin:0;font-size:1.05rem;line-height:1.4;min-height:2.8em;white-space:pre-wrap}'+
+  '.dlg .nx{position:absolute;right:14px;bottom:6px;font-size:.85rem;animation:dlgB .7s steps(2) infinite}'+
+  '@keyframes dlgB{50%{transform:translateY(3px);opacity:.35}}'+
+  '.dlg .pg{position:absolute;left:18px;bottom:5px;font-size:.72rem;color:#6a4f2c;font-weight:700;letter-spacing:.05em}'+
+  '.dlg-veil{position:absolute;inset:0;z-index:34;background:linear-gradient(transparent 45%,rgba(0,0,0,.45))}'+
+  /* marcos pixelados y cursor ▶ en los menús de todo el juego */
+  '.bubble{border-radius:0!important;border:2px solid #2b1d0e;box-shadow:inset 0 0 0 2px rgba(255,240,200,.45)}'+
+  '.opt,.mini-go{position:relative}'+
+  '.opt::before,.mini-go::before{content:"▶";position:absolute;left:-2px;top:50%;transform:translate(-100%,-50%);opacity:0;font-size:.8rem;color:#2b1d0e;transition:none}'+
+  '.opt:hover::before,.opt:focus-visible::before,.opt:active::before,.mini-go:hover::before,.mini-go:active::before{opacity:1;animation:dlgC .5s steps(2) infinite}'+
+  '@keyframes dlgC{50%{transform:translate(calc(-100% + 3px),-50%)}}'+
+  '.mj .opts,.preg{padding-left:14px}';
+  document.head.appendChild(c); })();
+var AUD=null;
+function blip(){ try{ if(!AUD){ var A=window.AudioContext||window.webkitAudioContext; if(!A) return; AUD=new A(); }
+  if(AUD.state==='suspended') AUD.resume(); var o=AUD.createOscillator(), g=AUD.createGain();
+  o.type='square'; o.frequency.value=880+Math.random()*120; g.gain.value=.018; o.connect(g); g.connect(AUD.destination);
+  var t=AUD.currentTime; g.gain.setValueAtTime(.018,t); g.gain.exponentialRampToValueAtTime(.0001,t+.04); o.start(t); o.stop(t+.045); }catch(e){} }
+function dialogo(lineas,alAcabar){
+  lineas=(lineas||[]).filter(function(l){return l&&l.t;}); if(!lineas.length){ if(alAcabar) alAcabar(); return; }
+  var app=$('app'), veil=document.createElement('div'), box=document.createElement('div');
+  veil.className='dlg-veil'; box.className='dlg'; box.setAttribute('role','dialog'); box.setAttribute('aria-live','polite');
+  app.appendChild(veil); app.appendChild(box);
+  var k=0, pos=0, timer=null, full='';
+  function pinta(){
+    var L=lineas[k]; full=L.t; pos=0;
+    box.innerHTML=(L.who?'<div class="who">'+(L.icon&&ICON[L.icon]?ICON[L.icon]:'')+L.who+'</div>':'')+'<p></p><span class="pg">'+(lineas.length>1?(k+1)+'/'+lineas.length:'')+'</span><span class="nx" hidden>▼</span>';
+    var p=box.querySelector('p'); clearInterval(timer);
+    timer=setInterval(function(){ pos++; p.textContent=full.slice(0,pos); if(pos%3===1&&full[pos-1]!==' ') blip();
+      if(pos>=full.length){ clearInterval(timer); timer=null; box.querySelector('.nx').hidden=false; } },26);
+  }
+  function toca(e){ if(e) e.stopPropagation();
+    if(timer){ clearInterval(timer); timer=null; box.querySelector('p').textContent=full; box.querySelector('.nx').hidden=false; return; }
+    k++; if(k<lineas.length){ pinta(); return; }
+    box.remove(); veil.remove(); document.removeEventListener('keydown',tecla); if(alAcabar) alAcabar(); }
+  function tecla(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toca(); } }
+  box.onclick=toca; veil.onclick=toca; document.addEventListener('keydown',tecla);
+  pinta();
+}
+/* al llegar a un sitio: primero la escena en diálogo, luego la página */
+(function(){ var _arr=openArrival;
+  openArrival=function(i){ var s=T[i];
+    dialogo([{t:'Llegas a '+s.name+'.'},{who:s.who,icon:s.icon,t:s.say}],function(){ _arr(i); }); };
+})();
+(function(){ var _fp=flushPending; flushPending=function(){ if(document.querySelector('.dlg')) return; return _fp(); }; })();
+
 if('serviceWorker' in navigator && !DEMO && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
 </script>
 </body>
