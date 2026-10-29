@@ -426,7 +426,7 @@ Promise.all([
   Promise.all(M.tramos.map(function(ls){return Promise.all(ls.map(function(l){return load(l.src).then(function(im){return {im:im,y:l.y,v:l.v};});}));})),
   Promise.all(M.arturo.map(load)), Promise.all(M.vecinos.map(load)), M.andar?load(M.andar.src):Promise.resolve(null)
 ]).then(function(a){
-  TI=a[0];AR=a[1];VE=a[2];WALK=a[3];
+  TI=a[0];AR=a[1];VE=a[2];WALK=a[3]; if(me&&me.hobbit&&typeof usaAndar==='function') usaAndar(me.hobbit);
   /* escenas extra dentro de los tramos (cada ~5 km) y objetos del camino: se cargan después, sin hacer esperar */
   (M.escenas||[]).forEach(function(e){ Promise.all(e.capas.map(function(l){return load(l.src).then(function(im){return {im:im,y:l.y,v:l.v};});}))
     .then(function(ls){ var i=TI.length; TI.push(ls); SKY[i]=ls[0]&&ls[0].im?skyColor(ls[0].im):[95,155,224]; ESC.push({km:e.km,i:i}); ESC.sort(function(a,b){return a.km-b.km;}); }).catch(function(){}); });

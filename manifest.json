@@ -1128,5 +1128,19 @@
 "pant_azul": "assets/eq/pant_azul.webp",
 "pant_gris": "assets/eq/pant_gris.webp",
 "pant_mostaza": "assets/eq/pant_mostaza.webp"
+},
+"andarPJ": {
+"fer": {
+"src": "assets/pj/andar_fer.webp",
+"pantalon": "assets/pj/ropa_pantalon_fer.webp",
+"capa": "assets/pj/ropa_capa_fer.webp",
+"capa_f": "assets/pj/ropa_capa_f_fer.webp"
+},
+"arturo": {
+"src": "assets/pj/andar_arturo.webp",
+"pantalon": "assets/pj/ropa_pantalon_arturo.webp",
+"capa": "assets/pj/ropa_capa_arturo.webp",
+"capa_f": "assets/pj/ropa_capa_f_arturo.webp"
+}
 }
 }

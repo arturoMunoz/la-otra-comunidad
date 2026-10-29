@@ -44,6 +44,7 @@ elif '--demo' in sys.argv:
     m['libro'] = {k: uri(v) for k, v in m.get('libro', {}).items()}
     if 'ropa' in m: m['ropa'] = {k: (uri(v) if isinstance(v, str) else v) for k, v in m['ropa'].items()}
     if 'ropaIco' in m: m['ropaIco'] = {k: uri(v) for k, v in m['ropaIco'].items()}
+    if 'andarPJ' in m: m['andarPJ'] = {h: {k: uri(v) for k, v in d.items()} for h, d in m['andarPJ'].items()}
     if 'objetos' in m: m['objetos'] = {k: uri(v) for k, v in m['objetos'].items()}
     html = fill(src, m, True)
     head = re.search(r'<head>(.*?)</head>', html, re.S).group(1)
