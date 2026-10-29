@@ -467,17 +467,19 @@ $('sync').onclick=function(){
 /* ---------- dibujo ---------- */
 function tramoAt(k){for(var i=T.length-1;i>=0;i--) if(k>=T[i].km) return i; return 0;}
 function rgb(c,f){return 'rgb('+Math.round(c[0]*f)+','+Math.round(c[1]*f)+','+Math.round(c[2]*f)+')';}
+var GC={}, SUELO=(M.suelo||[]).map(function(src){ if(!src) return null; var im=new Image(); im.src=src; return im; });
+function sueloColor(L){ try{ var im=L.im, c=document.createElement('canvas'); c.width=im.width; c.height=4; var x=c.getContext('2d'); x.drawImage(im,0,im.height-4,im.width,4,0,0,im.width,4);
+  var d=x.getImageData(0,0,im.width,4).data, r=0,g=0,b=0,n=0; for(var j=0;j<d.length;j+=4){ if(d[j+3]<200) continue; r+=d[j];g+=d[j+1];b+=d[j+2];n++; } return n?'rgb('+(r/n*.8|0)+','+(g/n*.8|0)+','+(b/n*.8|0)+')':'#33231a'; }catch(e){ return '#33231a'; } }
 function drawTramo(i,alpha,o){
   ctx.globalAlpha=alpha;
   var top=SKY[i]||[95,155,224];
   if(OY>0){ var g=ctx.createLinearGradient(0,0,0,OY+2); g.addColorStop(0,rgb(top,.8)); g.addColorStop(1,rgb(top,1)); ctx.fillStyle=g; ctx.fillRect(0,0,W,OY+2); }
   var bottom=OY;
   TI[i].forEach(function(L){ if(!L.im) return; var w=L.im.width, x=-((o*L.v)%w); for(;x<W;x+=w) ctx.drawImage(L.im,Math.round(x),L.y+OY); bottom=Math.max(bottom,L.y+OY+L.im.height); });
-  if(bottom<H){ /* debajo del camino sigue la hierba del primer plano hasta abajo del todo (los botones van encima) */
-    var F=TI[i][TI[i].length-1]; if(F&&F.im){ var fw=F.im.width, fh=F.im.height, sh=Math.min(16,fh), fx=-((o*F.v)%fw);
-      for(var yy=bottom-1, k=0; yy<H; yy+=sh, k++){ for(var xx=fx; xx<W; xx+=fw) ctx.drawImage(F.im,0,fh-sh,fw,sh,Math.round(xx+(k%2)*37),yy,fw,sh); for(var x2=fx-fw; x2<0; x2+=fw) ctx.drawImage(F.im,0,fh-sh,fw,sh,Math.round(x2+(k%2)*37),yy,fw,sh); }
-      var e=ctx.createLinearGradient(0,bottom,0,H); e.addColorStop(0,'rgba(0,0,0,0)'); e.addColorStop(1,'rgba(0,0,0,.35)'); ctx.fillStyle=e; ctx.fillRect(0,bottom,W,H-bottom); }
-    else { ctx.fillStyle='#33231a'; ctx.fillRect(0,bottom-1,W,H-bottom+1); } }
+  /* bajo los pies: UNA sola capa de suelo hasta abajo (M.suelo[i] si hay dibujo; si no, el borde del camino y su color) */
+  var SU=(typeof SUELO!=='undefined')&&SUELO[i], sy=OY+232;
+  if(SU&&SU.complete&&SU.width){ var k=(H-sy+4)/SU.height, sw=SU.width*k, sx=-((o*1.15)%sw); for(var xx=sx-sw; xx<W; xx+=sw) ctx.drawImage(SU,Math.round(xx),sy-4,Math.ceil(sw),Math.ceil(H-sy+4)); }
+  else if(bottom<H){ var c=GC[i]||(GC[i]=sueloColor(TI[i][TI[i].length-1])); var e=ctx.createLinearGradient(0,bottom-2,0,H); e.addColorStop(0,c); e.addColorStop(1,'#1a120b'); ctx.fillStyle=e; ctx.fillRect(0,bottom-2,W,H-bottom+2); }
   if(i<=1) VE.forEach(function(im,j){ if(!im) return; var gap=640,x=Math.round(((j*190+150-o)%gap+gap)%gap)-60; if(x>=W) return; var wx=W*0.3, d=Math.abs(x+im.width/2-(wx+26)); ctx.globalAlpha=alpha*Math.max(0,Math.min(1,(d-24)/30)); ctx.drawImage(im,x,OY+226-im.height+4); ctx.globalAlpha=alpha; });
   ctx.globalAlpha=1;
 }
