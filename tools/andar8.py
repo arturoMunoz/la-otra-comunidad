@@ -7,15 +7,16 @@ src, nom = sys.argv[1], sys.argv[2]; FW, H = 53, 74
 a = np.array(Image.open(src).convert('RGB')).astype(int); h, w, _ = a.shape
 ly = [y for y in range(h) if (a.max(2)[y] < 60).mean() > 0.5]; base = min(ly) - 1
 r, g, b = a[..., 0], a[..., 1], a[..., 2]
+col = (a.max(2) - a.min(2)) > 45  # sin grises: el palo de golf de Arturo no cuenta para la altura ni para centrar la cabeza
 fg = ~ndimage.binary_dilation((r > 170) & (b > 170) & (g < 120), iterations=1); fg[min(ly) - 1:max(ly) + 2] = False
 lab, n = ndimage.label(ndimage.binary_closing(fg, iterations=4)); ob = ndimage.find_objects(lab)
 sz = ndimage.sum(np.ones_like(lab), lab, range(1, n + 1))
 sel = sorted([i for i in range(n) if sz[i] > 8000], key=lambda i: ob[i][1].start)
-top = min(ob[i][0].start for i in sel); sc = 71 / (base + 1 - top)
+top = min(ob[i][0].start + np.argmax(((lab[ob[i]] == i + 1) & col[ob[i]]).any(1)) for i in sel); sc = 71 / (base + 1 - top)
 N = len(sel); sheet = Image.new('RGBA', (FW * N, H), (0, 0, 0, 0)); info = []
 for f, i in enumerate(sel):
     s = ob[i]; m = (lab[s] == i + 1) & fg[s]
-    t0 = np.argmax(m.any(1)); hx = np.nonzero(m[t0:t0 + 40])[1].mean()
+    mc = m & col[s]; t0 = np.argmax(mc.any(1)); hx = np.nonzero(mc[t0:t0 + 40])[1].mean()
     full = np.zeros((base + 1 - s[0].start, m.shape[1], 4), np.uint8)  # hasta la línea
     full[:m.shape[0], :, :3] = a[s][:full.shape[0]]; full[:m.shape[0], :, 3] = np.where(m, 255, 0)[:full.shape[0]]
     im = Image.fromarray(full); im = im.resize((round(im.width * sc), round(im.height * sc)), Image.LANCZOS)
