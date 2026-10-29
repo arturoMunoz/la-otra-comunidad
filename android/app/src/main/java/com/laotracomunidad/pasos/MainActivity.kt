@@ -31,6 +31,17 @@ class MainActivity : ComponentActivity() {
         Pasos.programa(this); manda()
     }
 
+    private var oyente: android.hardware.SensorEventListener? = null
+    override fun onResume() { super.onResume()
+        if (!Pasos.permisoSensor(this)) return
+        val sm = getSystemService(SENSOR_SERVICE) as android.hardware.SensorManager
+        val s = sm.getDefaultSensor(android.hardware.Sensor.TYPE_STEP_COUNTER) ?: return
+        oyente = object : android.hardware.SensorEventListener {
+            override fun onSensorChanged(e: android.hardware.SensorEvent) { Pasos.alPaso(this@MainActivity, e.values[0]) }
+            override fun onAccuracyChanged(a: android.hardware.Sensor?, b: Int) {} }
+        sm.registerListener(oyente, s, android.hardware.SensorManager.SENSOR_DELAY_NORMAL) }
+    override fun onPause() { super.onPause(); oyente?.let { (getSystemService(SENSOR_SERVICE) as android.hardware.SensorManager).unregisterListener(it) }; oyente = null }
+
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
         val prev = Thread.getDefaultUncaughtExceptionHandler()
@@ -79,7 +90,7 @@ class MainActivity : ComponentActivity() {
         val juego = Button(this).apply { text = "Abrir el juego" }; col.addView(juego)
         val diag = Button(this).apply { text = "¿Qué ve la app? (diagnóstico)" }; col.addView(diag)
         val diagT = texto(Pasos.prefs(this).getString("fallo", null)?.let { "Último fallo: " + it } ?: "", 14f, Color.rgb(201,188,156)); col.addView(diagT)
-        diag.setOnClickListener { diagT.text = "Mirando…"; lifecycleScope.launch { diagT.text = try { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { Pasos.diagnostico(this@MainActivity) } } catch (e: Throwable) { "Error: " + e + "\n" + e.stackTrace.take(4).joinToString("\n") } } }
+        diag.setOnClickListener { if (!Pasos.permisoSensor(this)) { pedirSensor.launch(android.Manifest.permission.ACTIVITY_RECOGNITION); return@setOnClickListener }; diagT.text = "Mirando… (da unos pasos)"; lifecycleScope.launch { diagT.text = try { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { Pasos.diagnostico(this@MainActivity) } } catch (e: Throwable) { "Error: " + e + "\n" + e.stackTrace.take(4).joinToString("\n") } } }
         setContentView(ScrollView(this).apply { setBackgroundColor(Color.rgb(20,17,11)); addView(col) })
         if (Pasos.nombre(this).isNotEmpty()) estado?.text = "Activada para " + Pasos.nombre(this) + "."
 

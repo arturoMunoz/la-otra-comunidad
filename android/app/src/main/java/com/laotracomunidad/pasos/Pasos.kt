@@ -33,21 +33,32 @@ object Pasos {
     fun prefs(c: Context) = c.getSharedPreferences("loc", Context.MODE_PRIVATE)
     fun nombre(c: Context) = prefs(c).getString("nombre", "") ?: ""
 
-    /** Sensor de pasos del móvil (cuenta desde que se enciende): se va acumulando por día en la app. */
-    suspend fun sensor(c: Context): Long? {
-        val sm = c.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val s = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) ?: return null
-        val v = withTimeoutOrNull(8000) { suspendCancellableCoroutine<Float> { k ->
-            val l = object : SensorEventListener {
-                override fun onSensorChanged(e: SensorEvent) { sm.unregisterListener(this); if (k.isActive) k.resume(e.values[0]) }
-                override fun onAccuracyChanged(a: Sensor?, b: Int) {} }
-            sm.registerListener(l, s, SensorManager.SENSOR_DELAY_NORMAL); k.invokeOnCancellation { sm.unregisterListener(l) } } } ?: return null
+    var ultimoSensor = "sin leer"
+    fun permisoSensor(c: Context) = android.os.Build.VERSION.SDK_INT < 29 ||
+        c.checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+    /** Suma al día lo que ha avanzado el contador del móvil (que cuenta desde que se encendió). */
+    fun alPaso(c: Context, v: Float): Long {
         val p = prefs(c); val hoy = LocalDate.now(ZoneId.of("Europe/Madrid")).toString()
         var dia = p.getString("s_dia", null); var acc = p.getLong("s_acc", 0); val ult = p.getFloat("s_ult", -1f)
-        if (ult >= 0) { val d = if (v >= ult) (v - ult).toLong() else v.toLong(); if (dia == hoy) acc += d }
+        if (ult >= 0 && dia == hoy) acc += if (v >= ult) (v - ult).toLong() else v.toLong()
         if (dia != hoy) { dia = hoy; acc = 0 }
         p.edit().putString("s_dia", dia).putLong("s_acc", acc).putFloat("s_ult", v).apply()
         return acc
+    }
+    fun accHoy(c: Context): Long { val p = prefs(c); return if (p.getString("s_dia", null) == LocalDate.now(ZoneId.of("Europe/Madrid")).toString()) p.getLong("s_acc", 0) else 0 }
+
+    suspend fun sensor(c: Context): Long? {
+        if (!permisoSensor(c)) { ultimoSensor = "sin permiso de actividad física"; return null }
+        val sm = c.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val s = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) ?: run { ultimoSensor = "este móvil no tiene sensor de pasos"; return null }
+        val v = withTimeoutOrNull(6000) { suspendCancellableCoroutine<Float> { k ->
+            val l = object : SensorEventListener {
+                override fun onSensorChanged(e: SensorEvent) { sm.unregisterListener(this); if (k.isActive) k.resume(e.values[0]) }
+                override fun onAccuracyChanged(a: Sensor?, b: Int) {} }
+            sm.registerListener(l, s, SensorManager.SENSOR_DELAY_NORMAL); k.invokeOnCancellation { sm.unregisterListener(l) } } }
+        if (v == null) { ultimoSensor = "conectado, esperando a que des algún paso"; return accHoy(c) }
+        ultimoSensor = "funcionando"; return alPaso(c, v)
     }
 
     suspend fun pasosHoy(c: Context): Long {
@@ -73,7 +84,7 @@ object Pasos {
         val apps = rs.map { it.metadata.dataOrigin.packageName }.toSet()
         val ult = rs.maxByOrNull { it.endTime }?.endTime?.atZone(z)?.toLocalDateTime()?.toString()?.replace('T',' ')?.take(16) ?: "nunca"
         val sen = try { sensor(c) } catch (e: Exception) { null }
-        return "Sensor del móvil: " + (sen?.let { "$it pasos hoy (desde que se activó)" } ?: "no disponible o sin permiso") + ".\nHealth Connect: hoy " + rh.size + " registros (" + rh.sumOf { it.count } + " pasos); últimos 7 días " + rs.size +
+        return "Sensor del móvil: " + ultimoSensor + (sen?.let { " · $it pasos hoy (desde que se activó)" } ?: "") + ".\nHealth Connect: hoy " + rh.size + " registros (" + rh.sumOf { it.count } + " pasos); últimos 7 días " + rs.size +
             " registros. Último paso: " + ult + ". Apps que escriben pasos: " + (if (apps.isEmpty()) "ninguna" else apps.joinToString(", "))
     }
 
