@@ -1067,7 +1067,11 @@
 "ropa": {
 "pantalon": "assets/pj/ropa_pantalon.webp",
 "capa": "assets/pj/ropa_capa.webp",
-"capa_f": "assets/pj/ropa_capa_f.webp"
+"capa_f": "assets/pj/ropa_capa_f.webp",
+"capaFrame": {
+"fw": 84,
+"ox": -31
+}
 },
 "props": {
 "senal": "assets/props/senal.webp",
@@ -1114,5 +1118,15 @@
 "cesta": "assets/mj/obj_cesta.webp",
 "farol": "assets/mj/obj_farol.webp",
 "balsa": "assets/mj/obj_balsa.webp"
+},
+"ropaIco": {
+"capa": "assets/eq/capa.webp",
+"capa_verde": "assets/eq/capa_verde.webp",
+"capa_granate": "assets/eq/capa_granate.webp",
+"capa_gris": "assets/eq/capa_gris.webp",
+"pant_verde": "assets/eq/pant_verde.webp",
+"pant_azul": "assets/eq/pant_azul.webp",
+"pant_gris": "assets/eq/pant_gris.webp",
+"pant_mostaza": "assets/eq/pant_mostaza.webp"
 }
 }
