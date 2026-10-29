@@ -687,7 +687,7 @@
 "lugares": [
 [
 0,
-"Bols\u00f3n Cerrado",
+"Bolsón Cerrado",
 1500
 ],
 [
@@ -739,7 +739,9 @@
 "cazo": "assets/eq/cazo.webp",
 "broche": "assets/eq/broche.webp",
 "panuelo_rojo": "assets/eq/panuelo_rojo.webp",
-"cantimplora_cinto": "assets/eq/cantimplora_cinto.webp"
+"cantimplora_cinto": "assets/eq/cantimplora_cinto.webp",
+"pluma": "assets/eq/pluma.webp",
+"gafas": "assets/eq/gafas.webp"
 },
 "prologo": {
 "video": "assets/prologo/prologo.mp4",
@@ -771,6 +773,13 @@
 ]
 },
 "libro": {
-"0": "assets/libro/p1.webp"
+"0": "assets/libro/p1.webp",
+"1": "assets/libro/p2.webp",
+"2": "assets/libro/p3.webp",
+"3": "assets/libro/p4.webp",
+"4": "assets/libro/p5.webp",
+"5": "assets/libro/p6.webp",
+"6": "assets/libro/p7.webp",
+"7": "assets/libro/p8.webp"
 }
 }

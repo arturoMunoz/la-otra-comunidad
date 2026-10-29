@@ -443,11 +443,14 @@ var EQ={
   cazo:{n:'Cazo abollado',por:'Discutiste con Sam',w:9,dx:-15,dy:30},
   broche:{n:'Broche del mapa',por:'Cogiste el mapa de Bilbo',w:8,dx:0,dy:27},
   panuelo_rojo:{n:'Pañuelo rojo de Bilbo',por:'Cogiste los pañuelos de Bilbo',w:10,dx:-2,dy:42},
-  cantimplora_cinto:{n:'Cantimplora al cinto',por:'Cogiste la cantimplora de Bilbo',w:12,dx:-10,dy:40}
+  cantimplora_cinto:{n:'Cantimplora al cinto',por:'Cogiste la cantimplora de Bilbo',w:12,dx:-10,dy:40},
+  pluma:{n:'Pluma de escribano',por:'5 preguntas del libro acertadas',w:12,dx:-12,dy:0},
+  gafas:{n:'Gafas de Erudito',por:'Las 8 preguntas del libro acertadas',w:10,dx:-1,dy:12}
 };
 function eqGanado(){
-  var z=zEstado(); if(!z||!store.get('fin1',false)) return [];
-  var g=[];
+  var g=[], pa=(typeof pregAciertos==='function')?pregAciertos():0;
+  if(pa>=5) g.push('pluma'); if(pa>=PREG.length) g.push('gafas');
+  var z=zEstado(); if(!z||!store.get('fin1',false)) return g;
   if(z.flags.ligero) g.push('capa'); else if(z.flags.pesado) g.push('sombrero');
   if(z.flags.samFeliz) g.push('panuelo_sam'); if(z.flags.samEnfadado) g.push('cazo');
   if(z.items.indexOf('mapa')>=0) g.push('broche'); if(z.items.indexOf('panuelo')>=0) g.push('panuelo_rojo'); if(z.items.indexOf('cantimplora')>=0) g.push('cantimplora_cinto');
@@ -479,10 +482,12 @@ function dibujaEquipo(ctx,x,y,f,detras){
 var _zurronTab=TABS.zurron;
 TABS.zurron=function(){
   var g=eqGanado(), p=eqPuesto();
-  var vest=g.length?'<p class="note">Lo que has ganado en el Acto I. Toca para ponértelo o quitártelo:</p><div class="bag">'+g.map(function(k){var on=p.indexOf(k)>=0;
+  var vest=g.length?'<p class="note">Lo que has ganado. Toca para ponértelo o quitártelo:</p><div class="bag">'+g.map(function(k){var on=p.indexOf(k)>=0;
       return '<button type="button" class="item eqb" data-eq="'+k+'" style="all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:.78rem;font-weight:700"><div class="box" style="'+(on?'border-color:#4f6b2e;box-shadow:0 0 0 3px #8fb85a':'opacity:.6')+'"><img src="'+M.equipo[k]+'" alt="" style="width:70%;height:70%;object-fit:contain;image-rendering:pixelated"></div>'+EQ[k].n+'<span style="font-weight:500;color:#6a4f2c">'+(on?'Puesto':'Guardado')+'</span></button>';}).join('')+'</div>'
     :(zEstado()?'<div class="empty">Las recompensas del Acto I se ganan al llegar a Cricava andando. Dependen de cómo hiciste el zurrón.</div>':'');
-  return _zurronTab().replace('<p class="note">Lo que metiste','<h2 style="font-size:1.1rem;margin-top:6px">Tu equipo</h2>'+vest+'<p class="note">Lo que metiste');
+  var base=_zurronTab(), bloque='<h2 style="font-size:1.1rem;margin-top:6px">Tu equipo</h2>'+vest;
+  if(base.indexOf('<p class="note">Lo que metiste')>=0) return base.replace('<p class="note">Lo que metiste',bloque+'<p class="note">Lo que metiste');
+  return g.length?base.replace('<p class="note">Objetos del camino',bloque+'<p class="note">Objetos del camino'):base;
 };
 document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.closest('.eqb'); if(!b) return;
   var k=b.dataset.eq, p=eqPuesto().slice(), i=p.indexOf(k); if(i>=0) p.splice(i,1); else p.push(k);
@@ -613,4 +618,4 @@ document.addEventListener('click',function(ev){ var b=ev.target.closest&&ev.targ
   document.head.appendChild(c); })();
 function iluHtml(i){ return (M.libro&&M.libro[i])?'<img class="ilu" src="'+M.libro[i]+'" alt="">':''; }
 /* lector en el final del acto y en el libro */
-(function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('<ol class="list">','<p class="note">Preguntas acertadas: <b>'+pregAciertos()+' de '+PREG.length+'</b>.</p><ol class="list">'); }; })();
+(function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('<ol class="list">','<p class="note">Preguntas acertadas: <b>'+pregAciertos()+' de '+PREG.length+'</b>.'+(pregAciertos()>=PREG.length?' Eres <b>Erudito de la Comarca</b>.':' Con 5 ganas la pluma de escribano; con las 8, las gafas y el título de Erudito de la Comarca.')+'</p><ol class="list">'); }; })();
