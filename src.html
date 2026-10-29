@@ -591,7 +591,7 @@ veil.onclick=closeSheet;
 function mark(i){ if(!shown.has(i)){ shown.add(i); if(me) rpc('loc_leer',{p_tramo:i}).catch(function(){}); } }
 function openArrival(i){
   mark(i); var s=T[i];
-  openSheet('<span class="eyebrow">Has llegado · Tramo '+(i+1)+' · '+s.cap+'</span><h2>'+s.title+'</h2>'+
+  openSheet('<span class="eyebrow">Has llegado · Tramo '+(i+1)+' · '+s.cap+'</span><h2>'+s.title+'</h2>'+(typeof iluHtml==='function'?iluHtml(i):'')+
     '<p class="page">'+pageHtml(i)+'</p>'+
     '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof zMomentoHtml==='function'?zMomentoHtml(i):'')+
     '<p class="note">✒ El resto de la historia se escribe en el Libro de Bilbo mientras caminas. Al zurrón: <b>'+ITEMS[i].n+'</b>.</p>'+
@@ -604,10 +604,10 @@ function miniBtn(i){ var id=miniDe(i); if(!id) return ''; var b=mjBest(id);
 function bindMini(){ sheet.querySelectorAll('[data-mini]').forEach(function(x){ x.onclick=function(){ abrirMinijuego(x.dataset.mini); }; }); }
 function openPage(i){
   var s=T[i], k=leidas(i), n=frases(i).length;
-  openSheet('<button class="back" id="bk" type="button">‹ Libro de Bilbo</button><span class="eyebrow">Página '+(i+1)+' · '+s.cap+' · km '+s.km+'–'+ends[i]+'</span><h2>'+s.title+'</h2>'+
+  openSheet('<button class="back" id="bk" type="button">‹ Libro de Bilbo</button><span class="eyebrow">Página '+(i+1)+' · '+s.cap+' · km '+s.km+'–'+ends[i]+'</span><h2>'+s.title+'</h2>'+(typeof iluHtml==='function'?iluHtml(i):'')+
     '<p class="page">'+pageHtml(i)+'</p>'+
     (k<n?'<p class="note">✒ Bilbo sigue escribiendo esta página. Faltan '+fmt(Math.max(0,ends[i]-km))+' km de camino para leerla entera.</p>':'')+
-    '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+miniBtn(i));
+    '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof pregHtml==='function'?pregHtml(i):'')+miniBtn(i));
   $('bk').onclick=function(){ openTab('libro'); }; bindMini();
 }
 function faceStyle(h,size){ return 'background-image:url('+M.faces+');background-size:'+(size*7)+'px '+size+'px;background-position:-'+((FACE[h]||0)*size)+'px 0'; }

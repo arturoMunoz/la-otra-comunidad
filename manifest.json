@@ -769,5 +769,8 @@
 "assets/pj/sombrero_azul_noche.webp",
 "assets/pj/sombrero_azul_calor.webp"
 ]
+},
+"libro": {
+"0": "assets/libro/p1.webp"
 }
 }

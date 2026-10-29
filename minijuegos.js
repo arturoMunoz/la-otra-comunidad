@@ -581,3 +581,36 @@ function dibujaNPC(ctx,t,h){
   var g=(M.ilustraciones||[]).length?'<h2 style="font-size:1.1rem;margin-top:6px">Antes del viaje</h2><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+
     M.ilustraciones.map(function(s){return '<img src="'+s+'" alt="" style="width:100%;aspect-ratio:9/16;object-fit:cover;border:2px solid #2b1d0e;border-radius:6px;image-rendering:pixelated">';}).join('')+'</div>':'';
   return _lib().replace('<button class="ghost" type="button" id="verPro">',g+'<button class="ghost" type="button" id="verPro">'); }; })();
+
+/* ================= PREGUNTAS DEL LIBRO DE BILBO =================
+   Una por tramo, sobre lo que cuenta su página. Solo se puede contestar con la página entera escrita
+   (es decir, después de recorrer el tramo). Un intento. Guardado en loc.preguntas. */
+var PREG=[
+  {q:'¿A quién le vende Frodo Bolsón Cerrado?',o:['A los Sacovilla-Bolsón','Al granjero Maggot','A Sam'],ok:0},
+  {q:'¿Qué recuerda todavía la gente de Delagua?',o:['La fiesta de Bilbo y cómo desapareció','La boda de Sam','La riada del río'],ok:0},
+  {q:'¿Qué siente Frodo mientras el jinete olfatea junto al árbol?',o:['Ganas de ponerse el Anillo','Ganas de echar a correr','Ganas de hablar con él'],ok:0},
+  {q:'¿Qué hace que el jinete se retire en el bosque?',o:['Una canción de elfos','Un trueno','El farol de Sam'],ok:0},
+  {q:'¿Por qué el atajo no fue buena idea?',o:['Zanjas, zarzas, arroyos y lluvia','Había lobos','Se acabó la comida'],ok:0},
+  {q:'¿Qué les regalan al despedirse en la granja?',o:['Una cesta de setas','Un poni','Un mapa'],ok:0},
+  {q:'¿Quién sale de la niebla en la calzada?',o:['Merry, que les buscaba','El jinete negro','Un elfo'],ok:0},
+  {q:'¿Qué descubre Frodo en Cricava?',o:['Que sus amigos lo sabían todo y van con él','Que la casa está vendida','Que el mago ha vuelto'],ok:0}
+];
+function pregEstado(){ return store.get('preguntas',{}); }
+function pregHtml(i){
+  var P=PREG[i]; if(!P) return '';
+  if(leidas(i)<frases(i).length) return '<div class="bubble">'+ICON.libro+'<div><b>Pregunta de esta página</b><i>Se abre cuando Bilbo termine de escribirla. Lee la página entera y contesta.</i></div></div>';
+  var e=pregEstado(), r=e[i];
+  if(r!=null) return '<div class="bubble">'+ICON.libro+'<div><b>'+(r===P.ok?'✔ Acertaste':'✘ Fallaste')+'</b><i>'+P.q+' '+P.o[P.ok]+'.</i></div></div>';
+  return '<div class="preg"><b>'+P.q+'</b>'+[[0,1,2],[1,0,2],[2,1,0],[1,2,0],[0,2,1],[2,0,1],[1,0,2],[2,1,0]][i%8].map(function(j){return '<button type="button" class="opt" data-preg="'+i+'" data-r="'+j+'">'+P.o[j]+'</button>';}).join('')+'<span class="note">Solo hay un intento.</span></div>';
+}
+function pregAciertos(){ var e=pregEstado(); return PREG.filter(function(p,i){return e[i]===p.ok;}).length; }
+document.addEventListener('click',function(ev){ var b=ev.target.closest&&ev.target.closest('[data-preg]'); if(!b) return;
+  var i=+b.dataset.preg, e=pregEstado(); if(e[i]!=null) return; e[i]=+b.dataset.r; store.set('preguntas',e); openPage(i); });
+(function(){ var c=document.createElement('style'); c.textContent=
+  '.preg{display:flex;flex-direction:column;gap:8px;background:rgba(160,110,50,.18);border-radius:10px;padding:12px}'+
+  '.preg .opt{text-align:left;background:rgba(255,244,214,.6);border:2px solid #2b1d0e;border-radius:10px;padding:10px 12px;color:#2b1d0e;font-size:.95rem}'+
+  '.ilu{width:100%;border-radius:8px;image-rendering:pixelated;display:block}';
+  document.head.appendChild(c); })();
+function iluHtml(i){ return (M.libro&&M.libro[i])?'<img class="ilu" src="'+M.libro[i]+'" alt="">':''; }
+/* lector en el final del acto y en el libro */
+(function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('<ol class="list">','<p class="note">Preguntas acertadas: <b>'+pregAciertos()+' de '+PREG.length+'</b>.</p><ol class="list">'); }; })();
