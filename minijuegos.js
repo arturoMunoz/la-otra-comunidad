@@ -904,7 +904,8 @@ enter=function(){ if(me&&RECIEN&&!store.get(proKey(),false)){ if(FORJA) FORJA.of
 /* ================= BOTONES ÉLFICOS (dibujos de ChatGPT): redondos con hoja de Lórien abajo, alargados en la portada ================= */
 (function(){ var U=M.ui; if(!U) return;
   var css='.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;align-items:start}'+
-    '.btns button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;color:#f3ead2;font:700 .78rem var(--body);text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);-webkit-tap-highlight-color:transparent}'+
+    '.bottom{background:none!important}.btns button{all:unset!important;cursor:pointer!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:1px!important;color:#f3ead2!important;font:700 .78rem var(--body)!important;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.9)!important;-webkit-tap-highlight-color:transparent}'+
+    '.papiro .btns button,.btns button{background:none!important;border:0!important;box-shadow:none!important}'+
     '.rb{position:relative;width:60px;height:64px;display:grid;place-items:center;background:url("'+U.redondo+'") center/contain no-repeat;image-rendering:pixelated}'+
     'button:active>.rb,.rb:active{background-image:url("'+U.redondo_on+'")}'+
     '.rb img{width:44%;height:44%;object-fit:contain;margin-top:-6px;image-rendering:pixelated;filter:drop-shadow(0 1px 0 rgba(0,0,0,.5))}'+

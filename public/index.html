@@ -509,7 +509,11 @@ function drawTramo(i,alpha,o){
   if(OY>0){ var g=ctx.createLinearGradient(0,0,0,OY+2); g.addColorStop(0,rgb(top,.8)); g.addColorStop(1,rgb(top,1)); ctx.fillStyle=g; ctx.fillRect(0,0,W,OY+2); }
   var bottom=OY;
   TI[i].forEach(function(L){ if(!L.im) return; var w=L.im.width, x=-((o*L.v)%w); for(;x<W;x+=w) ctx.drawImage(L.im,Math.round(x),L.y+OY); bottom=Math.max(bottom,L.y+OY+L.im.height); });
-  if(bottom<H){ var e=ctx.createLinearGradient(0,bottom-1,0,H); e.addColorStop(0,'#4a3320'); e.addColorStop(.35,'#33231a'); e.addColorStop(1,'#1c140d'); ctx.fillStyle=e; ctx.fillRect(0,bottom-1,W,H-bottom+1); }
+  if(bottom<H){ /* debajo del camino sigue la hierba del primer plano hasta abajo del todo (los botones van encima) */
+    var F=TI[i][TI[i].length-1]; if(F&&F.im){ var fw=F.im.width, fh=F.im.height, sh=Math.min(16,fh), fx=-((o*F.v)%fw);
+      for(var yy=bottom-1, k=0; yy<H; yy+=sh, k++){ for(var xx=fx; xx<W; xx+=fw) ctx.drawImage(F.im,0,fh-sh,fw,sh,Math.round(xx+(k%2)*37),yy,fw,sh); for(var x2=fx-fw; x2<0; x2+=fw) ctx.drawImage(F.im,0,fh-sh,fw,sh,Math.round(x2+(k%2)*37),yy,fw,sh); }
+      var e=ctx.createLinearGradient(0,bottom,0,H); e.addColorStop(0,'rgba(0,0,0,0)'); e.addColorStop(1,'rgba(0,0,0,.35)'); ctx.fillStyle=e; ctx.fillRect(0,bottom,W,H-bottom); }
+    else { ctx.fillStyle='#33231a'; ctx.fillRect(0,bottom-1,W,H-bottom+1); } }
   if(i<=1) VE.forEach(function(im,j){ if(!im) return; var gap=640,x=Math.round(((j*190+150-o)%gap+gap)%gap)-60; if(x>=W) return; var wx=W*0.3, d=Math.abs(x+im.width/2-(wx+26)); ctx.globalAlpha=alpha*Math.max(0,Math.min(1,(d-24)/30)); ctx.drawImage(im,x,OY+226-im.height+4); ctx.globalAlpha=alpha; });
   ctx.globalAlpha=1;
 }
@@ -1608,7 +1612,8 @@ enter=function(){ if(me&&RECIEN&&!store.get(proKey(),false)){ if(FORJA) FORJA.of
 /* ================= BOTONES ÉLFICOS (dibujos de ChatGPT): redondos con hoja de Lórien abajo, alargados en la portada ================= */
 (function(){ var U=M.ui; if(!U) return;
   var css='.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;align-items:start}'+
-    '.btns button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;color:#f3ead2;font:700 .78rem var(--body);text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);-webkit-tap-highlight-color:transparent}'+
+    '.bottom{background:none!important}.btns button{all:unset!important;cursor:pointer!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:1px!important;color:#f3ead2!important;font:700 .78rem var(--body)!important;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.9)!important;-webkit-tap-highlight-color:transparent}'+
+    '.papiro .btns button,.btns button{background:none!important;border:0!important;box-shadow:none!important}'+
     '.rb{position:relative;width:60px;height:64px;display:grid;place-items:center;background:url("'+U.redondo+'") center/contain no-repeat;image-rendering:pixelated}'+
     'button:active>.rb,.rb:active{background-image:url("'+U.redondo_on+'")}'+
     '.rb img{width:44%;height:44%;object-fit:contain;margin-top:-6px;image-rendering:pixelated;filter:drop-shadow(0 1px 0 rgba(0,0,0,.5))}'+
