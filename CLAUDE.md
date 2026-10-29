@@ -22,6 +22,7 @@ Juego web privado para 7 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Textos de historia: resúmenes propios, nunca citas copiadas del libro.
 - Henar quiere que Claude cuestione las ideas con honestidad, sin halagos.
 - Push solo cuando Henar lo pida.
+- Máster del juego (toque de rol/JRPG): solo Arturo. Él también juega, así que lo que haga como Máster tiene que verse en el grupo.
 
 ## Estado (Versión 3, 28/10/2026)
 - Fase 1: capítulos 1-5, Bolsón Cerrado → Cricava, 115 km, 8 tramos. 1 km = 1.350 pasos.
