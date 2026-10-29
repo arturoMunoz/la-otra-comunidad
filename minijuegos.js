@@ -996,3 +996,17 @@ function menuPinta(pant){
   var top=document.querySelector('.top'), row=top.querySelector('.row'); row.parentNode.insertBefore(nav,row.nextSibling);
   if(typeof fit==='function') fit();
 })();
+/* abajo: una cinta de pergamino con lo de hoy, apoyada en el suelo */
+(function(){ var bt=document.querySelector('.bottom'), info=$('info'); if(!bt) return;
+  var st=document.createElement('style'); st.textContent=
+    '.hoy{pointer-events:none;align-self:flex-end;display:flex;flex-direction:column;align-items:center;max-width:48%;box-sizing:border-box;padding:0 10px 1px;white-space:nowrap;color:#2b1d0e;text-align:center;'+
+    'border:14px solid transparent;border-image:var(--papiro) 72 fill / 14px stretch;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}'+
+    '.hoy b{font-family:var(--title);font-size:.95rem;line-height:1.1}.hoy small{font:600 .72rem var(--body);color:#5a4028}'+
+    '.bottom .info{display:none}'+
+    '.bottom::before{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(transparent,rgba(0,0,0,.35));pointer-events:none;z-index:-1}';
+  document.head.appendChild(st);
+  var h=document.createElement('div'); h.className='hoy'; h.innerHTML='<b id="hoyTxt">Hoy: 0 pasos</b><small id="hoyInfo"></small>'; bt.appendChild(h);
+  function pinta(){ var p=$('steps'), k=$('todayKm'); $('hoyTxt').textContent=(p?p.textContent:'0')+' pasos hoy'; var m=info&&info.textContent.match(/(\d{1,2}:\d{2})/); $('hoyInfo').textContent=(k?k.textContent:'0,0')+' km'+(m?' · '+m[1]:(info&&info.textContent?' · '+info.textContent:'')); }
+  var _r=renderHud; renderHud=function(){ var x=_r.apply(this,arguments); pinta(); return x; };
+  if(info) new MutationObserver(pinta).observe(info,{childList:true,characterData:true,subtree:true}); pinta();
+})();
