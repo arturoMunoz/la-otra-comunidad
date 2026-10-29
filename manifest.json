@@ -1148,6 +1148,25 @@
 3,
 4
 ]
+},
+"patri": {
+"src": "assets/pj/andar_patri.webp",
+"pantalon": "assets/pj/ropa_pantalon_patri.webp",
+"capa": "assets/pj/ropa_capa_patri.webp",
+"capa_f": "assets/pj/ropa_capa_f_patri.webp",
+"n": 8,
+"ms": 160,
+"vel": 0.0356,
+"dx": [
+0,
+-3,
+2,
+2,
+-3,
+-3,
+3,
+4
+]
 }
 },
 "menu": {
@@ -1177,5 +1196,6 @@
 "i_zurron": "assets/ui/i_zurron.webp",
 "i_sync": "assets/ui/i_sync.webp",
 "i_hoja": "assets/ui/i_hoja.webp"
-}
+},
+"facesN": 8
 }
