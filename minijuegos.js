@@ -488,7 +488,7 @@ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.
   var k=b.dataset.eq, p=eqPuesto().slice(), i=p.indexOf(k); if(i>=0) p.splice(i,1); else p.push(k);
   store.set('equipo_puesto',p); openTab('zurron'); });
 
-/* ================= PRÓLOGO (se ve una vez al empezar, para todos; se puede volver a ver desde el Libro Rojo) ================= */
+/* ================= PRÓLOGO (se ve una vez al empezar, para todos; se puede volver a ver desde el Libro de Bilbo) ================= */
 (function(){ var c=document.createElement('style'); c.textContent=
   '.pro{position:absolute;inset:0;z-index:40;background:#000;overflow:hidden;color:#f3e2b4}'+
   '.pro img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;opacity:0;transform:scale(1.02);transition:opacity 1.6s ease}'+
@@ -504,7 +504,7 @@ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.
 var INSTR=[
   {t:'Bienvenido a Bolsón Cerrado',p:'Frodo acaba de salir por esta puerta con el Anillo. Tú y tu Comunidad vais detrás de él, siguiendo su camino hasta el Monte del Destino.'},
   {t:'Avanzas andando',p:'Cada paso que das en la vida real cuenta. Lleva el móvil encima: al pulsar «Sincronizar», tus pasos del día se convierten en kilómetros del viaje.'},
-  {t:'El camino cuenta la historia',p:'Al llegar a cada sitio descubres lo que le pasó a Frodo allí. La página se va escribiendo en tu Libro Rojo mientras recorres el tramo.'},
+  {t:'El camino cuenta la historia',p:'Al llegar a cada sitio descubres lo que le pasó a Frodo allí. La página se va escribiendo en tu Libro de Bilbo mientras recorres el tramo.'},
   {t:'Tus decisiones pesan',p:'Por el camino tendrás que elegir y jugar pequeñas pruebas. Lo que decidas cambia lo que te llevas al final de cada acto.'},
   {t:'No vas solo',p:'En el mapa ves por dónde va cada uno de la Comunidad. Frodo siempre va por delante: nunca le alcanzaréis, pero entre vosotros sí hay carrera.'},
   {t:'Primera decisión',p:'Antes de salir, hay que hacer el zurrón. Elige bien: lo que lleves se pondrá a prueba por el camino.'}
@@ -560,7 +560,7 @@ function instrucciones(el,alAcabar){
   document.head.appendChild(c); })();
 /* sale la primera vez que entras al juego */
 (function(){ var _enter=enter; enter=function(){ _enter(); if(!store.get('prologo',false)) verPrologo(); }; })();
-/* volver a verlo desde el Libro Rojo */
+/* volver a verlo desde el Libro de Bilbo */
 (function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('</ol>','</ol><button class="ghost" type="button" id="verPro">Volver a ver el prólogo</button>'); }; })();
 document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verPro'){ closeSheet(); verPrologo(); } });
 
@@ -576,7 +576,7 @@ function dibujaNPC(ctx,t,h){
   ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x+im.width/2,base,im.width*.36,3,0,0,Math.PI*2); ctx.fill();
   ctx.drawImage(im,x,base-im.height+bob);
 }
-/* Libro Rojo: «Antes del viaje», las ilustraciones del prólogo */
+/* Libro de Bilbo: «Antes del viaje», las ilustraciones del prólogo */
 (function(){ var _lib=TABS.libro; TABS.libro=function(){
   var g=(M.ilustraciones||[]).length?'<h2 style="font-size:1.1rem;margin-top:6px">Antes del viaje</h2><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+
     M.ilustraciones.map(function(s){return '<img src="'+s+'" alt="" style="width:100%;aspect-ratio:9/16;object-fit:cover;border:2px solid #2b1d0e;border-radius:6px;image-rendering:pixelated">';}).join('')+'</div>':'';

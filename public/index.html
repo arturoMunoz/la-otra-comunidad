@@ -109,6 +109,7 @@ ol.list li .face{width:36px;height:36px;image-rendering:pixelated;background-rep
 ol.list.people li{grid-template-columns:36px 1fr auto}
 ol.list li.me .t{color:var(--amber-ink);font-weight:800}
 .page{font-size:1.02rem;line-height:1.55}
+.page .pluma{color:var(--muted)}
 .page .hid{color:transparent;background:repeating-linear-gradient(to bottom,transparent 0 .55em,var(--line) .55em 1.05em,transparent 1.05em 1.55em);border-radius:2px;user-select:none}
 .bag{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .item{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:.78rem;font-weight:700;line-height:1.15}
@@ -163,7 +164,7 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
     </div>
     <div class="btns">
       <button type="button" data-tab="mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
-      <button type="button" data-tab="libro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></svg>Libro Rojo</button>
+      <button type="button" data-tab="libro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></svg>Libro de Bilbo</button>
       <button type="button" data-tab="comunidad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-3 2.5-5 5-5s5 2 5 5M14 20c0-2.5 1.5-4 3.5-4S21 17.5 21 20"/></svg>Comunidad</button>
       <button type="button" data-tab="zurron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 9h14l-1 11H6z"/><path d="M9 9V7a3 3 0 0 1 6 0v2M5 13h14"/></svg>Zurrón</button>
     </div>
@@ -206,28 +207,28 @@ var ICON = {
 };
 var T = [
   {km:0, name:"Bolsón Cerrado", title:"Frodo deja Bolsón Cerrado", cap:"Cap. 3",
-   text:"Frodo ha vendido su casa y dice a todos que se muda a Cricava. La verdad es otra: el anillo que le dejó Bilbo es el Anillo Único, y su dueño lo busca. Una noche de otoño cruza la puerta redonda con Sam y Pippin.",
+   text:"Frodo ha vendido Bolsón Cerrado a sus parientes, los Sacovilla-Bolsón, y cuenta a todo el mundo que se muda a Cricava, al otro lado del río. Es una excusa. El anillo que le dejó Bilbo al marcharse es el Anillo Único, el que forjó el Señor Oscuro, y su dueño ha despertado y lo busca. El mago le avisó en primavera de que tendría que irse, y prometió volver para acompañarle. Pero el verano pasa, llega el otoño y el mago no aparece. Frodo cumple cincuenta años, recoge sus cosas y prepara la marcha. La última noche, mientras los nuevos dueños llaman a la puerta principal, él sale por la de atrás con Sam y Pippin, con el zurrón a la espalda y el Anillo en el bolsillo.",
    who:"Gandalf", icon:"cohete", say:"«Vete en cuanto puedas. Y no lo uses.»", mini:"Minijuego: Hacer el zurrón"},
   {km:5, name:"Camino de Delagua", title:"La Comarca dormida", cap:"Cap. 3",
-   text:"Caminan de noche junto al molino y el estanque. En la posada del Dragón Verde todavía se habla de la fiesta de Bilbo y de cómo desapareció delante de todos.",
+   text:"Los tres hobbits echan a andar de noche, sin prisa, por los caminos que conocen desde siempre. Dejan atrás el molino, el estanque y las luces de Delagua, donde la gente aún se sienta en la posada a comentar las rarezas de los Bolsón. Allí se recuerda la famosa fiesta de Bilbo y cómo desapareció delante de todos en mitad de su discurso. Nadie entiende por qué Frodo vende una casa tan buena para irse a vivir con los de la otra orilla. Frodo camina callado: es la primera vez que sale de casa sabiendo que quizá no vuelva. Sam, en cambio, no deja de mirar a todos lados: siempre quiso ver elfos, y siente que este viaje le va a llevar mucho más lejos que Cricava.",
    who:"Un vecino de Delagua", icon:"pipa", say:"«¿El señor Bolsón, a vivir con los de la otra orilla? Qué cosa más rara.»", mini:""},
   {km:15, name:"Colinas Verdes", title:"Un jinete en el camino", cap:"Cap. 3",
-   text:"Se oyen cascos. Se esconden entre las raíces de un árbol junto al camino. Un jinete envuelto en negro se detiene y olfatea el aire, y Frodo siente unas ganas enormes de ponerse el Anillo.",
+   text:"Al segundo día, en las Colinas Verdes, oyen cascos de caballo detrás de ellos. Frodo tiene un mal presentimiento y manda a todos esconderse bajo las raíces de un árbol junto al camino. Llega un jinete alto, envuelto en una capa negra, sobre un caballo también negro. Se detiene justo al lado del escondite y se inclina, como si olfateara el aire buscando algo. Frodo siente unas ganas enormes, casi irresistibles, de ponerse el Anillo. Su mano ya está en el bolsillo cuando el jinete se incorpora y se aleja despacio. Ninguno sabe qué era aquello, pero Sam lo tiene claro: no era un hombre como los demás, y lo que buscaba era a Frodo.",
    who:"Sam", icon:"hoja", say:"«Señor Frodo, eso no era un hobbit.»", mini:"Minijuego: Quieto bajo el árbol"},
   {km:35, name:"Bosque Cerrado", title:"Noche con los elfos", cap:"Cap. 3",
-   text:"El jinete vuelve a acercarse, pero se retira al oír unas voces que cantan: son elfos de paso hacia el oeste. Los hobbits cenan con ellos y duermen bajo los árboles.",
+   text:"Al caer la noche el jinete vuelve a acercarse por el camino del bosque. Esta vez les salva una canción: un grupo de elfos que viaja hacia el oeste pasa por allí cantando a la luz de las estrellas, y la sombra negra se retira. Los elfos reconocen a Frodo como sobrino de Bilbo y les invitan a compartir su cena en un claro del bosque. Sam está tan feliz que casi no puede hablar. Frodo habla largo rato con su jefe, que no le cuenta todo lo que sabe, pero le advierte de que los jinetes son enemigos muy peligrosos y le aconseja no viajar solo. Esa noche duermen bajo los árboles, protegidos por primera vez desde que salieron de casa.",
    who:"Gildor, el elfo", icon:"estrella", say:"«Los caminos ya no son seguros. No vayas solo.»", mini:""},
   {km:55, name:"Atajo campo a través", title:"El atajo", cap:"Cap. 4",
-   text:"Para no volver a la calzada, Frodo decide ir campo a través. Zanjas, zarzas y un arroyo detrás de otro: el atajo resulta más largo que el camino.",
+   text:"A la mañana siguiente los elfos ya se han ido. Para no volver a la calzada, donde el jinete podría esperarles, Frodo decide ir campo a través en línea recta hacia la Balsadera. Parece un atajo, pero el terreno se complica enseguida: zanjas, matorrales espinosos, setos imposibles de cruzar y un arroyo detrás de otro. Se mojan, se arañan y se pierden más de una vez. Encima empieza a llover. Pippin protesta, Sam calla y carga con todo, y Frodo empieza a entender que el camino largo a veces es el más corto. Por la tarde, cansados y embarrados, ven a lo lejos los campos de una granja que Frodo conoce demasiado bien.",
    who:"Pippin", icon:"hoja", say:"«¿Seguro que esto era más corto?»", mini:""},
   {km:75, name:"La granja", title:"Las setas del granjero", cap:"Cap. 4",
-   text:"Llegan a la granja del granjero Maggot, a quien Frodo temía desde niño por robarle setas. Resulta amable: les cuenta que un jinete negro ha preguntado por «Bolsón» y les regala una cesta de setas.",
+   text:"Son las tierras del granjero Maggot. De niño, Frodo le robaba setas y el granjero le echaba encima a sus perros, así que ahora le da miedo hasta acercarse. Pero Maggot les recibe con amabilidad. Les cuenta que esa misma tarde un jinete negro se ha presentado en su puerta preguntando por un tal «Bolsón», con una voz extraña que le puso los pelos de punta, y que él lo echó de sus tierras. Les da de cenar, les ofrece cerveza y, al despedirse, su mujer les regala una cesta llena de setas. Frodo se avergüenza de haberle tenido miedo tantos años: a veces quien parece peligroso resulta ser el mejor aliado.",
    who:"El granjero Maggot", icon:"cesta", say:"«En mis tierras no quiero jinetes de esos.»", mini:"Minijuego: Setas a escondidas"},
   {km:90, name:"Calzada hacia el río", title:"Cascos en la niebla", cap:"Cap. 4-5",
-   text:"Maggot los lleva en su carro hacia la Balsadera. Cae la niebla y se oyen cascos detrás de ellos... pero esta vez es Merry, que había salido a buscarlos.",
+   text:"Para que no vayan solos de noche, el granjero Maggot los lleva en su carro por la calzada que sigue el río. Cae una niebla espesa y el carro avanza despacio entre los álamos. De pronto se oyen cascos que se acercan por detrás, y los hobbits se encogen pensando que el jinete ha vuelto. La figura que sale de la niebla les da un susto de muerte… pero es Merry, su amigo, que llevaba horas esperándoles en la Balsadera y había salido a buscarles con su poni. Se despiden de Maggot, que se va a casa con su cesta vacía y muchas preguntas, y los cuatro hobbits siguen juntos hacia el río.",
    who:"Merry", icon:"casa", say:"«¡Por fin! Llevaba toda la tarde esperándoos.»", mini:""},
   {km:110, name:"Balsadera y Cricava", title:"Una conspiración desenmascarada", cap:"Cap. 5",
-   text:"Cruzan el río en la balsa y, en la otra orilla, una sombra llega al embarcadero demasiado tarde. En Cricava, Merry, Sam y Pippin confiesan: lo sabían todo y no piensan dejar solo a Frodo.",
+   text:"Cruzan el río en la vieja balsa empujando con pértigas. Cuando ya están en la otra orilla, una figura negra llega al embarcadero que acaban de dejar y se queda allí, mirando el agua, sin poder seguirles. En la casa de Cricava les espera un baño caliente y una buena cena. Pero cuando Frodo intenta despedirse para seguir solo, sus amigos le sorprenden: lo saben todo. Saben lo del Anillo, saben que se va y saben que es peligroso. Sam les ha ido contando lo que oía, y llevan meses preparándose en secreto. No piensan dejarle marchar solo. Frodo, emocionado, acepta: ya no es un hobbit huyendo, es una pequeña comunidad.",
    who:"Merry", icon:"balsa", say:"«Somos tus amigos. Vamos contigo.»", mini:"Minijuego: La balsa · Fin de la fase 1"}
 ];
 
@@ -568,7 +569,7 @@ function renderHud(){
 }
 $('diary').onclick=function(){ for(var i=0;i<=reached;i++) if(!shown.has(i)){ openArrival(i); return; } };
 
-/* ---------- Libro Rojo: la página se escribe según andas el tramo ---------- */
+/* ---------- Libro de Bilbo: la página se escribe según andas el tramo ---------- */
 function frases(i){ return T[i].text.match(/[^.!?]+[.!?»]+/g) || [T[i].text]; }
 function leidas(i){
   var n=frases(i).length, cur=tramoAt(km);
@@ -579,7 +580,8 @@ function leidas(i){
 }
 function pageHtml(i){
   var f=frases(i), k=leidas(i);
-  return f.map(function(s,j){ return j<k ? s : '<span class="hid">'+s+'</span>'; }).join(' ');
+  var txt=f.slice(0,k).join(' ');
+  return txt+(k<f.length?' <span class="pluma">…</span>':'');
 }
 
 /* ---------- mapa ---------- */
@@ -628,7 +630,7 @@ function openArrival(i){
   openSheet('<span class="eyebrow">Has llegado · Tramo '+(i+1)+' · '+s.cap+'</span><h2>'+s.title+'</h2>'+
     '<p class="page">'+pageHtml(i)+'</p>'+
     '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof zMomentoHtml==='function'?zMomentoHtml(i):'')+
-    '<p class="note">El resto de la página se escribe en tu Libro Rojo mientras caminas. Al zurrón: <b>'+ITEMS[i].n+'</b>.</p>'+
+    '<p class="note">✒ El resto de la historia se escribe en el Libro de Bilbo mientras caminas. Al zurrón: <b>'+ITEMS[i].n+'</b>.</p>'+
     miniBtn(i)+
     '<button class="primary" id="shOk" type="button">Seguir andando</button>');
   $('shOk').onclick=closeSheet; bindMini();
@@ -638,15 +640,15 @@ function miniBtn(i){ var id=miniDe(i); if(!id) return ''; var b=mjBest(id);
 function bindMini(){ sheet.querySelectorAll('[data-mini]').forEach(function(x){ x.onclick=function(){ abrirMinijuego(x.dataset.mini); }; }); }
 function openPage(i){
   var s=T[i], k=leidas(i), n=frases(i).length;
-  openSheet('<button class="back" id="bk" type="button">‹ Libro Rojo</button><span class="eyebrow">Página '+(i+1)+' · '+s.cap+' · km '+s.km+'–'+ends[i]+'</span><h2>'+s.title+'</h2>'+
+  openSheet('<button class="back" id="bk" type="button">‹ Libro de Bilbo</button><span class="eyebrow">Página '+(i+1)+' · '+s.cap+' · km '+s.km+'–'+ends[i]+'</span><h2>'+s.title+'</h2>'+
     '<p class="page">'+pageHtml(i)+'</p>'+
-    (k<n?'<p class="note">Faltan '+fmt(Math.max(0,ends[i]-km))+' km de este tramo para leer la página entera.</p>':'')+
+    (k<n?'<p class="note">✒ Bilbo sigue escribiendo esta página. Faltan '+fmt(Math.max(0,ends[i]-km))+' km de camino para leerla entera.</p>':'')+
     '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+miniBtn(i));
   $('bk').onclick=function(){ openTab('libro'); }; bindMini();
 }
 function faceStyle(h,size){ return 'background-image:url('+M.faces+');background-size:'+(size*7)+'px '+size+'px;background-position:-'+((FACE[h]||0)*size)+'px 0'; }
 var TABS={
-  libro:function(){return '<h2>Libro Rojo</h2><p class="note">Cada tramo escribe su página mientras lo recorres.</p><ol class="list">'+T.map(function(s,i){var o=i<=reached, k=leidas(i), n=frases(i).length;return '<li class="'+(o?'':'locked')+'"><span class="n">'+(i+1)+'</span><span class="t">'+(o?'<button type="button" data-page="'+i+'">'+s.title+'</button>':'Página en blanco')+'</span><span class="k">'+(o?(k<n?'escribiéndose':'completa'):'km '+s.km)+'</span></li>';}).join('')+'</ol>';},
+  libro:function(){return '<h2>Libro de Bilbo</h2><p class="note">Cada tramo escribe su página mientras lo recorres.</p><ol class="list">'+T.map(function(s,i){var o=i<=reached, k=leidas(i), n=frases(i).length;return '<li class="'+(o?'':'locked')+'"><span class="n">'+(i+1)+'</span><span class="t">'+(o?'<button type="button" data-page="'+i+'">'+s.title+'</button>':'Página en blanco')+'</span><span class="k">'+(o?(k<n?'escribiéndose':'completa'):'km '+s.km)+'</span></li>';}).join('')+'</ol>';},
   comunidad:function(){var l=people.slice().sort(function(a,b){return b.pasos_totales-a.pasos_totales;});
     return '<h2>La Comunidad</h2><ol class="list people">'+l.map(function(p){var mine=me&&p.nombre===me.nombre, k=mine?km:Math.min(TOTAL_KM,Number(p.pasos_totales)/STEPS_PER_KM);return '<li class="'+(mine?'me':'')+'"><span class="face" style="'+faceStyle(p.hobbit,36)+'"></span><span class="t">'+p.nombre+'</span><span class="k">'+fmt(k)+' km<br>'+T[tramoAt(k)].name+'</span></li>';}).join('')+'</ol>'+
     '<div class="bubble">'+ICON.balsa+'<div><b>Tu clave del atajo</b><i>Solo hace falta una vez, al instalar el atajo del iPhone. No se la pases a nadie.</i></div></div>'+
@@ -1158,7 +1160,7 @@ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.
   var k=b.dataset.eq, p=eqPuesto().slice(), i=p.indexOf(k); if(i>=0) p.splice(i,1); else p.push(k);
   store.set('equipo_puesto',p); openTab('zurron'); });
 
-/* ================= PRÓLOGO (se ve una vez al empezar, para todos; se puede volver a ver desde el Libro Rojo) ================= */
+/* ================= PRÓLOGO (se ve una vez al empezar, para todos; se puede volver a ver desde el Libro de Bilbo) ================= */
 (function(){ var c=document.createElement('style'); c.textContent=
   '.pro{position:absolute;inset:0;z-index:40;background:#000;overflow:hidden;color:#f3e2b4}'+
   '.pro img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;opacity:0;transform:scale(1.02);transition:opacity 1.6s ease}'+
@@ -1174,7 +1176,7 @@ document.addEventListener('click',function(e){ var b=e.target.closest&&e.target.
 var INSTR=[
   {t:'Bienvenido a Bolsón Cerrado',p:'Frodo acaba de salir por esta puerta con el Anillo. Tú y tu Comunidad vais detrás de él, siguiendo su camino hasta el Monte del Destino.'},
   {t:'Avanzas andando',p:'Cada paso que das en la vida real cuenta. Lleva el móvil encima: al pulsar «Sincronizar», tus pasos del día se convierten en kilómetros del viaje.'},
-  {t:'El camino cuenta la historia',p:'Al llegar a cada sitio descubres lo que le pasó a Frodo allí. La página se va escribiendo en tu Libro Rojo mientras recorres el tramo.'},
+  {t:'El camino cuenta la historia',p:'Al llegar a cada sitio descubres lo que le pasó a Frodo allí. La página se va escribiendo en tu Libro de Bilbo mientras recorres el tramo.'},
   {t:'Tus decisiones pesan',p:'Por el camino tendrás que elegir y jugar pequeñas pruebas. Lo que decidas cambia lo que te llevas al final de cada acto.'},
   {t:'No vas solo',p:'En el mapa ves por dónde va cada uno de la Comunidad. Frodo siempre va por delante: nunca le alcanzaréis, pero entre vosotros sí hay carrera.'},
   {t:'Primera decisión',p:'Antes de salir, hay que hacer el zurrón. Elige bien: lo que lleves se pondrá a prueba por el camino.'}
@@ -1230,7 +1232,7 @@ function instrucciones(el,alAcabar){
   document.head.appendChild(c); })();
 /* sale la primera vez que entras al juego */
 (function(){ var _enter=enter; enter=function(){ _enter(); if(!store.get('prologo',false)) verPrologo(); }; })();
-/* volver a verlo desde el Libro Rojo */
+/* volver a verlo desde el Libro de Bilbo */
 (function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('</ol>','</ol><button class="ghost" type="button" id="verPro">Volver a ver el prólogo</button>'); }; })();
 document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verPro'){ closeSheet(); verPrologo(); } });
 
@@ -1246,7 +1248,7 @@ function dibujaNPC(ctx,t,h){
   ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x+im.width/2,base,im.width*.36,3,0,0,Math.PI*2); ctx.fill();
   ctx.drawImage(im,x,base-im.height+bob);
 }
-/* Libro Rojo: «Antes del viaje», las ilustraciones del prólogo */
+/* Libro de Bilbo: «Antes del viaje», las ilustraciones del prólogo */
 (function(){ var _lib=TABS.libro; TABS.libro=function(){
   var g=(M.ilustraciones||[]).length?'<h2 style="font-size:1.1rem;margin-top:6px">Antes del viaje</h2><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">'+
     M.ilustraciones.map(function(s){return '<img src="'+s+'" alt="" style="width:100%;aspect-ratio:9/16;object-fit:cover;border:2px solid #2b1d0e;border-radius:6px;image-rendering:pixelated">';}).join('')+'</div>':'';

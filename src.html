@@ -109,6 +109,7 @@ ol.list li .face{width:36px;height:36px;image-rendering:pixelated;background-rep
 ol.list.people li{grid-template-columns:36px 1fr auto}
 ol.list li.me .t{color:var(--amber-ink);font-weight:800}
 .page{font-size:1.02rem;line-height:1.55}
+.page .pluma{color:var(--muted)}
 .page .hid{color:transparent;background:repeating-linear-gradient(to bottom,transparent 0 .55em,var(--line) .55em 1.05em,transparent 1.05em 1.55em);border-radius:2px;user-select:none}
 .bag{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .item{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:.78rem;font-weight:700;line-height:1.15}
@@ -163,7 +164,7 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
     </div>
     <div class="btns">
       <button type="button" data-tab="mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
-      <button type="button" data-tab="libro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></svg>Libro Rojo</button>
+      <button type="button" data-tab="libro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></svg>Libro de Bilbo</button>
       <button type="button" data-tab="comunidad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-3 2.5-5 5-5s5 2 5 5M14 20c0-2.5 1.5-4 3.5-4S21 17.5 21 20"/></svg>Comunidad</button>
       <button type="button" data-tab="zurron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 9h14l-1 11H6z"/><path d="M9 9V7a3 3 0 0 1 6 0v2M5 13h14"/></svg>Zurrón</button>
     </div>
@@ -532,7 +533,7 @@ function renderHud(){
 }
 $('diary').onclick=function(){ for(var i=0;i<=reached;i++) if(!shown.has(i)){ openArrival(i); return; } };
 
-/* ---------- Libro Rojo: la página se escribe según andas el tramo ---------- */
+/* ---------- Libro de Bilbo: la página se escribe según andas el tramo ---------- */
 function frases(i){ return T[i].text.match(/[^.!?]+[.!?»]+/g) || [T[i].text]; }
 function leidas(i){
   var n=frases(i).length, cur=tramoAt(km);
@@ -543,7 +544,8 @@ function leidas(i){
 }
 function pageHtml(i){
   var f=frases(i), k=leidas(i);
-  return f.map(function(s,j){ return j<k ? s : '<span class="hid">'+s+'</span>'; }).join(' ');
+  var txt=f.slice(0,k).join(' ');
+  return txt+(k<f.length?' <span class="pluma">…</span>':'');
 }
 
 /* ---------- mapa ---------- */
@@ -592,7 +594,7 @@ function openArrival(i){
   openSheet('<span class="eyebrow">Has llegado · Tramo '+(i+1)+' · '+s.cap+'</span><h2>'+s.title+'</h2>'+
     '<p class="page">'+pageHtml(i)+'</p>'+
     '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof zMomentoHtml==='function'?zMomentoHtml(i):'')+
-    '<p class="note">El resto de la página se escribe en tu Libro Rojo mientras caminas. Al zurrón: <b>'+ITEMS[i].n+'</b>.</p>'+
+    '<p class="note">✒ El resto de la historia se escribe en el Libro de Bilbo mientras caminas. Al zurrón: <b>'+ITEMS[i].n+'</b>.</p>'+
     miniBtn(i)+
     '<button class="primary" id="shOk" type="button">Seguir andando</button>');
   $('shOk').onclick=closeSheet; bindMini();
@@ -602,15 +604,15 @@ function miniBtn(i){ var id=miniDe(i); if(!id) return ''; var b=mjBest(id);
 function bindMini(){ sheet.querySelectorAll('[data-mini]').forEach(function(x){ x.onclick=function(){ abrirMinijuego(x.dataset.mini); }; }); }
 function openPage(i){
   var s=T[i], k=leidas(i), n=frases(i).length;
-  openSheet('<button class="back" id="bk" type="button">‹ Libro Rojo</button><span class="eyebrow">Página '+(i+1)+' · '+s.cap+' · km '+s.km+'–'+ends[i]+'</span><h2>'+s.title+'</h2>'+
+  openSheet('<button class="back" id="bk" type="button">‹ Libro de Bilbo</button><span class="eyebrow">Página '+(i+1)+' · '+s.cap+' · km '+s.km+'–'+ends[i]+'</span><h2>'+s.title+'</h2>'+
     '<p class="page">'+pageHtml(i)+'</p>'+
-    (k<n?'<p class="note">Faltan '+fmt(Math.max(0,ends[i]-km))+' km de este tramo para leer la página entera.</p>':'')+
+    (k<n?'<p class="note">✒ Bilbo sigue escribiendo esta página. Faltan '+fmt(Math.max(0,ends[i]-km))+' km de camino para leerla entera.</p>':'')+
     '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+miniBtn(i));
   $('bk').onclick=function(){ openTab('libro'); }; bindMini();
 }
 function faceStyle(h,size){ return 'background-image:url('+M.faces+');background-size:'+(size*7)+'px '+size+'px;background-position:-'+((FACE[h]||0)*size)+'px 0'; }
 var TABS={
-  libro:function(){return '<h2>Libro Rojo</h2><p class="note">Cada tramo escribe su página mientras lo recorres.</p><ol class="list">'+T.map(function(s,i){var o=i<=reached, k=leidas(i), n=frases(i).length;return '<li class="'+(o?'':'locked')+'"><span class="n">'+(i+1)+'</span><span class="t">'+(o?'<button type="button" data-page="'+i+'">'+s.title+'</button>':'Página en blanco')+'</span><span class="k">'+(o?(k<n?'escribiéndose':'completa'):'km '+s.km)+'</span></li>';}).join('')+'</ol>';},
+  libro:function(){return '<h2>Libro de Bilbo</h2><p class="note">Cada tramo escribe su página mientras lo recorres.</p><ol class="list">'+T.map(function(s,i){var o=i<=reached, k=leidas(i), n=frases(i).length;return '<li class="'+(o?'':'locked')+'"><span class="n">'+(i+1)+'</span><span class="t">'+(o?'<button type="button" data-page="'+i+'">'+s.title+'</button>':'Página en blanco')+'</span><span class="k">'+(o?(k<n?'escribiéndose':'completa'):'km '+s.km)+'</span></li>';}).join('')+'</ol>';},
   comunidad:function(){var l=people.slice().sort(function(a,b){return b.pasos_totales-a.pasos_totales;});
     return '<h2>La Comunidad</h2><ol class="list people">'+l.map(function(p){var mine=me&&p.nombre===me.nombre, k=mine?km:Math.min(TOTAL_KM,Number(p.pasos_totales)/STEPS_PER_KM);return '<li class="'+(mine?'me':'')+'"><span class="face" style="'+faceStyle(p.hobbit,36)+'"></span><span class="t">'+p.nombre+'</span><span class="k">'+fmt(k)+' km<br>'+T[tramoAt(k)].name+'</span></li>';}).join('')+'</ol>'+
     '<div class="bubble">'+ICON.balsa+'<div><b>Tu clave del atajo</b><i>Solo hace falta una vez, al instalar el atajo del iPhone. No se la pases a nadie.</i></div></div>'+
