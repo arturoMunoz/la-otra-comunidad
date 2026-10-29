@@ -32,6 +32,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
+        val prev = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { t, e -> Pasos.prefs(this).edit().putString("fallo", e.toString() + "\n" + e.stackTrace.take(6).joinToString("\n")).putBoolean("listo", false).commit(); prev?.uncaughtException(t, e) }
         window.statusBarColor = Color.rgb(20, 17, 11)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() { val w = web; if (w != null && w.canGoBack()) w.goBack() else finish() } })
@@ -75,10 +77,10 @@ class MainActivity : ComponentActivity() {
         estado = texto("", 16f, Color.rgb(201,188,156)); col.addView(estado)
         val juego = Button(this).apply { text = "Abrir el juego" }; col.addView(juego)
         val diag = Button(this).apply { text = "¿Qué ve la app? (diagnóstico)" }; col.addView(diag)
-        val diagT = texto("", 14f, Color.rgb(201,188,156)); col.addView(diagT)
-        diag.setOnClickListener { diagT.text = "Mirando…"; lifecycleScope.launch { diagT.text = try { Pasos.diagnostico(this@MainActivity) } catch (e: Exception) { "Error: " + e } } }
+        val diagT = texto(Pasos.prefs(this).getString("fallo", null)?.let { "Último fallo: " + it } ?: "", 14f, Color.rgb(201,188,156)); col.addView(diagT)
+        diag.setOnClickListener { diagT.text = "Mirando…"; lifecycleScope.launch { diagT.text = try { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { Pasos.diagnostico(this@MainActivity) } } catch (e: Throwable) { "Error: " + e + "\n" + e.stackTrace.take(4).joinToString("\n") } } }
         setContentView(ScrollView(this).apply { setBackgroundColor(Color.rgb(20,17,11)); addView(col) })
-        if (Pasos.nombre(this).isNotEmpty()) estado?.text = "Activada para " + Pasos.nombre(this) + "."
+X
 
         boton.setOnClickListener {
             val n = nom.text.toString().trim()
