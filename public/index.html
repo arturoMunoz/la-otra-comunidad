@@ -1874,6 +1874,11 @@ function escenaElfos(alAcabar){
   foto();
 }
 /* salta al llegar al tramo siguiente al Bosque Cerrado (o con ?elfos=1 para probar) */
+/* justo al cruzar el km 55 (fin del Bosque Cerrado), aunque haya otras llegadas pendientes */
+var ELFOS_KM=T[4].km, elfosPend=false;
+(function(){ var _sk=setKm; setKm=function(v){ var antes=km; _sk(v);
+  if(antes<ELFOS_KM && v>=ELFOS_KM && !store.get('elfos_res',null)) elfosPend=true;
+  if(elfosPend && $('sheet').hidden && !document.querySelector('.dlg') && $('login').hidden){ elfosPend=false; escenaElfos(function(){ flushPending(); }); } }; })();
 (function(){ var _oa=openArrival; openArrival=function(i){ if(i===4 && !store.get('elfos_res',null)) { escenaElfos(function(){ _oa(i); }); return; } return _oa(i); }; })();
 if(/[?&]elfos=1/.test(location.search)) setTimeout(function(){ store.del('elfos_res'); escenaElfos(); },2500);
 /* la Huella de Frodo en tu fila de la Comunidad */
@@ -1892,7 +1897,8 @@ if(DEMO){ (function(){ var _mp=menuPinta; menuPinta=function(pant){
     var n=$('kmN'), r=$('kmR'), si=function(){ var v=+n.value||0; $('kmSitio').textContent=T[tramoAt(v)].name+' · '+T[tramoAt(v)].title; };
     n.oninput=function(){ r.value=n.value; si(); }; r.oninput=function(){ n.value=r.value; si(); }; si();
     $('kmOk').onclick=function(){ var v=Math.max(0,Math.min(TOTAL_KM,+n.value||0)); demoSteps=Math.round(v*STEPS_PER_KM); store.set('demoSteps',demoSteps);
-      km=v; target=v; store.set('km',v); curT=tramoAt(v); if(curT>reached) reached=curT; aJugar(); setTimeout(function(){ refresh(); },300); };
+      var t=tramoAt(v); for(var i=0;i<t;i++) shown.add(i); demoRead=Array.from(shown); store.set('demoRead',demoRead);
+      km=Math.max(0,v-0.3); store.set('km',km); curT=tramoAt(km); if(curT>reached) reached=curT; aJugar(); setTimeout(function(){ refresh(); },300); };
     $('kmReset').onclick=function(){ ['demoSteps','demoToday','demoRead','km','elfos_res','elfos_ok','huella','fin1','equipo_puesto','zurron'].forEach(function(x){store.del(x);});
       demoSteps=0; demoRead=[]; km=0; target=0; shown=new Set(); reached=0; curT=0; aJugar(); setTimeout(function(){ refresh(); },300); };
     $('mVolver').onclick=function(){ menuPinta('inicio'); }; return; }
