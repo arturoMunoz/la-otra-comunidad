@@ -64,7 +64,9 @@ object Pasos {
     suspend fun pasosHoy(c: Context): Long {
         val sen = try { sensor(c) } catch (e: Exception) { null } ?: 0L
         val hcv = try { pasosHC(c) } catch (e: Exception) { 0L }
-        return maxOf(sen, hcv)
+        /* Manda Health Connect (lo mismo que ve Samsung Health). El contador del móvil cuenta de más
+           (cualquier meneo), así que solo se usa si Health Connect no tiene nada de hoy. */
+        return if (hcv > 0) hcv else sen
     }
 
     /** Pasos de hoy en Health Connect, app por app (Samsung Health, Google Fit...). Se queda con la app que
@@ -93,7 +95,7 @@ object Pasos {
         val sen = try { sensor(c) } catch (e: Exception) { null }
         val porApp = try { pasosPorApp(c) } catch (e: Exception) { emptyMap() }
         val desglose = if (porApp.isEmpty()) "" else "\nHoy por app: " + porApp.entries.joinToString(" · ") { it.key + " " + it.value } +
-            ".\nSe envía el mayor (no se suma): " + maxOf(sen ?: 0L, porApp.values.maxOrNull() ?: 0L) + " pasos."
+            ".\nSe envía: " + (porApp.values.maxOrNull()?.takeIf { it > 0 } ?: (sen ?: 0L)) + " pasos (Health Connect; el sensor solo si no hay nada)."
         return "Sensor del móvil: " + ultimoSensor + (sen?.let { " · $it pasos hoy (desde que se activó)" } ?: "") + ".\nHealth Connect: hoy " + rh.size + " registros (" + rh.sumOf { it.count } + " pasos); últimos 7 días " + rs.size +
             " registros. Último paso: " + ult + ". Apps que escriben pasos: " + (if (apps.isEmpty()) "ninguna" else apps.joinToString(", ")) + desglose
     }
