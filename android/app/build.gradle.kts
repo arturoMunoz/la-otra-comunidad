@@ -1,7 +1,7 @@
 plugins { id("com.android.application"); id("org.jetbrains.kotlin.android") }
 android {
     namespace = "com.laotracomunidad.pasos"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         applicationId = "com.laotracomunidad.pasos"
         minSdk = 26; targetSdk = 35
