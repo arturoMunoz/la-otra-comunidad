@@ -51,6 +51,8 @@ elif '--demo' in sys.argv:
     if 'suelo' in m: m['suelo'] = [uri(v) if v else None for v in m['suelo']]
     if 'ui' in m: m['ui'] = {k: uri(v) for k, v in m['ui'].items()}
     if 'quietoPJ' in m: m['quietoPJ'] = {h: {k: (uri(v) if isinstance(v, str) else v) for k, v in d.items()} for h, d in m['quietoPJ'].items()}
+    for f in m.get('fp', []):
+        f['fondo'] = uri(f['fondo']); f['delante'] = uri(f['delante']); f['manos']['src'] = uri(f['manos']['src'])
     if 'objetos' in m: m['objetos'] = {k: uri(v) for k, v in m['objetos'].items()}
     html = fill(src, m, True)
     head = re.search(r'<head>(.*?)</head>', html, re.S).group(1)

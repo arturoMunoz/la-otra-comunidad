@@ -1258,5 +1258,40 @@
 "n": 4,
 "ms": 450
 }
+},
+"fp": [
+{
+"tramo": 3,
+"fondo": "assets/fp/bosque_fondo.webp",
+"delante": "assets/fp/bosque_delante.webp",
+"manos": {
+"src": "assets/fp/manos.webp",
+"n": 4,
+"fw": 325,
+"h": 434
+},
+"fuga": [
+0.5,
+0.56
+],
+"luces": [
+[
+0.47,
+0.565
+],
+[
+0.51,
+0.548
+],
+[
+0.545,
+0.565
+],
+[
+0.455,
+0.575
+]
+]
 }
+]
 }

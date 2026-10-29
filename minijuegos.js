@@ -1067,3 +1067,47 @@ function apuntaPasos(){
       .then(function(){ closeSheet(); return refresh(); })
       .catch(function(e){ $('apOk').disabled=false; $('apMsg').textContent='No se ha podido guardar: '+authErr(e); }); };
 }
+
+/* ================= PRIMERA PERSONA (prueba en el Bosque Cerrado; luego Cima de los Vientos, Moria, Mordor) =================
+   Un lienzo a resolución real encima de la escena: el fondo se acerca despacio (zoom con dos copias que se funden),
+   los árboles de delante se acercan más rápido y salen por los lados, y las manos se balancean al andar. */
+var FP=(function(){
+  var L=M.fp||[]; if(!L.length) return null;
+  var cv=document.createElement('canvas'); cv.className='fpv'; cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.2s';
+  var c0=$('c'); c0.parentNode.insertBefore(cv,c0.nextSibling); (function(){ var st=document.createElement('style'); st.textContent='.app>.top,.app>.bottom,.app>.diary{z-index:2}'; document.head.appendChild(st); })(); var x=cv.getContext('2d');
+  var IM=L.map(function(f){ var o={f:f,bg:new Image(),fr:new Image(),ma:new Image()}; o.bg.src=f.fondo; o.fr.src=f.delante; o.ma.src=f.manos.src; return o; });
+  var t=0, last=0, on=false;
+  function activo(){ if(/[?&]fp=1/.test(location.search)) return IM[0]; var tr=tramoAt(km); for(var i=0;i<IM.length;i++) if(IM[i].f.tramo===tr) return IM[i]; return null; }
+  function cover(im,W,H){ var s=Math.max(W/im.width,H/im.height); return [im.width*s,im.height*s]; }
+  function capa(im,W,H,fx,fy,esc,al){ if(al<=0.01) return; var d=cover(im,W,H), w=d[0]*esc, h=d[1]*esc;
+    var cx=W/2, cy=H*fy, ox=cx-(fx*w), oy=cy-(fy*h); x.globalAlpha=al; x.drawImage(im,ox,oy,w,h); }
+  function frame(now){
+    requestAnimationFrame(frame);
+    var A=(app.classList.contains('out'))?null:activo();
+    if(!A){ if(on){ on=false; cv.style.opacity='0'; } return; }
+    if(!on){ on=true; cv.style.opacity='1'; }
+    var dpr=Math.min(2,window.devicePixelRatio||1), W=Math.round(cv.clientWidth*dpr), H=Math.round(cv.clientHeight*dpr);
+    if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+    var dt=Math.min(50,now-(last||now)); last=now; var anda=!window.PARADO; if(anda) t+=dt;
+    if(!A.bg.complete||!A.bg.width) return;
+    var f=A.f, fx=f.fuga[0], fy=f.fuga[1], T=9000;
+    x.globalAlpha=1; x.fillStyle='#0d0a14'; x.fillRect(0,0,W,H);
+    /* fondo: dos copias desfasadas medio ciclo, cada una crece 1→1.3 y se funde en triángulo */
+    for(var k=0;k<2;k++){ var p=((t/T)+k*0.5)%1; capa(A.bg,W,H,fx,fy,1+0.3*p,1-Math.abs(2*p-1)); }
+    x.globalAlpha=1;
+    /* luces élficas que titilan al fondo */
+    var g=cover(A.bg,W,H); (f.luces||[]).forEach(function(l,i){ var lx=W/2+(l[0]-fx)*g[0]*1.15, ly=H*fy+(l[1]-fy)*g[1]*1.15, r=(2.2+1*Math.sin(now/400+i*1.7))*dpr;
+      var gr=x.createRadialGradient(lx,ly,0,lx,ly,r*4); gr.addColorStop(0,'rgba(220,235,255,.9)'); gr.addColorStop(1,'rgba(160,190,255,0)'); x.fillStyle=gr; x.fillRect(lx-r*4,ly-r*4,r*8,r*8); });
+    /* árboles de delante: crecen 1→1.8, aparecen al principio y se van por los lados al final */
+    if(A.fr.complete&&A.fr.width) for(var j=0;j<2;j++){ var q=((t/T)+j*0.5)%1; capa(A.fr,W,H,0.5,0.5,1+0.8*q,Math.min(1,q*4,(1-q)*3)); }
+    x.globalAlpha=1;
+    /* oscurecer bordes */
+    var v=x.createRadialGradient(W/2,H*0.55,Math.min(W,H)*0.25,W/2,H*0.55,Math.max(W,H)*0.75); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.55)'); x.fillStyle=v; x.fillRect(0,0,W,H);
+    /* manos: 4 fotogramas al ritmo del paso + un poco de balanceo */
+    if(A.ma.complete&&A.ma.width){ var m=f.manos, fr=anda?Math.floor(t/260)%m.n:0, mw=W*0.86, mh=mw*m.h/m.fw, by=anda?Math.sin(t/260*Math.PI/2)*6*dpr:0;
+      x.drawImage(A.ma,fr*m.fw,0,m.fw,m.h,(W-mw)/2,H-mh*0.92+by,mw,mh);
+      var lx2=(W-mw)/2+mw*0.3, ly2=H-mh*0.92+by+mh*0.62, gl=x.createRadialGradient(lx2,ly2,0,lx2,ly2,W*0.5);
+      gl.addColorStop(0,'rgba(255,190,90,'+(0.22+0.04*Math.sin(now/90))+')'); gl.addColorStop(1,'rgba(255,190,90,0)'); x.globalCompositeOperation='lighter'; x.fillStyle=gl; x.fillRect(0,0,W,H); x.globalCompositeOperation='source-over'; }
+  }
+  requestAnimationFrame(frame); return {activo:activo};
+})();
