@@ -724,7 +724,7 @@ function vprePinta(){ var c=$('vpre'); if(!c||!WALK||!WALK.complete){ clearInter
   if(tab==='vestuario'){ clearInterval(vpreT); vpreF=0; vprePinta(); vpreT=setInterval(vprePinta,140); } }; })();
 document.addEventListener('click',function(e){ var t=e.target.closest&&e.target.closest('[data-seg],[data-poner],[data-quitar]'); if(!t) return;
   if(t.dataset.seg){ openTab(t.dataset.seg); return; }
-  if(t.dataset.poner) eqPoner(t.dataset.poner); else eqQuitar(t.dataset.quitar);
+  if(t.dataset.poner){ eqPoner(t.dataset.poner); VSEL=t.dataset.poner; } else { eqQuitar(t.dataset.quitar); }
   var sc=sheet.scrollTop; openTab('vestuario'); sheet.scrollTop=sc; });
 
 /* ================= ROPA TEÑIDA: capas (detrás, con broche delante) y pantalones (sobre el dibujo) ================= */
@@ -767,3 +767,59 @@ dibujaEquipo=function(ctx,x,y,f,detras){
   }
   _dEq(ctx,x,y,f,detras);
 };
+
+/* ================= VESTUARIO estilo RPG: muñeco con huecos alrededor, mochila en rejilla y ficha del objeto ================= */
+(function(){ var c=document.createElement('style'); c.textContent=
+  '.rpg{background:#2a1c10;border:3px solid #120b05;box-shadow:inset 0 0 0 2px #7a5a2c,inset 0 0 0 4px #120b05;padding:10px;color:#f3e2b4}'+
+  '.rpg h3{margin:0 0 8px;text-align:center;font-family:var(--title);color:#e8c26a;font-size:1.1rem;letter-spacing:.06em;text-shadow:0 2px 0 #000}'+
+  '.doll{display:grid;grid-template-columns:62px 1fr 62px;grid-template-rows:repeat(4,62px);gap:6px;align-items:center}'+
+  '.doll .mid{grid-column:2;grid-row:1/5;position:relative;height:100%;display:grid;place-items:center;'+
+    'background:radial-gradient(ellipse at 50% 60%,rgba(232,194,106,.18),transparent 65%)}'+
+  '.doll .mid canvas{width:127px;height:178px;image-rendering:pixelated}'+
+  '.sl{all:unset;box-sizing:border-box;width:62px;height:62px;position:relative;cursor:pointer;display:grid;place-items:center;'+
+    'background:#3b2a19;border:2px solid;border-color:#120b05 #8a6a3a #8a6a3a #120b05;box-shadow:inset 0 0 0 1px #000}'+
+  '.sl img,.sl svg{width:70%;height:70%;object-fit:contain;image-rendering:pixelated}'+
+  '.sl .lb{position:absolute;left:0;right:0;bottom:1px;text-align:center;font-size:.55rem;color:#a88a5a;font-weight:700;letter-spacing:.04em;text-transform:uppercase;pointer-events:none}'+
+  '.sl.vac .lb{bottom:auto;top:50%;transform:translateY(-50%)}'+
+  '.sl[aria-pressed=true]{outline:3px solid #e8c26a;outline-offset:-1px}'+
+  '.sl.no img{filter:brightness(0) opacity(.45)}.sl.no svg{opacity:.25}'+
+  '.mochi{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}'+
+  '.mochi .sl{width:auto;height:auto;min-width:0;aspect-ratio:1;overflow:hidden}'+
+  '.mochi .sl img,.mochi .sl svg{max-width:70%;max-height:70%}'+
+  '.ficha{margin-top:10px;background:#1c130a;border:2px solid #120b05;padding:10px 12px;min-height:92px}'+
+  '.ficha b{color:#e8c26a;font-family:var(--title);font-size:1rem;display:block}'+
+  '.ficha .h{color:#9bc46a;font-size:.8rem;font-weight:700;margin:2px 0 4px}'+
+  '.ficha p{margin:0 0 8px;font-size:.88rem;color:#e6d6b0}'+
+  '.ficha .no{color:#d9775a}'+
+  '.ficha button{background:#e8c26a;color:#221a0e;border:2px solid #120b05;padding:8px 14px;font-size:.92rem;box-shadow:0 3px 0 #000}'+
+  '.ficha button:active{transform:translateY(2px);box-shadow:0 1px 0 #000}';
+  document.head.appendChild(c); })();
+var VSEL=null;
+var DOLL=[['cabeza',1,1],['cara',2,1],['cuello',3,1],['piernas',4,1],['pelo',1,3],['espalda',2,3],['pecho',3,3],['cinto',4,3]];
+function hNom(h){ var x=HUECOS.filter(function(q){return q[0]===h;})[0]; return x?x[1]:h; }
+TABS.vestuario=function(){
+  var g=eqGanado(), p=eqPuesto();
+  function slot(k,h,extra){ var ok=k&&g.indexOf(k)>=0;
+    return '<button type="button" class="sl'+(k?(ok?'':' no'):' vac')+'" data-vsel="'+(k||'h:'+h)+'" aria-pressed="'+(VSEL===(k||'h:'+h))+'"'+(extra||'')+'>'+(k?eqIcon(k):'')+(!k?'<span class="lb">'+hNom(h)+'</span>':'')+'</button>'; }
+  var doll=DOLL.map(function(d){ var k=p.filter(function(x){return huecoDe(x)===d[0];})[0];
+    return '<div style="grid-row:'+d[1]+';grid-column:'+d[2]+'">'+slot(k,d[0])+'</div>'; }).join('');
+  var bolsK=p.filter(function(x){return huecoDe(x)==='bolsillo';})[0];
+  var resto=Object.keys(EQ).filter(function(k){return p.indexOf(k)<0;}).sort(function(a,b){return (g.indexOf(b)>=0)-(g.indexOf(a)>=0);});
+  var celdas=resto.map(function(k){return slot(k,huecoDe(k));}).join('');
+  for(var i=resto.length;i%5||i<10;i++) celdas+='<div class="sl" style="cursor:default"></div>';
+  var f='';
+  if(!VSEL) f='<p>Toca un hueco o un objeto para verlo.</p>';
+  else if(VSEL.indexOf('h:')===0){ var hh=VSEL.slice(2); f='<b>'+hNom(hh)+'</b><p>Hueco vacío. Elige abajo, en la mochila, algo para ponerte aquí.</p>'; }
+  else { var e=EQ[VSEL], ok=g.indexOf(VSEL)>=0, on=p.indexOf(VSEL)>=0;
+    f='<b>'+(ok?e.n:'¿?')+'</b><div class="h">'+hNom(huecoDe(VSEL))+'</div>'+
+      (ok?'<p>'+(e.por?'Ganado: '+e.por+'.':'')+'</p>'+(on?'<button type="button" data-quitar="'+huecoDe(VSEL)+'">Quitármelo</button>':'<button type="button" data-poner="'+VSEL+'">Ponérmelo</button>')
+         :'<p class="no">Todavía no lo tienes. Se gana: '+(e.por||'andando')+'.</p>'); }
+  return segHtml('vestuario')+'<div class="rpg"><h3>Vestuario</h3><div class="doll">'+doll+
+    '<div class="mid"><canvas id="vpre" width="53" height="74"></canvas></div>'+
+    '<div style="grid-row:4;grid-column:2;justify-self:center;align-self:end;transform:translateY(68px)"></div></div>'+
+    '<div style="display:flex;justify-content:center;margin-top:6px">'+slot(bolsK,'bolsillo')+'</div>'+
+    '<div class="ficha">'+f+'</div>'+
+    '<h3 style="margin-top:12px">Mochila</h3><div class="mochi">'+celdas+'</div></div>';
+};
+document.addEventListener('click',function(e){ var t=e.target.closest&&e.target.closest('[data-vsel]'); if(!t) return;
+  VSEL=t.dataset.vsel; var sc=sheet.scrollTop; openTab('vestuario'); sheet.scrollTop=sc; });
