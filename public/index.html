@@ -1831,7 +1831,7 @@ var FP=(function(){
     /* oscurecer bordes */
     var v=x.createRadialGradient(W/2,H*0.55,Math.min(W,H)*0.25,W/2,H*0.55,Math.max(W,H)*0.75); v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,.55)'); x.fillStyle=v; x.fillRect(0,0,W,H);
     /* manos: 4 fotogramas al ritmo del paso + un poco de balanceo */
-    if(A.ma.complete&&A.ma.width){ var m=f.manos, fr=anda?Math.floor(t/260)%m.n:0, mw=W*0.86, mh=mw*m.h/m.fw, by=anda?Math.sin(t/260*Math.PI/2)*6*dpr:0;
+    if(A.ma.complete&&A.ma.width){ var m=f.manos, fr=anda?Math.floor(t/750)%m.n:0, mw=W*0.86, mh=mw*m.h/m.fw, by=anda?Math.sin(t/750*Math.PI/2)*2.5*dpr:0;
       x.drawImage(A.ma,fr*m.fw,0,m.fw,m.h,(W-mw)/2,H-mh*0.92+by,mw,mh);
       var lx2=(W-mw)/2+mw*0.3, ly2=H-mh*0.92+by+mh*0.62, gl=x.createRadialGradient(lx2,ly2,0,lx2,ly2,W*0.5);
       gl.addColorStop(0,'rgba(255,190,90,'+(0.22+0.04*Math.sin(now/90))+')'); gl.addColorStop(1,'rgba(255,190,90,0)'); x.globalCompositeOperation='lighter'; x.fillStyle=gl; x.fillRect(0,0,W,H); x.globalCompositeOperation='source-over'; }
