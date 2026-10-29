@@ -1804,7 +1804,7 @@ var FP=(function(){
   var c0=$('c'); c0.parentNode.insertBefore(cv,c0.nextSibling); (function(){ var st=document.createElement('style'); st.textContent='.app>.top,.app>.bottom,.app>.diary{z-index:2}'; document.head.appendChild(st); })(); var x=cv.getContext('2d');
   var IM=L.map(function(f){ var o={f:f,bg:new Image(),fr:new Image(),ma:new Image()}; o.bg.src=f.fondo; o.fr.src=f.delante; o.ma.src=f.manos.src; return o; });
   var t=0, last=0, on=false;
-  function activo(){ if(/[?&]fp=1/.test(location.search)) return IM[0]; var tr=tramoAt(km); for(var i=0;i<IM.length;i++) if(IM[i].f.tramo===tr) return IM[i]; return null; }
+  function activo(){ if(typeof RECUERDO!=='undefined'&&RECUERDO!=null) return null; if(/[?&]fp=1/.test(location.search)) return IM[0]; var tr=tramoAt(km); for(var i=0;i<IM.length;i++) if(IM[i].f.tramo===tr) return IM[i]; return null; }
   function cover(im,W,H){ var s=Math.max(W/im.width,H/im.height); return [im.width*s,im.height*s]; }
   function capa(im,W,H,fx,fy,esc,al){ if(al<=0.01) return; var d=cover(im,W,H), w=d[0]*esc, h=d[1]*esc;
     var cx=W/2, cy=H*fy, ox=cx-(fx*w), oy=cy-(fy*h); x.globalAlpha=al; x.drawImage(im,ox,oy,w,h); }
@@ -1906,6 +1906,38 @@ if(DEMO){ (function(){ var _mp=menuPinta; menuPinta=function(pant){
   if(pant==='inicio'){ var b=document.createElement('button'); b.type='button'; b.className='sec'; b.textContent='⚙ Kilómetros (prueba)'; b.onclick=function(){ menuPinta('km'); };
     var m=$('authBox').querySelector('.menu'); if(m) m.appendChild(b); }
 }; })(); }
+
+/* ================= OBJETOS DEL CAMINO: usarlos te devuelve al sitio donde los cogiste ================= */
+var RECUERDO=null;
+(function(){ var _e=escAt; escAt=function(k){ return RECUERDO!=null?RECUERDO:_e(k); }; })();
+(function(){ var st=document.createElement('style'); st.textContent=
+  '.recu{position:absolute;left:12px;right:12px;top:calc(150px + env(safe-area-inset-top,0px));z-index:3;display:flex;align-items:center;gap:8px;'+
+  'border:14px solid transparent;border-image:var(--papiro) 72 fill / 14px stretch;color:#2b1d0e;padding:0 4px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}.recu>div{flex:1;min-width:0}body.recuerdo .diary{display:none!important}'+
+  '.recu b{font-family:var(--title);font-size:.95rem}.recu small{display:block;font-size:.75rem;color:#6a4f2c}'+
+  '.recu button{background:#3f6b33;color:#f3ead2;border:2px solid #2b1d0e;border-radius:8px;padding:7px 10px;font-weight:700;white-space:nowrap}'+
+  '.item[data-obj]{cursor:pointer}.item[data-obj] .box{box-shadow:0 0 0 2px #8fb85a}';
+  document.head.appendChild(st); })();
+function irRecuerdo(i){
+  closeSheet(); RECUERDO=i; document.body.classList.add('recuerdo'); if(typeof fade!=='undefined'){ fade=0; }
+  var r=document.querySelector('.recu'); if(r) r.remove();
+  r=document.createElement('div'); r.className='recu';
+  r.innerHTML='<div><b>Recuerdo de '+T[i].name+'</b><small>'+ITEMS[i].n+' · '+T[i].title+'</small></div><button type="button" id="recLib">Página</button><button type="button" id="recFin">Volver</button>';
+  $('app').appendChild(r);
+  $('recLib').onclick=function(){ openPage(i); };
+  $('recFin').onclick=salirRecuerdo;
+}
+function salirRecuerdo(){ RECUERDO=null; document.body.classList.remove('recuerdo'); var r=document.querySelector('.recu'); if(r) r.remove(); }
+(function(){ var _z=TABS.zurron; TABS.zurron=function(){ var h=_z();
+  return h.replace(/<div class="item"><div class="box">/g, function(){ return '<div class="item"><div class="box">'; }); }; })();
+/* marca los objetos ya conseguidos como tocables */
+(function(){ var _ot=openTab; openTab=function(tab){ _ot(tab); if(tab!=='zurron') return;
+  var bags=sheet.querySelectorAll('.bag'), b=bags[bags.length-1]; if(!b) return;
+  b.querySelectorAll('.item').forEach(function(it,i){ if(i<=reached && !it.classList.contains('no')){ it.dataset.obj=i; it.title='Volver a '+T[i].name; it.onclick=function(){ irRecuerdo(i); }; } });
+  var n=b.previousElementSibling; if(n&&n.classList.contains('note')) n.innerHTML+=' Toca uno para volver a ese sitio.'; }; })();
+/* durante el recuerdo no hay primera persona ni llegadas */
+(function(){ if(!FP) return; var _a=FP.activo; })();
+(function(){ var _fp=flushPending; flushPending=function(){ if(RECUERDO!=null) return; return _fp(); }; })();
+(function(){ var _mm=muestraMenu; muestraMenu=function(){ salirRecuerdo(); _mm(); }; })();
 
 if('serviceWorker' in navigator && !DEMO && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
 </script>
