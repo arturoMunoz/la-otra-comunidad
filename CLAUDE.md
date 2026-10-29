@@ -21,6 +21,7 @@ Juego web privado para 7 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Cuentas con correo y contraseña (pedido de Henar: nada de códigos de acceso). Al crear la cuenta se elige uno de los 7 hobbits libres (`loc_reclamar`, una vez por cuenta). La `clave_atajo` solo la usa el atajo del iPhone; se copia desde Comunidad.
 - Personajes del libro: solo en texto (bocadillos con emblema). No dibujar a Frodo, Gandalf, Bombadil ni otros personajes de Tolkien. Los hobbits del grupo son originales.
 - Textos de historia: resúmenes propios, nunca citas copiadas del libro.
+- Arte: Claude NUNCA dibuja ni genera recursos (ni SVG, ni dibujos por código). Todo se pide a ChatGPT con un prompt y Henar/Arturo pasan las imágenes.
 - Henar quiere que Claude cuestione las ideas con honestidad, sin halagos.
 - Push solo cuando Henar o Arturo lo pidan («súbelo»). En esta cuenta escriben los dos.
 - Máster del juego (toque de rol/JRPG): solo Arturo. Él también juega, así que lo que haga como Máster tiene que verse en el grupo.

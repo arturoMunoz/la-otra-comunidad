@@ -432,7 +432,7 @@ TABS.zurron=function(){ var z=zEstado(), done=store.get('fin1',false), s=done?zS
   return '<h2>Zurrón</h2>'+(s?'<div class="sello" style="background:'+s.c+'">I</div><p style="text-align:center;margin:0"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>':'')+
     (z?'<p class="note">Lo que metiste al salir de Bolsón Cerrado:</p><div class="bag">'+z.items.map(function(k){return '<div class="item"><div class="box">'+mjIcon(ZICO[k])+'</div>'+ZNOM[k]+'</div>';}).join('')+'</div>'
       :'<div class="empty">Todavía no has hecho el zurrón. Se hace al salir de Bolsón Cerrado.</div>')+
-    '<p class="note">Objetos del camino:</p><div class="bag">'+ITEMS.map(function(it,i){var o=i<=reached;return '<div class="item'+(o?'':' no')+'"><div class="box">'+ICON[it.i]+'</div>'+(o?it.n:'¿?')+'</div>';}).join('')+'</div>'; };
+    '<p class="note">Objetos del camino:</p><div class="bag">'+ITEMS.map(function(it,i){var o=i<=reached;return '<div class="item'+(o?'':' no')+'"><div class="box">'+objIcon(it.i)+'</div>'+(o?it.n:'¿?')+'</div>';}).join('')+'</div>'; };
 
 /* ================= RECOMPENSAS DEL ACTO I (personalización) =================
    Se ganan al llegar a Cricava según el zurrón. Se guardan en loc.equipo_ganado / loc.equipo_puesto. */

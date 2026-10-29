@@ -114,6 +114,7 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
 .page .hid{color:transparent;background:repeating-linear-gradient(to bottom,transparent 0 .55em,var(--line) .55em 1.05em,transparent 1.05em 1.55em);border-radius:2px;user-select:none}
 .bag{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .item{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:.78rem;font-weight:700;line-height:1.15}
+.item.no .box img{filter:brightness(0) opacity(.3)}
 .item .box{width:100%;aspect-ratio:1;border:2px solid var(--ink);border-radius:10px;background:var(--paper2);display:grid;place-items:center}
 .item .box svg{width:60%;height:60%}
 .item.no{color:var(--muted)}
@@ -205,6 +206,7 @@ var ends=[5,15,35,55,75,90,110,115];
 if(M.papiro){ document.documentElement.style.setProperty('--papiro','url("'+M.papiro+'")'); document.documentElement.classList.add('papiro'); }
 ICON.cayado='<svg viewBox="0 0 28 28"><path d="M9 25L17 6c1-3 5-3 6 0" fill="none" stroke="#7a5426" stroke-width="2.6" stroke-linecap="round"/><path d="M12 18l4 2" stroke="#5f8a32" stroke-width="2"/></svg>';
 ICON.farol='<svg viewBox="0 0 28 28"><path d="M14 3v3" stroke="#3a3127" stroke-width="2"/><rect x="9" y="6" width="10" height="3" rx="1" fill="#3a3127"/><rect x="9.5" y="9" width="9" height="12" rx="1.5" fill="#f2b233" stroke="#3a3127" stroke-width="1.6"/><path d="M14 12c-2 2-2 4 0 6 2-2 2-4 0-6z" fill="#fff3c4"/><rect x="8" y="21" width="12" height="3" rx="1" fill="#3a3127"/></svg>';
+function objIcon(k){ return (M.objetos&&M.objetos[k])?'<img src="'+M.objetos[k]+'" alt="" style="width:72%;aspect-ratio:1;object-fit:contain;image-rendering:pixelated">':ICON[k]; }
 var ITEMS=[
   {n:'Llave de la puerta redonda', i:'casa'},
   {n:'Pipa del Dragón Verde', i:'pipa'},
@@ -649,7 +651,7 @@ var TABS={
     '<button class="ghost" type="button" id="copyKey">Copiar mi clave del atajo</button>'+
     '<button class="ghost" type="button" id="logout">Salir ('+(me?me.nombre:'')+')</button>';},
   zurron:function(){var got=ITEMS.filter(function(_,i){return i<=reached;}).length;
-    return '<h2>Zurrón</h2><p class="note">'+got+' de '+ITEMS.length+' objetos del camino. Cada sitio nuevo te deja uno.</p><div class="bag">'+ITEMS.map(function(it,i){var o=i<=reached;return '<div class="item'+(o?'':' no')+'"><div class="box">'+ICON[it.i]+'</div>'+(o?it.n:'¿?')+'</div>';}).join('')+'</div>';}
+    return '<h2>Zurrón</h2><p class="note">'+got+' de '+ITEMS.length+' objetos del camino. Cada sitio nuevo te deja uno.</p><div class="bag">'+ITEMS.map(function(it,i){var o=i<=reached;return '<div class="item'+(o?'':' no')+'"><div class="box">'+objIcon(it.i)+'</div>'+(o?it.n:'¿?')+'</div>';}).join('')+'</div>';}
 };
 function bindSheet(){
   sheet.querySelectorAll('[data-page]').forEach(function(x){x.onclick=function(){openPage(+x.dataset.page);};});

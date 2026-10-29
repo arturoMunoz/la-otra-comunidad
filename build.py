@@ -43,6 +43,7 @@ elif '--demo' in sys.argv:
     m['npc'] = {k: [uri(p) for p in v] for k, v in m.get('npc', {}).items()}
     m['libro'] = {k: uri(v) for k, v in m.get('libro', {}).items()}
     if 'ropa' in m: m['ropa'] = {k: uri(v) for k, v in m['ropa'].items()}
+    if 'objetos' in m: m['objetos'] = {k: uri(v) for k, v in m['objetos'].items()}
     html = fill(src, m, True)
     head = re.search(r'<head>(.*?)</head>', html, re.S).group(1)
     head = re.sub(r'<meta[^>]*>\n?|<link rel="apple-touch-icon"[^>]*>\n?', '', head)

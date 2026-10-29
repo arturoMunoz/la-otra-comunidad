@@ -1104,5 +1104,15 @@
 }
 ]
 }
-]
+],
+"objetos": {
+"casa": "assets/mj/obj_casa.webp",
+"pipa": "assets/mj/obj_pipa.webp",
+"hoja": "assets/mj/obj_hoja.webp",
+"estrella": "assets/mj/obj_estrella.webp",
+"cayado": "assets/mj/obj_cayado.webp",
+"cesta": "assets/mj/obj_cesta.webp",
+"farol": "assets/mj/obj_farol.webp",
+"balsa": "assets/mj/obj_balsa.webp"
+}
 }
