@@ -1,6 +1,13 @@
 package com.laotracomunidad.pasos
 
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.coroutines.resume
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateRequest
@@ -26,7 +33,30 @@ object Pasos {
     fun prefs(c: Context) = c.getSharedPreferences("loc", Context.MODE_PRIVATE)
     fun nombre(c: Context) = prefs(c).getString("nombre", "") ?: ""
 
+    /** Sensor de pasos del móvil (cuenta desde que se enciende): se va acumulando por día en la app. */
+    suspend fun sensor(c: Context): Long? {
+        val sm = c.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val s = sm.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) ?: return null
+        val v = withTimeoutOrNull(8000) { suspendCancellableCoroutine<Float> { k ->
+            val l = object : SensorEventListener {
+                override fun onSensorChanged(e: SensorEvent) { sm.unregisterListener(this); if (k.isActive) k.resume(e.values[0]) }
+                override fun onAccuracyChanged(a: Sensor?, b: Int) {} }
+            sm.registerListener(l, s, SensorManager.SENSOR_DELAY_NORMAL); k.invokeOnCancellation { sm.unregisterListener(l) } } } ?: return null
+        val p = prefs(c); val hoy = LocalDate.now(ZoneId.of("Europe/Madrid")).toString()
+        var dia = p.getString("s_dia", null); var acc = p.getLong("s_acc", 0); val ult = p.getFloat("s_ult", -1f)
+        if (ult >= 0) { val d = if (v >= ult) (v - ult).toLong() else v.toLong(); if (dia == hoy) acc += d }
+        if (dia != hoy) { dia = hoy; acc = 0 }
+        p.edit().putString("s_dia", dia).putLong("s_acc", acc).putFloat("s_ult", v).apply()
+        return acc
+    }
+
     suspend fun pasosHoy(c: Context): Long {
+        val sen = try { sensor(c) } catch (e: Exception) { null } ?: 0L
+        val hcv = try { pasosHC(c) } catch (e: Exception) { 0L }
+        return maxOf(sen, hcv)
+    }
+
+    suspend fun pasosHC(c: Context): Long {
         val hc = HealthConnectClient.getOrCreate(c)
         val z = ZoneId.of("Europe/Madrid")
         val desde = LocalDate.now(z).atStartOfDay(z).toInstant()
@@ -42,7 +72,8 @@ object Pasos {
         val rs = hc.readRecords(ReadRecordsRequest(StepsRecord::class, TimeRangeFilter.between(semana, Instant.now()))).records
         val apps = rs.map { it.metadata.dataOrigin.packageName }.toSet()
         val ult = rs.maxByOrNull { it.endTime }?.endTime?.atZone(z)?.toLocalDateTime()?.toString()?.replace('T',' ')?.take(16) ?: "nunca"
-        return "Health Connect: hoy " + rh.size + " registros (" + rh.sumOf { it.count } + " pasos); últimos 7 días " + rs.size +
+        val sen = try { sensor(c) } catch (e: Exception) { null }
+        return "Sensor del móvil: " + (sen?.let { "$it pasos hoy (desde que se activó)" } ?: "no disponible o sin permiso") + ".\nHealth Connect: hoy " + rh.size + " registros (" + rh.sumOf { it.count } + " pasos); últimos 7 días " + rs.size +
             " registros. Último paso: " + ult + ". Apps que escriben pasos: " + (if (apps.isEmpty()) "ninguna" else apps.joinToString(", "))
     }
 

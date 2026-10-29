@@ -26,8 +26,9 @@ class MainActivity : ComponentActivity() {
     private val fondo = HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
     private var estado: TextView? = null
     private var web: WebView? = null
+    private val pedirSensor = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { _ -> sigueHC() }
     private val pedir = registerForActivityResult(PermissionController.createRequestPermissionResultContract()) { ok ->
-        if (ok.contains(leer)) { Pasos.programa(this); manda() } else estado?.text = "Sin permiso no puedo leer tus pasos. Vuelve a darle al botón y acepta."
+        Pasos.programa(this); manda()
     }
 
     override fun onCreate(b: Bundle?) {
@@ -86,18 +87,20 @@ class MainActivity : ComponentActivity() {
             val n = nom.text.toString().trim()
             if (n.isEmpty()) { estado?.text = "Pon tu nombre."; return@setOnClickListener }
             Pasos.prefs(this).edit().putString("nombre", n).apply()
-            if (HealthConnectClient.getSdkStatus(this) != HealthConnectClient.SDK_AVAILABLE) {
-                estado?.text = "Este móvil no tiene Health Connect. Instálalo desde Play Store y vuelve."
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.apps.healthdata"))); return@setOnClickListener
-            }
+            if (android.os.Build.VERSION.SDK_INT >= 29 && checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION) != android.content.pm.PackageManager.PERMISSION_GRANTED)
+                pedirSensor.launch(android.Manifest.permission.ACTIVITY_RECOGNITION) else sigueHC()
+        }
+        juego.setOnClickListener { abreJuego() }
+    }
+
+    private fun sigueHC() {
+            if (HealthConnectClient.getSdkStatus(this) != HealthConnectClient.SDK_AVAILABLE) { Pasos.programa(this); manda(); return }
             lifecycleScope.launch {
                 val hc = HealthConnectClient.getOrCreate(this@MainActivity)
                 val quiero = mutableSetOf(leer)
                 if (hc.features.getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND) == HealthConnectFeatures.FEATURE_STATUS_AVAILABLE) quiero.add(fondo)
                 if (hc.permissionController.getGrantedPermissions().containsAll(quiero)) { Pasos.programa(this@MainActivity); manda() } else pedir.launch(quiero)
             }
-        }
-        juego.setOnClickListener { abreJuego() }
     }
 
     private fun manda() {
