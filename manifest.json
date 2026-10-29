@@ -1158,6 +1158,12 @@
 "n": 6,
 "fw": 125,
 "h": 262
+},
+"herrero": {
+"src": "assets/menu/herrero.webp",
+"n": 4,
+"fw": 320,
+"h": 295
 }
 },
 "ui": {

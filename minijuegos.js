@@ -855,7 +855,7 @@ var FORJA=(function(){
   var P=M.menu; if(!P) return null;
   var cv=document.createElement('canvas'); cv.className='forja'; var L=$('login'); L.insertBefore(cv,L.firstChild);
   var x=cv.getContext('2d'), bg=new Image(), ring=new Image(), sp=new Image(), parts=[], last=0, run=false, t0=performance.now();
-  bg.src=P.forja; ring.src=P.anillo; sp.src=P.chispas.src;
+  bg.src=P.forja; ring.src=P.anillo; sp.src=P.chispas.src; var her=new Image(), lastF=-1, shake=0, flash=0; if(P.herrero) her.src=P.herrero.src;
   function size(){ var r=L.getBoundingClientRect(), k=Math.min(1,600/Math.max(1,r.width)); cv.width=Math.round(r.width*k); cv.height=Math.round(r.height*k); x.imageSmoothingEnabled=false; }
   addEventListener('resize',size);
   function frame(now){
@@ -867,8 +867,13 @@ var FORJA=(function(){
     /* luz de la forja que respira y titila */
     var fl=0.10+0.06*Math.sin(t*2.1)+0.04*Math.sin(t*7.3)+0.03*Math.sin(t*13.1);
     x.globalCompositeOperation='lighter'; x.globalAlpha=Math.max(0,fl); x.drawImage(bg,ox,oy,bw,bh); x.globalAlpha=1; x.globalCompositeOperation='source-over';
+    /* el herrero detrás del yunque: sube la maza, aguanta y golpea */
+    if(P.herrero&&her.complete&&her.width){ var HP=P.herrero, ph=(t%2.6), fr=ph<0.7?0:ph<1.0?1:ph<1.75?2:ph<2.15?3:0;
+      if(fr===3&&lastF!==3){ shake=140; flash=1; for(var q=0;q<26;q++) parts.push({x:ox+bw*0.5+(Math.random()-.5)*bw*0.12,y:oy+bh*0.56,vx:(Math.random()-.5)*0.14*W/400,vy:-(0.05+Math.random()*0.12)*H/700,life:0,max:600+Math.random()*700,sc:0.10+Math.random()*0.16}); }
+      lastF=fr; var hw=bw*0.62, hh=hw*HP.h/HP.fw, hx=ox+bw*0.5-hw/2, hy=oy+bh*0.588-hh;
+      x.drawImage(her,fr*HP.fw,0,HP.fw,HP.h,hx,hy,hw,hh); }
     /* el anillo sobre el yunque, latiendo */
-    var ax=ox+bw*0.5, ay=oy+bh*0.565, rw=bw*0.26, rh=rw*ring.height/Math.max(1,ring.width), bob=Math.sin(t*1.3)*bh*0.004;
+    var ax=ox+bw*0.5, ay=oy+bh*0.565, rw=bw*0.2, rh=rw*ring.height/Math.max(1,ring.width), bob=Math.sin(t*1.3)*bh*0.004;
     if(ring.complete&&ring.width){ x.drawImage(ring,ax-rw/2,ay-rh*0.72+bob,rw,rh);
       x.globalCompositeOperation='lighter'; x.globalAlpha=0.18+0.18*(0.5+0.5*Math.sin(t*2.4)); x.drawImage(ring,ax-rw/2,ay-rh*0.72+bob,rw,rh); x.globalAlpha=1; x.globalCompositeOperation='source-over'; }
     /* chispas que suben del anillo */
@@ -878,6 +883,8 @@ var FORJA=(function(){
       if(sp.complete&&sp.width){ var f=Math.min(n-1,Math.floor(p.life/p.max*n)), w=fw*p.sc*bw/768, h=fh*p.sc*bw/768;
         x.globalCompositeOperation='lighter'; x.drawImage(sp,f*fw,0,fw,fh,p.x-w/2,p.y-h,w,h); x.globalCompositeOperation='source-over'; }
       return true; });
+    if(flash>0){ x.globalCompositeOperation='lighter'; x.fillStyle='rgba(255,170,60,'+(0.35*flash)+')'; x.fillRect(0,0,W,H); x.globalCompositeOperation='source-over'; flash=Math.max(0,flash-dt/220); }
+    if(shake>0){ shake-=dt; cv.style.transform='translate('+((Math.random()-.5)*4)+'px,'+((Math.random()-.5)*4)+'px)'; } else cv.style.transform='';
     requestAnimationFrame(frame);
   }
   return { on:function(){ if(run) return; run=true; last=0; size(); requestAnimationFrame(frame); }, off:function(){ run=false; } };

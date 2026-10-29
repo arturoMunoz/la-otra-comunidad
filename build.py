@@ -47,6 +47,7 @@ elif '--demo' in sys.argv:
     if 'andarPJ' in m: m['andarPJ'] = {h: {k: (uri(v) if isinstance(v, str) else v) for k, v in d.items()} for h, d in m['andarPJ'].items()}
     if 'menu' in m:
         m['menu']['forja'] = uri(m['menu']['forja']); m['menu']['anillo'] = uri(m['menu']['anillo']); m['menu']['chispas']['src'] = uri(m['menu']['chispas']['src'])
+        if 'herrero' in m['menu']: m['menu']['herrero']['src'] = uri(m['menu']['herrero']['src'])
     if 'suelo' in m: m['suelo'] = [uri(v) if v else None for v in m['suelo']]
     if 'ui' in m: m['ui'] = {k: uri(v) for k, v in m['ui'].items()}
     if 'objetos' in m: m['objetos'] = {k: uri(v) for k, v in m['objetos'].items()}
