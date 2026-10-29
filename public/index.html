@@ -139,10 +139,12 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
 .map .fog{position:relative;width:100%;background:linear-gradient(#cdb889,#e2cc98 30%,#e7d4a3);display:flex;flex-direction:column;align-items:center;gap:8px;color:#5a3e1e;text-align:center}
 .map .fog .mt{width:40%;margin-top:40px}
 .map .fog p{font-family:var(--title);font-weight:700;margin:0;font-size:1.1rem}
-.map .fog small{font-size:.9rem;max-width:70%}
-.map .fog .cont{position:absolute;left:0;right:0;bottom:0;width:100%;height:78%;stroke-width:3px}
+.map .fog small{font-size:.9rem;max-width:min(70%,80vw)}
+.map .fog .cont{position:absolute;left:0;right:0;bottom:0;width:100%;height:calc(100% - 190px)}
+.map .fog .hito{position:absolute;left:50%;transform:translate(14px,50%);font-family:var(--title);font-weight:700;font-size:.85rem;color:#7a5a32;background:rgba(231,212,163,.9);padding:1px 6px}
+.map .fog .hito::before{content:'';position:absolute;left:-14px;top:50%;width:9px;height:9px;margin-top:-5px;border-radius:50%;background:#e7d4a3;border:2px solid #7a5a32}
 .map .fog .cont path{stroke-width:3px}
-.map .fog .sigue{position:absolute;bottom:14%;left:50%;transform:translateX(-50%);width:70%;font-family:var(--title);font-weight:700;font-size:.95rem;color:#5a3e1e;background:rgba(231,212,163,.85);padding:6px 10px}
+.map .fog .sigue{position:absolute;left:50%;transform:translateX(-50%);width:70%;font-family:var(--title);font-weight:700;font-size:.95rem;color:#5a3e1e;background:rgba(231,212,163,.92);padding:6px 10px;max-width:80vw;text-align:center}
 .map .mfade{position:absolute;left:0;right:0;top:0;height:3.5%;background:linear-gradient(#e7d4a3,rgba(231,212,163,0));z-index:1;pointer-events:none}
 .map svg.ov{position:absolute;left:0;bottom:0;width:100%;height:auto;overflow:visible}
 .map .lbl{font-family:'Cinzel',Georgia,serif;font-weight:700;font-size:30px;fill:#2b1d0e;paint-order:stroke;stroke:#f3e2b4;stroke-width:7px;stroke-linejoin:round}
@@ -612,9 +614,16 @@ function openMap(){
   }).sort(function(a,b){return a.k-b.k;}).map(function(f){return f.html;}).join('');
   var mtSvg='<svg class="mt" viewBox="0 0 300 160"><path d="M10 150L120 40c10-10 20-12 30-12s20 2 30 12l110 110z" fill="#5a4636"/><path d="M120 40c10-10 20-12 30-12s20 2 30 12l-14 14-16-8-16 10z" fill="#3a2a1e"/><path d="M146 30c-6-14 2-26 10-28-4 10 6 14 2 28z" fill="#9c2f22" opacity=".8"/><path d="M140 20c-10-12-30-10-40-4M160 18c14-10 34-8 44-2" stroke="#6a5a4a" stroke-width="4" fill="none" opacity=".6"/></svg>';
   el.innerHTML='<div class="mh"><h2>El viaje</h2><button type="button" aria-label="Cerrar">×</button></div><div class="sc"><div class="wrap2">'+
-    '<div class="fog" style="height:'+(window.innerWidth*4|0)+'px">'+mtSvg+'<p>El Monte del Destino</p><small>Unos 2.800 km de camino. El resto del mapa se irá dibujando según avancéis.</small>'+
-    '<svg class="cont" viewBox="0 0 100 1000" preserveAspectRatio="none" aria-hidden="true"><path d="M50 1000C30 920 70 860 48 780S30 640 55 560 70 420 45 340 52 200 50 130" fill="none" stroke="#7a5a32" stroke-width="2.4" stroke-dasharray="6 9" vector-effect="non-scaling-stroke" opacity=".55"/></svg>'+
-    '<span class="sigue">Rivendel no es el final: el camino sigue hacia el sur y el este.</span></div>'+
+    (function(){
+      /* lo que falta hasta el Monte del Destino, a la misma escala que el mapa dibujado */
+      var finKm=mp.lugares[mp.lugares.length-1][0], imgH=window.innerWidth*1.7*mp.h/mp.w, pxKm=imgH/finKm, fh=Math.round((2800-finKm)*pxKm)+260;
+      var hitos=[1000,1250,1500,1750,2000,2250,2500,2750].map(function(k){ var b=Math.round((k-finKm)*pxKm);
+        return '<span class="hito" style="bottom:'+b+'px">km '+k.toLocaleString('es-ES')+'</span>'; }).join('');
+      var d='M50 1000'; for(var i=0;i<12;i++){ var y1=1000-(i+.5)*(1000/12), y2=1000-(i+1)*(1000/12); d+=' Q'+(i%2?57:43)+' '+y1.toFixed(0)+' 50 '+y2.toFixed(0); }
+      return '<div class="fog" style="height:'+fh+'px">'+mtSvg+'<p>El Monte del Destino</p><small>Unos 2.800 km de camino. El mapa se irá dibujando según avancéis.</small>'+
+        '<svg class="cont" viewBox="0 0 100 1000" preserveAspectRatio="none" aria-hidden="true"><path d="'+d+'" fill="none" stroke="#7a5a32" stroke-dasharray="6 9" vector-effect="non-scaling-stroke" opacity=".55"/></svg>'+
+        hitos+'<span class="sigue" style="bottom:'+Math.round(pxKm*90)+'px">Rivendel no es el final: aún quedan más de 2.000 km.</span></div>';
+    })()+
     '<div style="position:relative;line-height:0"><div class="mfade"></div><img src="'+mp.src+'" alt="Mapa del viaje hasta Rivendel" style="width:100%;display:block">'+
     '<svg class="ov" viewBox="0 0 '+mp.w+' '+mp.h+'" preserveAspectRatio="none" style="height:100%;top:0">'+
     '<polyline points="'+path+'" fill="none" stroke="rgba(43,29,14,.35)" stroke-width="10" stroke-linecap="round" stroke-dasharray="2 22"/>'+
