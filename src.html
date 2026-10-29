@@ -460,7 +460,7 @@ $('sync').onclick=function(){
     var add=1800+Math.round(Math.random()*2600); demoSteps+=add; store.set('demoSteps',demoSteps); store.set('demoToday',store.get('demoToday',0)+add);
     refresh(); return;
   }
-  if(/iPhone|iPad|iPod/.test(navigator.userAgent)){ location.href='shortcuts://run-shortcut?name='+encodeURIComponent(ATAJO); }
+  if(/iPhone|iPad|iPod/.test(navigator.userAgent)){ var vuelta=encodeURIComponent(location.origin+'/'); location.href='shortcuts://x-callback-url/run-shortcut?name='+encodeURIComponent(ATAJO)+'&x-success='+vuelta+'&x-error='+vuelta+'&x-cancel='+vuelta; }
   else { $('info').textContent='En Android la sincronización llega pronto.'; refresh(); }
 };
 
