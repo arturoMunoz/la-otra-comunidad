@@ -1135,12 +1135,6 @@
 "pantalon": "assets/pj/ropa_pantalon_fer.webp",
 "capa": "assets/pj/ropa_capa_fer.webp",
 "capa_f": "assets/pj/ropa_capa_f_fer.webp"
-},
-"arturo": {
-"src": "assets/pj/andar_arturo.webp",
-"pantalon": "assets/pj/ropa_pantalon_arturo.webp",
-"capa": "assets/pj/ropa_capa_arturo.webp",
-"capa_f": "assets/pj/ropa_capa_f_arturo.webp"
 }
 }
 }
