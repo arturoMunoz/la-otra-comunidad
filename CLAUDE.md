@@ -21,7 +21,7 @@ Juego web privado para 7 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Personajes del libro: solo en texto (bocadillos con emblema). No dibujar a Frodo, Gandalf, Bombadil ni otros personajes de Tolkien. Los hobbits del grupo son originales.
 - Textos de historia: resúmenes propios, nunca citas copiadas del libro.
 - Henar quiere que Claude cuestione las ideas con honestidad, sin halagos.
-- Push solo cuando Henar lo pida.
+- Push solo cuando Henar o Arturo lo pidan («súbelo»). En esta cuenta escriben los dos.
 - Máster del juego (toque de rol/JRPG): solo Arturo. Él también juega, así que lo que haga como Máster tiene que verse en el grupo.
 
 ## Estado (Versión 3, 28/10/2026)
