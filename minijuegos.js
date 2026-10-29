@@ -917,7 +917,9 @@ enter=function(){ if(me&&RECIEN&&!store.get(proKey(),false)){ if(FORJA) FORJA.of
     'button:active>.rb,.rb:active{background-image:url("'+U.redondo_on+'")}'+
     '.rb img{width:44%;height:44%;object-fit:contain;margin-top:-6px;image-rendering:pixelated;filter:drop-shadow(0 1px 0 rgba(0,0,0,.5))}'+
     '.rb.peq{width:44px;height:47px}'+
-    '.top .rbtn{all:unset;cursor:pointer;pointer-events:auto;flex:none;display:grid;place-items:center}'+
+    '.top .rbtn{all:unset;cursor:pointer;pointer-events:auto;flex:none;width:58px;display:flex;flex-direction:column;align-items:center;gap:0;color:#fff8e6;font:700 .68rem var(--body);text-shadow:0 1px 2px rgba(0,0,0,.85),0 0 8px rgba(0,0,0,.55)}'+
+    '.top .rbtn img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 2px 2px rgba(0,0,0,.55))}'+
+    '.top .rbtn:active img{transform:translateY(2px) scale(.94)}'+
     '.top .rbtn.gira img{animation:gira 1s linear infinite}@keyframes gira{to{transform:rotate(360deg)}}'+
     '.bottom .sync{display:none!important}'+
     '.menu button:not(.sec){border:0;border-radius:0;background:none;box-shadow:none;border-style:solid;border-width:0 38px;border-image:url("'+U.largo+'") 0 95 fill / 0 38px stretch;padding:15px 0;text-shadow:0 1px 2px #000;image-rendering:pixelated}'+
@@ -928,9 +930,9 @@ enter=function(){ if(me&&RECIEN&&!store.get(proKey(),false)){ if(FORJA) FORJA.of
     b.innerHTML='<span class="rb"><img src="'+U[ic[t]]+'" alt=""></span><span>'+nom[t]+'</span>'; });
   var row=document.querySelector('.top .row'), old=document.querySelector('.alMenu'); if(old) old.remove();
   var mb=document.createElement('button'); mb.type='button'; mb.className='rbtn'; mb.setAttribute('aria-label','Volver al menú');
-  mb.innerHTML='<span class="rb peq"><img src="'+U.i_hoja+'" alt=""></span>'; mb.onclick=function(){ muestraMenu(); }; row.insertBefore(mb,row.firstChild);
+  mb.innerHTML='<img src="'+U.i_hoja+'" alt=""><span>Menú</span>'; mb.onclick=function(){ muestraMenu(); }; row.insertBefore(mb,row.firstChild);
   var sb=document.createElement('button'); sb.type='button'; sb.className='rbtn'; sb.id='sync2'; sb.setAttribute('aria-label','Sincronizar mis pasos');
-  sb.innerHTML='<span class="rb peq"><img src="'+U.i_sync+'" alt=""></span>'; sb.onclick=function(){ sb.classList.add('gira'); setTimeout(function(){ sb.classList.remove('gira'); },2500); $('sync').click(); };
+  sb.innerHTML='<img src="'+U.i_sync+'" alt=""><span>Sincronizar</span>'; sb.onclick=function(){ sb.classList.add('gira'); setTimeout(function(){ sb.classList.remove('gira'); },2500); $('sync').click(); };
   row.appendChild(sb);
   if(typeof fit==='function') fit();
 })();
