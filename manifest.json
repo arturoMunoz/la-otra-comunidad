@@ -1149,5 +1149,27 @@
 4
 ]
 }
+},
+"menu": {
+"forja": "assets/menu/forja.webp",
+"anillo": "assets/menu/anillo.webp",
+"chispas": {
+"src": "assets/menu/chispas.webp",
+"n": 6,
+"fw": 125,
+"h": 262
+}
+},
+"ui": {
+"redondo": "assets/ui/redondo.webp",
+"redondo_on": "assets/ui/redondo_on.webp",
+"largo": "assets/ui/largo.webp",
+"largo_on": "assets/ui/largo_on.webp",
+"i_mapa": "assets/ui/i_mapa.webp",
+"i_libro": "assets/ui/i_libro.webp",
+"i_comunidad": "assets/ui/i_comunidad.webp",
+"i_zurron": "assets/ui/i_zurron.webp",
+"i_sync": "assets/ui/i_sync.webp",
+"i_hoja": "assets/ui/i_hoja.webp"
 }
 }

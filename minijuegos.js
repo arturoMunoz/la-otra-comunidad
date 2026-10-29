@@ -830,3 +830,105 @@ function usaAndar(h){ var P=M.andarPJ&&M.andarPJ[h]; if(!P) return;
   load(P.src).then(function(im){ if(im){ M.andar=Object.assign({},M.andar,{n:P.n||M.andar.n,ms:P.ms,vel:P.vel,dx:P.dx}); WALK=im; ANCLA=null; } }).catch(function(){});
   ['pantalon','capa','capa_f'].forEach(function(k){ if(!P[k]) return; var i=new Image(); i.onload=function(){ ROPAIMG[k]=i; TINTC={}; }; i.src=P[k]; }); }
 (function(){ var _st=start; start=function(){ if(me&&me.hobbit) usaAndar(me.hobbit); return _st.apply(this,arguments); }; })();
+
+/* ================= PORTADA: la forja animada detrás de la entrada y del menú principal ================= */
+(function(){ var c=document.createElement('style'); c.textContent=
+  '.login>canvas.forja{position:absolute;inset:0;width:100%;height:100%;z-index:0;image-rendering:pixelated;pointer-events:none}'+
+  '.login>*:not(canvas){position:relative;z-index:1}'+
+  '.login{background:#0e0906!important}'+
+  '.login .in{background:linear-gradient(to bottom,rgba(14,9,6,0),rgba(14,9,6,.78) 18%,rgba(14,9,6,.92));padding-top:36px}'+
+  '.menu{display:flex;flex-direction:column;gap:10px}'+
+  '.menu button{background:linear-gradient(#3f6b33,#2c4f24);color:#f3ead2;border:2px solid #c9d1c4;border-radius:12px;padding:13px;font:700 1.05rem var(--body);box-shadow:0 3px 0 #15240f,inset 0 1px 0 rgba(255,255,255,.2)}'+
+  '.menu button:active{transform:translateY(2px);box-shadow:0 1px 0 #15240f}'+
+  '.menu button.sec{background:transparent;border-color:rgba(243,234,210,.35);box-shadow:none;font-weight:600;font-size:.95rem;padding:10px}'+
+  '.menu .hola{text-align:center;margin:0 0 4px;color:#f3d9a8;font-family:var(--title);font-size:1.05rem}'+
+  '.top .row{align-items:stretch;gap:8px}.top .row .pill:not(.r){flex:1}'+
+  '.alMenu{pointer-events:auto;flex:none;background:rgba(20,17,11,.72);color:#f3ead2;border:1px solid rgba(243,234,210,.3);border-radius:10px;padding:7px 12px;font:700 .85rem var(--body)}';
+  document.head.appendChild(c); })();
+var FORJA=(function(){
+  var P=M.menu; if(!P) return null;
+  var cv=document.createElement('canvas'); cv.className='forja'; var L=$('login'); L.insertBefore(cv,L.firstChild);
+  var x=cv.getContext('2d'), bg=new Image(), ring=new Image(), sp=new Image(), parts=[], last=0, run=false, t0=performance.now();
+  bg.src=P.forja; ring.src=P.anillo; sp.src=P.chispas.src;
+  function size(){ var r=L.getBoundingClientRect(), k=Math.min(1,600/Math.max(1,r.width)); cv.width=Math.round(r.width*k); cv.height=Math.round(r.height*k); x.imageSmoothingEnabled=false; }
+  addEventListener('resize',size);
+  function frame(now){
+    if(!run) return; var dt=Math.min(50,now-(last||now)); last=now; var t=(now-t0)/1000;
+    if(!bg.complete||!bg.width){ requestAnimationFrame(frame); return; }
+    var W=cv.width,H=cv.height, s=Math.max(W/bg.width,H/bg.height)*(1.04+0.012*Math.sin(t*0.25)), bw=bg.width*s, bh=bg.height*s;
+    var ox=(W-bw)/2+Math.sin(t*0.18)*W*0.01, oy=(H-bh)*0.42+Math.cos(t*0.21)*H*0.006;
+    x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.drawImage(bg,ox,oy,bw,bh);
+    /* luz de la forja que respira y titila */
+    var fl=0.10+0.06*Math.sin(t*2.1)+0.04*Math.sin(t*7.3)+0.03*Math.sin(t*13.1);
+    x.globalCompositeOperation='lighter'; x.globalAlpha=Math.max(0,fl); x.drawImage(bg,ox,oy,bw,bh); x.globalAlpha=1; x.globalCompositeOperation='source-over';
+    /* el anillo sobre el yunque, latiendo */
+    var ax=ox+bw*0.5, ay=oy+bh*0.565, rw=bw*0.26, rh=rw*ring.height/Math.max(1,ring.width), bob=Math.sin(t*1.3)*bh*0.004;
+    if(ring.complete&&ring.width){ x.drawImage(ring,ax-rw/2,ay-rh*0.72+bob,rw,rh);
+      x.globalCompositeOperation='lighter'; x.globalAlpha=0.18+0.18*(0.5+0.5*Math.sin(t*2.4)); x.drawImage(ring,ax-rw/2,ay-rh*0.72+bob,rw,rh); x.globalAlpha=1; x.globalCompositeOperation='source-over'; }
+    /* chispas que suben del anillo */
+    if(Math.random()<dt/90) parts.push({x:ax+(Math.random()-.5)*rw*0.8,y:ay-rh*0.3,vx:(Math.random()-.5)*0.02*W/400,vy:-(0.04+Math.random()*0.05)*H/700,life:0,max:1100+Math.random()*900,sc:0.12+Math.random()*0.14});
+    var n=P.chispas.n, fw=P.chispas.fw, fh=P.chispas.h;
+    parts=parts.filter(function(p){ p.life+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; if(p.life>p.max) return false;
+      if(sp.complete&&sp.width){ var f=Math.min(n-1,Math.floor(p.life/p.max*n)), w=fw*p.sc*bw/768, h=fh*p.sc*bw/768;
+        x.globalCompositeOperation='lighter'; x.drawImage(sp,f*fw,0,fw,fh,p.x-w/2,p.y-h,w,h); x.globalCompositeOperation='source-over'; }
+      return true; });
+    requestAnimationFrame(frame);
+  }
+  return { on:function(){ if(run) return; run=true; last=0; size(); requestAnimationFrame(frame); }, off:function(){ run=false; } };
+})();
+if(FORJA) FORJA.on();
+/* menú principal: se ve al abrir el juego con la sesión ya iniciada, y desde el botón «Menú» */
+var _enterJuego=enter;
+function muestraMenu(){
+  if(!sheet.hidden) closeSheet(); document.querySelectorAll('.map').forEach(function(m){m.remove();});
+  $('login').hidden=false; app.classList.add('out'); fit(); view('menu'); if(FORJA) FORJA.on();
+}
+function aJugar(){ if(FORJA) FORJA.off(); _enterJuego(); }
+enter=function(){ if(me&&!store.get(proKey(),false)){ if(FORJA) FORJA.off(); return _enterJuego(); } muestraMenu(); };
+(function(){ var _view=view; view=function(mode,msg){
+  if(mode!=='menu'){ var tl=document.querySelector('.login .tl'); if(tl) tl.hidden=false; return _view(mode,msg); }
+  err(''); var tl=document.querySelector('.login .tl'); if(tl) tl.hidden=true; $('authBox').innerHTML='<div class="menu"><p class="hola">'+(me?me.nombre+', tu viaje te espera':'')+'</p>'+
+    '<button type="button" id="mJugar">Continuar el viaje</button>'+
+    '<button type="button" id="mLibro">Libro de Bilbo</button>'+
+    '<button type="button" id="mPro">Ver el prólogo</button>'+
+    '<button type="button" class="sec" id="mSalir">Salir de la cuenta</button></div>';
+  $('mJugar').onclick=aJugar;
+  $('mLibro').onclick=function(){ aJugar(); setTimeout(function(){ openTab('libro'); },60); };
+  $('mPro').onclick=function(){ verPrologo(function(){}); };
+  $('mSalir').onclick=logout;
+}; })();
+(function(){ var _lo=logout; logout=function(){ _lo(); if(FORJA) FORJA.on(); }; })();
+(function(){ var top=document.querySelector('.top .row'); if(!top) return; var b=document.createElement('button'); b.type='button'; b.className='alMenu'; b.textContent='‹ Menú'; b.setAttribute('aria-label','Volver al menú'); b.onclick=function(){ muestraMenu(); }; top.insertBefore(b,top.firstChild); })();
+(function(){ var _fp=flushPending; flushPending=function(){ if(app.classList.contains('out')||!$('login').hidden) return; return _fp(); }; })();
+(function(){ var _mm=muestraMenu; muestraMenu=function(){ document.querySelectorAll('.dlg,.dlg-veil').forEach(function(e){e.remove();}); _mm(); }; })();
+(function(){ var _aj=aJugar; aJugar=function(){ _aj(); setTimeout(flushPending,500); }; })();
+
+/* ================= BOTONES ÉLFICOS (dibujos de ChatGPT): redondos con hoja de Lórien abajo, alargados en la portada ================= */
+(function(){ var U=M.ui; if(!U) return;
+  var css='.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;align-items:start}'+
+    '.btns button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;color:#f3ead2;font:700 .78rem var(--body);text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);-webkit-tap-highlight-color:transparent}'+
+    '.rb{position:relative;width:60px;height:64px;display:grid;place-items:center;background:url("'+U.redondo+'") center/contain no-repeat;image-rendering:pixelated}'+
+    'button:active>.rb,.rb:active{background-image:url("'+U.redondo_on+'")}'+
+    '.rb img{width:44%;height:44%;object-fit:contain;margin-top:-6px;image-rendering:pixelated;filter:drop-shadow(0 1px 0 rgba(0,0,0,.5))}'+
+    '.rb.peq{width:44px;height:47px}'+
+    '.top .rbtn{all:unset;cursor:pointer;pointer-events:auto;flex:none;display:grid;place-items:center}'+
+    '.top .rbtn.gira img{animation:gira 1s linear infinite}@keyframes gira{to{transform:rotate(360deg)}}'+
+    '.bottom .sync{display:none!important}'+
+    '.menu button:not(.sec){border:0;border-radius:0;background:none;box-shadow:none;border-style:solid;border-width:0 38px;border-image:url("'+U.largo+'") 0 95 fill / 0 38px stretch;padding:15px 0;text-shadow:0 1px 2px #000;image-rendering:pixelated}'+
+    '.menu button:not(.sec):active{border-image-source:url("'+U.largo_on+'");transform:none}';
+  var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
+  var ic={mapa:'i_mapa',libro:'i_libro',comunidad:'i_comunidad',zurron:'i_zurron'}, nom={mapa:'Mapa',libro:'Libro de Bilbo',comunidad:'Comunidad',zurron:'Zurrón'};
+  document.querySelectorAll('.btns button').forEach(function(b){ var t=b.dataset.tab; if(!ic[t]) return;
+    b.innerHTML='<span class="rb"><img src="'+U[ic[t]]+'" alt=""></span><span>'+nom[t]+'</span>'; });
+  var row=document.querySelector('.top .row'), old=document.querySelector('.alMenu'); if(old) old.remove();
+  var mb=document.createElement('button'); mb.type='button'; mb.className='rbtn'; mb.setAttribute('aria-label','Volver al menú');
+  mb.innerHTML='<span class="rb peq"><img src="'+U.i_hoja+'" alt=""></span>'; mb.onclick=function(){ muestraMenu(); }; row.insertBefore(mb,row.firstChild);
+  var sb=document.createElement('button'); sb.type='button'; sb.className='rbtn'; sb.id='sync2'; sb.setAttribute('aria-label','Sincronizar mis pasos');
+  sb.innerHTML='<span class="rb peq"><img src="'+U.i_sync+'" alt=""></span>'; sb.onclick=function(){ sb.classList.add('gira'); setTimeout(function(){ sb.classList.remove('gira'); },2500); $('sync').click(); };
+  row.appendChild(sb);
+  if(typeof fit==='function') fit();
+})();
+/* arriba solo el sitio y los km: fuera la barra de «Faltan…» (duplicaba); el tiempo queda en una línea pequeña */
+(function(){ var pr=document.querySelector('.top .prog'), wx=$('wx'); if(!pr) return;
+  var st=document.createElement('style'); st.textContent='.top .prog{display:none}.wxl{pointer-events:none;align-self:flex-end;margin:-2px 4px 0 0;font:600 .78rem var(--body);color:#f3ead2;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.7)}'; document.head.appendChild(st);
+  if(wx){ wx.classList.add('wxl'); pr.parentNode.insertBefore(wx,pr); } })();
