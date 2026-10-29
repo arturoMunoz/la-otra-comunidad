@@ -17,7 +17,7 @@ def piezas(path, minsz):
 a, fg, lab, ob, big, filas = piezas(src, 8000)
 mid = lambda i: (ob[i][0].start + ob[i][0].stop) / 2
 ys = sorted(set(int(mid(i)) for i in big)); cut = (min(ys) + max(ys)) / 2
-sel = sorted([i for i in big if (mid(i) > cut) == bool(fila)], key=lambda i: ob[i][1].start)[:6]
+sel = sorted([i for i in big if (max(ys) - min(ys) < 120) or (mid(i) > cut) == bool(fila)], key=lambda i: ob[i][1].start)[:6]
 assert len(sel) == 6, len(sel)
 hmax = max(ob[i][0].stop - ob[i][0].start for i in sel); sc = 71 / hmax
 sheet = Image.new('RGBA', (FW * 6, H), (0, 0, 0, 0))
