@@ -533,6 +533,9 @@ function verPrologo(alAcabar){
     el.appendChild(t);
   }
   pedirToque();
+  /* volver a verlo desde el menú: ahí sí se puede salir */
+  if(alAcabar){ var sk=document.createElement('button'); sk.type='button'; sk.className='skip'; sk.textContent='Salir ›';
+    sk.onclick=function(){ done=true; try{v.pause();}catch(e){} el.remove(); alAcabar(); }; el.appendChild(sk); }
 }
 function instrucciones(el,alAcabar){
   var i=0;
@@ -566,7 +569,10 @@ function instrucciones(el,alAcabar){
 /* sale la primera vez que entras al juego */
 /* el prólogo sale una vez por cuenta, justo después de registrarte y elegir hobbit (enter solo llega con cuenta y hobbit) */
 function proKey(){ return 'prologo_'+(me&&me.nombre||''); }
-(function(){ var _enter=enter; enter=function(){ _enter(); if(me&&!store.get(proKey(),false)) verPrologo(); }; })();
+/* el prólogo sale SOLO justo después de crear la cuenta y elegir hobbit (claim); al abrir el juego otras veces, el menú */
+var RECIEN=false;
+(function(){ var _cl=claim; claim=function(n){ RECIEN=true; return _cl(n); }; })();
+(function(){ var _enter=enter; enter=function(){ _enter(); if(me&&RECIEN&&!store.get(proKey(),false)){ RECIEN=false; verPrologo(); } }; })();
 /* volver a verlo desde el Libro de Bilbo */
 (function(){ var _lib=TABS.libro; TABS.libro=function(){ return _lib().replace('</ol>','</ol><button class="ghost" type="button" id="verPro">Volver a ver el prólogo</button>'); }; })();
 document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verPro'){ closeSheet(); verPrologo(); } });
@@ -884,7 +890,7 @@ function muestraMenu(){
   $('login').hidden=false; app.classList.add('out'); fit(); view('menu'); if(FORJA) FORJA.on();
 }
 function aJugar(){ if(FORJA) FORJA.off(); _enterJuego(); }
-enter=function(){ if(me&&!store.get(proKey(),false)){ if(FORJA) FORJA.off(); return _enterJuego(); } muestraMenu(); };
+enter=function(){ if(me&&RECIEN&&!store.get(proKey(),false)){ if(FORJA) FORJA.off(); return _enterJuego(); } muestraMenu(); };
 (function(){ var _view=view; view=function(mode,msg){
   if(mode!=='menu'){ var tl=document.querySelector('.login .tl'); if(tl) tl.hidden=false; return _view(mode,msg); }
   err(''); var tl=document.querySelector('.login .tl'); if(tl) tl.hidden=true; $('authBox').innerHTML='<div class="menu"><p class="hola">'+(me?me.nombre+', tu viaje te espera':'')+'</p>'+
