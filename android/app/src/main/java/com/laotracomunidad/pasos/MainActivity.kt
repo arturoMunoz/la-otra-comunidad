@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity() {
         val diagT = texto(Pasos.prefs(this).getString("fallo", null)?.let { "Último fallo: " + it } ?: "", 14f, Color.rgb(201,188,156)); col.addView(diagT)
         diag.setOnClickListener { diagT.text = "Mirando…"; lifecycleScope.launch { diagT.text = try { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { Pasos.diagnostico(this@MainActivity) } } catch (e: Throwable) { "Error: " + e + "\n" + e.stackTrace.take(4).joinToString("\n") } } }
         setContentView(ScrollView(this).apply { setBackgroundColor(Color.rgb(20,17,11)); addView(col) })
-X
+        if (Pasos.nombre(this).isNotEmpty()) estado?.text = "Activada para " + Pasos.nombre(this) + "."
 
         boton.setOnClickListener {
             val n = nom.text.toString().trim()
