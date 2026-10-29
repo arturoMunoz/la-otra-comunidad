@@ -10,7 +10,8 @@ Juego web privado para 7 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - `public/assets/` → fondos por capas (`tramos/tN_capa.webp`), dibujos (`pj/`), logo e icono.
 - `supabase/la-otra-comunidad.sql` → tablas `loc_*` (ejecutado en el proyecto «golf» el 28/10/2026).
 - `supabase/la-otra-comunidad-cuentas.sql` → cuentas con correo (Supabase Auth, las mismas de Stadada), `user_id` y `clave_atajo` en `loc_jugadores`, funciones `loc_libres/loc_reclamar/loc_yo/loc_leidas/loc_leer/loc_subir`; cierra las de código. Ejecutar después del anterior.
-- `build.py` → genera `public/index.html`; `--demo x.html` genera el prototipo de claude.ai (datos inventados).
+- `build.py` → genera `public/index.html`; `--demo-files carpeta/index.html` genera el prototipo de claude.ai (datos inventados) que se publica con `assets/` como archivos aparte (el `--demo` de un solo archivo ya no cabe en 16 MB).
+- Escenas extra dentro de los tramos: `manifest.json` → `escenas` [{km, capas}] (se cortan con un script: cielo / tierra sin cielo / suelo con el camino; los pies van en y=228). Objetos del camino: `props` + `PROP_T` en `src.html`.
 - `supabase/clave_publica.txt` → la clave pública `sb_publishable_…` (la misma de Stadada).
 - Publicación: Cloudflare Workers (`wrangler.toml`, carpeta `public`).
 
