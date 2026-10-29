@@ -67,13 +67,20 @@ object Pasos {
         return maxOf(sen, hcv)
     }
 
-    suspend fun pasosHC(c: Context): Long {
-        val hc = HealthConnectClient.getOrCreate(c)
-        val z = ZoneId.of("Europe/Madrid")
+    /** Pasos de hoy en Health Connect, app por app (Samsung Health, Google Fit...). Se queda con la app que
+     *  más pasos tenga, nunca suma unas con otras: si dos apps apuntan los mismos pasos, se contarían dos veces. */
+    suspend fun pasosPorApp(c: Context): Map<String, Long> {
+        val hc = HealthConnectClient.getOrCreate(c); val z = ZoneId.of("Europe/Madrid")
         val desde = LocalDate.now(z).atStartOfDay(z).toInstant()
-        val r = hc.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), TimeRangeFilter.between(desde, Instant.now())))
-        return r[StepsRecord.COUNT_TOTAL] ?: 0L
+        val tot = mutableMapOf<String, Long>(); var token: String? = null
+        do {
+            val r = hc.readRecords(ReadRecordsRequest(StepsRecord::class, TimeRangeFilter.between(desde, Instant.now()), pageToken = token))
+            r.records.forEach { val k = it.metadata.dataOrigin.packageName; tot[k] = (tot[k] ?: 0L) + it.count }
+            token = r.pageToken
+        } while (token != null)
+        return tot
     }
+    suspend fun pasosHC(c: Context): Long = pasosPorApp(c).values.maxOrNull() ?: 0L
 
     /** Qué hay en Health Connect: pasos de hoy y de qué apps vienen, y de los últimos 7 días. */
     suspend fun diagnostico(c: Context): String {
@@ -84,8 +91,11 @@ object Pasos {
         val apps = rs.map { it.metadata.dataOrigin.packageName }.toSet()
         val ult = rs.maxByOrNull { it.endTime }?.endTime?.atZone(z)?.toLocalDateTime()?.toString()?.replace('T',' ')?.take(16) ?: "nunca"
         val sen = try { sensor(c) } catch (e: Exception) { null }
+        val porApp = try { pasosPorApp(c) } catch (e: Exception) { emptyMap() }
+        val desglose = if (porApp.isEmpty()) "" else "\nHoy por app: " + porApp.entries.joinToString(" · ") { it.key + " " + it.value } +
+            ".\nSe envía el mayor (no se suma): " + maxOf(sen ?: 0L, porApp.values.maxOrNull() ?: 0L) + " pasos."
         return "Sensor del móvil: " + ultimoSensor + (sen?.let { " · $it pasos hoy (desde que se activó)" } ?: "") + ".\nHealth Connect: hoy " + rh.size + " registros (" + rh.sumOf { it.count } + " pasos); últimos 7 días " + rs.size +
-            " registros. Último paso: " + ult + ". Apps que escriben pasos: " + (if (apps.isEmpty()) "ninguna" else apps.joinToString(", "))
+            " registros. Último paso: " + ult + ". Apps que escriben pasos: " + (if (apps.isEmpty()) "ninguna" else apps.joinToString(", ")) + desglose
     }
 
     /** Devuelve un texto para enseñar: "8.420 pasos enviados" o el error. */
