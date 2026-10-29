@@ -14,7 +14,10 @@ jobs:
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: '8.9' }
-      - run: gradle -p android assembleRelease --no-daemon
+      - name: Compilar
+        run: |
+          set -o pipefail
+          gradle -p android assembleRelease --no-daemon 2>&1 | tee build.log || { grep -E "^e: |error:|What went wrong|Could not|> " build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done; exit 1; }
       - run: cp android/app/build/outputs/apk/release/app-release.apk la-otra-comunidad.apk
       - uses: actions/upload-artifact@v4
         with: { name: la-otra-comunidad-apk, path: la-otra-comunidad.apk }
