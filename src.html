@@ -303,7 +303,15 @@ loadWeather(); setInterval(loadWeather, 30*60*1000);
 
 /* ---------- imágenes y lienzo a pantalla completa ---------- */
 var load=function(s){return new Promise(function(r){var i=new Image();i.onload=function(){r(i);};i.onerror=function(){r(null);};i.src=s;});};
-var TI=[],AR=[],VE=[],SKY=[],WALK=null;
+var TI=[],AR=[],VE=[],SKY=[],WALK=null,ESC=[],PROPS={},curE=-1,prevE=-1;
+/* escena que toca según el km: la del tramo o una extra si ya has pasado su km */
+function escAt(k){ var t=tramoAt(k), best=t, bk=T[t].km; ESC.forEach(function(e){ if(e.km<=k && e.km>=bk && tramoAt(e.km)===t){ best=e.i; bk=e.km; } }); return best; }
+/* objetos del camino por tramo */
+var PROP_T=[['senal','ovejas','carretilla','colmenas','pozo','banco'],['ovejas','carretilla','colmenas','senal','pozo','lena','banco'],['ovejas','piedra','valla','zorro','lena','senal'],['setas','lena','zorro','valla','piedra'],['setas','valla','piedra','zorro'],['carretilla','carro_heno','colmenas','valla','ovejas','pozo','setas'],['piedra','senal','carro_heno','banco','valla'],['banco','carro_heno','pozo','senal']];
+function hash(n){ n=(n^61)^(n>>>16); n=n+(n<<3); n=n^(n>>>4); n=Math.imul(n,0x27d4eb2d); return ((n^(n>>>15))>>>0)/4294967296; }
+function dibujaProps(o){ var L=PROP_T[curT]||[], gap=170, j0=Math.floor((o-W)/gap), slot=Math.floor(km*4);
+  for(var j=j0;j<j0+3+Math.ceil(W/gap);j++){ var r=hash(j*7919+slot*104729); if(r<0.3||!L.length) continue; var k=L[Math.floor(hash(j*31+slot)*L.length)], im=PROPS[k]; if(!im) continue;
+    var x=Math.round(j*gap-o+(r*90)); if(x>W||x+im.width<0) continue; ctx.drawImage(im,x,OY+222-im.height); } }
 var cv=$('c'),ctx=cv.getContext('2d'),W=200,H=420,OY=0;
 function fit(){
   var r=app.getBoundingClientRect(); W=200; H=Math.max(242,Math.round(W*r.height/Math.max(1,r.width)));
@@ -417,6 +425,10 @@ Promise.all([
   Promise.all(M.arturo.map(load)), Promise.all(M.vecinos.map(load)), M.andar?load(M.andar.src):Promise.resolve(null)
 ]).then(function(a){
   TI=a[0];AR=a[1];VE=a[2];WALK=a[3];
+  /* escenas extra dentro de los tramos (cada ~5 km) y objetos del camino: se cargan después, sin hacer esperar */
+  (M.escenas||[]).forEach(function(e){ Promise.all(e.capas.map(function(l){return load(l.src).then(function(im){return {im:im,y:l.y,v:l.v};});}))
+    .then(function(ls){ var i=TI.length; TI.push(ls); SKY[i]=ls[0]&&ls[0].im?skyColor(ls[0].im):[95,155,224]; ESC.push({km:e.km,i:i}); ESC.sort(function(a,b){return a.km-b.km;}); }).catch(function(){}); });
+  Object.keys(M.props||{}).forEach(function(k){ load(M.props[k]).then(function(im){ PROPS[k]=im; }).catch(function(){}); });
   SKY=TI.map(function(ls){return ls[0]&&ls[0].im?skyColor(ls[0].im):[95,155,224];});
   curT=tramoAt(km); reached=curT; renderHud();
   if(AUTH) afterLogin(); else view('in');
@@ -506,7 +518,9 @@ function loop(now){
   var dt=Math.min(50,now-last); last=now; var h=hourNow();
   off+=dt*(reduce?0.01:0.035);
   if(me && target>km+0.001 && $('sheet').hidden){ off+=dt*0.04; setKm(km+Math.min(target-km, dt*0.0015)); }
-  if(fade<1&&prevT>=0){drawTramo(prevT,1,off);drawTramo(curT,fade,off);fade=Math.min(1,fade+dt/700);} else drawTramo(curT,1,off);
+  var e=escAt(km); if(curE<0) curE=e; if(e!==curE){ prevE=curE; curE=e; fade=reduce?1:0; }
+  if(fade<1&&prevE>=0){drawTramo(prevE,1,off);drawTramo(curE,fade,off);fade=Math.min(1,fade+dt/700);} else drawTramo(curE,1,off);
+  dibujaProps(off);
   tint(h); stars(h); if(typeof dibujaNPC==='function') dibujaNPC(ctx,now,h); walker(now,h); rain(dt);
   requestAnimationFrame(loop);
 }
@@ -515,7 +529,7 @@ function loop(now){
 function setKm(v){
   km=v; store.set('km',km);
   var t=tramoAt(km);
-  if(t!==curT){ prevT=curT; curT=t; fade=reduce?1:0; }
+  if(t!==curT){ prevT=curT; curT=t; }
   if(t>reached) reached=t;
   renderHud();
   if(km>=target-0.001) flushPending();

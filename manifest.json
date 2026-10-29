@@ -1068,5 +1068,41 @@
 "pantalon": "assets/pj/ropa_pantalon.webp",
 "capa": "assets/pj/ropa_capa.webp",
 "capa_f": "assets/pj/ropa_capa_f.webp"
+},
+"props": {
+"senal": "assets/props/senal.webp",
+"ovejas": "assets/props/ovejas.webp",
+"carretilla": "assets/props/carretilla.webp",
+"piedra": "assets/props/piedra.webp",
+"lena": "assets/props/lena.webp",
+"colmenas": "assets/props/colmenas.webp",
+"valla": "assets/props/valla.webp",
+"setas": "assets/props/setas.webp",
+"pozo": "assets/props/pozo.webp",
+"banco": "assets/props/banco.webp",
+"zorro": "assets/props/zorro.webp",
+"carro_heno": "assets/props/carro_heno.webp"
+},
+"escenas": [
+{
+"km": 9,
+"capas": [
+{
+"src": "assets/tramos/e09_0.webp",
+"y": 1,
+"v": 0.08
+},
+{
+"src": "assets/tramos/e09_1.webp",
+"y": 2,
+"v": 0.4
+},
+{
+"src": "assets/tramos/e09_2.webp",
+"y": 217,
+"v": 1.0
 }
+]
+}
+]
 }

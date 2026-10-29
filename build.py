@@ -14,7 +14,14 @@ def fill(html, man, demo):
     return (html.replace('__KEY__', key).replace('__MAN__', json.dumps(man)).replace('__DATA__', data)
                 .replace('__LOGO__', man['logo']).replace('__DEMO__', 'true' if demo else 'false').replace('__MINI__', open(os.path.join(ROOT, 'minijuegos.js'), encoding='utf-8').read()))
 
-if '--demo' in sys.argv:
+if '--demo-files' in sys.argv:
+    out = sys.argv[sys.argv.index('--demo-files') + 1]
+    html = fill(src, man, True)
+    head = re.search(r'<head>(.*?)</head>', html, re.S).group(1)
+    head = re.sub(r'<meta[^>]*>\n?|<link rel="apple-touch-icon"[^>]*>\n?|<link rel="manifest"[^>]*>\n?', '', head)
+    body = re.search(r'<body>(.*?)</body>', html, re.S).group(1)
+    open(out, 'w', encoding='utf-8').write(head.strip() + '\n' + body.strip() + '\n')
+elif '--demo' in sys.argv:
     out = sys.argv[sys.argv.index('--demo') + 1]
     def uri(p):
         return 'data:image/webp;base64,' + base64.b64encode(open(os.path.join(ROOT, 'public', p), 'rb').read()).decode()
