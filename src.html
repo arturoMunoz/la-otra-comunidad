@@ -463,12 +463,20 @@ function tint(h){
 }
 function walker(t,h){
   var idx=h==='noche'?2:weather==='lluvia'?1:weather==='calor'?3:0;
-  if(WALK && idx===0){
+  if(WALK){
     var n=M.andar.n, fw=M.andar.fw, fh=WALK.height, f=Math.floor(t/(reduce?400:130))%n, wx=Math.round(W*0.3), wb=OY+228;
     ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(wx+fw/2,wb,fw*.38,3,0,0,Math.PI*2); ctx.fill();
     if(typeof dibujaEquipo==='function') dibujaEquipo(ctx,wx,wb-fh,f,true);
     ctx.drawImage(WALK,Math.round(f*fw),0,Math.round(fw),fh,wx,wb-fh,Math.round(fw),fh);
-    if(typeof dibujaEquipo==='function') dibujaEquipo(ctx,wx,wb-fh,f,false); return;
+    if(typeof dibujaEquipo==='function') dibujaEquipo(ctx,wx,wb-fh,f,false);
+    if(idx===2){ /* de noche: farol en la mano y su luz */
+      var A=(typeof anclas==='function')?anclas():null, a0=A?A[f%A.length]:{cx:fw/2,top:0};
+      var lx=wx+Math.min(fw-4,a0.cx+16), ly=wb-fh+fh*0.5;
+      var g=ctx.createRadialGradient(lx,ly,2,lx,ly,64); g.addColorStop(0,'rgba(255,200,100,.5)'); g.addColorStop(1,'rgba(255,200,100,0)'); ctx.fillStyle=g; ctx.fillRect(lx-64,ly-64,128,128);
+      var fi=(typeof EQIMG!=='undefined'&&M.mj&&M.mj.farol)?(window._farolImg||(window._farolImg=(function(){var i=new Image();i.src=M.mj.farol;return i;})())):null;
+      if(fi&&fi.complete){ ctx.drawImage(fi,Math.round(lx-6),Math.round(ly-6+(f%2)),12,Math.round(12*fi.height/fi.width)); }
+    }
+    return;
   }
   var im=AR[idx]; if(!im) return;
   var x=Math.round(W*0.3), base=OY+228, step=Math.floor(t/150)%4, bob=(step%2)?-1:0;

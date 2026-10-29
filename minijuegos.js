@@ -566,7 +566,8 @@ document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verPr
 
 /* ================= PERSONAJES DEL CAMINO (dibujos de Henar) =================
    Aparecen en la escena en su tramo, con el mismo estado de tiempo que el hobbit. */
-var NPC_TRAMO={0:'mago',7:'sombrero_azul'};
+/* Ninguno sale en los capítulos 1-5: el mago no ha vuelto cuando Frodo se va y el del sombrero azul llega en el Bosque Viejo (fase 2). Se activan aquí cuando toque. */
+var NPC_TRAMO={};
 var NPCIMG={}; (function(){ if(!M.npc) return; Object.keys(M.npc).forEach(function(k){ NPCIMG[k]=M.npc[k].map(function(s){ var i=new Image(); i.src=s; return i; }); }); })();
 function dibujaNPC(ctx,t,h){
   var k=NPC_TRAMO[curT]; if(!k||!NPCIMG[k]) return;
