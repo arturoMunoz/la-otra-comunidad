@@ -1036,7 +1036,7 @@ function menuPinta(pant){
 })();
 
 /* ================= QUIETO / ANDANDO según te muevas (acelerómetro, solo con el juego en pantalla) =================
-   Si tu hobbit tiene su andar propio y su animación de quieto, se para cuando tú te paras.
+   Cuando tú te paras, tu hobbit se para (con su animación de quieto si la tiene; si no, congelado en el primer paso).
    Los km del viaje siguen saliendo de Salud; esto es solo lo que se ve. */
 var PARADO=false; window.PARADO=false;
 var MOV={ok:false, pasos:[], ultimo:0, base:null, ahora:0};
@@ -1062,11 +1062,12 @@ function cargaQuieto(h){ var Q=M.quietoPJ&&M.quietoPJ[h]; QPOSE=null; if(!Q||!(M
 function decideParado(){
   var andando = MOV.pasos.length>=2 && performance.now()-MOV.ultimo<1500;
   var poniendoAlDia = me && target>km+0.001;
-  PARADO = !!(QPOSE && MOV.ok && !andando && !poniendoAlDia); window.PARADO=PARADO;
+  PARADO = !!(MOV.ok && !andando && !poniendoAlDia); window.PARADO=PARADO;
 }
 (function(){ var _w=walker; walker=function(t,h){
   decideParado();
-  if(!PARADO||!QPOSE) return _w(t,h);
+  if(!PARADO) return _w(t,h);
+  if(!QPOSE) return _w(0,h); /* sin dibujo de quieto: se queda en el primer paso, sin andar */
   var sW=WALK, sA=M.andar, sR=ROPAIMG, sT=TINTC, sN=ANCLA;
   WALK=QPOSE.img; M.andar={n:QPOSE.n,fw:53,h:74,ms:QPOSE.ms,dx:null,vel:0}; ROPAIMG=QPOSE.ropa; TINTC=QPOSE.tintc; ANCLA=QPOSE.ancla;
   try{ _w(t,h); QPOSE.ancla=ANCLA; } finally { WALK=sW; M.andar=sA; ROPAIMG=sR; TINTC=sT; ANCLA=sN; }
