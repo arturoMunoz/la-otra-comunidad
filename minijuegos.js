@@ -423,7 +423,7 @@ function finActo(){
   openSheet('<span class="eyebrow">Cricava · 115 km</span><h2>Fin del Acto I</h2>'+
     '<div class="sello" style="background:'+s.c+'">I</div><p style="text-align:center"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>'+
     (z?'<p>Así os ha ido con lo que llevabas:</p><ul class="note" style="margin:0;padding-left:1.2em">'+lineas+'</ul>':'<p class="note">No hiciste el zurrón en Bolsón Cerrado, así que el viaje fue a la buena de Dios.</p>')+
-    (function(){ store.set('fin1',true); var g=eqGanado(); return g.length?'<p><b>Has ganado:</b></p><div class="got">'+g.map(function(k){return '<div style="display:flex;flex-direction:column;align-items:center;font-weight:700;font-size:.8rem;max-width:90px;text-align:center"><img src="'+M.equipo[k]+'" alt="" style="width:44px;height:44px;object-fit:contain;image-rendering:pixelated">'+EQ[k].n+'</div>';}).join('')+'</div><p class="note">Ya lo llevas puesto. Puedes quitártelo o volver a ponértelo en el Zurrón.</p>':''; })()+
+    (function(){ store.set('fin1',true); var g=eqGanado(); return g.length?'<p><b>Has ganado:</b></p><div class="got">'+g.map(function(k){return '<div style="display:flex;flex-direction:column;align-items:center;font-weight:700;font-size:.8rem;max-width:90px;text-align:center"><img src="'+M.equipo[k]+'" alt="" style="width:44px;height:44px;object-fit:contain;image-rendering:pixelated">'+EQ[k].n+'</div>';}).join('')+'</div><p class="note">Ya lo llevas puesto. Puedes quitártelo o ponerte otra cosa en Zurrón › Vestuario.</p>':''; })()+
     '<button class="primary" id="shOk" type="button">Seguir hacia el Bosque Viejo</button>');
   $('shOk').onclick=closeSheet; return true;
 }
@@ -675,3 +675,54 @@ function dialogo(lineas,alAcabar){
     dialogo([{t:'Llegas a '+s.name+'.'},{who:s.who,icon:s.icon,t:s.say}],function(){ _arr(i); }); };
 })();
 (function(){ var _fp=flushPending; flushPending=function(){ if(document.querySelector('.dlg')) return; return _fp(); }; })();
+
+/* ================= VESTUARIO: ponerte y quitarte todo lo ganado, una cosa por hueco ================= */
+var HUECOS=[['cabeza','Cabeza'],['cara','Cara'],['pelo','Pelo'],['cuello','Cuello'],['pecho','Pecho'],['espalda','Espalda'],['cinto','Cinto'],['bolsillo','Bolsillo']];
+(function(){ var h={capa:'espalda',sombrero:'cabeza',panuelo_sam:'cuello',cazo:'cinto',broche:'pecho',panuelo_rojo:'bolsillo',cantimplora_cinto:'cinto',pluma:'pelo',gafas:'cara'};
+  Object.keys(h).forEach(function(k){ if(EQ[k]) EQ[k].hueco=h[k]; }); })();
+function huecoDe(k){ return (EQ[k]&&EQ[k].hueco)||k; }
+eqPuesto=function(){ var g=eqGanado(), p=store.get('equipo_puesto',null);
+  if(p==null){ var usado={}; p=g.filter(function(k){ var h=huecoDe(k); if(usado[h]) return false; usado[h]=1; return true; }); }
+  return p.filter(function(k){return g.indexOf(k)>=0;}); };
+function eqPoner(k){ var p=eqPuesto().filter(function(x){ return x!==k && huecoDe(x)!==huecoDe(k); }); p.push(k); store.set('equipo_puesto',p); }
+function eqQuitar(h){ store.set('equipo_puesto',eqPuesto().filter(function(x){return huecoDe(x)!==h;})); }
+(function(){ var c=document.createElement('style'); c.textContent=
+  '.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:2px 0 10px}'+
+  '.seg button{background:transparent;border:2px solid #2b1d0e;padding:9px;font-size:.95rem;color:#2b1d0e}'+
+  '.seg button[aria-pressed=true]{background:#2b1d0e;color:#f3e2b4}'+
+  '.vpre{display:block;margin:0 auto 6px;width:159px;height:222px;image-rendering:pixelated;background:radial-gradient(circle at 50% 70%,rgba(255,240,200,.7),transparent 70%)}'+
+  '.hueco{border-top:2px dashed rgba(43,29,14,.3);padding:8px 0}'+
+  '.hueco h3{margin:0 0 6px;font-family:var(--title);font-size:.95rem}'+
+  '.hueco .fila{display:flex;flex-wrap:wrap;gap:6px}'+
+  '.vb{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;width:74px;text-align:center;font-size:.72rem;font-weight:700;line-height:1.15}'+
+  '.vb .box{width:56px;height:56px;border:2px solid #2b1d0e;display:grid;place-items:center;background:rgba(160,110,50,.18)}'+
+  '.vb .box img{width:72%;height:72%;object-fit:contain;image-rendering:pixelated}'+
+  '.vb[aria-pressed=true] .box{background:#8fb85a;box-shadow:inset 0 0 0 2px #f3e2b4}'+
+  '.vb.no{cursor:default;opacity:.5}.vb.no .box img{filter:brightness(0) opacity(.35)}'+
+  '.vb .por{font-weight:500;color:#6a4f2c;font-size:.66rem}';
+  document.head.appendChild(c); })();
+function segHtml(on){ return '<div class="seg"><button type="button" data-seg="zurron" aria-pressed="'+(on==='zurron')+'">Zurrón</button><button type="button" data-seg="vestuario" aria-pressed="'+(on==='vestuario')+'">Vestuario</button></div>'; }
+TABS.zurron=function(){ return segHtml('zurron')+_zurronTab(); };
+TABS.vestuario=function(){
+  var g=eqGanado(), p=eqPuesto();
+  var filas=HUECOS.map(function(h){
+    var ks=Object.keys(EQ).filter(function(k){return huecoDe(k)===h[0];}); if(!ks.length) return '';
+    var puesto=p.filter(function(k){return huecoDe(k)===h[0];})[0];
+    return '<div class="hueco"><h3>'+h[1]+'</h3><div class="fila">'+
+      '<button type="button" class="vb" data-quitar="'+h[0]+'" aria-pressed="'+(!puesto)+'"><div class="box">—</div>Nada</button>'+
+      ks.map(function(k){ var ok=g.indexOf(k)>=0;
+        return '<button type="button" class="vb'+(ok?'':' no')+'" '+(ok?'data-poner="'+k+'"':'disabled')+' aria-pressed="'+(k===puesto)+'"><div class="box"><img src="'+M.equipo[k]+'" alt=""></div>'+(ok?EQ[k].n:'¿?')+(ok?'':'<span class="por">'+EQ[k].por+'</span>')+'</button>'; }).join('')+
+      '</div></div>'; }).join('');
+  return segHtml('vestuario')+'<h2>Vestuario</h2><canvas class="vpre" id="vpre" width="53" height="74"></canvas>'+
+    '<p class="note" style="text-align:center;margin-top:0">'+(g.length?'Toca para ponértelo; una cosa por hueco.':'Aún no tienes nada que ponerte. Se gana andando, con el zurrón y con las preguntas del Libro de Bilbo.')+'</p>'+filas;
+};
+var vpreF=0, vpreT=null;
+function vprePinta(){ var c=$('vpre'); if(!c||!WALK||!WALK.complete){ clearInterval(vpreT); vpreT=null; return; }
+  var x=c.getContext('2d'), fw=M.andar.fw, n=M.andar.n; x.imageSmoothingEnabled=false; x.clearRect(0,0,c.width,c.height);
+  var f=vpreF++%n; dibujaEquipo(x,0,0,f,true); x.drawImage(WALK,Math.round(f*fw),0,Math.round(fw),74,0,0,Math.round(fw),74); dibujaEquipo(x,0,0,f,false); }
+(function(){ var _ot=openTab; openTab=function(tab){ _ot(tab);
+  if(tab==='vestuario'){ clearInterval(vpreT); vpreF=0; vprePinta(); vpreT=setInterval(vprePinta,140); } }; })();
+document.addEventListener('click',function(e){ var t=e.target.closest&&e.target.closest('[data-seg],[data-poner],[data-quitar]'); if(!t) return;
+  if(t.dataset.seg){ openTab(t.dataset.seg); return; }
+  if(t.dataset.poner) eqPoner(t.dataset.poner); else eqQuitar(t.dataset.quitar);
+  var sc=sheet.scrollTop; openTab('vestuario'); sheet.scrollTop=sc; });
