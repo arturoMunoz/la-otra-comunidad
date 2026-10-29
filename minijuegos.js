@@ -869,7 +869,7 @@ var FORJA=(function(){
     x.globalCompositeOperation='lighter'; x.globalAlpha=Math.max(0,fl); x.drawImage(bg,ox,oy,bw,bh); x.globalAlpha=1; x.globalCompositeOperation='source-over';
     /* el herrero detrás del yunque: sube la maza, aguanta y golpea */
     if(P.herrero&&her.complete&&her.width){ var HP=P.herrero, ph=(t%2.6), fr=ph<0.7?0:ph<1.0?1:ph<1.75?2:ph<2.15?3:0;
-      if(fr===3&&lastF!==3){ shake=140; flash=1; for(var q=0;q<26;q++) parts.push({x:ox+bw*0.5+(Math.random()-.5)*bw*0.12,y:oy+bh*0.56,vx:(Math.random()-.5)*0.14*W/400,vy:-(0.05+Math.random()*0.12)*H/700,life:0,max:600+Math.random()*700,sc:0.10+Math.random()*0.16}); }
+      if(fr===3&&lastF!==3){ flash=0.5; for(var q=0;q<26;q++) parts.push({x:ox+bw*0.5+(Math.random()-.5)*bw*0.12,y:oy+bh*0.56,vx:(Math.random()-.5)*0.14*W/400,vy:-(0.05+Math.random()*0.12)*H/700,life:0,max:600+Math.random()*700,sc:0.10+Math.random()*0.16}); }
       lastF=fr; var hw=bw*0.62, hh=hw*HP.h/HP.fw, hx=ox+bw*0.5-hw/2, hy=oy+bh*0.588-hh;
       x.drawImage(her,fr*HP.fw,0,HP.fw,HP.h,hx,hy,hw,hh); }
     /* el anillo sobre el yunque, latiendo */
