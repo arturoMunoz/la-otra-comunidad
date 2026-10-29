@@ -33,11 +33,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(b: Bundle?) {
         super.onCreate(b)
         val prev = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler { t, e -> Pasos.prefs(this).edit().putString("fallo", e.toString() + "\n" + e.stackTrace.take(6).joinToString("\n")).putBoolean("listo", false).commit(); prev?.uncaughtException(t, e) }
+        Thread.setDefaultUncaughtExceptionHandler { t, e -> Pasos.prefs(this).edit().putString("fallo", e.toString() + "\n" + e.stackTrace.take(6).joinToString("\n")).commit(); prev?.uncaughtException(t, e) }
         window.statusBarColor = Color.rgb(20, 17, 11)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() { val w = web; if (w != null && w.canGoBack()) w.goBack() else finish() } })
-        if (Pasos.prefs(this).getBoolean("listo", false)) { Pasos.programa(this); abreJuego() } else ajustes()
+        if (Pasos.prefs(this).getBoolean("listo", false)) { Pasos.programa(this); abreJuego() } else pantallaAjustes()
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -61,10 +61,10 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface fun sincroniza() { lifecycleScope.launch {
             val t = try { Pasos.sincroniza(this@MainActivity) } catch (e: Exception) { "No se ha podido: " + (e.message ?: "") }
             web?.evaluateJavascript("window.locAndroidHecho&&locAndroidHecho(" + JSONObject.quote(t) + ")", null) } }
-        @JavascriptInterface fun ajustes() { runOnUiThread { ajustes() } }
+        @JavascriptInterface fun ajustes() { runOnUiThread { pantallaAjustes() } }
     }
 
-    private fun ajustes() {
+    private fun pantallaAjustes() {
         val dp = resources.displayMetrics.density
         val col = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding((24*dp).toInt(), (48*dp).toInt(), (24*dp).toInt(), (24*dp).toInt()) }
         fun texto(t: String, s: Float, c: Int = Color.rgb(243,234,210)) = TextView(this).apply { text = t; textSize = s; setTextColor(c); setPadding(0, (8*dp).toInt(), 0, (8*dp).toInt()) }
