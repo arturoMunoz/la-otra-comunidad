@@ -9,8 +9,19 @@ from PIL import Image
 src, nom, pies = sys.argv[1], sys.argv[2], int(sys.argv[3]); cut = int(sys.argv[4]) if len(sys.argv) > 4 else pies - 60
 im = Image.open(src).convert('RGB'); w, h = im.size
 s = 228 / pies; y0 = round(228 - pies * s)
+import os
+def sin_luna(c):
+    """en la copia reflejada se borra la luna (si no, salen dos lunas en el cielo)"""
+    import cv2
+    a = np.array(c); L = a.astype(int).sum(2) / 3; m = np.zeros(L.shape, np.uint8); hh = int(L.shape[0] * 0.35)
+    from scipy import ndimage
+    lab, n = ndimage.label(L[:hh] > 190)
+    for j, sl in enumerate(ndimage.find_objects(lab)):
+        if (lab[sl] == j + 1).sum() > 600: m[max(0, sl[0].start - 12):sl[0].stop + 12, max(0, sl[1].start - 12):sl[1].stop + 12] = 255
+    return Image.fromarray(cv2.inpaint(a, m, 9, cv2.INPAINT_TELEA)) if m.any() else c
 def capa(r0, r1, k):
-    c = im.crop((0, r0, w, r1)); d = Image.new('RGB', (w * 2, r1 - r0)); d.paste(c, (0, 0)); d.paste(c.transpose(Image.FLIP_LEFT_RIGHT), (w, 0))
+    c = im.crop((0, r0, w, r1)); d = Image.new('RGB', (w * 2, r1 - r0)); d.paste(c, (0, 0))
+    e = c.transpose(Image.FLIP_LEFT_RIGHT); d.paste(sin_luna(e) if os.environ.get('SIN_LUNA') else e, (w, 0))
     d = d.resize((round(w * 2 * s), max(1, round((r1 - r0) * s))), Image.LANCZOS); d.save(f'public/assets/tramos/{nom}_{k}.webp', quality=88)
     return round(y0 + r0 * s)
 ys = [capa(0, cut + 4, 0), capa(cut, h, 1)]
