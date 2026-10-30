@@ -1,6 +1,6 @@
 """Fondo de ChatGPT (1536x1024, vista lateral) -> 2 capas para el juego: paisaje (lento) y suelo con el camino (rápido).
 Para que se pueda repetir sin costura, cada capa es la imagen + su reflejo (izquierda-derecha).
-uso: python3 tools/fondo.py IMG NOMBRE FILA_PIES [FILA_CORTE]
+uso: [ALTO=420] python3 tools/fondo.py IMG NOMBRE FILA_PIES [FILA_CORTE]   (ALTO=420 para las verticales 1024x1536)
   FILA_PIES: fila (en la imagen original) donde pisan los pies, en mitad del camino.
   FILA_CORTE: dónde empieza la capa de suelo (por defecto FILA_PIES-60).
 salida: public/assets/tramos/NOMBRE_0.webp y NOMBRE_1.webp; imprime las capas para manifest.json"""
@@ -8,7 +8,10 @@ import sys, json, numpy as np
 from PIL import Image
 src, nom, pies = sys.argv[1], sys.argv[2], int(sys.argv[3]); cut = int(sys.argv[4]) if len(sys.argv) > 4 else pies - 60
 im = Image.open(src).convert('RGB'); w, h = im.size
-s = 228 / pies; y0 = round(228 - pies * s)
+import os
+# imagen apaisada antigua: lo que hay encima de los pies ocupa 228 px de escena.
+# imagen VERTICAL (formato bueno, 1024x1536): ALTO=420 -> llena la pantalla de un móvil entero sin reflejar el cielo.
+s = int(os.environ.get('ALTO', 228)) / pies; y0 = round(228 - pies * s)
 import os
 def sin_luna(c):
     """en la copia reflejada se borra la luna (si no, salen dos lunas en el cielo)"""

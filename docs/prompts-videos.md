@@ -46,3 +46,18 @@ Narración (unos 70 s):
 4. Llegasteis cansados, con los pies doloridos y el zurrón vacío. Pero llegasteis.
 5. Aquella noche hubo fuego, canciones y viejas historias. Frodo había llegado vivo a Rivendel.
 6. Descansad. El camino sigue, y lo más difícil aún está por andar.
+
+## Fondos del camino (formato bueno: vertical, llena la pantalla del móvil)
+```
+=== LOC-FONDO v2 ===
+Game: "La Otra Comunidad". 16-bit pixel art, JRPG style, crisp pixels, rich colors, same style as the attached game scene. No text, no letters, no frame.
+PORTRAIT image 1024x1536 (taller than wide): it fills a whole phone screen held upright, with no zoom.
+Side view, like a 2D side-scrolling game background (seen from the side, not from above).
+STRUCTURE (very important):
+- Top 40%: sky (clouds, stars, mist, or tree canopy). The game's buttons go over this part, so nothing important here.
+- From 40% to 88%: the landscape of this place (hills, trees, buildings, water), getting closer towards the bottom.
+- Bottom 12%: a flat dirt path running straight from the left edge to the right edge, with grass along it. The characters walk on this path, about 95% down the image.
+The left and right edges must match so the image can repeat side by side.
+NO people, NO animals, NO characters at all.
+```
+Al cortarla: `ALTO=420 python3 tools/fondo.py IMG NOMBRE FILA_PIES`.
