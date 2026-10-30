@@ -39,6 +39,8 @@ elif '--demo' in sys.argv:
     if 'prologo' in m:
         m['prologo']['poster'] = uri(m['prologo']['poster']); m['prologo']['casa'] = uri(m['prologo']['casa'])
         m['prologo']['video'] = 'data:video/mp4;base64,' + base64.b64encode(open(os.path.join(ROOT, 'public', m['prologo']['video']), 'rb').read()).decode()
+    for e in m.get('entreactos', {}).values():
+        e['poster'] = uri(e['poster']); e['video'] = 'data:video/mp4;base64,' + base64.b64encode(open(os.path.join(ROOT, 'public', e['video']), 'rb').read()).decode()
     m['ilustraciones'] = [uri(p) for p in m.get('ilustraciones', [])]
     m['npc'] = {k: [uri(p) for p in v] for k, v in m.get('npc', {}).items()}
     m['libro'] = {k: uri(v) for k, v in m.get('libro', {}).items()}

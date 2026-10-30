@@ -446,8 +446,27 @@ function finActo(){
     (z?'<p>Así os ha ido con lo que llevabas:</p><ul class="note" style="margin:0;padding-left:1.2em">'+lineas+'</ul>':'<p class="note">No hiciste el zurrón en Bolsón Cerrado, así que el viaje fue a la buena de Dios.</p>')+
     (function(){ store.set('fin1',true); var g=eqGanado(); return g.length?'<p><b>Has ganado:</b></p><div class="got">'+g.map(function(k){return '<div style="display:flex;flex-direction:column;align-items:center;font-weight:700;font-size:.8rem;max-width:90px;text-align:center"><div style="width:44px;height:44px;display:grid;place-items:center">'+eqIcon(k)+'</div>'+EQ[k].n+'</div>';}).join('')+'</div><p class="note">Ya lo llevas puesto. Puedes quitártelo o ponerte otra cosa en Zurrón › Vestuario.</p>':''; })()+
     '<button class="primary" id="shOk" type="button">Seguir hacia el Bosque Viejo</button>');
-  $('shOk').onclick=closeSheet; return true;
+  $('shOk').onclick=function(){ closeSheet(); verEntreacto(1); }; return true;
 }
+/* vídeo de cambio de acto (después del sello): se puede saltar y volver a ver en el Libro de Bilbo */
+function verEntreacto(n,alAcabar){
+  var P=M.entreactos&&M.entreactos[n]; if(!P||!P.video){ if(alAcabar) alAcabar(); return; }
+  var el=document.createElement('section'); el.className='pro'; el.setAttribute('role','dialog'); el.setAttribute('aria-label','Entreacto');
+  el.innerHTML='<video playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload nofullscreen noremoteplayback" poster="'+(P.poster||'')+'" src="'+P.video+'"></video><div class="bar"><i></i></div>';
+  $('app').appendChild(el);
+  var v=el.querySelector('video'), bar=el.querySelector('.bar i'), done=false;
+  function fin(){ if(done) return; done=true; try{v.pause();}catch(e){} el.remove(); store.set('entreacto'+n,true); if(alAcabar) alAcabar(); }
+  v.ontimeupdate=function(){ if(v.duration) bar.style.width=(v.currentTime/v.duration*100)+'%'; };
+  v.onended=fin;
+  var t=document.createElement('button'); t.type='button'; t.className='tap';
+  t.innerHTML='<span class="ring"></span><b>Acto '+['I','II','III','IV','V','VI'][n]+'</b><small>Sube el volumen</small>';
+  t.onclick=function(){ t.remove(); v.muted=false; v.play().catch(function(){ v.muted=true; v.play().catch(function(){}); }); };
+  el.appendChild(t);
+  var sk=document.createElement('button'); sk.type='button'; sk.className='skip'; sk.textContent='Saltar ›'; sk.onclick=fin; el.appendChild(sk);
+}
+(function(){ var _lib=TABS.libro; TABS.libro=function(){ var h=_lib(); if(!store.get('fin1',false)) return h;
+  return h.replace('<button class="ghost" type="button" id="verPro">','<button class="ghost" type="button" id="verEnt1">Volver a ver: Fin del Acto I</button><button class="ghost" type="button" id="verPro">'); }; })();
+document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verEnt1'){ closeSheet(); verEntreacto(1); } });
 /* el zurrón muestra lo que llevas y el sello */
 TABS.zurron=function(){ var z=zEstado(), done=store.get('fin1',false), s=done?zSello():null;
   return '<h2>Zurrón</h2>'+(s?'<div class="sello" style="background:'+s.c+'">I</div><p style="text-align:center;margin:0"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>':'')+

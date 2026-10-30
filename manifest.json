@@ -1353,5 +1353,11 @@
 "assets/escenas/elfos1.webp",
 "assets/escenas/elfos2.webp",
 "assets/escenas/elfos3.webp"
-]
+],
+"entreactos": {
+"1": {
+"video": "assets/entreactos/acto1.mp4",
+"poster": "assets/entreactos/acto1.webp"
+}
+}
 }
