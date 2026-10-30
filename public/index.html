@@ -960,7 +960,7 @@ function mjFondo(F){ try{ F.style.background='url('+cv.toDataURL()+') center 30%
    El Anillo susurra para que sueltes. */
 function jugarArbol(el,cerrar){
   var ID='arbol', TIT='Quieto bajo el árbol', DUR=18, conSensor=!!window.DeviceMotionEvent;
-  function intro(){ mjIntro(el,ID,TIT,'<p>Se oyen cascos. Frodo y los suyos se esconden entre las raíces del árbol.</p><p><b>Quédate quieto de verdad, con el móvil en la mano y sin dar un paso,</b> hasta que el jinete se vaya. El móvil nota si te mueves.</p><p>El Anillo te va a tentar para que te muevas. Si el jinete te descubre… <b>te pones el Anillo.</b></p>',empezar,cerrar); }
+  function intro(){ mjIntro(el,ID,TIT,'<p>Se oyen cascos en el camino. Frodo y los suyos se meten entre las raíces del árbol.</p><p><i>Algo pesa en tu bolsillo.</i></p>',empezar,cerrar); }
   function empezar(){
     var D=window.DeviceMotionEvent;
     var prueba=function(){ if(!conSensor){ jugar(); return; } var vio=false, f=function(){ vio=true; }; addEventListener('devicemotion',f);
@@ -971,7 +971,7 @@ function jugarArbol(el,cerrar){
   function jugar(){
     el.innerHTML=mjCabecera(TIT,'<div class="stat"><span id="mjT">'+DUR+'</span></div>')+
       '<div class="field" id="mjF"><div class="tree">'+mjImg('arbol')+'</div><div class="meter"><span>Sospecha del jinete</span><div class="b"><i id="mjB"></i></div></div><div class="rider" id="mjJ">'+(M.mj&&M.mj.jinete1?'<img id="mjJi" src="'+M.mj.jinete1+'" alt="" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated">':SVG_JINETE)+'</div><div class="dark" id="mjD"></div><div class="whisper" id="mjW"></div>'+
-      (conSensor?'<div class="hold" id="mjH" style="pointer-events:none">No te muevas</div>':'<button class="hold" id="mjH" type="button">Escondido</button>')+'</div>';
+      (conSensor?'<div class="hold" id="mjH" style="pointer-events:none">…</div>':'<button class="hold" id="mjH" type="button">Escondido</button>')+'</div>';
     var F=el.querySelector('#mjF'), H=el.querySelector('#mjH'), B=el.querySelector('#mjB'), J=el.querySelector('#mjJ'), Dk=el.querySelector('#mjD'), Wh=el.querySelector('#mjW');
     mjFondo(F);
     var sus=0, maxSus=0, mov=0, base=null, t0=performance.now(), last=t0, raf=0, done=false, wT=0, holding=false, sx=0, sy=0;
@@ -988,7 +988,7 @@ function jugarArbol(el,cerrar){
       var near=Math.max(0,1-Math.abs(x-0.5)*2.2);
       var ji=el.querySelector('#mjJi'); if(ji&&M.mj.jinete2) ji.src=(Math.floor(t*2.2)%2&&near>0.3)?M.mj.jinete2:M.mj.jinete1;
       if(conSensor){ var quieto=mov<0.6; if(!quieto) sus+=dt*(25+90*near)*Math.min(3,mov); else sus=Math.max(0,sus-dt*6);
-        H.textContent=quieto?'No te muevas':'¡Te estás moviendo!'; H.classList.toggle('on',quieto); }
+        H.textContent=quieto?'…':'¡Te estás moviendo!'; H.classList.toggle('on',quieto); }
       else { if(!holding) sus+=dt*(18+60*near); else sus=Math.max(0,sus-dt*4); }
       sus=Math.min(100,sus); maxSus=Math.max(maxSus,sus); B.style.width=sus+'%';
       Dk.style.opacity=(0.25+0.6*near).toFixed(2);
@@ -1023,7 +1023,7 @@ function jugarArbol(el,cerrar){
    Topo clásico: toca las setas que asoman, nunca a los perros del granjero. */
 function jugarSetas(el,cerrar){
   var ID='setas', TIT='Setas a escondidas', DUR=30;
-  function intro(){ mjIntro(el,ID,TIT,'<p>En los campos del granjero asoman setas. <b>Tócalas antes de que se escondan</b>, pero cuidado: a veces asoma uno de sus perros. <b>Si tocas un perro, pierdes 2 setas.</b></p><div class="ex"><div>'+mjImg('seta1',SVG_SETA)+'Seta +1</div><div class="no">'+mjImg('perro1',SVG_PERRO)+'Perro −2</div></div>',jugar,cerrar); }
+  function intro(){ mjIntro(el,ID,TIT,'<p>Los campos del granjero Maggot. De pequeño, Frodo venía aquí a por setas… y el granjero tenía perros.</p>',jugar,cerrar); }
   function jugar(){
     el.innerHTML=mjCabecera(TIT,'<div class="stat"><span id="mjT">'+DUR+'</span><span id="mjP">0</span></div>')+'<div class="field" id="mjF"><div class="msg" id="mjM"></div><div class="grid" id="mjG"></div></div>';
     var F=el.querySelector('#mjF'), G=el.querySelector('#mjG'), Msg=el.querySelector('#mjM'); mjFondo(F);
@@ -1061,7 +1061,7 @@ function jugarSetas(el,cerrar){
    Toca «Empujar» cuando la marca pase por la zona verde. Llega a la otra orilla antes de que la sombra llegue al embarcadero. */
 function jugarBalsa(el,cerrar){
   var ID='balsa', TIT='La balsa', DUR=20;
-  function intro(){ mjIntro(el,ID,TIT,'<p>Una sombra se acerca al embarcadero. Cruzad el río en la balsa: <b>pulsa «Empujar» justo cuando la marca pase por la zona verde</b>. Si fallas, la balsa apenas avanza.</p><p>Tienes que llegar a la otra orilla antes de que la sombra llegue al agua.</p>',jugar,cerrar); }
+  function intro(){ mjIntro(el,ID,TIT,'<p>La balsa está atada al embarcadero. Detrás, en la niebla, algo negro se acerca.</p>',jugar,cerrar); }
   function jugar(){
     el.innerHTML=mjCabecera(TIT,'<div class="stat"><span id="mjT">'+DUR+'</span></div>')+
       '<div class="field" id="mjF"><div class="river"'+(M.mj&&M.mj.rio?' style="background:url('+M.mj.rio+') center/auto 100% repeat-x"':'')+'></div><div class="shore" style="left:0">'+mjImg('muelle')+'</div><div class="shore" style="right:0">'+mjImg('juncos')+'</div><div class="shadow" id="mjS">'+mjImg('sombra')+'</div><div class="raft" id="mjR">'+mjImg('balsa1')+'</div><div class="msg" id="mjM"></div>'+
