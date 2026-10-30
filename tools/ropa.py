@@ -43,7 +43,7 @@ for f in range(N):
     s = ob2[i]; m = (lab2[s] == i + 1) & fg2[s]; cr = a2[s]; rr, gg, bb = cr[..., 0], cr[..., 1], cr[..., 2]
     gold = m & (rr > 150) & (gg > 90) & (bb < 90) & (rr - bb > 80); gy, gx = np.nonzero(gold); by, bx = gy.mean(), gx.mean()
     k = 44 / (m.shape[0] - by)
-    o = (op & ((W[..., :3].max(2) - W[..., :3].min(2)) > 45))[:, f * FW:f * FW + FW]; top = np.argmax(o.any(1)); cx = np.nonzero(o[top:top + 14])[1].mean()
+    import os; o = (op & (((W[..., :3].max(2) - W[..., :3].min(2)) > 45) if os.environ.get('SIN_GRIS') else True))[:, f * FW:f * FW + FW]; top = np.argmax(o.any(1)); cx = np.nonzero(o[top:top + 14])[1].mean()
     ax, ay = cx - 1 - OX, top + 18
     L = (0.3 * rr + 0.59 * gg + 0.11 * bb)
     for arr, dst in [(np.dstack([L, L, L, np.where(m & ~gold, 255, 0)]), lum), (np.dstack([cr, np.where(gold, 255, 0)]), oro)]:

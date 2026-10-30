@@ -9,7 +9,8 @@ dark = [y for y in range(h) if (a.max(2)[y] < 70).mean() > 0.5]
 lines = [g[0] for g in np.split(np.array(dark), np.where(np.diff(dark) > 3)[0] + 1)]
 y1 = lines[fila]; y0 = (lines[fila - 1] + 4) if fila > 0 else 0
 r, g, b = a[..., 0], a[..., 1], a[..., 2]
-col = (a.max(2) - a.min(2)) > 45  # sin grises: el palo de golf de Arturo no cuenta para la altura ni para centrar la cabeza
+import os
+col = ((a.max(2) - a.min(2)) > 45) if os.environ.get('SIN_GRIS') else np.ones(a.shape[:2], bool)  # SIN_GRIS=1: los grises (el palo de golf de Arturo) no cuentan para la altura ni para centrar la cabeza
 fg = ~ndimage.binary_dilation((b > g + 40) & (r > 120) & (b > 120), iterations=1)
 fg[:y0] = False; fg[y1 - 1:] = False
 lab, n = ndimage.label(ndimage.binary_closing(fg, iterations=4)); ob = ndimage.find_objects(lab)

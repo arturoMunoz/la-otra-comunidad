@@ -7,7 +7,8 @@ src, nom = sys.argv[1], sys.argv[2]; FW, H = 53, 74
 a = np.array(Image.open(src).convert('RGB')).astype(int); h, w, _ = a.shape
 ly = [y for y in range(h) if (a.max(2)[y] < 60).mean() > 0.5]; base = min(ly) - 1
 r, g, b = a[..., 0], a[..., 1], a[..., 2]
-col = (a.max(2) - a.min(2)) > 45  # sin grises: el palo de golf de Arturo no cuenta para la altura ni para centrar la cabeza
+import os
+col = ((a.max(2) - a.min(2)) > 45) if os.environ.get('SIN_GRIS') else np.ones(a.shape[:2], bool)  # SIN_GRIS=1: los grises (el palo de golf de Arturo) no cuentan para la altura ni para centrar la cabeza
 fg = ~ndimage.binary_dilation((r > 170) & (b > 170) & (g < 120), iterations=1); fg[min(ly) - 1:max(ly) + 2] = False
 lab, n = ndimage.label(ndimage.binary_closing(fg, iterations=4)); ob = ndimage.find_objects(lab)
 sz = ndimage.sum(np.ones_like(lab), lab, range(1, n + 1))

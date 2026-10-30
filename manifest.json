@@ -1206,6 +1206,25 @@
 0,
 4
 ]
+},
+"edo": {
+"src": "assets/pj/andar_edo.webp",
+"pantalon": "assets/pj/ropa_pantalon_edo.webp",
+"capa": "assets/pj/ropa_capa_edo.webp",
+"capa_f": "assets/pj/ropa_capa_f_edo.webp",
+"n": 8,
+"ms": 160,
+"vel": 0.0344,
+"dx": [
+0,
+-4,
+0,
+4,
+0,
+-4,
+0,
+4
+]
 }
 },
 "menu": {
@@ -1283,6 +1302,14 @@
 "pantalon": "assets/pj/ropa_pantalon_quieto_arturo.webp",
 "capa": "assets/pj/ropa_capa_quieto_arturo.webp",
 "capa_f": "assets/pj/ropa_capa_f_quieto_arturo.webp",
+"n": 4,
+"ms": 450
+},
+"edo": {
+"src": "assets/pj/quieto_edo.webp",
+"pantalon": "assets/pj/ropa_pantalon_quieto_edo.webp",
+"capa": "assets/pj/ropa_capa_quieto_edo.webp",
+"capa_f": "assets/pj/ropa_capa_f_quieto_edo.webp",
 "n": 4,
 "ms": 450
 }
