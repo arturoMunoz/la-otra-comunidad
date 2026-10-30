@@ -853,7 +853,9 @@ document.addEventListener('click',function(e){ var t=e.target.closest&&e.target.
   VSEL=t.dataset.vsel; var sc=sheet.scrollTop; openTab('vestuario'); sheet.scrollTop=sc; });
 
 /* ================= ANDAR DE CADA HOBBIT: si tiene el suyo (M.andarPJ), se usa con su pantalón y su capa ================= */
-function usaAndar(h){ var P=M.andarPJ&&M.andarPJ[h]; if(!P) return;
+var ANDAR0=null; /* el andar por defecto (el antiguo de Arturo), para volver a él si cambias a un hobbit sin dibujo propio */
+function usaAndar(h){ var P=M.andarPJ&&M.andarPJ[h]; if(!ANDAR0) ANDAR0={a:Object.assign({},M.andar),w:WALK,r:Object.assign({},ROPAIMG)};
+  if(!P){ M.andar=Object.assign({},ANDAR0.a); if(ANDAR0.w) WALK=ANDAR0.w; else if(M.andar.src) load(M.andar.src).then(function(im){ if(im){ ANDAR0.w=im; WALK=im; } }); ANCLA=null; ROPAIMG=Object.assign({},ANDAR0.r); TINTC={}; return; }
   load(P.src).then(function(im){ if(im){ M.andar=Object.assign({},M.andar,{n:P.n||M.andar.n,ms:P.ms,vel:P.vel,dx:P.dx}); WALK=im; ANCLA=null; } }).catch(function(){});
   ['pantalon','capa','capa_f'].forEach(function(k){ if(!P[k]) return; var i=new Image(); i.onload=function(){ ROPAIMG[k]=i; TINTC={}; }; i.src=P[k]; }); }
 (function(){ var _st=start; start=function(){ if(me&&me.hobbit) usaAndar(me.hobbit); return _st.apply(this,arguments); }; })();
@@ -1187,6 +1189,8 @@ if(DEMO){ (function(){ var _mp=menuPinta; menuPinta=function(pant){
       '<input id="kmR" type="range" min="0" max="'+TOTAL_KM+'" step="0.5" value="'+k+'" style="width:100%;accent-color:#3f6b33">'+
       '<p class="dato" id="kmSitio"></p>'+
       '<button type="button" id="kmOk">Ir a ese km</button>'+
+      '<p class="hola" style="margin-top:14px">Ver como…</p><select class="fld" id="kmPj" style="font-size:1.1rem">'+Object.keys(FACE_OF).map(function(n){ var h=FACE_OF[n]; return '<option value="'+n+'"'+(me&&me.hobbit===h?' selected':'')+'>'+n+((M.andarPJ&&M.andarPJ[h])?'':' (sin cuerpo propio: sale el de Arturo)')+'</option>'; }).join('')+'</select>'+
+      '<button type="button" class="sec" id="kmVer">Ver este hobbit</button>'+
       '<button type="button" class="sec" id="kmReset">Empezar de cero (km 0, sin escenas vistas)</button>'+
       '<button type="button" class="sec" id="mVolver">‹ Volver</button></div>';
     var n=$('kmN'), r=$('kmR'), si=function(){ var v=+n.value||0; $('kmSitio').textContent=T[tramoAt(v)].name+' · '+T[tramoAt(v)].title; };
@@ -1196,6 +1200,8 @@ if(DEMO){ (function(){ var _mp=menuPinta; menuPinta=function(pant){
       km=Math.max(0,v-0.3); store.set('km',km); curT=tramoAt(km); if(curT>reached) reached=curT; aJugar(); setTimeout(function(){ refresh(); },300); };
     $('kmReset').onclick=function(){ ['demoSteps','demoToday','demoRead','km','elfos_res','elfos_ok','huella','fin1','equipo_puesto','zurron'].forEach(function(x){store.del(x);});
       demoSteps=0; demoRead=[]; km=0; target=0; shown=new Set(); reached=0; curT=0; aJugar(); setTimeout(function(){ refresh(); },300); };
+    $('kmVer').onclick=function(){ var n=$('kmPj').value, h=FACE_OF[n]; var dm=store.get('demoMe',null)||{id:1,clave_atajo:'clave-de-prueba'}; dm.nombre=n; dm.hobbit=h; store.set('demoMe',dm);
+      if(me){ me.nombre=n; me.hobbit=h; } usaAndar(h); aJugar(); setTimeout(function(){ refresh(); },300); };
     $('mVolver').onclick=function(){ menuPinta('inicio'); }; return; }
   _mp(pant);
   if(pant==='inicio'){ var b=document.createElement('button'); b.type='button'; b.className='sec'; b.textContent='⚙ Kilómetros (prueba)'; b.onclick=function(){ menuPinta('km'); };
