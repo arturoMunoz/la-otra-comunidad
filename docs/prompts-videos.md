@@ -1,13 +1,15 @@
 # Prompts de vídeos (para ChatGPT)
 
-Formato de todos: imágenes verticales 9:16 que Claude monta en vídeo con movimiento lento + texto narrado (resumen propio, nunca cita del libro).
+Formato de todos: imágenes verticales para móvil (ChatGPT las da en 2:3, 1024x1536; se recortan a lo alto del móvil, por eso lo importante va en el centro) que Claude monta en vídeo con movimiento lento + texto narrado (resumen propio, nunca cita del libro).
 Personajes del libro: nunca con cara ni detalle, solo siluetas lejanas o luces. Solo nuestros hobbits pueden salir cerca.
 
 ## Ficha fija (va delante de cada imagen)
 ```
 === LOC-SCENE v1 ===
 Game: "La Otra Comunidad". 16-bit pixel art, JRPG style, crisp pixels, rich colors, painterly pixel lighting, no text, no letters, no logos, no borders.
-Vertical format 9:16 (portrait, phone screen), full-bleed scene.
+Tall portrait image for a PHONE screen held upright (use the tallest portrait size you can, 1024x1536).
+Keep everything important (characters, light, focal point) inside the central area; leave extra calm sky at the top and calm ground at the bottom, because the image will be cropped to fit tall phones (9:19.5) and a slow zoom will be applied.
+Nothing important near the left and right edges. Full-bleed, no frame.
 Same world and style as the attached reference scene of the game.
 Characters from the book (Frodo, Gandalf, Elrond, elves, riders, Tom Bombadil) are NEVER shown with faces or details: only far silhouettes, lights or shapes.
 The only characters allowed in close view are our original hobbits (attached sprite sheet), always small in the scene, seen from behind or side.
