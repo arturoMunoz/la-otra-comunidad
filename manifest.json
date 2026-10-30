@@ -129,25 +129,25 @@
 ],
 [
 {
-"src": "assets/tramos/t7_0.webp",
+"src": "assets/tramos/t7b_0.webp",
 "y": 0,
-"v": 0.35
+"v": 0.4
 },
 {
-"src": "assets/tramos/t7_1.webp",
-"y": 202,
+"src": "assets/tramos/t7b_1.webp",
+"y": 211,
 "v": 1.0
 }
 ],
 [
 {
-"src": "assets/tramos/t8_0.webp",
+"src": "assets/tramos/t8b_0.webp",
 "y": 0,
-"v": 0.35
+"v": 0.4
 },
 {
-"src": "assets/tramos/t8_1.webp",
-"y": 203,
+"src": "assets/tramos/t8b_1.webp",
+"y": 212,
 "v": 1.0
 }
 ]
@@ -1108,6 +1108,96 @@
 "v": 1.0
 }
 ]
+},
+{
+"km": 25,
+"capas": [
+{
+"src": "assets/tramos/e25_0.webp",
+"y": 0,
+"v": 0.4
+},
+{
+"src": "assets/tramos/e25_1.webp",
+"y": 212,
+"v": 1.0
+}
+]
+},
+{
+"km": 45,
+"capas": [
+{
+"src": "assets/tramos/e45_0.webp",
+"y": 0,
+"v": 0.4
+},
+{
+"src": "assets/tramos/e45_1.webp",
+"y": 211,
+"v": 1.0
+}
+]
+},
+{
+"km": 65,
+"capas": [
+{
+"src": "assets/tramos/e65_0.webp",
+"y": 0,
+"v": 0.4
+},
+{
+"src": "assets/tramos/e65_1.webp",
+"y": 213,
+"v": 1.0
+}
+]
+},
+{
+"km": 80,
+"capas": [
+{
+"src": "assets/tramos/e80_0.webp",
+"y": 0,
+"v": 0.4
+},
+{
+"src": "assets/tramos/e80_1.webp",
+"y": 212,
+"v": 1.0
+}
+]
+},
+{
+"km": 100,
+"capas": [
+{
+"src": "assets/tramos/e100_0.webp",
+"y": 0,
+"v": 0.4
+},
+{
+"src": "assets/tramos/e100_1.webp",
+"y": 212,
+"v": 1.0
+}
+]
+},
+{
+"km": 113,
+"capas": [
+{
+"src": "assets/tramos/e113_0.webp",
+"y": 0,
+"v": 0.4
+},
+{
+"src": "assets/tramos/e113_1.webp",
+"y": 212,
+"v": 1.0
+}
+]
 }
 ],
 "objetos": {
@@ -1346,7 +1436,8 @@
 0.455,
 0.575
 ]
-]
+],
+"hasta": 45
 }
 ],
 "escenaElfos": [

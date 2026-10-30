@@ -1120,7 +1120,7 @@ var FP=(function(){
   var c0=$('c'); c0.parentNode.insertBefore(cv,c0.nextSibling); (function(){ var st=document.createElement('style'); st.textContent='.app>.top,.app>.bottom,.app>.diary{z-index:2}'; document.head.appendChild(st); })(); var x=cv.getContext('2d');
   var IM=L.map(function(f){ var o={f:f,bg:new Image(),fr:new Image(),ma:new Image()}; o.bg.src=f.fondo; o.fr.src=f.delante; o.ma.src=f.manos.src; return o; });
   var t=0, last=0, on=false;
-  function activo(){ if(typeof RECUERDO!=='undefined'&&RECUERDO!=null) return null; if(/[?&]fp=1/.test(location.search)) return IM[0]; var tr=tramoAt(km); for(var i=0;i<IM.length;i++) if(IM[i].f.tramo===tr) return IM[i]; return null; }
+  function activo(){ if(typeof RECUERDO!=='undefined'&&RECUERDO!=null) return null; if(/[?&]fp=1/.test(location.search)) return IM[0]; var tr=tramoAt(km); for(var i=0;i<IM.length;i++) if(IM[i].f.tramo===tr && !(IM[i].f.hasta && km>=IM[i].f.hasta)) return IM[i]; return null; } /* hasta: km en que se acaba la primera persona dentro del tramo */
   function cover(im,W,H){ var s=Math.max(W/im.width,H/im.height); return [im.width*s,im.height*s]; }
   function capa(im,W,H,fx,fy,esc,al){ if(al<=0.01) return; var d=cover(im,W,H), w=d[0]*esc, h=d[1]*esc;
     var cx=W/2, cy=H*fy, ox=cx-(fx*w), oy=cy-(fy*h); x.globalAlpha=al; x.drawImage(im,ox,oy,w,h); }
