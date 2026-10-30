@@ -63,4 +63,13 @@ elif '--demo' in sys.argv:
     body = re.search(r'<body>(.*?)</body>', html, re.S).group(1)
     open(out, 'w', encoding='utf-8').write(head.strip() + '\n' + body.strip() + '\n')
 else:
-    open(os.path.join(ROOT, 'public', 'index.html'), 'w', encoding='utf-8').write(fill(src, man, False))
+    # cada imagen lleva ?v=<huella de su contenido>: si se rehace un dibujo con el mismo nombre, el móvil no puede quedarse con el viejo
+    import hashlib
+    def ver(v):
+        if isinstance(v, str) and v.startswith('assets/') and '?' not in v:
+            f = os.path.join(ROOT, 'public', v)
+            if os.path.isfile(f): return v + '?v=' + hashlib.md5(open(f, 'rb').read()).hexdigest()[:8]
+        if isinstance(v, dict): return {k: ver(x) for k, x in v.items()}
+        if isinstance(v, list): return [ver(x) for x in v]
+        return v
+    open(os.path.join(ROOT, 'public', 'index.html'), 'w', encoding='utf-8').write(fill(src, ver(man), False))
