@@ -1114,12 +1114,12 @@
 "capas": [
 {
 "src": "assets/tramos/e25_0.webp",
-"y": 0,
+"y": -192,
 "v": 0.4
 },
 {
 "src": "assets/tramos/e25_1.webp",
-"y": 212,
+"y": 209,
 "v": 1.0
 }
 ]
