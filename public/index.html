@@ -1791,10 +1791,11 @@ function cargaQuieto(h){ var Q=M.quietoPJ&&M.quietoPJ[h]; QPOSE=null; if(!Q||!(M
 function decideParado(){
   var andando = MOV.pasos.length>=2 && performance.now()-MOV.ultimo<1500;
   var poniendoAlDia = me && target>km+0.001;
-  PARADO = !!(MOV.ok && !andando && !poniendoAlDia); window.PARADO=PARADO;
+  PARADO = !!(MOV.ok && !andando && !poniendoAlDia) || RECUERDO!=null; window.PARADO=PARADO; /* en un recuerdo la escena se queda quieta: solo se mira */
 }
 (function(){ var _w=walker; walker=function(t,h){
   decideParado();
+  if(RECUERDO!=null) return; /* en un recuerdo no sale tu hobbit: es solo la imagen del sitio */
   if(!PARADO) return _w(t,h);
   if(!QPOSE) return _w(0,h); /* sin dibujo de quieto: se queda en el primer paso, sin andar */
   var sW=WALK, sA=M.andar, sR=ROPAIMG, sT=TINTC, sN=ANCLA;
@@ -1939,8 +1940,8 @@ if(DEMO){ (function(){ var _mp=menuPinta; menuPinta=function(pant){
 var RECUERDO=null;
 (function(){ var _e=escAt; escAt=function(k){ return RECUERDO!=null?RECUERDO:_e(k); }; })();
 (function(){ var st=document.createElement('style'); st.textContent=
-  '.recu{position:absolute;left:12px;right:12px;top:calc(150px + env(safe-area-inset-top,0px));z-index:3;display:flex;align-items:center;gap:8px;'+
-  'border:14px solid transparent;border-image:var(--papiro) 72 fill / 14px stretch;color:#2b1d0e;padding:0 4px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}.recu>div{flex:1;min-width:0}body.recuerdo .diary{display:none!important}'+
+  '.recu{position:absolute;left:12px;right:12px;top:calc(76px + env(safe-area-inset-top,0px));z-index:3;display:flex;align-items:center;gap:8px;'+
+  'border:14px solid transparent;border-image:var(--papiro) 72 fill / 14px stretch;color:#2b1d0e;padding:0 4px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}.recu>div{flex:1;min-width:0}body.recuerdo .diary,body.recuerdo .nav,body.recuerdo .hoy,body.recuerdo #sync2{visibility:hidden!important}'+
   '.recu b{font-family:var(--title);font-size:.95rem}.recu small{display:block;font-size:.75rem;color:#6a4f2c}'+
   '.recu button{background:#3f6b33;color:#f3ead2;border:2px solid #2b1d0e;border-radius:8px;padding:7px 10px;font-weight:700;white-space:nowrap}'+
   '.item[data-obj]{cursor:pointer}.item[data-obj] .box{box-shadow:0 0 0 2px #8fb85a}';
@@ -1949,7 +1950,7 @@ function irRecuerdo(i){
   closeSheet(); RECUERDO=i; document.body.classList.add('recuerdo'); if(typeof fade!=='undefined'){ fade=0; }
   var r=document.querySelector('.recu'); if(r) r.remove();
   r=document.createElement('div'); r.className='recu';
-  r.innerHTML='<div><b>Recuerdo de '+T[i].name+'</b><small>'+ITEMS[i].n+' · '+T[i].title+'</small></div><button type="button" id="recLib">Página</button><button type="button" id="recFin">Volver</button>';
+  r.innerHTML='<div><b>Recuerdo de '+T[i].name+'</b><small>'+ITEMS[i].n+' · solo para mirar</small></div><button type="button" id="recLib">Página</button><button type="button" id="recFin">Volver</button>';
   $('app').appendChild(r);
   $('recLib').onclick=function(){ openPage(i); };
   $('recFin').onclick=salirRecuerdo;
