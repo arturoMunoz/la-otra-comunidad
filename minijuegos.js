@@ -1053,6 +1053,28 @@ function menuPinta(pant){
   var h=document.createElement('div'); h.className='hoy'; h.innerHTML='<b id="hoyTxt">Hoy: 0 pasos</b><small id="hoyInfo"></small>'; bt.appendChild(h);
   function pinta(){ var p=$('steps'), k=$('todayKm'); $('hoyTxt').textContent=(p?p.textContent:'0')+' pasos hoy'; var m=info&&info.textContent.match(/(\d{1,2}:\d{2})/); $('hoyInfo').textContent=(k?k.textContent:'0,0')+' km'+(m?' · '+m[1]:(info&&info.textContent?' · '+info.textContent:'')); }
   var _r=renderHud; renderHud=function(){ var x=_r.apply(this,arguments); pinta(); return x; };
+  /* tocar los pasos de hoy: se abre en grande con lo de hoy y el total desde que empezó el juego */
+  h.style.pointerEvents='auto'; h.style.cursor='pointer';
+  h.onclick=function(){ var yo=me&&people.filter(function(p){return p.nombre===me.nombre;})[0], tot=yo?Number(yo.pasos_totales):Math.round(km*STEPS_PER_KM);
+    var orden=people.slice().sort(function(a,b){return b.pasos_totales-a.pasos_totales;}), pos=yo?orden.indexOf(yo)+1:0, nx=T[curT+1];
+    var z=document.createElement('div'); z.className='pasoZ';
+    z.innerHTML='<div class="pz"><span class="eyebrow">Hoy</span><b class="g">'+($('steps')?$('steps').textContent:'0')+'</b><span>pasos · '+($('todayKm')?$('todayKm').textContent:'0,0')+' km</span>'+
+      '<hr><span class="eyebrow">Desde que empezó el viaje</span><b class="m">'+tot.toLocaleString('es-ES')+' pasos</b><span>'+fmt(tot/STEPS_PER_KM)+' km andados</span>'+
+      (nx?'<span>Faltan '+fmt(Math.max(0,nx.km-km))+' km para '+nx.name+'</span>':'<span>Faltan '+fmt(Math.max(0,TOTAL_KM-km))+' km para Cricava</span>')+
+      (pos?'<span>Vas '+pos+'º de '+orden.length+' en la Comunidad</span>':'')+'<small>Toca para cerrar</small></div>';
+    z.onclick=function(){ z.classList.remove('on'); setTimeout(function(){ z.remove(); },250); };
+    $('app').appendChild(z); requestAnimationFrame(function(){ z.classList.add('on'); }); };
+  var st2=document.createElement('style'); st2.textContent=
+    '.pasoZ{position:absolute;inset:0;z-index:12;display:flex;align-items:flex-end;justify-content:flex-end;padding:0 12px calc(18px + env(safe-area-inset-bottom,0px));background:rgba(10,8,4,0);transition:background .25s}'+
+    '.pasoZ.on{background:rgba(10,8,4,.55)}'+
+    '.pasoZ .pz{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:240px;padding:8px 18px;color:#2b1d0e;text-align:center;border:22px solid transparent;border-image:var(--papiro) 72 fill / 22px stretch;'+
+      'filter:drop-shadow(0 6px 14px rgba(0,0,0,.6));transform-origin:100% 100%;transform:scale(.45);opacity:0;transition:transform .3s cubic-bezier(.2,1.3,.4,1),opacity .2s}'+
+    '.pasoZ.on .pz{transform:none;opacity:1}'+
+    '.pasoZ .eyebrow{font:700 .7rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:#7a5a32}'+
+    '.pasoZ .g{font-family:var(--title);font-size:2.2rem;line-height:1}.pasoZ .m{font-family:var(--title);font-size:1.4rem}'+
+    '.pasoZ span{font:600 .9rem var(--body)}.pasoZ hr{width:80%;border:0;border-top:1px solid rgba(43,29,14,.3);margin:8px 0 4px}'+
+    '.pasoZ small{margin-top:6px;font:.72rem var(--body);color:#7a5a32}';
+  document.head.appendChild(st2);
   if(info) new MutationObserver(pinta).observe(info,{childList:true,characterData:true,subtree:true}); pinta();
 })();
 
@@ -1334,7 +1356,7 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     '.lado.der{right:max(4px,env(safe-area-inset-right,0px));align-items:flex-end}.lado.izq{left:max(4px,env(safe-area-inset-left,0px));align-items:flex-start}'+
     '.lado .cr{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:4px;-webkit-tap-highlight-color:transparent}'+
     '.lado.der .cr{flex-direction:row-reverse}'+
-    '.lado .f{width:36px;height:36px;border-radius:50%;border:2px solid #f3e2b4;box-shadow:0 2px 6px rgba(0,0,0,.6);image-rendering:pixelated;background-color:#3a2a18;flex:none}'+
+    '.lado .f{width:40px;height:40px;border-radius:50%;border:2px solid #f3e2b4;background-origin:border-box;background-clip:padding-box;box-shadow:0 2px 6px rgba(0,0,0,.6);image-rendering:pixelated;background-color:#3a2a18;flex:none}'+
     '.lado .k{font:700 .68rem var(--body);color:#fff8e6;text-shadow:0 1px 2px #000,0 0 5px #000;white-space:nowrap}'+
     '.lado .fl{font:700 .9rem var(--body);color:#fff8e6;text-shadow:0 1px 2px #000;opacity:.8}'+
     '.lado .mas{font:700 .72rem var(--body);color:#fff8e6;text-shadow:0 1px 2px #000;background:rgba(43,29,14,.7);border-radius:10px;padding:2px 7px}'+
@@ -1354,7 +1376,7 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     var f=JSON.stringify([del.map(function(o){return o.p.nombre+Math.round(o.k*10);}),tra.map(function(o){return o.p.nombre+Math.round(o.k*10);}),Math.round(km*10)]);
     if(f===firma) return; firma=f;
     function col(L,signo,flecha){ var h=L.length?'<span class="fl">'+flecha+'</span>':'';
-      h+=L.slice(0,4).map(function(o){ var d=Math.abs(o.k-km); return '<div class="cr" data-n="'+o.p.nombre+'" data-d="'+fmt(d)+'" data-s="'+signo+'"><span class="f" style="'+faceStyle(o.p.hobbit,36)+'"></span><span class="k">'+signo+fmt(d)+'</span></div>'; }).join('');
+      h+=L.slice(0,4).map(function(o){ var d=Math.abs(o.k-km); return '<div class="cr" data-n="'+o.p.nombre+'" data-d="'+fmt(d)+'" data-s="'+signo+'"><span class="f" style="'+faceStyle(o.p.hobbit,40)+'"></span><span class="k">'+signo+fmt(d)+'</span></div>'; }).join('');
       if(L.length>4) h+='<span class="mas">+'+(L.length-4)+'</span>'; return h; }
     D.innerHTML=col(del,'+','▶'); I.innerHTML=col(tra,'−','◀');
   }
