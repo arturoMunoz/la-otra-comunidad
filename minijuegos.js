@@ -1319,7 +1319,7 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     '.hojaV{position:absolute;inset:0;z-index:9;pointer-events:none;opacity:0;transition:opacity .35s ease, backdrop-filter .35s ease;'+
       '-webkit-backdrop-filter:blur(0px);backdrop-filter:blur(0px);background:radial-gradient(circle at 12% 8%,rgba(60,90,40,.35),rgba(10,14,8,.72) 70%)}'+
     '.top .rbtn.hojaB{width:76px;margin:-6px 0 -4px -4px}'+
-    '.top .rbtn.hojaB img{width:62px;height:62px;transform-origin:30% 85%;animation:mece 4.5s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(255,210,110,.55)) drop-shadow(0 3px 3px rgba(0,0,0,.6))}'+
+    '.top .rbtn.hojaB img{width:62px;height:62px;transform-origin:30% 85%;animation:mece 4.5s ease-in-out infinite;filter:drop-shadow(0 3px 3px rgba(0,0,0,.6))}'+
     '.top .rbtn.hojaB span{font-size:.74rem;letter-spacing:.04em}'+
     '@keyframes mece{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(7deg) translateY(-1px)}}'+
     '.hojaV .fondoV{position:absolute;inset:0;background:url("'+(U.fondo_menu||'')+'") center/cover no-repeat;image-rendering:pixelated;opacity:0;transition:opacity .5s ease}'+
@@ -1370,6 +1370,7 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     for(var j=0;j<2;j++){ var d=document.createElement('i'); d.className='brilloH r'+Math.floor(Math.random()*3); d.style.zIndex=8; d.style.setProperty('--o',(0.45+Math.random()*0.35).toFixed(2));
       d.style.left=(r.left-A.left+Math.random()*r.width-14)+'px'; d.style.top=(r.top-A.top+Math.random()*r.height-14)+'px';
       d.style.animationDelay=(j*0.35)+'s'; d.style.transform='scale('+(0.6+Math.random()*0.6).toFixed(2)+')'; $('app').appendChild(d); setTimeout(function(x){ return function(){ x.remove(); }; }(d),1800); } },1600);
+  if(mb&&U.hoja_menu){ var mi=mb.querySelector('img'); if(mi) mi.src=U.hoja_menu; }
   if(mb){ mb.classList.add('hojaB'); mb.onclick=function(){ V.classList.contains('on')?cierra():abre(); }; mb.setAttribute('aria-label','Abrir el menú del viaje'); }
   V.addEventListener('click',function(e){ var b=e.target.closest('button'); cierra(); if(!b) return;
     if(b.dataset.ir==='menu') muestraMenu(); else openTab(b.dataset.ir); });

@@ -1296,7 +1296,8 @@
 "i_hoja": "assets/ui/i_hoja.webp",
 "placa_pasos": "assets/ui/placa_pasos.webp",
 "destellos": "assets/ui/destellos.webp",
-"fondo_menu": "assets/ui/fondo_menu.webp"
+"fondo_menu": "assets/ui/fondo_menu.webp",
+"hoja_menu": "assets/ui/hoja_menu.webp"
 },
 "facesN": 9,
 "quietoPJ": {
