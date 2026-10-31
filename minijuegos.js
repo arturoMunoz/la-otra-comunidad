@@ -1318,6 +1318,9 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     '.top .nav{display:none!important}'+
     '.hojaV{position:absolute;inset:0;z-index:9;pointer-events:none;opacity:0;transition:opacity .35s ease, backdrop-filter .35s ease;'+
       '-webkit-backdrop-filter:blur(0px);backdrop-filter:blur(0px);background:radial-gradient(circle at 12% 8%,rgba(60,90,40,.35),rgba(10,14,8,.72) 70%)}'+
+    '.hojaV .anilloV{position:absolute;right:-8%;bottom:14%;width:72%;max-width:340px;opacity:0;image-rendering:pixelated;pointer-events:none;mix-blend-mode:screen;filter:blur(.4px) drop-shadow(0 0 24px rgba(240,180,60,.6));transform:scale(.8) rotate(-12deg);transition:opacity 1.2s ease .2s,transform 1.4s ease .2s}'+
+    '.hojaV.on .anilloV{opacity:.16;transform:scale(1) rotate(0);animation:respira 5s ease-in-out 1.4s infinite}'+
+    '@keyframes respira{0%,100%{opacity:.16}50%{opacity:.26}}'+
     '.hojaV.on{opacity:1;pointer-events:auto;-webkit-backdrop-filter:blur(7px) saturate(.75);backdrop-filter:blur(7px) saturate(.75)}'+
     '.hojaV .lst{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:calc(84px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:6px}'+
     '.hojaV button{all:unset;cursor:pointer;display:flex;align-items:center;gap:14px;padding:6px 18px 6px 6px;color:#f3ead2;font:700 1.12rem var(--title,serif);letter-spacing:.02em;'+
@@ -1339,11 +1342,12 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
   var L=[['mapa','i_mapa','Mapa'],['libro','i_libro','Libro de Bilbo'],['comunidad','i_comunidad','Comunidad'],['zurron','i_zurron','Zurrón']];
   V.innerHTML='<div class="lst">'+L.map(function(d,i){ return '<button type="button" data-ir="'+d[0]+'" style="transition-delay:'+(i*55)+'ms"><img src="'+U[d[1]]+'" alt="">'+d[2]+'</button>'; }).join('')+
     '<button type="button" class="peq" data-ir="menu" style="transition-delay:'+(L.length*55)+'ms">‹ Menú principal</button></div>';
+  if(M.mj&&M.mj.anillo){ var an=document.createElement('img'); an.className='anilloV'; an.src=M.mj.anillo; an.alt=''; V.insertBefore(an,V.firstChild); }
   $('app').appendChild(V);
   var mb=document.querySelector('.top .rbtn'); /* la hoja que ya había (Menú) */
   function abre(){ V.classList.add('on'); V.setAttribute('aria-hidden','false');
     if(mb) mb.style.visibility='hidden'; /* con el menú abierto, la hoja desaparece */
-    for(var i=0;i<6;i++){ var h=document.createElement('img'); h.className='cae'; h.src=U.i_hoja; h.style.left=(5+Math.random()*85)+'%'; h.style.top=(Math.random()*20)+'%'; h.style.animationDelay=(Math.random()*.8)+'s'; V.appendChild(h); setTimeout(function(x){ return function(){ x.remove(); }; }(h),4200); }
+    for(var i=0;i<16;i++){ var h=document.createElement('img'); h.className='cae'; h.style.width=(12+Math.random()*10)+'px'; h.src=U.i_hoja; h.style.left=(5+Math.random()*85)+'%'; h.style.top=(Math.random()*20)+'%'; h.style.animationDelay=(Math.random()*2.4)+'s'; h.style.animationDuration=(3+Math.random()*2.5)+'s'; V.appendChild(h); setTimeout(function(x){ return function(){ x.remove(); }; }(h),8000); }
     /* fogonazo sobre cada icono según va cayendo */
     if(U.destellos) V.querySelectorAll('.lst button img').forEach(function(im,i){ var r=im.getBoundingClientRect(), A=$('app').getBoundingClientRect();
       for(var q=0;q<2;q++){ var d=document.createElement('i'); d.className='brillo r'+(q?2:1); d.style.setProperty('--o',q?'.6':'.9');
