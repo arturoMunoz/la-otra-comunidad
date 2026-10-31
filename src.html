@@ -340,7 +340,8 @@ function dibujaProps(o){ var L=PROP_T[curT]||[], gap=170, j0=Math.floor((o-W)/ga
 var cv=$('c'),ctx=cv.getContext('2d'),W=200,H=420,OY=0;
 function fit(){
   var r=app.getBoundingClientRect(); W=200; H=Math.max(242,Math.round(W*r.height/Math.max(1,r.width)));
-  cv.width=W; cv.height=H; ctx.imageSmoothingEnabled=false;
+  /* el lienzo va a 3x: los dibujos siguen en su tamaño de siempre, pero los fondos HD ("hd":3 en manifest) se ven con todo su detalle */
+  cv.width=W*3; cv.height=H*3; ctx.setTransform(3,0,0,3,0,0); ctx.imageSmoothingEnabled=false;
   var bt=document.querySelector('.bottom'), bh=(!app.classList.contains('out')&&bt)?bt.offsetHeight:0;
   /* jugando: la escena llega hasta los botones (sin hueco); en la entrada, como antes */
   /* jugando: la escena apoyada en el borde de abajo, su propio suelo llega hasta el final; el cielo rellena arriba */
@@ -447,12 +448,12 @@ function enter(){ $('login').hidden=true; app.classList.remove('out'); fit(); st
 
 /* ---------- arranque ---------- */
 Promise.all([
-  Promise.all(M.tramos.map(function(ls){return Promise.all(ls.map(function(l){return load(l.src).then(function(im){return {im:im,y:l.y,v:l.v,esp:l.esp};});}));})),
+  Promise.all(M.tramos.map(function(ls){return Promise.all(ls.map(function(l){return load(l.src).then(function(im){return {im:im,y:l.y,v:l.v,esp:l.esp,hd:l.hd,espejo:l.espejo};});}));})),
   Promise.all(M.arturo.map(load)), Promise.all(M.vecinos.map(load)), M.andar?load(M.andar.src):Promise.resolve(null)
 ]).then(function(a){
   TI=a[0];AR=a[1];VE=a[2];WALK=a[3]; if(me&&me.hobbit&&typeof usaAndar==='function') usaAndar(me.hobbit);
   /* escenas extra dentro de los tramos (cada ~5 km) y objetos del camino: se cargan después, sin hacer esperar */
-  (M.escenas||[]).forEach(function(e){ Promise.all(e.capas.map(function(l){return load(l.src).then(function(im){return {im:im,y:l.y,v:l.v,esp:l.esp};});}))
+  (M.escenas||[]).forEach(function(e){ Promise.all(e.capas.map(function(l){return load(l.src).then(function(im){return {im:im,y:l.y,v:l.v,esp:l.esp,hd:l.hd,espejo:l.espejo};});}))
     .then(function(ls){ var i=TI.length; TI.push(ls); SKY[i]=ls[0]&&ls[0].im?skyColor(ls[0].im):[95,155,224]; ESC.push({km:e.km,i:i}); ESC.sort(function(a,b){return a.km-b.km;}); }).catch(function(){}); });
   Object.keys(M.props||{}).forEach(function(k){ load(M.props[k]).then(function(im){ PROPS[k]=im; }).catch(function(){}); });
   SKY=TI.map(function(ls){return ls[0]&&ls[0].im?skyColor(ls[0].im):[95,155,224];});
@@ -501,12 +502,16 @@ function drawTramo(i,alpha,o){
   if(OY>0){ var g=ctx.createLinearGradient(0,0,0,OY+2); g.addColorStop(0,rgb(top,.8)); g.addColorStop(1,rgb(top,1)); ctx.fillStyle=g; ctx.fillRect(0,0,W,OY+2); }
   /* encima de la escena: el cielo de la propia imagen, reflejado hacia arriba (en vez de un color liso) y fundido al color del cielo */
   var L0=TI[i]&&TI[i][0];
-  if(OY+(L0?L0.y:0)>0 && L0 && L0.im && L0.im.width){ var im0=L0.im, w0=im0.width, yb=L0.y+OY, sh=Math.max(8,Math.min(yb, Math.round(im0.height*(L0.esp||0.3)))), x0=-((o*L0.v)%w0);
-    for(var xx0=x0; xx0<W; xx0+=w0){ ctx.save(); ctx.translate(Math.round(xx0), yb); ctx.scale(1,-1); ctx.drawImage(im0,0,0,w0,sh,0,0,w0,sh); ctx.restore(); }
+  if(OY+(L0?L0.y:0)>0 && L0 && L0.im && L0.im.width){ var im0=L0.im, k0=L0.hd||1, w0=im0.width/k0, yb=L0.y+OY, sh=Math.max(8,Math.min(yb, Math.round(im0.height/k0*(L0.esp||0.3)))), x0=-((o*L0.v)%w0), j0=Math.floor(o*L0.v/w0);
+    for(var xx0=x0; xx0<W; xx0+=w0, j0++){ ctx.save(); ctx.translate(Math.round(xx0*k0)/k0+(L0.espejo&&(j0&1)?w0:0), yb); ctx.scale(L0.espejo&&(j0&1)?-1:1,-1); ctx.drawImage(im0,0,0,im0.width,sh*k0,0,0,w0,sh); ctx.restore(); }
     var ra=function(a){ return 'rgba('+top[0]+','+top[1]+','+top[2]+','+a+')'; }, g2=ctx.createLinearGradient(0,yb-sh,0,yb);
     g2.addColorStop(0,ra(1)); g2.addColorStop(.55,ra(.45)); g2.addColorStop(1,ra(0)); ctx.fillStyle=g2; ctx.fillRect(0,yb-sh,W,sh+1); }
   var bottom=OY;
-  TI[i].forEach(function(L){ if(!L.im) return; var w=L.im.width, x=-((o*L.v)%w); for(;x<W;x+=w) ctx.drawImage(L.im,Math.round(x),L.y+OY); bottom=Math.max(bottom,L.y+OY+L.im.height); });
+  TI[i].forEach(function(L){ if(!L.im) return; var k=L.hd||1, w=L.im.width/k, h=L.im.height/k, x=-((o*L.v)%w), j=Math.floor(o*L.v/w);
+    for(;x<W;x+=w,j++){ var xx=Math.round(x*k)/k;
+      if(L.espejo&&(j&1)){ ctx.save(); ctx.translate(xx+w,0); ctx.scale(-1,1); ctx.drawImage(L.im,0,L.y+OY,w,h); ctx.restore(); } /* una imagen y su reflejo, alternando: empalma sin costura */
+      else ctx.drawImage(L.im,xx,L.y+OY,w,h); }
+    bottom=Math.max(bottom,L.y+OY+h); });
   /* bajo los pies: UNA sola capa de suelo hasta abajo (M.suelo[i] si hay dibujo; si no, el borde del camino y su color) */
   var SU=(typeof SUELO!=='undefined')&&SUELO[i], sy=OY+232;
   if(SU&&SU.complete&&SU.width){ var k=(H-sy+4)/SU.height, sw=SU.width*k, sx=-((o*1.15)%sw); for(var xx=sx-sw; xx<W; xx+=sw) ctx.drawImage(SU,Math.round(xx),sy-4,Math.ceil(sw),Math.ceil(H-sy+4)); }

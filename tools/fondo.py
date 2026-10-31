@@ -25,7 +25,8 @@ def sin_luna(c):
 def capa(r0, r1, k):
     c = im.crop((0, r0, w, r1)); d = Image.new('RGB', (w * 2, r1 - r0)); d.paste(c, (0, 0))
     e = c.transpose(Image.FLIP_LEFT_RIGHT); d.paste(sin_luna(e) if os.environ.get('SIN_LUNA') else e, (w, 0))
-    d = d.resize((round(w * 2 * s), max(1, round((r1 - r0) * s))), Image.LANCZOS); d.save(f'public/assets/tramos/{nom}_{k}.webp', quality=88)
+    if os.environ.get('ESPEJO'): d = d.crop((0, 0, w, r1 - r0))  # el juego dibuja el reflejo él solo
+    K = int(os.environ.get('HD', 1)); d = d.resize((round(d.width * s * K), max(1, round((r1 - r0) * s * K))), Image.LANCZOS); d.save(f'public/assets/tramos/{nom}_{k}.webp', quality=int(os.environ.get('Q', 88)))
     return round(y0 + r0 * s)
 ys = [capa(0, cut + 4, 0), capa(cut, h, 1)]
 print(json.dumps([{"src": f"assets/tramos/{nom}_0.webp", "y": ys[0], "v": 0.4}, {"src": f"assets/tramos/{nom}_1.webp", "y": ys[1], "v": 1.0}]))
