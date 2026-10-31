@@ -1052,6 +1052,9 @@ function menuPinta(pant){
   document.head.appendChild(st);
   var h=document.createElement('div'); h.className='hoy'; h.innerHTML='<b id="hoyTxt">Hoy: 0 pasos</b><small id="hoyInfo"></small>'; bt.appendChild(h);
   function pinta(){ var p=$('steps'), k=$('todayKm'); $('hoyTxt').textContent=(p?p.textContent:'0')+' pasos hoy'; var m=info&&info.textContent.match(/(\d{1,2}:\d{2})/); $('hoyInfo').textContent=(k?k.textContent:'0,0')+' km'+(m?' · '+m[1]:(info&&info.textContent?' · '+info.textContent:'')); }
+  if(M.ui&&M.ui.placa_pasos){ var sp=document.createElement('style'); sp.textContent=
+    '.hoy{border:0!important;border-image:none!important;background:url("'+M.ui.placa_pasos+'") center/100% 100% no-repeat;image-rendering:pixelated;width:min(54vw,250px);max-width:none!important;aspect-ratio:640/169;justify-content:center;padding:0 15% 0 19%!important}'+
+    '.hoy b{font-size:.95rem}.hoy small{font-size:.66rem}'; document.head.appendChild(sp); }
   var _r=renderHud; renderHud=function(){ var x=_r.apply(this,arguments); pinta(); return x; };
   /* tocar los pasos de hoy: se abre en grande con lo de hoy y el total desde que empezó el juego */
   h.style.pointerEvents='auto'; h.style.cursor='pointer';
@@ -1325,6 +1328,8 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     '.hojaV button.peq{font-size:.92rem;opacity:0;margin-top:10px;border-top:1px solid rgba(243,234,210,.25);padding-top:12px}'+
     '.hojaV.on button.peq{opacity:.85}'+
     '.hojaV .cae{position:absolute;width:16px;opacity:0;pointer-events:none;animation:cae 3.2s linear forwards}'+
+    '.hojaV .brillo{position:absolute;width:28px;height:28px;pointer-events:none;image-rendering:pixelated;background:url("'+(U.destellos||'')+'") 0 0/168px 28px no-repeat;opacity:0;animation:brilla 1.1s steps(1) forwards}'+
+    '@keyframes brilla{0%{opacity:1;background-position:0 0}16%{background-position:-28px 0}33%{background-position:-56px 0}50%{background-position:-84px 0}66%{background-position:-112px 0}83%{background-position:-140px 0}100%{opacity:0;background-position:-140px 0}}'+
     '@keyframes cae{0%{opacity:0;transform:translate(0,0) rotate(0)}12%{opacity:.8}100%{opacity:0;transform:translate(40px,70vh) rotate(540deg)}}'+
     '';
   document.head.appendChild(st);
@@ -1339,7 +1344,9 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     if(mb){ var r=mb.querySelector('img').getBoundingClientRect(), a=$('app').getBoundingClientRect();
       cl=document.createElement('img'); cl.className='clon'; cl.src=U.i_hoja; cl.alt=''; cl.style.cssText='position:absolute;left:'+(r.left-a.left)+'px;top:'+(r.top-a.top)+'px;width:'+r.width+'px;height:'+r.height+'px;image-rendering:pixelated;cursor:pointer;filter:drop-shadow(0 0 10px rgba(180,230,120,.7));transition:transform .35s cubic-bezier(.2,1.4,.4,1);transform:rotate(0)';
       V.appendChild(cl); requestAnimationFrame(function(){ cl.style.transform='rotate(-35deg) scale(1.15)'; }); }
-    for(var i=0;i<6;i++){ var h=document.createElement('img'); h.className='cae'; h.src=U.i_hoja; h.style.left=(5+Math.random()*85)+'%'; h.style.top=(Math.random()*20)+'%'; h.style.animationDelay=(Math.random()*.8)+'s'; V.appendChild(h); setTimeout(function(x){ return function(){ x.remove(); }; }(h),4200); } }
+    for(var i=0;i<6;i++){ var h=document.createElement('img'); h.className='cae'; h.src=U.i_hoja; h.style.left=(5+Math.random()*85)+'%'; h.style.top=(Math.random()*20)+'%'; h.style.animationDelay=(Math.random()*.8)+'s'; V.appendChild(h); setTimeout(function(x){ return function(){ x.remove(); }; }(h),4200); }
+    if(U.destellos) for(var j=0;j<10;j++){ var d=document.createElement('i'); d.className='brillo'; d.style.left=(4+Math.random()*90)+'%'; d.style.top=(6+Math.random()*80)+'%';
+      d.style.animationDelay=(Math.random()*1.6)+'s'; d.style.transform='scale('+(1+Math.random()*1.4).toFixed(2)+')'; V.appendChild(d); setTimeout(function(x){ return function(){ x.remove(); }; }(d),3600); } }
   function cierra(){ V.classList.remove('on'); V.setAttribute('aria-hidden','true'); var cl=V.querySelector('.clon'); if(cl){ cl.style.transform='rotate(0)'; setTimeout(function(){ cl.remove(); },300); } }
   window.hojaCierra=cierra;
   if(mb){ mb.onclick=function(){ V.classList.contains('on')?cierra():abre(); }; mb.setAttribute('aria-label','Abrir el menú del viaje'); }

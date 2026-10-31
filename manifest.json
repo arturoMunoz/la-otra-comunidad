@@ -1293,7 +1293,9 @@
 "i_comunidad": "assets/ui/i_comunidad.webp",
 "i_zurron": "assets/ui/i_zurron.webp",
 "i_sync": "assets/ui/i_sync.webp",
-"i_hoja": "assets/ui/i_hoja.webp"
+"i_hoja": "assets/ui/i_hoja.webp",
+"placa_pasos": "assets/ui/placa_pasos.webp",
+"destellos": "assets/ui/destellos.webp"
 },
 "facesN": 9,
 "quietoPJ": {
