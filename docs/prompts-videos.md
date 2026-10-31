@@ -61,3 +61,13 @@ The left and right edges must match so the image can repeat side by side.
 NO people, NO animals, NO characters at all.
 ```
 Al cortarla: `ALTO=420 python3 tools/fondo.py IMG NOMBRE FILA_PIES`.
+
+## Fondos CONTINUOS (desde el Acto II): un acto = un solo paisaje seguido
+Pedir las imágenes en orden, en el mismo chat de ChatGPT, adjuntando SIEMPRE la anterior. Añadir a la ficha LOC-FONDO v2:
+```
+CONTINUITY (very important): this image continues the attached previous image to the RIGHT, as if the camera kept walking along the same path.
+- The left 25% of this image must match the right 25% of the attached image: same path height, same horizon line, same sky colors and light, same ground.
+- The path stays at exactly the same height in every image.
+- The landscape changes gradually towards the right side, into: <NEXT PLACE>.
+```
+Al montar: se solapan los bordes y se funden (sin corte visible). Pedir más imágenes si un tramo es largo.

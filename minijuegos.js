@@ -1285,3 +1285,83 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
 (function(){ if(!FP) return; var _a=FP.activo; })();
 (function(){ var _fp=flushPending; flushPending=function(){ if(RECUERDO!=null) return; return _fp(); }; })();
 (function(){ var _mm=muestraMenu; muestraMenu=function(){ salirRecuerdo(); _mm(); }; })();
+
+/* ================= HOJA DE LÓRIEN: un solo botón arriba a la izquierda que despliega Mapa, Libro, Comunidad, Zurrón y Menú.
+   La pantalla se difumina detrás y los iconos caen uno a uno desde la hoja. ================= */
+(function(){ var U=M.ui; if(!U) return;
+  var st=document.createElement('style'); st.textContent=
+    '.top .nav{display:none!important}'+
+    '.hojaV{position:absolute;inset:0;z-index:9;pointer-events:none;opacity:0;transition:opacity .35s ease, backdrop-filter .35s ease;'+
+      '-webkit-backdrop-filter:blur(0px);backdrop-filter:blur(0px);background:radial-gradient(circle at 12% 8%,rgba(60,90,40,.35),rgba(10,14,8,.72) 70%)}'+
+    '.hojaV.on{opacity:1;pointer-events:auto;-webkit-backdrop-filter:blur(7px) saturate(.75);backdrop-filter:blur(7px) saturate(.75)}'+
+    '.hojaV .lst{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:calc(84px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:6px}'+
+    '.hojaV button{all:unset;cursor:pointer;display:flex;align-items:center;gap:14px;padding:6px 18px 6px 6px;color:#f3ead2;font:700 1.12rem var(--title,serif);letter-spacing:.02em;'+
+      'text-shadow:0 2px 4px #000;opacity:0;transform:translate(-12px,-18px) scale(.85);transition:opacity .28s ease, transform .38s cubic-bezier(.2,1.4,.4,1);-webkit-tap-highlight-color:transparent}'+
+    '.hojaV.on button{opacity:1;transform:none}'+
+    '.hojaV button img{width:54px;height:54px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 3px 4px rgba(0,0,0,.6))}'+
+    '.hojaV button:active img{transform:scale(.92)}'+
+    '.hojaV button.peq{font-size:.92rem;opacity:0;margin-top:10px;border-top:1px solid rgba(243,234,210,.25);padding-top:12px}'+
+    '.hojaV.on button.peq{opacity:.85}'+
+    '.hojaV .cae{position:absolute;width:16px;opacity:0;pointer-events:none;animation:cae 3.2s linear forwards}'+
+    '@keyframes cae{0%{opacity:0;transform:translate(0,0) rotate(0)}12%{opacity:.8}100%{opacity:0;transform:translate(40px,70vh) rotate(540deg)}}'+
+    '';
+  document.head.appendChild(st);
+  var V=document.createElement('div'); V.className='hojaV'; V.setAttribute('aria-hidden','true');
+  var L=[['mapa','i_mapa','Mapa'],['libro','i_libro','Libro de Bilbo'],['comunidad','i_comunidad','Comunidad'],['zurron','i_zurron','Zurrón']];
+  V.innerHTML='<div class="lst">'+L.map(function(d,i){ return '<button type="button" data-ir="'+d[0]+'" style="transition-delay:'+(i*55)+'ms"><img src="'+U[d[1]]+'" alt="">'+d[2]+'</button>'; }).join('')+
+    '<button type="button" class="peq" data-ir="menu" style="transition-delay:'+(L.length*55)+'ms">‹ Menú principal</button></div>';
+  $('app').appendChild(V);
+  var mb=document.querySelector('.top .rbtn'); /* la hoja que ya había (Menú) */
+  function abre(){ V.classList.add('on'); V.setAttribute('aria-hidden','false');
+    var cl=V.querySelector('.clon'); if(cl) cl.remove();
+    if(mb){ var r=mb.querySelector('img').getBoundingClientRect(), a=$('app').getBoundingClientRect();
+      cl=document.createElement('img'); cl.className='clon'; cl.src=U.i_hoja; cl.alt=''; cl.style.cssText='position:absolute;left:'+(r.left-a.left)+'px;top:'+(r.top-a.top)+'px;width:'+r.width+'px;height:'+r.height+'px;image-rendering:pixelated;cursor:pointer;filter:drop-shadow(0 0 10px rgba(180,230,120,.7));transition:transform .35s cubic-bezier(.2,1.4,.4,1);transform:rotate(0)';
+      V.appendChild(cl); requestAnimationFrame(function(){ cl.style.transform='rotate(-35deg) scale(1.15)'; }); }
+    for(var i=0;i<6;i++){ var h=document.createElement('img'); h.className='cae'; h.src=U.i_hoja; h.style.left=(5+Math.random()*85)+'%'; h.style.top=(Math.random()*20)+'%'; h.style.animationDelay=(Math.random()*.8)+'s'; V.appendChild(h); setTimeout(function(x){ return function(){ x.remove(); }; }(h),4200); } }
+  function cierra(){ V.classList.remove('on'); V.setAttribute('aria-hidden','true'); var cl=V.querySelector('.clon'); if(cl){ cl.style.transform='rotate(0)'; setTimeout(function(){ cl.remove(); },300); } }
+  window.hojaCierra=cierra;
+  if(mb){ mb.onclick=function(){ V.classList.contains('on')?cierra():abre(); }; mb.setAttribute('aria-label','Abrir el menú del viaje'); }
+  V.addEventListener('click',function(e){ var b=e.target.closest('button'); cierra(); if(!b) return;
+    if(b.dataset.ir==='menu') muestraMenu(); else openTab(b.dataset.ir); });
+  (function(){ var _mm=muestraMenu; muestraMenu=function(){ cierra(); return _mm.apply(this,arguments); }; })();
+})();
+
+/* ================= A LOS LADOS: caras de los que van delante (derecha) y detrás (izquierda).
+   Solo los que se han registrado (tienen cuenta). Tocar una cara dice quién es y a cuántos km está. ================= */
+(function(){
+  var st=document.createElement('style'); st.textContent=
+    '.lado{position:absolute;top:44%;z-index:4;display:flex;flex-direction:column;gap:8px;pointer-events:none;transform:translateY(-50%)}'+
+    '.lado.der{right:max(4px,env(safe-area-inset-right,0px));align-items:flex-end}.lado.izq{left:max(4px,env(safe-area-inset-left,0px));align-items:flex-start}'+
+    '.lado .cr{pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:4px;-webkit-tap-highlight-color:transparent}'+
+    '.lado.der .cr{flex-direction:row-reverse}'+
+    '.lado .f{width:36px;height:36px;border-radius:50%;border:2px solid #f3e2b4;box-shadow:0 2px 6px rgba(0,0,0,.6);image-rendering:pixelated;background-color:#3a2a18;flex:none}'+
+    '.lado .k{font:700 .68rem var(--body);color:#fff8e6;text-shadow:0 1px 2px #000,0 0 5px #000;white-space:nowrap}'+
+    '.lado .fl{font:700 .9rem var(--body);color:#fff8e6;text-shadow:0 1px 2px #000;opacity:.8}'+
+    '.lado .mas{font:700 .72rem var(--body);color:#fff8e6;text-shadow:0 1px 2px #000;background:rgba(43,29,14,.7);border-radius:10px;padding:2px 7px}'+
+    '.lado .glo{position:absolute;top:-30px;white-space:nowrap;background:#f3e2b4;color:#2b1d0e;border:2px solid #2b1d0e;border-radius:8px;padding:3px 8px;font:700 .78rem var(--body)}'+
+    '.lado.der .glo{right:0}.lado.izq .glo{left:0}'+
+    'body.recuerdo .lado{display:none}';
+  document.head.appendChild(st);
+  var D=document.createElement('div'), I=document.createElement('div'); D.className='lado der'; I.className='lado izq';
+  $('app').appendChild(D); $('app').appendChild(I);
+  var firma='';
+  function activo(p){ return p.registrado!=null ? !!p.registrado : Number(p.pasos_totales)>0; }
+  function pinta(){
+    if(!me||!people||!people.length){ D.innerHTML=I.innerHTML=''; firma=''; return; }
+    var otros=people.filter(function(p){ return p.nombre!==me.nombre && activo(p); }).map(function(p){ return {p:p,k:Number(p.pasos_totales)/STEPS_PER_KM}; });
+    var del=otros.filter(function(o){ return o.k>km+0.05; }).sort(function(a,b){ return a.k-b.k; }),
+        tra=otros.filter(function(o){ return o.k<=km+0.05; }).sort(function(a,b){ return b.k-a.k; });
+    var f=JSON.stringify([del.map(function(o){return o.p.nombre+Math.round(o.k*10);}),tra.map(function(o){return o.p.nombre+Math.round(o.k*10);}),Math.round(km*10)]);
+    if(f===firma) return; firma=f;
+    function col(L,signo,flecha){ var h=L.length?'<span class="fl">'+flecha+'</span>':'';
+      h+=L.slice(0,4).map(function(o){ var d=Math.abs(o.k-km); return '<div class="cr" data-n="'+o.p.nombre+'" data-d="'+fmt(d)+'" data-s="'+signo+'"><span class="f" style="'+faceStyle(o.p.hobbit,36)+'"></span><span class="k">'+signo+fmt(d)+'</span></div>'; }).join('');
+      if(L.length>4) h+='<span class="mas">+'+(L.length-4)+'</span>'; return h; }
+    D.innerHTML=col(del,'+','▶'); I.innerHTML=col(tra,'−','◀');
+  }
+  function toca(e){ var c=e.target.closest('.cr'); if(!c) return; var box=c.parentNode;
+    var g=box.querySelector('.glo'); if(g) g.remove(); g=document.createElement('div'); g.className='glo';
+    g.textContent=c.dataset.n+(c.dataset.s==='+'?' va '+c.dataset.d+' km por delante':' va '+c.dataset.d+' km por detrás');
+    g.style.top=(c.offsetTop-30)+'px'; box.appendChild(g); setTimeout(function(){ g.remove(); },2600); }
+  D.addEventListener('click',toca); I.addEventListener('click',toca);
+  setInterval(pinta,1500); pinta();
+})();

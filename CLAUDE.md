@@ -24,6 +24,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Arte: Claude NUNCA dibuja ni genera recursos (ni SVG, ni dibujos por código). Todo se pide a ChatGPT con un prompt y Henar/Arturo pasan las imágenes.
 - Henar quiere que Claude cuestione las ideas con honestidad, sin halagos.
 - Push solo cuando Henar o Arturo lo pidan («súbelo»). En esta cuenta escriben los dos.
+- Fondos de escena (pedidos a ChatGPT): SIEMPRE en vertical 1024x1536 con la ficha LOC-FONDO de `docs/prompts-videos.md` (camino recto abajo, cielo arriba, sin personajes). Desde el Acto II, además, CONTINUOS dentro de cada acto: cada imagen sigue a la anterior (se adjunta la anterior y se pide que su borde izquierdo continúe el derecho de la otra), para que el paseo hacia atrás se vea como un solo viaje. Entre actos no hace falta. Recordárselo a Arturo al empezar el Acto II.
 - Máster del juego (toque de rol/JRPG): solo Arturo. Él también juega, así que lo que haga como Máster tiene que verse en el grupo.
 
 ## Estado (Versión 3, 28/10/2026)
