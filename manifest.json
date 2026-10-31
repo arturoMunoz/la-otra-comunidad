@@ -1295,7 +1295,8 @@
 "i_sync": "assets/ui/i_sync.webp",
 "i_hoja": "assets/ui/i_hoja.webp",
 "placa_pasos": "assets/ui/placa_pasos.webp",
-"destellos": "assets/ui/destellos.webp"
+"destellos": "assets/ui/destellos.webp",
+"fondo_menu": "assets/ui/fondo_menu.webp"
 },
 "facesN": 9,
 "quietoPJ": {
