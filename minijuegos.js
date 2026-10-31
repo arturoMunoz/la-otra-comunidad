@@ -1328,7 +1328,8 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     '.hojaV button.peq{font-size:.92rem;opacity:0;margin-top:10px;border-top:1px solid rgba(243,234,210,.25);padding-top:12px}'+
     '.hojaV.on button.peq{opacity:.85}'+
     '.hojaV .cae{position:absolute;width:16px;opacity:0;pointer-events:none;animation:cae 3.2s linear forwards}'+
-    '.hojaV .brillo{position:absolute;width:28px;height:28px;pointer-events:none;image-rendering:pixelated;background:url("'+(U.destellos||'')+'") 0 0/168px 28px no-repeat;opacity:0;animation:brilla 1.1s steps(1) forwards}'+
+    '.hojaV .brillo,.brilloH{position:absolute;width:28px;height:28px;pointer-events:none;image-rendering:pixelated;filter:sepia(1) saturate(5) hue-rotate(-12deg) brightness(1.25);background:url("'+(U.destellos||'')+'") 0 0/168px 28px no-repeat;opacity:0;animation:brilla 1.1s steps(1) forwards}'+
+    '.brilloH{position:absolute}'+
     '@keyframes brilla{0%{opacity:1;background-position:0 0}16%{background-position:-28px 0}33%{background-position:-56px 0}50%{background-position:-84px 0}66%{background-position:-112px 0}83%{background-position:-140px 0}100%{opacity:0;background-position:-140px 0}}'+
     '@keyframes cae{0%{opacity:0;transform:translate(0,0) rotate(0)}12%{opacity:.8}100%{opacity:0;transform:translate(40px,70vh) rotate(540deg)}}'+
     '';
@@ -1340,15 +1341,18 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
   $('app').appendChild(V);
   var mb=document.querySelector('.top .rbtn'); /* la hoja que ya había (Menú) */
   function abre(){ V.classList.add('on'); V.setAttribute('aria-hidden','false');
-    var cl=V.querySelector('.clon'); if(cl) cl.remove();
-    if(mb){ var r=mb.querySelector('img').getBoundingClientRect(), a=$('app').getBoundingClientRect();
-      cl=document.createElement('img'); cl.className='clon'; cl.src=U.i_hoja; cl.alt=''; cl.style.cssText='position:absolute;left:'+(r.left-a.left)+'px;top:'+(r.top-a.top)+'px;width:'+r.width+'px;height:'+r.height+'px;image-rendering:pixelated;cursor:pointer;filter:drop-shadow(0 0 10px rgba(180,230,120,.7));transition:transform .35s cubic-bezier(.2,1.4,.4,1);transform:rotate(0)';
-      V.appendChild(cl); requestAnimationFrame(function(){ cl.style.transform='rotate(-35deg) scale(1.15)'; }); }
+    if(mb) mb.style.visibility='hidden'; /* con el menú abierto, la hoja desaparece */
     for(var i=0;i<6;i++){ var h=document.createElement('img'); h.className='cae'; h.src=U.i_hoja; h.style.left=(5+Math.random()*85)+'%'; h.style.top=(Math.random()*20)+'%'; h.style.animationDelay=(Math.random()*.8)+'s'; V.appendChild(h); setTimeout(function(x){ return function(){ x.remove(); }; }(h),4200); }
-    if(U.destellos) for(var j=0;j<10;j++){ var d=document.createElement('i'); d.className='brillo'; d.style.left=(4+Math.random()*90)+'%'; d.style.top=(6+Math.random()*80)+'%';
-      d.style.animationDelay=(Math.random()*1.6)+'s'; d.style.transform='scale('+(1+Math.random()*1.4).toFixed(2)+')'; V.appendChild(d); setTimeout(function(x){ return function(){ x.remove(); }; }(d),3600); } }
-  function cierra(){ V.classList.remove('on'); V.setAttribute('aria-hidden','true'); var cl=V.querySelector('.clon'); if(cl){ cl.style.transform='rotate(0)'; setTimeout(function(){ cl.remove(); },300); } }
+    if(U.destellos) for(var j=0;j<22;j++){ var d=document.createElement('i'); d.className='brillo'; d.style.left=(4+Math.random()*90)+'%'; d.style.top=(6+Math.random()*80)+'%';
+      d.style.animationDelay=(Math.random()*2.2)+'s'; d.style.transform='scale('+(1+Math.random()*1.4).toFixed(2)+')'; V.appendChild(d); setTimeout(function(x){ return function(){ x.remove(); }; }(d),3600); } }
+  function cierra(){ V.classList.remove('on'); V.setAttribute('aria-hidden','true'); if(mb) setTimeout(function(){ mb.style.visibility=''; },200); }
   window.hojaCierra=cierra;
+  /* la hoja cerrada brilla de vez en cuando */
+  if(U.destellos&&mb) setInterval(function(){ if(V.classList.contains('on')||mb.style.visibility==='hidden'||document.hidden) return;
+    var r=mb.querySelector('img').getBoundingClientRect(), A=$('app').getBoundingClientRect(); if(!r.width) return;
+    for(var j=0;j<2;j++){ var d=document.createElement('i'); d.className='brilloH'; d.style.zIndex=8;
+      d.style.left=(r.left-A.left+Math.random()*r.width-14)+'px'; d.style.top=(r.top-A.top+Math.random()*r.height-14)+'px';
+      d.style.animationDelay=(j*0.35)+'s'; d.style.transform='scale('+(0.6+Math.random()*0.6).toFixed(2)+')'; $('app').appendChild(d); setTimeout(function(x){ return function(){ x.remove(); }; }(d),1800); } },1600);
   if(mb){ mb.onclick=function(){ V.classList.contains('on')?cierra():abre(); }; mb.setAttribute('aria-label','Abrir el menú del viaje'); }
   V.addEventListener('click',function(e){ var b=e.target.closest('button'); cierra(); if(!b) return;
     if(b.dataset.ir==='menu') muestraMenu(); else openTab(b.dataset.ir); });
