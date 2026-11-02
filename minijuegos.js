@@ -1439,7 +1439,7 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     var c=document.createElement('canvas'); c.width=im.width; c.height=im.height; var x=c.getContext('2d'); x.drawImage(im,0,0);
     var d=x.getImageData(0,0,c.width,c.height), p=d.data, k=[t[0]/b[0],t[1]/b[1],t[2]/b[2]];
     for(var i=0;i<p.length;i+=4){ if(!p[i+3]) continue; var r=p[i],g=p[i+1],bb=p[i+2];
-      if(r>=205&&bb>=0.62*g&&g>0.5*r&&g<0.85*r){ p[i]=Math.min(255,r*k[0]); p[i+1]=Math.min(255,g*k[1]); p[i+2]=Math.min(255,bb*k[2]); } }
+      if(r>=120&&bb>=0.63*g&&g>0.5*r&&g<0.85*r&&r-bb>35){ p[i]=Math.min(255,r*k[0]); p[i+1]=Math.min(255,g*k[1]); p[i+2]=Math.min(255,bb*k[2]); } }
     x.putImageData(d,0,0); return PC[h]=c; }
   function listo(h){ var ks=Object.keys(C.capas).concat(['cab_'+h]); return ks.every(function(k){ return IM[k]&&IM[k].complete&&IM[k].width; }); }
   var firma='', H=null;
