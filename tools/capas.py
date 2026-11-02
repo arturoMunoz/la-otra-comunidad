@@ -32,6 +32,15 @@ for ri,gy in enumerate(grounds):
         cells.append(dict(row=ri,ground=gy,headtop=headtop,neck=neck,cx=int(hx),x0=o[1].start,x1=o[1].stop))
 print('celdas',len(cells),[c['row'] for c in cells])
 MH=np.median([c['ground']-c['headtop'] for c in cells])
+_b=load('cuerpo.png'); _cy=isCyan(_b)
+for c in cells:
+    x0=c['cx']-140; y0=max(0,c['headtop']-6); m=_cy[y0:c['ground'],x0:c['cx']+140]
+    lab,n=ndimage.label(m); sz=ndimage.sum(m,lab,range(1,n+1)); ys,xs=np.nonzero(lab==np.argmax(sz)+1)
+    c['hb']=ys.max()+y0; c['hx']=xs.mean()+x0      # base y centro de la cabeza del cuerpo
+# misma altura y mismo centro en todos los fotogramas de cada fila: la cabeza no baila
+for r in set(c['row'] for c in cells):
+    F=[c for c in cells if c['row']==r]; hb=int(np.median([c['hb'] for c in F]))
+    for c in F: c['hb']=hb
 FW,FH=53,74; S=60/MH  # el maniquí mide 60 px en el juego
 def limpio(a):
     r,g,b=a[...,0],a[...,1],a[...,2]
@@ -63,7 +72,9 @@ def cabeza(f):
     a=np.where((verde&(L<105))[...,None],np.dstack([L*1.02,L,L*0.96]),a)          # barba / pelo oscuro: gris
     rgba=np.dstack([a,np.where(hm,255,0)]).astype(np.uint8)[hy.min():neck_y+1,hx.min():hx.max()+1]
     face_x=hx.max()-hx.min()
-    return Image.fromarray(rgba,'RGBA'), mh, cyan_top-hy.min()
+    ct=ys.min(); cx_=np.nonzero(cyn[ct:ct+8].any(0))[0].mean()   # donde empieza el cuerpo cian, bajo la cabeza
+    nx=cx_-hx.min()
+    return Image.fromarray(rgba,'RGBA'), mh, ct-hy.min(), nx
 def frames(rgba,head=None,orden=None):
     out=[]
     for c in cells:
@@ -73,9 +84,9 @@ def frames(rgba,head=None,orden=None):
             cell.alpha_composite(Image.fromarray(L[max(0,y0):y1,x0:x1],'RGBA'),(0,max(0,-y0)))
         for L in (orden or []): cell.alpha_composite(Image.fromarray(L[max(0,y0):y1,x0:x1],'RGBA'),(0,max(0,-y0)))
         if head:
-            im,mh,nk=head; k=MH/mh*0.85; hi=im.resize((round(im.width*k),round(im.height*k)),Image.LANCZOS)
+            im,mh,nk,nx=head; k=MH/mh*0.85; hi=im.resize((round(im.width*k),round(im.height*k)),Image.LANCZOS)
             # la nuca del maniquí y el cuello de la cabeza, alineados; la cara hacia la derecha del eje
-            cell.alpha_composite(hi,(int(c['cx']-x0-hi.width*0.55),int(c['headtop']-y0-nk*k*0+ (c['neck']-c['headtop']) - nk*k + 4)))
+            cell.alpha_composite(hi,(int(round(c['hx']-x0-nx*k)),int(round(c['hb']-y0-nk*k+2/S))))
         out.append(cell.resize((FW,FH),Image.LANCZOS))
     return out
 if __name__=='__main__':
