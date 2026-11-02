@@ -1,6 +1,6 @@
 """Personajes por capas: maniquí cian común (las hojas de objetos de ChatGPT) + cabeza de cada hobbit + objetos.
 uso: python3 tools/capas.py  -> vista previa en tools/capas/prev_*.png (de momento solo prueba)"""
-import numpy as np, sys
+import numpy as np, sys, os
 from PIL import Image
 from scipy import ndimage
 D='tools/capas/'
@@ -74,6 +74,30 @@ def cabeza(f):
     face_x=hx.max()-hx.min()
     ct=ys.min(); cx_=np.nonzero(cyn[ct:ct+8].any(0))[0].mean()   # donde empieza el cuerpo cian, bajo la cabeza
     nx=cx_-hx.min()
+    # CUELLO: se estira hacia abajo la franja de piel de la base de la cabeza (los píxeles del propio dibujo)
+    NECK=int(os.environ.get('CUELLO',4))   # px de juego
+    G=S*MH/mh*float(os.environ.get('ESC_CAB',0.80))   # px de juego por px de esta imagen
+    R=rgba.astype(int); al=R[...,3]>0; rr,gg,bb=R[...,0],R[...,1],R[...,2]
+    piel=al&(rr>150)&(rr>gg+15)&(gg>bb+5)
+    ncx=int(round(nx)); hh=R.shape[0]; win=slice(max(0,ncx-int(9/G)),ncx+int(9/G))
+    rows=[y for y in range(hh-1,int(hh*0.6),-1) if piel[y,win].sum()>=max(3,int(2/G))]
+    if rows and NECK>0:
+        y=rows[0]; n=int(round(NECK/G)); w=int(round(2.6/G))       # cuello estrecho, detrás de la barbilla
+        tono=np.median(R[piel][:,:3],0); osc=np.percentile(R[al][:,:3].sum(1),5)
+        borde=R[al][R[al][:,:3].sum(1)<=osc][:,:3].mean(0) if (R[al][:,:3].sum(1)<=osc).any() else np.array([43,29,14])
+        c0=int(round(nx-w*1.2)); c1=c0+2*w; ext=np.zeros((n,R.shape[1],4),np.uint8)
+        ext[:,c0:c1,:3]=tono; ext[:,c0:c1,3]=255
+        ext[:,c0:c1,:3]=(ext[:,c0:c1,:3]*np.linspace(0.78,1.0,c1-c0)[None,:,None]).astype(np.uint8)   # sombra hacia atrás
+        e=max(1,int(round(0.7/G))); ext[:,c0:c0+e,:3]=borde; ext[:,c1-e:c1,:3]=borde                 # contorno
+        # la cabeza entera sube n filas; debajo, solo en la franja del cuello, se rellena hasta el cuerpo
+        base=ct-hy.min()                     # fila de la cabeza que antes tocaba el cuerpo
+        fin=base+n+int(round(1/G))            # el cuello baja n filas (+1 px dentro de la camisa)
+        out=np.concatenate([rgba,np.zeros((max(0,fin-rgba.shape[0]),R.shape[1],4),np.uint8)],0)
+        for x in range(c0,c1):
+            ys=np.nonzero(out[:fin,x,3]>0)[0]; y0=(ys.max()+1) if len(ys) else base
+            out[y0:fin,x]=ext[0,x]
+            out[y0:min(fin,y0+max(1,n//3)),x,:3]=(out[y0:min(fin,y0+max(1,n//3)),x,:3]*0.8).astype(np.uint8)  # sombra bajo la barbilla
+        return Image.fromarray(out,'RGBA'), mh, base+n, nx   # la cabeza queda n filas más alta
     return Image.fromarray(rgba,'RGBA'), mh, ct-hy.min(), nx
 def frames(rgba,head=None,orden=None):
     out=[]
@@ -84,7 +108,7 @@ def frames(rgba,head=None,orden=None):
             cell.alpha_composite(Image.fromarray(L[max(0,y0):y1,x0:x1],'RGBA'),(0,max(0,-y0)))
         for L in (orden or []): cell.alpha_composite(Image.fromarray(L[max(0,y0):y1,x0:x1],'RGBA'),(0,max(0,-y0)))
         if head:
-            im,mh,nk,nx=head; k=MH/mh*0.85; hi=im.resize((round(im.width*k),round(im.height*k)),Image.LANCZOS)
+            im,mh,nk,nx=head; k=MH/mh*float(os.environ.get('ESC_CAB',0.80)); hi=im.resize((round(im.width*k),round(im.height*k)),Image.LANCZOS)
             # la nuca del maniquí y el cuello de la cabeza, alineados; la cara hacia la derecha del eje
             cell.alpha_composite(hi,(int(round(c['hx']-x0-nx*k)),int(round(c['hb']-y0-nk*k+2/S))))
         out.append(cell.resize((FW,FH),Image.LANCZOS))
