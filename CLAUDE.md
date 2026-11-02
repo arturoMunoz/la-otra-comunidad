@@ -25,6 +25,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Henar quiere que Claude cuestione las ideas con honestidad, sin halagos.
 - Push solo cuando Henar o Arturo lo pidan («súbelo»). En esta cuenta escriben los dos.
 - Fondos de escena (pedidos a ChatGPT): SIEMPRE en vertical 1024x1536 con la ficha LOC-FONDO de `docs/prompts-videos.md` (camino recto abajo, cielo arriba, sin personajes). Desde el Acto II, además, CONTINUOS dentro de cada acto: cada imagen sigue a la anterior (se adjunta la anterior y se pide que su borde izquierdo continúe el derecho de la otra), para que el paseo hacia atrás se vea como un solo viaje. Entre actos no hace falta. Recordárselo a Arturo al empezar el Acto II. Propuesta para el Acto II: cada sitio en 3 imágenes (cielo solo / paisaje sobre magenta para recortar / suelo con camino) para recuperar las 3 bandas con parallax; se cortan con `HD=3 ESPEJO=1 ALTO=420 tools/fondo.py` y llevan "hd":3,"espejo":true en manifest (el lienzo va a 3x).
+- Personajes y ropa POR CAPAS (decidido 02/11/2026): cuerpo base común + cabeza de cada hobbit + objetos dibujados sobre un maniquí cian. Nada de pegar PNG genéricos encima de cada sprite. Las plantillas y reglas están en `docs/prompts-capas.md`: Claude escribe siempre el prompt concreto de cada objeto nuevo siguiendo esa estructura.
 - Máster del juego (toque de rol/JRPG): solo Arturo. Él también juega, así que lo que haga como Máster tiene que verse en el grupo.
 
 ## Estado (Versión 3, 28/10/2026)
