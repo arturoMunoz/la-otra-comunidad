@@ -38,9 +38,15 @@ for c in cells:
     lab,n=ndimage.label(m); sz=ndimage.sum(m,lab,range(1,n+1)); ys,xs=np.nonzero(lab==np.argmax(sz)+1)
     c['hb']=ys.max()+y0; c['hx']=xs.mean()+x0      # base y centro de la cabeza del cuerpo
 # misma altura y mismo centro en todos los fotogramas de cada fila: la cabeza no baila
+# la cabeza sigue al TORSO en cada fotograma (el cuerpo se balancea a los lados al andar; la cabeza con él)
+_sh=~isMag(_b)&~_cy&~isLine(_b)
+for c in cells:
+    x0=int(c['hx'])-60; t=c['hb']-17
+    ch=np.nonzero(_sh[t+40,x0-40:x0+160])[0]+x0-40; c['torso']=ch.mean()
 for r in set(c['row'] for c in cells):
     F=[c for c in cells if c['row']==r]; hb=int(np.median([c['hb'] for c in F]))
-    for c in F: c['hb']=hb
+    off=np.median([c['hx']-c['torso'] for c in F])
+    for c in F: c['hb']=hb; c['hx']=c['torso']+off
 FW,FH=53,74; S=60/MH  # el maniquí mide 60 px en el juego
 def limpio(a):
     r,g,b=a[...,0],a[...,1],a[...,2]

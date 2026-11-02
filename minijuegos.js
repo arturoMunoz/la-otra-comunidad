@@ -1446,7 +1446,10 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     if(cant) x.drawImage(IM.cantimplora,0,0);
     x.drawImage(IM.mochila,0,0);
     x.drawImage(IM['cab_'+h],0,0);
-    function trozo(a,b){ var c=document.createElement('canvas'); c.width=FW*(b-a); c.height=FH; c.getContext('2d').drawImage(cv,FW*a,0,FW*(b-a),FH,0,0,FW*(b-a),FH); c.complete=true; return c; }
+    /* al andar todo el hobbit (cuerpo y cabeza juntos) sube y baja 1 px: abajo con las piernas abiertas, arriba al cruzarlas */
+    var BOB=[1,0,-1,0,1,0,-1,0];
+    function trozo(a,b){ var c=document.createElement('canvas'); c.width=FW*(b-a); c.height=FH; var g=c.getContext('2d'); g.imageSmoothingEnabled=false;
+      for(var f=a;f<b;f++) g.drawImage(cv,FW*f,0,FW,FH,FW*(f-a),(a===0?BOB[f]:0),FW,FH); c.complete=true; return c; }
     WALK=trozo(0,8); M.andar=Object.assign({},M.andar,{n:8,fw:FW,h:FH,ms:160,vel:0.0344,dx:null}); ANCLA=null;
     ROPAIMG={}; TINTC={};  /* la ropa ya va dibujada en el cuerpo */
     QPOSE={n:4,ms:450,img:trozo(8,12),ropa:{},tintc:{},ancla:null};
