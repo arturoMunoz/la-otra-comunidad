@@ -19,14 +19,15 @@ cy=isCyan(ref)
 # celdas: cada maniquí (componente cian grande) en su fila
 cells=[]
 for ri,gy in enumerate(grounds):
-    top=0 if ri==0 else grounds[ri-1]+3
-    lab,n=ndimage.label(ndimage.binary_dilation(cy[top:gy],iterations=3)); obs=ndimage.find_objects(lab)
+    top=0 if ri==0 else grounds[ri-1]+12
+    fig=~isMag(ref)[top:gy]&~isLine(ref)[top:gy]; fig[-8:]=False
+    lab,n=ndimage.label(ndimage.binary_dilation(fig,iterations=3)); obs=ndimage.find_objects(lab)
     big=sorted([o for o in obs if (o[0].stop-o[0].start)>(gy-top)*0.6],key=lambda o:o[1].start)
     for o in big:
-        m=cy[top:gy][o]; ys,xs=np.nonzero(m); headtop=top+o[0].start
+        m=cy[top:gy][o]; ys,xs=np.nonzero(m); headtop=top+o[0].start+ys.min()
         # cuello: la fila más estrecha en el tercio de arriba, por debajo de la cabeza
         rows=[(m[y].sum(),y) for y in range(int(m.shape[0]*0.12),int(m.shape[0]*0.33))]
-        neck=top+o[0].start+min(rows)[1]
+        neck=headtop+min(rows)[1]-ys.min()
         hx=np.nonzero(cy[headtop:headtop+20, o[1].start:o[1].stop].any(0))[0].mean()+o[1].start
         cells.append(dict(row=ri,ground=gy,headtop=headtop,neck=neck,cx=int(hx),x0=o[1].start,x1=o[1].stop))
 print('celdas',len(cells),[c['row'] for c in cells])
@@ -43,11 +44,11 @@ def cabeza(f):
     a=load(f); cyn=isCyan(a); h=~isMag(a)&~cyn&~isLine(a)
     ys,xs=np.nonzero(cyn); g=ys.max(); top=ys.min()
     lab,n=ndimage.label(h); sz=ndimage.sum(h,lab,range(1,n+1)); k=np.argmax(sz)+1; hm=lab==k
-    hy,hx=np.nonzero(hm); neck_y=hy.max(); 
+    hy,hx=np.nonzero(hm); neck_y=hy.max(); cyan_top=top; 
     mh=g-top  # altura del maniquí de esa imagen (con la cabeza)
     rgba=np.dstack([a,np.where(hm,255,0)]).astype(np.uint8)[hy.min():neck_y+1,hx.min():hx.max()+1]
     face_x=hx.max()-hx.min()
-    return Image.fromarray(rgba,'RGBA'), mh, neck_y-hy.min()
+    return Image.fromarray(rgba,'RGBA'), mh, cyan_top-hy.min()
 def frames(rgba,head=None,orden=None):
     out=[]
     for c in cells:
@@ -55,15 +56,15 @@ def frames(rgba,head=None,orden=None):
         cell=Image.new('RGBA',(x1-x0,y1-y0),(0,0,0,0))
         for L in rgba:
             cell.alpha_composite(Image.fromarray(L[max(0,y0):y1,x0:x1],'RGBA'),(0,max(0,-y0)))
-        if head:
-            im,mh,nk=head; k=MH/mh; hi=im.resize((round(im.width*k),round(im.height*k)),Image.LANCZOS)
-            # la nuca del maniquí y el cuello de la cabeza, alineados; la cara hacia la derecha del eje
-            cell.alpha_composite(hi,(int(c['cx']-x0-hi.width*0.55),int(c['neck']-y0-hi.height+8*k*0+6)))
         for L in (orden or []): cell.alpha_composite(Image.fromarray(L[max(0,y0):y1,x0:x1],'RGBA'),(0,max(0,-y0)))
+        if head:
+            im,mh,nk=head; k=MH/mh*0.85; hi=im.resize((round(im.width*k),round(im.height*k)),Image.LANCZOS)
+            # la nuca del maniquí y el cuello de la cabeza, alineados; la cara hacia la derecha del eje
+            cell.alpha_composite(hi,(int(c['cx']-x0-hi.width*0.55),int(c['headtop']-y0-nk*k*0+ (c['neck']-c['headtop']) - nk*k + 4)))
         out.append(cell.resize((FW,FH),Image.LANCZOS))
     return out
 if __name__=='__main__':
-    body=cuerpo(); capa=capa_objeto('10.png'); pant=capa_objeto('11.png'); moch=capa_objeto('13.png'); cant=capa_objeto('14.png')
+    body=capa_objeto('cuerpo.png'); capa=capa_objeto('10.png'); pant=capa_objeto('11.png'); moch=capa_objeto('13.png'); cant=capa_objeto('14.png')
     rows=[]
     for hf in sys.argv[1:] or ['06.png']:
         fr=frames([capa,body],cabeza(hf),[pant,cant,moch])
