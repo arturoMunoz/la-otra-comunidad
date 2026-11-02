@@ -895,6 +895,58 @@
 "adrian": "assets/pj/capas/cab_adrian.webp",
 "rodri": "assets/pj/capas/cab_rodri.webp",
 "juanpablo": "assets/pj/capas/cab_juanpablo.webp"
-}
+},
+"piel": {
+"arturo": [
+249,
+159,
+68
+],
+"fer": [
+247,
+168,
+81
+],
+"patri": [
+250,
+179,
+81
+],
+"edo": [
+201,
+142,
+67
+],
+"carlos": [
+248,
+180,
+80
+],
+"porru": [
+232,
+155,
+72
+],
+"adrian": [
+240,
+164,
+87
+],
+"rodri": [
+247,
+174,
+97
+],
+"juanpablo": [
+244,
+172,
+70
+]
+},
+"piel_cuerpo": [
+252,
+173,
+121
+]
 }
 }

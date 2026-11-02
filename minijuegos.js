@@ -1433,6 +1433,14 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     for(var i=0;i<p.length;i+=4){ if(!p[i+3]) continue; var s=Math.max(p[i],p[i+1],p[i+2])-Math.min(p[i],p[i+1],p[i+2]); if(s>40) continue; /* lo dorado (broche) no se tiñe */
       var l=(p[i]*.3+p[i+1]*.59+p[i+2]*.11)/255, q=a+b*l; p[i]=Math.min(255,rgb[0]*q); p[i+1]=Math.min(255,rgb[1]*q); p[i+2]=Math.min(255,rgb[2]*q); }
     x.putImageData(d,0,0); return c; }
+  /* la piel del cuerpo (manos, piernas, pies) con el mismo tono que la cara de cada uno */
+  var PC={};
+  function pielCuerpo(h){ if(PC[h]) return PC[h]; var im=IM.cuerpo, t=C.piel&&C.piel[h], b=C.piel_cuerpo; if(!t||!b) return im;
+    var c=document.createElement('canvas'); c.width=im.width; c.height=im.height; var x=c.getContext('2d'); x.drawImage(im,0,0);
+    var d=x.getImageData(0,0,c.width,c.height), p=d.data, k=[t[0]/b[0],t[1]/b[1],t[2]/b[2]];
+    for(var i=0;i<p.length;i+=4){ if(!p[i+3]) continue; var r=p[i],g=p[i+1],bb=p[i+2];
+      if(r>=205&&bb>=0.62*g&&g>0.5*r&&g<0.85*r){ p[i]=Math.min(255,r*k[0]); p[i+1]=Math.min(255,g*k[1]); p[i+2]=Math.min(255,bb*k[2]); } }
+    x.putImageData(d,0,0); return PC[h]=c; }
   function listo(h){ var ks=Object.keys(C.capas).concat(['cab_'+h]); return ks.every(function(k){ return IM[k]&&IM[k].complete&&IM[k].width; }); }
   var firma='', H=null;
   function monta(h){
@@ -1441,7 +1449,7 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
       if(d[0]==='capa') capa=t; else if(d[0]==='pantalon') pant=t; else if(d[0]==='cantimplora') cant=true; });
     var FW=53, FH=74, n=Math.round(IM.cuerpo.width/FW), cv=document.createElement('canvas'); cv.width=FW*n; cv.height=FH; var x=cv.getContext('2d'); x.imageSmoothingEnabled=false;
     if(capa) x.drawImage(tinte(IM.capa,capa,.25,1.1),0,0);
-    x.drawImage(IM.cuerpo,0,0);
+    x.drawImage(pielCuerpo(h),0,0);
     if(pant) x.drawImage(tinte(IM.pantalon,pant,.3,1.25),0,0);
     if(cant) x.drawImage(IM.cantimplora,0,0);
     x.drawImage(IM.mochila,0,0);
