@@ -1460,5 +1460,25 @@
 "video": "assets/entreactos/acto1.mp4",
 "poster": "assets/entreactos/acto1.webp"
 }
+},
+"capas": {
+"capas": {
+"cuerpo": "assets/pj/capas/cuerpo.webp",
+"capa": "assets/pj/capas/capa.webp",
+"pantalon": "assets/pj/capas/pantalon.webp",
+"mochila": "assets/pj/capas/mochila.webp",
+"cantimplora": "assets/pj/capas/cantimplora.webp"
+},
+"cabezas": {
+"arturo": "assets/pj/capas/cab_arturo.webp",
+"fer": "assets/pj/capas/cab_fer.webp",
+"patri": "assets/pj/capas/cab_patri.webp",
+"edo": "assets/pj/capas/cab_edo.webp",
+"carlos": "assets/pj/capas/cab_carlos.webp",
+"porru": "assets/pj/capas/cab_porru.webp",
+"adrian": "assets/pj/capas/cab_adrian.webp",
+"rodri": "assets/pj/capas/cab_rodri.webp",
+"juanpablo": "assets/pj/capas/cab_juanpablo.webp"
+}
 }
 }

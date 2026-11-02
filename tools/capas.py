@@ -33,19 +33,34 @@ for ri,gy in enumerate(grounds):
 print('celdas',len(cells),[c['row'] for c in cells])
 MH=np.median([c['ground']-c['headtop'] for c in cells])
 FW,FH=53,74; S=60/MH  # el maniquí mide 60 px en el juego
+def limpio(a):
+    r,g,b=a[...,0],a[...,1],a[...,2]
+    morado=(r>90)&(b>90)&(g<np.minimum(r,b)-40)      # borde con el magenta del fondo
+    cian=(g>r+25)&(b>r+25)                            # borde con el maniquí
+    return ~morado&~cian
 def capa_objeto(f):
-    a=load(f); it=~isMag(a)&~isCyan(a)&~isLine(a)
+    a=load(f); it=~isMag(a)&~isCyan(a)&~isLine(a)&limpio(a)
+    for gy in grounds: it[gy:gy+14]=False   # la raya del suelo y lo que quede debajo
     return np.dstack([a,np.where(it,255,0)]).astype(np.uint8)
 def cuerpo():
     a=ref; c=isCyan(a); L=(a[...,1]+a[...,2])/2/255.
     piel=np.array([236,180,128.]); col=piel[None,None,:]*np.clip(0.55+0.5*L,0,1.1)[...,None]
     return np.dstack([np.clip(col,0,255),np.where(c,255,0)]).astype(np.uint8)
 def cabeza(f):
-    a=load(f); cyn=isCyan(a); h=~isMag(a)&~cyn&~isLine(a)
+    a=load(f); cyn=isCyan(a); h=~isMag(a)&~cyn&~isLine(a)&limpio(a)
     ys,xs=np.nonzero(cyn); g=ys.max(); top=ys.min()
     lab,n=ndimage.label(h); sz=ndimage.sum(h,lab,range(1,n+1)); k=np.argmax(sz)+1; hm=lab==k
     hy,hx=np.nonzero(hm); neck_y=hy.max(); cyan_top=top; 
     mh=g-top  # altura del maniquí de esa imagen (con la cabeza)
+    # restos verdosos del maniquí dentro de la cabeza: se rellenan con lo que hay alrededor
+    import cv2
+    r,g,b=a[...,0],a[...,1],a[...,2]; teal=hm&(g>r+12)&(b>r+5)
+    a=cv2.inpaint(a.astype(np.uint8),(teal*255).astype(np.uint8),5,cv2.INPAINT_TELEA).astype(int)
+    r,g,b=a[...,0],a[...,1],a[...,2]; L=(0.3*r+0.59*g+0.11*b)
+    verde=hm&(g>=r-2)&~((r>200)&(g>200)&(b>200))   # nada de la cabeza debería ser más verde que rojo (salvo blancos)
+    verde&=~((g>b+40)&(L<120)&(g>r+30))              # menos los ojos verdes
+    a=np.where((verde&(L>=105))[...,None],np.dstack([L*1.18,L*0.92,L*0.70]),a)   # piel
+    a=np.where((verde&(L<105))[...,None],np.dstack([L*1.02,L,L*0.96]),a)          # barba / pelo oscuro: gris
     rgba=np.dstack([a,np.where(hm,255,0)]).astype(np.uint8)[hy.min():neck_y+1,hx.min():hx.max()+1]
     face_x=hx.max()-hx.min()
     return Image.fromarray(rgba,'RGBA'), mh, cyan_top-hy.min()
@@ -74,3 +89,16 @@ if __name__=='__main__':
     o=Image.new('RGBA',(rows[0].width,FH*len(rows)),(255,255,255,255))
     for i,r in enumerate(rows): o.alpha_composite(r,(0,i*FH))
     o.resize((o.width*3,o.height*3),Image.NEAREST).save(D+'prev.png')
+
+def exportar(dest, heads):
+    """tiras de 12 fotogramas (8 andar + 4 quieto) de 53x74 por capa: cuerpo, objetos y cabeza de cada hobbit"""
+    import os; os.makedirs(dest, exist_ok=True)
+    def tira(layers, head=None):
+        fr=frames(layers, head, [])
+        sh=Image.new('RGBA',(FW*len(fr),FH),(0,0,0,0))
+        for i,f in enumerate(fr): sh.alpha_composite(f,(i*FW,0))
+        return sh
+    for nom,f in [('cuerpo','cuerpo.png'),('capa','10.png'),('pantalon','11.png'),('mochila','13.png'),('cantimplora','14.png')]:
+        tira([capa_objeto(f)]).save(f'{dest}/{nom}.webp',lossless=True)
+    vacio=np.zeros((H,W,4),np.uint8)
+    for nom,f in heads.items(): tira([vacio],cabeza(f)).save(f'{dest}/cab_{nom}.webp',lossless=True)

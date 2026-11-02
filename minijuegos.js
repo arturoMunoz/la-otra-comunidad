@@ -514,7 +514,7 @@ function anclas(){
 }
 function dibujaEquipo(ctx,x,y,f,detras){
   var A=anclas(); if(!A) return; var a=A[f%A.length];
-  eqPuesto().forEach(function(k){ var e=EQ[k], im=EQIMG[k]; if(!e||!im||!im.complete||!!e.detras!==detras) return;
+  eqPuesto().forEach(function(k){ var e=EQ[k], im=EQIMG[k]; if(window.CAPA_SKIP&&CAPA_SKIP[k]) return; if(!e||!im||!im.complete||!!e.detras!==detras) return;
     var w=e.w, h=Math.round(im.height*w/im.width);
     ctx.drawImage(im,Math.round(x+a.cx+e.dx),Math.round(y+a.top+e.dy),w,h); });
 }
@@ -1415,4 +1415,45 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     g.style.top=(c.offsetTop-30)+'px'; box.appendChild(g); setTimeout(function(){ g.remove(); },2600); }
   D.addEventListener('click',toca); I.addEventListener('click',toca);
   setInterval(pinta,1500); pinta();
+})();
+
+
+/* ================= HOBBITS POR CAPAS: cuerpo común + cabeza de cada uno + objetos dibujados sobre el mismo maniquí =================
+   Se monta una tira de 12 fotogramas (8 andar + 4 quieto) con lo que llevas puesto y el juego la usa como tu andar y tu quieto.
+   La ropa en gris se tiñe del color de la prenda. Se rehace sola al ponerte o quitarte algo en el Vestuario. */
+(function(){ var C=M.capas; if(!C) return;
+  var IM={}; function img(k,src){ if(IM[k]) return IM[k]; var i=new Image(); i.src=src; IM[k]=i; return i; }
+  Object.keys(C.capas).forEach(function(k){ img(k,C.capas[k]); });
+  Object.keys(C.cabezas).forEach(function(h){ img('cab_'+h,C.cabezas[h]); });
+  /* qué objeto del Vestuario va en qué capa */
+  var CAPA_DE={capa:['capa',[110,82,52]],capa_verde:['capa'],capa_granate:['capa'],capa_gris:['capa'],pant_verde:['pantalon'],pant_azul:['pantalon'],pant_gris:['pantalon'],pant_mostaza:['pantalon'],cantimplora_cinto:['cantimplora']};
+  window.CAPA_SKIP={}; Object.keys(CAPA_DE).forEach(function(k){ CAPA_SKIP[k]=1; });
+  function tinte(im,rgb,a,b){ var c=document.createElement('canvas'); c.width=im.width; c.height=im.height; var x=c.getContext('2d'); x.drawImage(im,0,0);
+    var d=x.getImageData(0,0,c.width,c.height), p=d.data;
+    for(var i=0;i<p.length;i+=4){ if(!p[i+3]) continue; var s=Math.max(p[i],p[i+1],p[i+2])-Math.min(p[i],p[i+1],p[i+2]); if(s>40) continue; /* lo dorado (broche) no se tiñe */
+      var l=(p[i]*.3+p[i+1]*.59+p[i+2]*.11)/255, q=a+b*l; p[i]=Math.min(255,rgb[0]*q); p[i+1]=Math.min(255,rgb[1]*q); p[i+2]=Math.min(255,rgb[2]*q); }
+    x.putImageData(d,0,0); return c; }
+  function listo(h){ var ks=Object.keys(C.capas).concat(['cab_'+h]); return ks.every(function(k){ return IM[k]&&IM[k].complete&&IM[k].width; }); }
+  var firma='', H=null;
+  function monta(h){
+    var puesto=eqPuesto(), capa=null, pant=null, cant=false;
+    puesto.forEach(function(k){ var d=CAPA_DE[k]; if(!d) return; var t=d[1]||(EQ[k]&&EQ[k].tinte);
+      if(d[0]==='capa') capa=t; else if(d[0]==='pantalon') pant=t; else if(d[0]==='cantimplora') cant=true; });
+    var FW=53, FH=74, n=Math.round(IM.cuerpo.width/FW), cv=document.createElement('canvas'); cv.width=FW*n; cv.height=FH; var x=cv.getContext('2d'); x.imageSmoothingEnabled=false;
+    if(capa) x.drawImage(tinte(IM.capa,capa,.25,1.1),0,0);
+    x.drawImage(IM.cuerpo,0,0);
+    if(pant) x.drawImage(tinte(IM.pantalon,pant,.3,1.25),0,0);
+    if(cant) x.drawImage(IM.cantimplora,0,0);
+    x.drawImage(IM.mochila,0,0);
+    x.drawImage(IM['cab_'+h],0,0);
+    function trozo(a,b){ var c=document.createElement('canvas'); c.width=FW*(b-a); c.height=FH; c.getContext('2d').drawImage(cv,FW*a,0,FW*(b-a),FH,0,0,FW*(b-a),FH); c.complete=true; return c; }
+    WALK=trozo(0,8); M.andar=Object.assign({},M.andar,{n:8,fw:FW,h:FH,ms:160,vel:0.0344,dx:null}); ANCLA=null;
+    ROPAIMG={}; TINTC={};  /* la ropa ya va dibujada en el cuerpo */
+    QPOSE={n:4,ms:450,img:trozo(8,12),ropa:{},tintc:{},ancla:null};
+  }
+  function mira(){ var h=me&&me.hobbit; if(!h||!C.cabezas[h]) return; if(!listo(h)) return;
+    var f=h+'|'+eqPuesto().join(','); if(f===firma) return; firma=f; H=h; monta(h); }
+  /* tu hobbit con capas tiene prioridad sobre los dibujos antiguos */
+  var _ua=usaAndar; usaAndar=function(h){ if(C.cabezas[h]){ firma=''; mira(); if(H!==h){ var t=setInterval(function(){ mira(); if(H===h) clearInterval(t); },200); } return; } return _ua.apply(this,arguments); };
+  setInterval(mira,600);
 })();
