@@ -34,6 +34,6 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Libro Rojo: la página de cada tramo se destapa por frases según el avance dentro del tramo.
 - Zurrón: un objeto por sitio alcanzado (`ITEMS`, inventados, sin uso aún).
 - Tiempo real de Madrid con Open-Meteo (lluvia → capucha, noche → farol, ≥26° → sin capa).
-- Sincronizar en iPhone abre el atajo «La Otra Comunidad» (`shortcuts://run-shortcut`), que lee Salud y llama a `loc_subir(p_clave, p_dias)` con líneas `AAAA-MM-DD,pasos`.
+- Sincronizar en iPhone: atajo «La Otra Comunidad» (lo lanza también la automatización al abrir WhatsApp). Desde el 03/11/2026 manda los ÚLTIMOS 7 DÍAS a `loc_pasos_dias(p_clave=nombre, p_dias)` (Buscar muestras de Salud últimos 7 días agrupadas por día → Repetir: fecha yyyy-MM-dd + Obtener Valor → Combinar con nuevas líneas). Android (APK): cada hora manda los últimos 30 días al mismo `loc_pasos_dias`. Cada día sustituye, nunca suma.
 - Solo Arturo tiene dibujos de andar (4 estados: normal, lluvia, noche, calor); el resto camina con el de Arturo hasta tener los suyos.
 - Pendiente: minijuegos (zurrón, quieto bajo el árbol, setas, balsa), recompensas, Android, avisos al cambiar de tramo.
