@@ -1448,11 +1448,11 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     puesto.forEach(function(k){ var d=CAPA_DE[k]; if(!d) return; var t=d[1]||(EQ[k]&&EQ[k].tinte);
       if(d[0]==='capa') capa=t; else if(d[0]==='pantalon') pant=t; else if(d[0]==='cantimplora') cant=true; });
     var FW=53, FH=74, n=Math.round(IM.cuerpo.width/FW), cv=document.createElement('canvas'); cv.width=FW*n; cv.height=FH; var x=cv.getContext('2d'); x.imageSmoothingEnabled=false;
-    if(capa) x.drawImage(tinte(IM.capa,capa,.25,1.1),0,0);
     x.drawImage(pielCuerpo(h),0,0);
     if(pant) x.drawImage(tinte(IM.pantalon,pant,.3,1.25),0,0);
     if(cant) x.drawImage(IM.cantimplora,0,0);
     x.drawImage(IM.mochila,0,0);
+    if(capa) x.drawImage(tinte(IM.capa,capa,.25,1.1),0,0);   /* la capa por encima de la mochila */
     x.drawImage(IM['cab_'+h],0,0);
     /* al andar todo el hobbit (cuerpo y cabeza juntos) sube y baja 1 px: abajo con las piernas abiertas, arriba al cruzarlas */
     var BOB=[1,0,-1,0,1,0,-1,0];
@@ -1467,4 +1467,56 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
   /* tu hobbit con capas tiene prioridad sobre los dibujos antiguos */
   var _ua=usaAndar; usaAndar=function(h){ if(C.cabezas[h]){ firma=''; mira(); if(H!==h){ var t=setInterval(function(){ mira(); if(H===h) clearInterval(t); },200); } return; } return _ua.apply(this,arguments); };
   setInterval(mira,600);
+})();
+
+/* ================= INVENTARIO CON ALMA: cada objeto con su rareza y su historia, el zurrón con nombre propio,
+   y un destello cuando te pones algo ================= */
+(function(){
+  var RAR={comun:['Común','#c8b48a'],raro:['De la Comarca','#7fbf5a'],valioso:['De valor','#5aa0d8'],elfico:['Élfico','#e8c26a']};
+  var OBJ={
+    capa:['comun','Lana basta y un remiendo en el codo. Huele a chimenea y a camino.'],
+    sombrero:['comun','Para el sol de la tarde y para no mojarse la nariz cuando llueve.'],
+    panuelo_sam:['raro','Sam lo dobla siempre en cuatro. «Por si acaso, señor Frodo».'],
+    cazo:['comun','Abollado de tanto discutir con Sam sobre quién lleva qué.'],
+    broche:['raro','Cierra el mapa de Bilbo. Tiene una muesca donde el viejo lo mordía pensando.'],
+    panuelo_rojo:['raro','Bilbo tenía cajones llenos. Este aún conserva su olor a tabaco de pipa.'],
+    cantimplora_cinto:['comun','Agua del pozo de Bolsón Cerrado. Sabe a casa.'],
+    pluma:['valioso','Con ella se escriben las páginas que faltan del Libro de Bilbo.'],
+    gafas:['valioso','Sólo las lleva quien se sabe el libro de memoria.'],
+    tiara:['elfico','Un regalo de los elfos del Bosque Cerrado. Brilla un poco cuando hay estrellas.'],
+    capa_verde:['raro','Teñida con el verde de las Colinas. En la hierba casi no se te ve.'],
+    capa_granate:['valioso','El color de los Gamo de Los Gamos. Te la ganas en Cricava.'],
+    capa_gris:['elfico','Gris como la niebla del río. Dicen que los elfos tejen así.'],
+    pant_verde:['raro','Musgo del Bosque Cerrado en las rodillas, de serie.'],
+    pant_azul:['comun','De faena. El granjero Maggot tenía unos iguales.'],
+    pant_gris:['raro','Para la Calzada y su niebla: no se nota el barro.'],
+    pant_mostaza:['valioso','Llamativos. Para cuando ya no haga falta esconderse.']
+  };
+  var DICHOS=['«No todos los que vagan están perdidos.» Pero llevar algo de abrigo ayuda.',
+    'Un hobbit sin zurrón es un hobbit que vuelve a casa a cenar.',
+    'Lo que llevas puesto cuenta tu viaje mejor que el Libro de Bilbo.',
+    'Ponte lo que quieras: el camino no mira, pero la Comunidad sí.'];
+  var st=document.createElement('style'); st.textContent=
+    '.rpg h3 small{display:block;font:600 .72rem var(--body);color:#a88a5a;letter-spacing:.02em;margin-top:2px;text-shadow:none}'+
+    '.ficha .rar{display:inline-block;font:700 .66rem var(--body);letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:9px;margin:2px 0 6px;color:#1c130a}'+
+    '.ficha i{display:block;color:#d8c8a0;font-size:.86rem;margin:0 0 8px;line-height:1.35}'+
+    '.ficha .vac{color:#bfa676;font-style:italic}'+
+    '.sl[data-rar]{box-shadow:inset 0 0 0 1px #000,inset 0 0 10px var(--rc)}'+
+    '.doll .mid .dest{position:absolute;width:28px;height:28px;pointer-events:none;image-rendering:pixelated;mix-blend-mode:screen;background-size:168px 84px;opacity:0;animation:brilla 1.1s steps(1) forwards}';
+  document.head.appendChild(st);
+  var _v=TABS.vestuario; TABS.vestuario=function(){ var h=_v(), g=eqGanado(), tot=Object.keys(EQ).length, nom=me&&me.nombre||'tu hobbit';
+    h=h.replace('<h3>Vestuario</h3>','<h3>El zurrón de '+nom+'<small>'+g.length+' de '+tot+' objetos encontrados</small></h3>');
+    /* rareza en el borde de cada hueco */
+    h=h.replace(/data-vsel="([a-z_]+)"/g,function(m,k){ var o=OBJ[k]; return o&&g.indexOf(k)>=0?m+' data-rar style="--rc:'+RAR[o[0]][1]+'88"':m; });
+    /* ficha con alma */
+    if(!VSEL) h=h.replace('<p>Toca un hueco o un objeto para verlo.</p>','<p class="vac">'+DICHOS[Math.floor(Date.now()/86400000)%DICHOS.length]+'</p><p>Toca un hueco o un objeto para verlo.</p>');
+    else if(OBJ[VSEL]){ var o=OBJ[VSEL], ok=g.indexOf(VSEL)>=0, r=RAR[o[0]];
+      h=h.replace('<div class="h">'+hNom(huecoDe(VSEL))+'</div>','<span class="rar" style="background:'+r[1]+'">'+r[0]+'</span> <span class="h" style="display:inline">'+hNom(huecoDe(VSEL))+'</span>'+(ok?'<i>'+o[1]+'</i>':'<i>Algo te espera más adelante en el camino…</i>')); }
+    return h; };
+  /* al ponerte algo: un destello dorado sobre el muñeco */
+  document.addEventListener('click',function(e){ var t=e.target.closest&&e.target.closest('[data-poner]'); if(!t||!M.ui||!M.ui.destellos) return;
+    setTimeout(function(){ var mid=document.querySelector('.doll .mid'); if(!mid) return;
+      for(var i=0;i<6;i++){ var d=document.createElement('i'); d.className='dest'; d.style.backgroundImage='url('+M.ui.destellos+')';
+        d.style.left=(25+Math.random()*50)+'%'; d.style.top=(15+Math.random()*60)+'%'; d.style.setProperty('--y',(-28*Math.floor(Math.random()*3))+'px'); d.style.setProperty('--o','.9');
+        d.style.animationDelay=(i*0.09)+'s'; mid.appendChild(d); setTimeout(function(x){return function(){x.remove();};}(d),1500); } },60); },true);
 })();
