@@ -27,6 +27,8 @@ import java.util.concurrent.TimeUnit
 /** Lee los pasos de hoy en Health Connect y los manda al juego (la misma función que el atajo del iPhone). */
 object Pasos {
     const val URL_RPC = "https://egdnytvckttgvybdbvmw.supabase.co/rest/v1/rpc/loc_pasos_hoy"
+    const val URL_DIAS = "https://egdnytvckttgvybdbvmw.supabase.co/rest/v1/rpc/loc_pasos_dias"
+    const val DIAS = 30   // se reenvían los últimos 30 días: aunque no abras la app, no se pierde ninguno
     const val CLAVE = "sb_publishable_1-eGqPkYOPKsW-ZEtUBo7A_16RQQGdK"
     const val JUEGO = "https://la-otra-comunidad.benbarek1903.workers.dev/"
 
@@ -84,6 +86,20 @@ object Pasos {
     }
     suspend fun pasosHC(c: Context): Long = pasosPorApp(c).values.maxOrNull() ?: 0L
 
+    /** Pasos de cada uno de los últimos DIAS días en Health Connect (por día, la app que más pasos tenga; nunca se suman apps). */
+    suspend fun pasosDias(c: Context): List<Pair<LocalDate, Long>> {
+        val hc = HealthConnectClient.getOrCreate(c); val z = ZoneId.of("Europe/Madrid"); val hoy = LocalDate.now(z)
+        val desde = hoy.minusDays((DIAS - 1).toLong()).atStartOfDay(z).toInstant()
+        val porDia = mutableMapOf<LocalDate, MutableMap<String, Long>>(); var token: String? = null
+        do {
+            val r = hc.readRecords(ReadRecordsRequest(StepsRecord::class, TimeRangeFilter.between(desde, Instant.now()), pageToken = token))
+            r.records.forEach { val d = it.startTime.atZone(z).toLocalDate(); val k = it.metadata.dataOrigin.packageName
+                val m = porDia.getOrPut(d) { mutableMapOf() }; m[k] = (m[k] ?: 0L) + it.count }
+            token = r.pageToken
+        } while (token != null)
+        return porDia.map { (d, m) -> d to (m.values.maxOrNull() ?: 0L) }.sortedBy { it.first }
+    }
+
     /** Qué hay en Health Connect: pasos de hoy y de qué apps vienen, y de los últimos 7 días. */
     suspend fun diagnostico(c: Context): String {
         val hc = HealthConnectClient.getOrCreate(c); val z = ZoneId.of("Europe/Madrid")
@@ -104,15 +120,23 @@ object Pasos {
     suspend fun sincroniza(c: Context): String {
         val n = nombre(c); if (n.isBlank()) return "Pon tu nombre primero."
         val pasos = pasosHoy(c)
+        val dias = try { pasosDias(c).toMutableList() } catch (e: Exception) { mutableListOf() }
+        val hoy = LocalDate.now(ZoneId.of("Europe/Madrid"))
+        dias.removeAll { it.first == hoy }; dias.add(hoy to pasos)      // hoy, con el dato más fiable (Health Connect o el sensor)
+        val lineas = dias.joinToString("\n") { it.first.toString() + "," + it.second }
         return withContext(Dispatchers.IO) {
-            val con = URL(URL_RPC).openConnection() as HttpURLConnection
-            con.requestMethod = "POST"; con.doOutput = true; con.connectTimeout = 15000; con.readTimeout = 15000
-            con.setRequestProperty("apikey", CLAVE); con.setRequestProperty("Content-Type", "application/json")
-            con.outputStream.use { it.write(JSONObject().put("p_clave", n).put("p_pasos", pasos.toString()).toString().toByteArray()) }
-            val code = con.responseCode
-            val txt = (if (code < 300) con.inputStream else con.errorStream)?.bufferedReader()?.readText() ?: ""
+            fun post(url: String, body: JSONObject): Pair<Int, String> {
+                val con = URL(url).openConnection() as HttpURLConnection
+                con.requestMethod = "POST"; con.doOutput = true; con.connectTimeout = 15000; con.readTimeout = 15000
+                con.setRequestProperty("apikey", CLAVE); con.setRequestProperty("Content-Type", "application/json")
+                con.outputStream.use { it.write(body.toString().toByteArray()) }
+                val code = con.responseCode
+                return code to ((if (code < 300) con.inputStream else con.errorStream)?.bufferedReader()?.readText() ?: "")
+            }
+            var (code, txt) = post(URL_DIAS, JSONObject().put("p_clave", n).put("p_dias", lineas))
+            if (code == 404) { val r = post(URL_RPC, JSONObject().put("p_clave", n).put("p_pasos", pasos.toString())); code = r.first; txt = r.second }  // aún sin el SQL nuevo
             prefs(c).edit().putLong("ultima", System.currentTimeMillis()).putLong("pasos", pasos).apply()
-            if (code < 300) "%,d pasos de hoy enviados".format(pasos).replace(',', '.')
+            if (code < 300) "%,d pasos de hoy enviados (y los últimos %d días)".format(pasos, dias.size).replace(',', '.')
             else "Error " + code + ": " + (try { JSONObject(txt).optString("message", txt) } catch (e: Exception) { txt })
         }
     }
