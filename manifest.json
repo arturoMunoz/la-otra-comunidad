@@ -64,28 +64,7 @@
 "espejo": true
 }
 ],
-[
-{
-"src": "assets/tramos/t5_0.webp",
-"y": 0,
-"v": 0.08
-},
-{
-"src": "assets/tramos/t5_1.webp",
-"y": 31,
-"v": 0.3
-},
-{
-"src": "assets/tramos/t5_2.webp",
-"y": 85,
-"v": 0.55
-},
-{
-"src": "assets/tramos/t5_3.webp",
-"y": 192,
-"v": 1.0
-}
-],
+[{"src": "assets/tramos/t5v_0.webp", "y": -192, "v": 0.4, "hd": 3, "espejo": true}, {"src": "assets/tramos/t5v_1.webp", "y": 210, "v": 1.0, "hd": 3, "espejo": true}],
 [
 {
 "src": "assets/tramos/t6v_0.webp",
