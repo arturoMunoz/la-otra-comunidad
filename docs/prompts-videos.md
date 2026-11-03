@@ -62,6 +62,8 @@ NO people, NO animals, NO characters at all.
 ```
 Al cortarla: `ALTO=420 python3 tools/fondo.py IMG NOMBRE FILA_PIES`.
 
+OBLIGATORIO (03/11/2026, tras un fondo que salió con estilo de juego de móvil): adjuntar SIEMPRE `tools/fondos/v_colinas.png` y `v_bosque.png` como referencia de estilo y añadir el bloque STYLE LOCK (otoño, luz dorada baja, sombras profundas, mucho detalle; prohibido cielo azul plano, verde chillón y look cartoon).
+
 ## Fondos CONTINUOS (desde el Acto II): un acto = un solo paisaje seguido
 Pedir las imágenes en orden, en el mismo chat de ChatGPT, adjuntando SIEMPRE la anterior. Añadir a la ficha LOC-FONDO v2:
 ```
