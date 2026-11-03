@@ -964,7 +964,7 @@ enter=function(){ if(me&&RECIEN&&!store.get(proKey(),false)){ if(FORJA) FORJA.of
     '.top .rbtn:active img{transform:translateY(2px) scale(.94)}'+
     '.top .rbtn.gira img{animation:gira 1s linear infinite}@keyframes gira{to{transform:rotate(360deg)}}'+
     '.bottom .sync{display:none!important}'+
-    '.menu button:not(.sec){border:0;border-radius:0;background:none;box-shadow:none;border-style:solid;border-width:0 38px;border-image:url("'+U.largo+'") 0 95 fill / 0 38px stretch;padding:15px 0;text-shadow:0 1px 2px #000;image-rendering:pixelated}'+
+    '.menu button:not(.sec){border:0;border-radius:0;background:none;box-shadow:none;border-style:solid;border-width:0 30px;border-image:url("'+U.largo+'") 0 75 fill / 0 30px stretch;padding:15px 0;color:#f6dc9a;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);image-rendering:pixelated}'+
     '.menu button:not(.sec):active{border-image-source:url("'+U.largo_on+'");transform:none}';
   var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
   var ic={mapa:'i_mapa',libro:'i_libro',comunidad:'i_comunidad',zurron:'i_zurron'}, nom={mapa:'Mapa',libro:'Libro de Bilbo',comunidad:'Comunidad',zurron:'Zurrón'};

@@ -737,8 +737,8 @@
 "ui": {
 "redondo": "assets/ui/redondo.webp",
 "redondo_on": "assets/ui/redondo_on.webp",
-"largo": "assets/ui/largo.webp",
-"largo_on": "assets/ui/largo_on.webp",
+"largo": "assets/ui/largo_forja.webp",
+"largo_on": "assets/ui/largo_forja_on.webp",
 "i_mapa": "assets/ui/i_mapa.webp",
 "i_libro": "assets/ui/i_libro.webp",
 "i_comunidad": "assets/ui/i_comunidad.webp",
