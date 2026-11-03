@@ -1534,3 +1534,34 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     '.ficha{background:rgba(28,19,10,.82)!important;border:1px solid #8a6a3a!important;border-radius:8px}'+
     '.mochi .sl[style*="cursor:default"]{opacity:.55}';
   document.head.appendChild(st); })();
+
+/* ================= el Vestuario sin marco de pergamino: el zurrón de cuero ocupa toda la hoja ================= */
+(function(){ var st=document.createElement('style'); st.textContent=
+  '.papiro .sheet.cuero{border:0!important;border-image:none!important;background:#1c130a!important;padding:6px 6px calc(10px + env(safe-area-inset-bottom,0px))!important;border-radius:14px 14px 0 0!important}'+
+  '.sheet.cuero .rpg{border-radius:10px}'+
+  '.sheet.cuero [data-seg]{color:#e8c26a!important;border-color:#8a6a3a!important;background:#2a1c10!important}.sheet.cuero [data-seg][aria-pressed=true],.sheet.cuero [data-seg].on{background:#e8c26a!important;color:#221a0e!important}';
+  document.head.appendChild(st);
+  var _ot=openTab; openTab=function(tab){ var r=_ot.apply(this,arguments); var s=document.getElementById('sheet'); if(s) s.classList.toggle('cuero',tab==='vestuario'); return r; };
+  var _cs=closeSheet; closeSheet=function(){ var s=document.getElementById('sheet'); if(s) s.classList.remove('cuero'); return _cs.apply(this,arguments); };
+})();
+
+/* ================= pasos: al tocar la placa, un pergamino se desenrolla hacia arriba desde ella ================= */
+(function(){ var st=document.createElement('style'); st.textContent=
+  '.pasoZ .pz{transform:none!important;opacity:1!important;transform-origin:50% 100%;clip-path:inset(100% 0 0 0);transition:clip-path .75s cubic-bezier(.3,.9,.3,1)!important;position:relative}'+
+  '.pasoZ.on .pz{clip-path:inset(0 0 0 0)}'+
+  '.pasoZ .pz>*{opacity:0;transform:translateY(12px);transition:opacity .3s ease,transform .4s ease}'+
+  '.pasoZ.on .pz>*{opacity:1;transform:none}'+
+  '.pasoZ.on .pz>*:nth-child(1){transition-delay:.35s}.pasoZ.on .pz>*:nth-child(2){transition-delay:.42s}.pasoZ.on .pz>*:nth-child(3){transition-delay:.49s}'+
+  '.pasoZ.on .pz>*:nth-child(4){transition-delay:.56s}.pasoZ.on .pz>*:nth-child(5){transition-delay:.62s}.pasoZ.on .pz>*:nth-child(6){transition-delay:.68s}'+
+  '.pasoZ.on .pz>*:nth-child(7){transition-delay:.74s}.pasoZ.on .pz>*:nth-child(8){transition-delay:.8s}.pasoZ.on .pz>*:nth-child(9){transition-delay:.86s}'+
+  /* el rodillo del pergamino: sube por delante mientras se desenrolla */
+  '.pasoZ .rodillo{position:absolute;left:4px;right:4px;height:16px;bottom:0;border-radius:8px;background:linear-gradient(#f1dca8,#c9a76a 45%,#8c6a38 55%,#e5cb92);box-shadow:0 3px 6px rgba(0,0,0,.5);transition:bottom .75s cubic-bezier(.3,.9,.3,1);pointer-events:none;z-index:2}'+
+  '.pasoZ.on .rodillo{bottom:calc(100% - 10px)}'+
+  '.pasoZ .pzw{position:relative;display:inline-block}';
+  document.head.appendChild(st);
+  var mo=new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ if(!n.classList||!n.classList.contains('pasoZ')) return;
+    var pz=n.querySelector('.pz'); if(!pz||pz.parentNode.classList.contains('pzw')) return;
+    var w=document.createElement('div'); w.className='pzw'; pz.parentNode.insertBefore(w,pz); w.appendChild(pz);
+    var r=document.createElement('i'); r.className='rodillo'; w.appendChild(r); }); }); });
+  mo.observe(document.getElementById('app'),{childList:true});
+})();
