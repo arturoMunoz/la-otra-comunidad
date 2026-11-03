@@ -771,7 +771,9 @@
 "fondo_menu": "assets/ui/fondo_menu.webp",
 "hoja_menu": "assets/ui/hoja_menu.webp",
 "hueco": "assets/ui/hueco.webp",
-"fondo_zurron": "assets/ui/fondo_zurron.webp"
+"fondo_zurron": "assets/ui/fondo_zurron.webp",
+"pergamino": "assets/ui/pergamino.webp",
+"rodillo": "assets/ui/rodillo.webp"
 },
 "facesN": 9,
 "quietoPJ": {

@@ -1554,13 +1554,15 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
   '.pasoZ.on .pz>*:nth-child(1){transition-delay:.35s}.pasoZ.on .pz>*:nth-child(2){transition-delay:.42s}.pasoZ.on .pz>*:nth-child(3){transition-delay:.49s}'+
   '.pasoZ.on .pz>*:nth-child(4){transition-delay:.56s}.pasoZ.on .pz>*:nth-child(5){transition-delay:.62s}.pasoZ.on .pz>*:nth-child(6){transition-delay:.68s}'+
   '.pasoZ.on .pz>*:nth-child(7){transition-delay:.74s}.pasoZ.on .pz>*:nth-child(8){transition-delay:.8s}.pasoZ.on .pz>*:nth-child(9){transition-delay:.86s}'+
-  '.pasoZ .rodillo{position:absolute;left:-6%;width:112%;bottom:-6px;image-rendering:pixelated;transition:bottom .75s cubic-bezier(.3,.9,.3,1);pointer-events:none;z-index:2}'+
-  '.pasoZ.on .rodillo{bottom:calc(100% - 14px)}'+
+  (M.ui&&M.ui.pergamino?'.pasoZ .pz{border:0!important;border-image:none!important;background:url("'+M.ui.pergamino+'") center/100% 100% no-repeat!important;image-rendering:pixelated;padding:26px 30px 22px!important}':'')+
+  '.pasoZ .rodillo{position:absolute;left:-7%;width:114%;bottom:-8px;image-rendering:pixelated;transition:bottom .75s cubic-bezier(.3,.9,.3,1);pointer-events:none;z-index:2}'+
+  '.pasoZ.on .rodillo{bottom:calc(100% - 12px)}'+'.pasoZ .rodillo.abajo{bottom:-12px!important;transition:none}'+
   '.pasoZ .pzw{position:relative;display:inline-block}';
   document.head.appendChild(st);
   var mo=new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ if(!n.classList||!n.classList.contains('pasoZ')) return;
     var pz=n.querySelector('.pz'); if(!pz||pz.parentNode.classList.contains('pzw')) return;
     var w=document.createElement('div'); w.className='pzw'; pz.parentNode.insertBefore(w,pz); w.appendChild(pz);
-    if(M.ui&&M.ui.rodillo){ var r=document.createElement('img'); r.className='rodillo'; r.src=M.ui.rodillo; r.alt=''; w.appendChild(r); } }); }); });
+    if(M.ui&&M.ui.rodillo){ var r=document.createElement('img'); r.className='rodillo'; r.src=M.ui.rodillo; r.alt=''; w.appendChild(r);
+      var r2=document.createElement('img'); r2.className='rodillo abajo'; r2.src=M.ui.rodillo; r2.alt=''; w.appendChild(r2); } }); }); });
   mo.observe(document.getElementById('app'),{childList:true});
 })();
