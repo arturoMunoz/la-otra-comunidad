@@ -296,6 +296,8 @@ function demoRpc(fn,b){
   if(fn==='loc_comunidad'){ var meN=dm&&dm.nombre;
     return DEMO_PEOPLE.filter(function(p){return p[0]!==meN;}).map(function(p){return {nombre:p[0],hobbit:p[1],pasos_totales:p[2],pasos_hoy:0};})
       .concat(meN?[{nombre:meN,hobbit:FACE_OF[meN],pasos_totales:demoSteps,pasos_hoy:store.get('demoToday',0)}]:[]); }
+  if(fn==='loc_semana'){ var out=[], d0=new Date(); DEMO_PEOPLE.concat(dm?[[dm.nombre]]:[]).forEach(function(p,k){ for(var i=6;i>=0;i--){ var d=new Date(d0); d.setDate(d.getDate()-i);
+      out.push({nombre:p[0],fecha:d.toISOString().slice(0,10),pasos:i===0&&p[0]===(dm&&dm.nombre)?store.get('demoToday',0):Math.round(2500+((k*7919+i*104729)%12000))}); } }); return out; }
   return null;
 }
 
@@ -1826,11 +1828,33 @@ function menuPinta(pant){
     var orden=people.slice().sort(function(a,b){return b.pasos_totales-a.pasos_totales;}), pos=yo?orden.indexOf(yo)+1:0, nx=T[curT+1];
     var z=document.createElement('div'); z.className='pasoZ';
     z.innerHTML='<div class="pz"><span class="eyebrow">Hoy</span><b class="g">'+($('steps')?$('steps').textContent:'0')+'</b><span>pasos · '+($('todayKm')?$('todayKm').textContent:'0,0')+' km</span>'+
-      '<hr><span class="eyebrow">Desde que empezó el viaje</span><b class="m">'+tot.toLocaleString('es-ES')+' pasos</b><span>'+fmt(tot/STEPS_PER_KM)+' km andados</span>'+
+      '<div class="sem" id="pzSem"><small>Cargando la semana…</small></div><hr><span class="eyebrow">Desde que empezó el viaje</span><b class="m">'+tot.toLocaleString('es-ES')+' pasos</b><span>'+fmt(tot/STEPS_PER_KM)+' km andados</span>'+
       (nx?'<span>Faltan '+fmt(Math.max(0,nx.km-km))+' km para '+nx.name+'</span>':'<span>Faltan '+fmt(Math.max(0,TOTAL_KM-km))+' km para Cricava</span>')+
       (pos?'<span>Vas '+pos+'º de '+orden.length+' en la Comunidad</span>':'')+'<small>Toca para cerrar</small></div>';
     z.onclick=function(){ z.classList.remove('on'); setTimeout(function(){ z.remove(); },250); };
-    $('app').appendChild(z); requestAnimationFrame(function(){ z.classList.add('on'); }); };
+    $('app').appendChild(z); requestAnimationFrame(function(){ z.classList.add('on'); })
+    semana(); };
+  /* la semana: tus 7 últimos días (barras) y lo que ha andado cada uno de la Comunidad */
+  function semana(){ var box=$('pzSem'); if(!box) return;
+    var dias=[], hoy=new Date(); for(var i=6;i>=0;i--){ var d=new Date(hoy.getFullYear(),hoy.getMonth(),hoy.getDate()-i);
+      dias.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')); }
+    var LET=['D','L','M','X','J','V','S'], n=function(x){ return Math.round(x).toLocaleString('es-ES'); };
+    rpc('loc_semana').then(function(r){ r=r||[]; if(!$('pzSem')) return;
+      var mio={}, tot={}; r.forEach(function(f){ var p=Number(f.pasos)||0, k=String(f.fecha).slice(0,10); if(dias.indexOf(k)<0) return;
+        tot[f.nombre]=(tot[f.nombre]||0)+p; if(me&&f.nombre===me.nombre) mio[k]=p; });
+      var hoyTxt=$('steps')?Number($('steps').textContent.replace(/\D/g,''))||0:0; if(hoyTxt>(mio[dias[6]]||0)) mio[dias[6]]=hoyTxt;
+      var vals=dias.map(function(k){ return mio[k]||0; }), sum=vals.reduce(function(a,b){return a+b;},0), mx=Math.max.apply(null,vals.concat([1])), best=vals.indexOf(Math.max.apply(null,vals));
+      if(me) tot[me.nombre]=Math.max(tot[me.nombre]||0,sum);
+      var h='<span class="eyebrow">Últimos 7 días</span><b class="m">'+n(sum)+' pasos</b><span>'+fmt(sum/STEPS_PER_KM)+' km · media '+n(sum/7)+' al día</span><div class="barras">';
+      dias.forEach(function(k,i){ var v=vals[i], d=new Date(k+'T12:00:00');
+        h+='<div class="bc'+(i===6?' hoyb':'')+(v&&i===best?' mx':'')+'"><i>'+(v>=1000?fmt(v/1000)+'k':v||'–')+'</i><em style="height:'+Math.max(3,Math.round(v/mx*54))+'px"></em><u>'+(i===6?'Hoy':LET[d.getDay()])+'</u></div>'; });
+      h+='</div>';
+      var rk=Object.keys(tot).sort(function(a,b){ return tot[b]-tot[a]; });
+      if(rk.length>1){ h+='<span class="eyebrow">La Comunidad esta semana</span><ol class="rk">';
+        rk.forEach(function(nm,i){ h+='<li'+(me&&nm===me.nombre?' class="yo"':'')+'><span>'+(i+1)+'. '+nm+'</span><b>'+n(tot[nm])+'</b></li>'; }); h+='</ol>'; }
+      $('pzSem').innerHTML='<hr>'+h;
+    }).catch(function(){ var b=$('pzSem'); if(b) b.innerHTML='<hr><small>La semana aún no está disponible.</small>'; });
+  }
   var st2=document.createElement('style'); st2.textContent=
     '.pasoZ{position:absolute;inset:0;z-index:12;display:flex;align-items:flex-end;justify-content:flex-end;padding:0 12px calc(18px + env(safe-area-inset-bottom,0px));background:rgba(10,8,4,0);transition:background .25s}'+
     '.pasoZ.on{background:rgba(10,8,4,.55)}'+
@@ -1840,7 +1864,17 @@ function menuPinta(pant){
     '.pasoZ .eyebrow{font:700 .7rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:#7a5a32}'+
     '.pasoZ .g{font-family:var(--title);font-size:2.2rem;line-height:1}.pasoZ .m{font-family:var(--title);font-size:1.4rem}'+
     '.pasoZ span{font:600 .9rem var(--body)}.pasoZ hr{width:80%;border:0;border-top:1px solid rgba(43,29,14,.3);margin:8px 0 4px}'+
-    '.pasoZ small{margin-top:6px;font:.72rem var(--body);color:#7a5a32}';
+    '.pasoZ small{margin-top:6px;font:.72rem var(--body);color:#7a5a32}'+
+    '.pasoZ .pz{max-height:calc(100vh - 110px);overflow-y:auto;scrollbar-width:none}.pasoZ .sem{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%}'+
+    '.pasoZ .barras{display:flex;align-items:flex-end;gap:5px;margin:6px 0 2px;height:84px}'+
+    '.pasoZ .bc{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:28px;height:100%}'+
+    '.pasoZ .bc i{font:600 .58rem var(--body);font-style:normal;color:#5a4028;margin-bottom:2px}'+
+    '.pasoZ .bc em{display:block;width:16px;background:#7a5a32;border-radius:2px 2px 0 0;box-shadow:inset -3px 0 rgba(0,0,0,.18)}'+
+    '.pasoZ .bc.mx em{background:#b8862b}.pasoZ .bc.hoyb em{background:#4e6b2e}'+
+    '.pasoZ .bc u{text-decoration:none;font:700 .62rem var(--body);color:#5a4028;margin-top:3px}.pasoZ .bc.hoyb u{color:#2b1d0e}'+
+    '.pasoZ .rk{list-style:none;margin:2px 0 0;padding:0;width:100%;min-width:200px}'+
+    '.pasoZ .rk li{display:flex;justify-content:space-between;font:600 .78rem var(--body);padding:1px 4px;border-bottom:1px dotted rgba(43,29,14,.25)}'+
+    '.pasoZ .rk li.yo{color:#4e6b2e;font-weight:800}.pasoZ .rk li span{font:inherit}';
   document.head.appendChild(st2);
   if(info) new MutationObserver(pinta).observe(info,{childList:true,characterData:true,subtree:true}); pinta();
 })();

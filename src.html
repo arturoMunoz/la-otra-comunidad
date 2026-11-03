@@ -260,6 +260,8 @@ function demoRpc(fn,b){
   if(fn==='loc_comunidad'){ var meN=dm&&dm.nombre;
     return DEMO_PEOPLE.filter(function(p){return p[0]!==meN;}).map(function(p){return {nombre:p[0],hobbit:p[1],pasos_totales:p[2],pasos_hoy:0};})
       .concat(meN?[{nombre:meN,hobbit:FACE_OF[meN],pasos_totales:demoSteps,pasos_hoy:store.get('demoToday',0)}]:[]); }
+  if(fn==='loc_semana'){ var out=[], d0=new Date(); DEMO_PEOPLE.concat(dm?[[dm.nombre]]:[]).forEach(function(p,k){ for(var i=6;i>=0;i--){ var d=new Date(d0); d.setDate(d.getDate()-i);
+      out.push({nombre:p[0],fecha:d.toISOString().slice(0,10),pasos:i===0&&p[0]===(dm&&dm.nombre)?store.get('demoToday',0):Math.round(2500+((k*7919+i*104729)%12000))}); } }); return out; }
   return null;
 }
 
