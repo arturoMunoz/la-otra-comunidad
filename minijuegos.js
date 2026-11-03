@@ -1520,3 +1520,17 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
         d.style.left=(25+Math.random()*50)+'%'; d.style.top=(15+Math.random()*60)+'%'; d.style.setProperty('--y',(-28*Math.floor(Math.random()*3))+'px'); d.style.setProperty('--o','.9');
         d.style.animationDelay=(i*0.09)+'s'; mid.appendChild(d); setTimeout(function(x){return function(){x.remove();};}(d),1500); } },60); },true);
 })();
+
+/* ================= VESTUARIO: dentro del zurrón (fondo de cuero con farol) y huecos de madera con esquinas de latón ================= */
+(function(){ var U=M.ui; if(!U||!U.hueco||!U.fondo_zurron) return;
+  var st=document.createElement('style'); st.textContent=
+    '.rpg{background:url("'+U.fondo_zurron+'") center -110px/100% auto repeat-y,#2a1c10!important;border:0!important;box-shadow:0 4px 14px rgba(0,0,0,.5)!important;border-radius:10px;padding:18px 16px!important}'+
+    '.sl{background:url("'+U.hueco+'") center/100% 100% no-repeat!important;border:0!important;box-shadow:none!important;image-rendering:pixelated}'+
+    '.sl img,.sl svg{width:58%!important;height:58%!important}'+
+    '.sl[data-rar]{box-shadow:none!important;filter:drop-shadow(0 0 5px var(--rc))}'+
+    '.sl[aria-pressed=true]{outline:0!important;filter:drop-shadow(0 0 6px #ffd27a) brightness(1.12)}'+
+    '.sl .lb{color:#d9bb82!important;text-shadow:0 1px 2px #000}'+
+    '.doll .mid{background:radial-gradient(ellipse at 50% 55%,rgba(255,200,110,.22),transparent 62%)!important}'+
+    '.ficha{background:rgba(28,19,10,.82)!important;border:1px solid #8a6a3a!important;border-radius:8px}'+
+    '.mochi .sl[style*="cursor:default"]{opacity:.55}';
+  document.head.appendChild(st); })();
