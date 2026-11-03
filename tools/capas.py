@@ -71,23 +71,26 @@ def cabeza(f):
     import cv2
     r,g,b=a[...,0],a[...,1],a[...,2]; teal=hm&(g>r+12)&(b>r+5)
     a=cv2.inpaint(a.astype(np.uint8),(teal*255).astype(np.uint8),5,cv2.INPAINT_TELEA).astype(int)
+    r,g,b=a[...,0],a[...,1],a[...,2]
+    morado=hm&(r>g)&(b>g+4)&~(b>r)   # reflejo del fondo magenta en el pelo: fuera el tono violeta
+    a[...,2]=np.where(morado,np.minimum(b,(g*0.85).astype(int)),b)
     r,g,b=a[...,0],a[...,1],a[...,2]; L=(0.3*r+0.59*g+0.11*b)
-    verde=hm&(g>=r-2)&~((r>200)&(g>200)&(b>200))   # nada de la cabeza debería ser más verde que rojo (salvo blancos)
+    verde=hm&(g>r+4)&~((r>200)&(g>200)&(b>200))   # nada de la cabeza debería ser más verde que rojo (salvo blancos)
     verde&=~((g>b+40)&(L<120)&(g>r+30))              # menos los ojos verdes
     a=np.where((verde&(L>=105))[...,None],np.dstack([L*1.18,L*0.92,L*0.70]),a)   # piel
     a=np.where((verde&(L<105))[...,None],np.dstack([L*1.02,L,L*0.96]),a)          # barba / pelo oscuro: gris (luego se rellena)
     r,g,b=a[...,0],a[...,1],a[...,2]; L=(0.3*r+0.59*g+0.11*b)
-    resto=hm&(g>r-6)&~(b>g+25)&~((r>200)&(g>200)&(b>200))   # cualquier resto verdoso (barba de Porru…) → gris neutro; ojos azules aparte
+    resto=hm&(g>r+4)&~(b>g+25)&~((r>200)&(g>200)&(b>200))   # cualquier resto verdoso (barba de Porru…) → gris neutro; ojos azules aparte
     import cv2
     # y además lo que antes se pasó a gris (era cian del maniquí): se rellena con los píxeles de alrededor (pelo, barba, piel)
-    gris=hm&(np.abs(r-g)<14)&(np.abs(g-b)<18)&(L>70)&(L<215)
+    gris=hm&(np.abs(r-g)<14)&(b>=r+2)&(L>100)&(L<215)   # solo grises fríos (restos del cian), no el pelo canoso
     a=cv2.inpaint(np.clip(a,0,255).astype(np.uint8),((resto|gris)*255).astype(np.uint8),4,cv2.INPAINT_TELEA).astype(int)
     rgba=np.dstack([a,np.where(hm,255,0)]).astype(np.uint8)[hy.min():neck_y+1,hx.min():hx.max()+1]
     face_x=hx.max()-hx.min()
     ct=ys.min(); cx_=np.nonzero(cyn[ct:ct+8].any(0))[0].mean()   # donde empieza el cuerpo cian, bajo la cabeza
     nx=cx_-hx.min()
     # CUELLO: se estira hacia abajo la franja de piel de la base de la cabeza (los píxeles del propio dibujo)
-    NECK=int(os.environ.get('CUELLO',4))   # px de juego
+    NECK=int(os.environ.get('CUELLO',2))   # px de juego
     G=S*MH/mh*float(os.environ.get('ESC_CAB',0.80))   # px de juego por px de esta imagen
     R=rgba.astype(int); al=R[...,3]>0; rr,gg,bb=R[...,0],R[...,1],R[...,2]
     piel=al&(rr>150)&(rr>gg+15)&(gg>bb+5)
