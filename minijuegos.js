@@ -1537,11 +1537,16 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
 
 /* ================= el Vestuario sin marco de pergamino: el zurrón de cuero ocupa toda la hoja ================= */
 (function(){ var st=document.createElement('style'); st.textContent=
-  '.papiro .sheet.cuero{border:0!important;border-image:none!important;background:#1c130a!important;padding:6px 6px calc(10px + env(safe-area-inset-bottom,0px))!important;border-radius:14px 14px 0 0!important}'+
-  '.sheet.cuero .rpg{border-radius:10px}'+
+  '.papiro .sheet.cuero{top:0!important;max-height:100%!important;height:100%!important;border:0!important;border-image:none!important;border-radius:0!important;filter:none!important;'+
+    'background:url("'+((M.ui&&M.ui.fondo_zurron)||'')+'") center top/100% auto repeat-y,#2a1c10!important;padding:calc(8px + env(safe-area-inset-top,0px)) 10px calc(10px + env(safe-area-inset-bottom,0px))!important}'+
+  '.sheet.cuero .rpg{background:none!important;box-shadow:none!important;padding:0 6px!important;margin-top:calc(26vw)}'+
+  '.sheet.cuero .grab{display:none}'+
+  '.cueroX{display:block;margin:14px auto 4px;background:#e8c26a;color:#221a0e;border:2px solid #120b05;border-radius:8px;padding:10px 18px;font:700 .95rem var(--body);box-shadow:0 3px 0 #000}'+
+
   '.sheet.cuero [data-seg]{color:#e8c26a!important;border-color:#8a6a3a!important;background:#2a1c10!important}.sheet.cuero [data-seg][aria-pressed=true],.sheet.cuero [data-seg].on{background:#e8c26a!important;color:#221a0e!important}';
   document.head.appendChild(st);
-  var _ot=openTab; openTab=function(tab){ var r=_ot.apply(this,arguments); var s=document.getElementById('sheet'); if(s) s.classList.toggle('cuero',tab==='vestuario'); return r; };
+  var _ot=openTab; openTab=function(tab){ var r=_ot.apply(this,arguments); var s=document.getElementById('sheet'); if(s){ s.classList.toggle('cuero',tab==='vestuario');
+      if(tab==='vestuario'&&!s.querySelector('.cueroX')){ var x=document.createElement('button'); x.type='button'; x.className='cueroX'; x.setAttribute('aria-label','Volver al camino'); x.textContent='Volver al camino'; x.onclick=closeSheet; s.appendChild(x); } } return r; };
   var _cs=closeSheet; closeSheet=function(){ var s=document.getElementById('sheet'); if(s) s.classList.remove('cuero'); return _cs.apply(this,arguments); };
 })();
 
