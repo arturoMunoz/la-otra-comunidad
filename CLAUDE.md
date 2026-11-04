@@ -29,7 +29,35 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Personajes y ropa POR CAPAS (decidido 02/11/2026): cuerpo base común + cabeza de cada hobbit + objetos dibujados sobre un maniquí cian. Nada de pegar PNG genéricos encima de cada sprite. Las plantillas y reglas están en `docs/prompts-capas.md`: Claude escribe siempre el prompt concreto de cada objeto nuevo siguiendo esa estructura.
 - Máster del juego (toque de rol/JRPG): solo Arturo. Él también juega, así que lo que haga como Máster tiene que verse en el grupo.
 
-## Estado (Versión 3, 28/10/2026)
+## Cómo se trabaja (para una sesión nueva)
+- Construir: `python3 build.py` (web, con `?v=` en los assets). Prototipo: `python3 build.py --demo-files <scratchpad>/demo/index.html`, copiar `public/assets` a `<scratchpad>/demo/assets` y publicar en el Artifact https://claude.ai/artifact/3QbVGnRiGz3LkGq8Xz2M3U con el mapa `files` (solo hace falta pasar los archivos nuevos o cambiados).
+- Probar: servidor `python3 -m http.server 8766` en la carpeta demo (lanzado en segundo plano) + Playwright; en el prototipo `me` se pone con `localStorage loc.demoMe`, km con `loc.demoSteps`/`loc.km`.
+- Fondos: `ESPEJO=1 Q=84 HD=3 ALTO=420 python3 tools/fondo.py tools/fondos/X.png NOMBRE FILA_PIES` (FILA_PIES ≈ 1380-1415 en las de 1024x1536). Capas en manifest con "hd":3,"espejo":true, y=-192 / y=210.
+- Recortes sobre magenta: con scipy (máscara r,b>150 g<120, componentes, quitar borde rosa). Originales de ChatGPT en `tools/fondos`, `tools/ui`, `tools/mapa`.
+- Subir: `git fetch && git merge origin/main && git push origin main`; mirar el check «Workers Builds: la-otra-comunidad» con `gh api repos/arturoMunoz/la-otra-comunidad/commits/<sha>/check-runs`.
+- Manifest: `json.dumps(d, ensure_ascii=False, indent=0)` para no reformatearlo.
+- Minijuegos nuevos: ChatGPT con `docs/kit-minijuegos.html` (código real + ejemplo jugarArbol); devuelve `jugarNOMBRE(el,cerrar)` + `MINI.NOMBRE={titulo,tramo,jugar}`. Comprobar SIEMPRE el `tramo` (índice 0-based de `T`) y que no use `//`. Pedirle código compacto.
+
+## Estado (04/11/2026)
+- 15 tramos en `T` (data.js). Acto I: índices 0-7, km 0-115 (Cricava). Acto II: 8 La Cerca 115, 9 Bosque Viejo 125, 10 Tornasauce 140, 11 Casa de Tom 150, 12 Las colinas 165, 13 Túmulos 175, 14 Camino del Este y Bree 200 (acaba en 210). `TOTAL_KM=210`, `FIN_ACTO1=115`, `FIN_NOMBRE='Bree'`, `ends` en src.html.
+- Fin de acto: `finActo()` a los 115 → vídeo `verEntreacto(1)` (rótulo «Acto II» con `M.ui.rotulo`); `finActo2()` a los 210 → `verEntreacto(2)` (vídeo aún no hecho).
+- Fondos Acto II: a2_cerca, a2_bosque, a2_sauce, a2_tom, a2_colinas, a2_tumulos, a2_camino + escenas a2_claro (km 133) y a2_bree (km 206). Plan y notas en `docs/acto2.md`.
+- Mapa: `assets/mapa3.webp` (1024x3456, 3 trozos de ChatGPT unidos, original en `tools/mapa/`). `M.mapa.idx=true`: cada sitio de `lugares` lleva el índice de su punto en `ruta`, y `rutaPunto` avanza por el camino pintado. Sin línea de ruta propia (solo lo andado en dorado).
+- Minijuegos: Acto I zurron, arbol, setas, balsa. Acto II sauce (10), cancion (11), niebla (13, los 3 amigos son jugadores reales con `hobbitFoto(h)`). Falta «bosque» (9, el bosque cambia los caminos).
+- Zurrón Acto II: farol_cricava, rama, sauce, lirio, miel, daga, jarra (`M.objetos`).
+- Menú principal con botones de hierro forjado (`largo_forja`). Pergamino de pasos con los últimos 7 días y la semana de la Comunidad (`loc_semana`).
+- Pasos: iPhone atajo (7 días) y APK Android (30 días) → `loc_pasos_dias` (versión tolerante en `supabase/la-otra-comunidad-dias.sql`).
+
+## Pendiente (04/11/2026)
+- Emblemas de los 9 personajes de los bocadillos (Gandalf, vecino, Sam, Gildor, Pippin, Maggot, Merry, Tom, Mantecona): prompt dado a Arturo; al llegar la hoja, recortar y sustituir los SVG de `ICON` en los bocadillos (son dibujos por código, hay que quitarlos).
+- Minijuego «bosque» (tramo 9) con el kit.
+- Vídeo entreacto II → III (Bree → Cima de los Vientos).
+- SQL por ejecutar o confirmar: `supabase/la-otra-comunidad-semana.sql` (loc_semana), `la-otra-comunidad-registrados.sql`.
+- Porru veía el doble de pasos en iPhone (probable iPhone + reloj): filtro «Fuente» en el atajo; sin confirmar.
+- Ropa del Acto II: capa gris élfica y pantalón mostaza (en `OBJ` con km:1e9), falta su km y su dibujo en maniquí.
+- Objetos de cabeza del sistema por capas (tiara, sombrero, etc.).
+
+## Estado antiguo (Versión 3, 28/10/2026)
 - Fase 1: capítulos 1-5, Bolsón Cerrado → Cricava, 115 km, 8 tramos. 1 km = 1.350 pasos.
 - Entrada: entrar / crear cuenta (con hobbit) / recuperar contraseña. Escena a pantalla completa, el hobbit siempre anda; arriba sitio, km y lo que falta; abajo pasos de hoy, Sincronizar y botones Libro Rojo, Comunidad, Zurrón.
 - Libro Rojo: la página de cada tramo se destapa por frases según el avance dentro del tramo.
