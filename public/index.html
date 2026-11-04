@@ -3781,9 +3781,12 @@ function estrellasSync(){
 
 /* ================= OBJETOS DE CABEZA dibujados sobre el maniquí (tools/capas_cabeza.py, 04/11/2026) =================
    w = ancho en px de juego; dx desde el centro de la cabeza; dy desde lo alto del pelo. */
-(function(){ var P={"sombrero":{"w":43,"dx":-23,"dy":-5},"tiara":{"w":32,"dx":-17,"dy":1},"pluma":{"w":24,"dx":-28,"dy":2},"gafas":{"w":33,"dx":-17,"dy":9},"pipa":{"w":15,"dx":7,"dy":22},"sombrero_musgo":{"w":51,"dx":-27,"dy":-7},"sombrero_paja":{"w":51,"dx":-28,"dy":-7},"gorra_gamos":{"w":33,"dx":-19,"dy":-5},"corona_hiedra":{"w":44,"dx":-24,"dy":-4},"pluma_azul":{"w":22,"dx":-26,"dy":-6},"corona_lirios":{"w":46,"dx":-27,"dy":-4},"diadema":{"w":35,"dx":-19,"dy":3}};
+(function(){ var P={"sombrero":{"w":31,"dx":-15,"dy":3},"tiara":{"w":26,"dx":-12,"dy":2},"pluma":{"w":17,"dx":-24,"dy":7},"gafas":{"w":26,"dx":-14,"dy":10},"pipa":{"w":12,"dx":8,"dy":23},"sombrero_musgo":{"w":37,"dx":-18,"dy":1},"sombrero_paja":{"w":37,"dx":-19,"dy":2},"gorra_gamos":{"w":24,"dx":-12,"dy":2},"corona_hiedra":{"w":32,"dx":-16,"dy":4},"pluma_azul":{"w":16,"dx":-23,"dy":0},"corona_lirios":{"w":33,"dx":-18,"dy":3},"diadema":{"w":28,"dx":-14,"dy":4}};
   Object.keys(P).forEach(function(k){ if(!EQ[k]) return; EQ[k].w=P[k].w; EQ[k].dx=P[k].dx; EQ[k].dy=P[k].dy;
-    if(M.equipo&&M.equipo[k]&&!EQIMG[k]){ var i=new Image(); i.src=M.equipo[k]; EQIMG[k]=i; } }); })();
+    /* se reduce UNA vez con suavizado al tamaño del juego (dibujado a 4x, el juego lo pinta sin suavizar y quedaba ruido) */
+    var i=new Image(); i.onload=function(){ var w=P[k].w, h=Math.max(1,Math.round(i.height*w/i.width)), c=document.createElement('canvas'), x;
+      c.width=w; c.height=h; x=c.getContext('2d'); x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high'; x.drawImage(i,0,0,w,h); c.complete=true; EQIMG[k]=c; };
+    if(M.equipo&&M.equipo[k]) i.src=M.equipo[k]; }); })();
 
 
 if('serviceWorker' in navigator && !DEMO && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(function(){}); }
