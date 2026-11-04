@@ -43,7 +43,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Fin de acto: `finActo()` a los 115 → vídeo `verEntreacto(1)` (rótulo «Acto II» con `M.ui.rotulo`); `finActo2()` a los 210 → `verEntreacto(2)` (vídeo aún no hecho).
 - Fondos Acto II: a2_cerca, a2_bosque, a2_sauce, a2_tom, a2_colinas, a2_tumulos, a2_camino + escenas a2_claro (km 133) y a2_bree (km 206). Plan y notas en `docs/acto2.md`.
 - Mapa: `assets/mapa3.webp` (1024x3456, 3 trozos de ChatGPT unidos, original en `tools/mapa/`). `M.mapa.idx=true`: cada sitio de `lugares` lleva el índice de su punto en `ruta`, y `rutaPunto` avanza por el camino pintado. Sin línea de ruta propia (solo lo andado en dorado).
-- Minijuegos: Acto I zurron, arbol, setas, balsa. Acto II sauce (10), cancion (11), niebla (13, los 3 amigos son jugadores reales con `hobbitFoto(h)`). Falta «bosque» (9, el bosque cambia los caminos).
+- Minijuegos: Acto I zurron, arbol, setas, balsa. Acto II sauce (10), cancion (11), niebla (13, los 3 amigos son jugadores reales con `hobbitFoto(h)`). bosque (9, ChatGPT 04/11: rejilla 5x7, los árboles se mueven cada 3 s, una raíz te empuja si estás 2 s quieto; faltan sus 3 imágenes M.mj.bosque_fondo/arbol/claro).
 - Zurrón Acto II: farol_cricava, rama, sauce, lirio, miel, daga, jarra (`M.objetos`).
 - Menú principal con botones de hierro forjado (`largo_forja`). Pergamino de pasos con los últimos 7 días y la semana de la Comunidad (`loc_semana`).
 - Pasos: iPhone atajo (7 días) y APK Android (30 días) → `loc_pasos_dias` (versión tolerante en `supabase/la-otra-comunidad-dias.sql`).
@@ -51,7 +51,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 ## Pendiente (04/11/2026)
 - Emblemas de los 9 personajes: HECHO 04/11 (`assets/emb/`, `manifest.emb`, `embHtml(who,icon)` en src.html; original en `tools/ui/emblemas.png`). Los SVG de `ICON` quedan solo de reserva si aparece un personaje nuevo sin emblema: pedirle el suyo a ChatGPT con el mismo estilo de medallón.
 - Iconos dibujados por código quitados de la UI: clave del atajo (ahora `ui.i_sync`, oculto en Android) y preguntas del libro (`ui.i_libro`).
-- Minijuego «bosque» (tramo 9) con el kit.
+- Imágenes del minijuego «bosque» (bosque_fondo, bosque_arbol, bosque_claro) y sellos de los actos (M.sellos.a1_bronce… a2_oro; hoy no se pinta sello).
 - Vídeo entreacto II → III (Bree → Cima de los Vientos).
 - SQL por ejecutar o confirmar: `supabase/la-otra-comunidad-semana.sql` (loc_semana), `la-otra-comunidad-registrados.sql`.
 - Porru veía el doble de pasos en iPhone (probable iPhone + reloj): filtro «Fuente» en el atajo; sin confirmar.
