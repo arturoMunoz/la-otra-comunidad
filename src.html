@@ -108,6 +108,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 .sheet p{margin:0}
 .bubble{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;background:var(--paper2);border-radius:10px;padding:10px}
 .bubble svg,.bubble img{width:32px;height:32px;object-fit:contain;image-rendering:pixelated}
+.bubble:has(img.emb){grid-template-columns:52px 1fr;align-items:center}
+.bubble img.emb{width:52px;height:52px;image-rendering:auto;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 .bubble b{display:block;font-size:.88rem}
 .mini{font-weight:700;color:var(--moss)}
 .primary{background:var(--moss);color:#fbf6e8;border:0;border-radius:10px;padding:13px;font-size:1rem}
@@ -225,6 +227,10 @@ var M = __MAN__;
 var FACE = {porru:0, adrian:1, carlos:2, fer:3, edo:4, rodri:5, arturo:6, patri:7, juanpablo:8};
 var FACEN = M.facesN||7;
 __DATA__
+/* emblema de cada personaje del libro (hoja de ChatGPT, 04/11/2026); si falta, el icono antiguo */
+function embClave(who){ who=String(who||'').toLowerCase(); var L=[['gandalf','gandalf'],['vecino','vecino'],['gildor','gildor'],['pippin','pippin'],['maggot','maggot'],['merry','merry'],['tom','tom'],['mantecona','mantecona'],['sam','sam']];
+  for(var i=0;i<L.length;i++) if(who.indexOf(L[i][0])>=0) return L[i][1]; return null; }
+function embHtml(who,icon){ var k=embClave(who); if(k&&M.emb&&M.emb[k]) return '<img class="emb" src="'+M.emb[k]+'" alt="">'; return (icon&&ICON[icon])||''; }
 var ends=[5,15,35,55,75,90,110,115,125,140,150,165,175,200,210];
 if(M.papiro){ document.documentElement.style.setProperty('--papiro','url("'+M.papiro+'")'); document.documentElement.classList.add('papiro'); }
 ICON.cayado='<svg viewBox="0 0 28 28"><path d="M9 25L17 6c1-3 5-3 6 0" fill="none" stroke="#7a5426" stroke-width="2.6" stroke-linecap="round"/><path d="M12 18l4 2" stroke="#5f8a32" stroke-width="2"/></svg>';
@@ -704,7 +710,7 @@ function openArrival(i){
   mark(i); var s=T[i];
   openSheet('<span class="eyebrow">Has llegado · Tramo '+(i+1)+' · '+s.cap+'</span><h2>'+s.title+'</h2>'+(typeof iluHtml==='function'?iluHtml(i):'')+
     '<p class="page">'+pageHtml(i)+'</p>'+
-    '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof zMomentoHtml==='function'?zMomentoHtml(i):'')+
+    '<div class="bubble">'+embHtml(s.who,s.icon)+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof zMomentoHtml==='function'?zMomentoHtml(i):'')+
     '<p class="note">✒ El resto de la historia se escribe en el Libro de Bilbo mientras caminas. Al zurrón: <b>'+ITEMS[i].n+'</b>.</p>'+
     miniBtn(i)+
     '<button class="primary" id="shOk" type="button">Seguir andando</button>');
@@ -718,7 +724,7 @@ function openPage(i){
   openSheet('<button class="back" id="bk" type="button">‹ Libro de Bilbo</button><span class="eyebrow">Página '+(i+1)+' · '+s.cap+' · km '+s.km+'–'+ends[i]+'</span><h2>'+s.title+'</h2>'+(typeof iluHtml==='function'?iluHtml(i):'')+
     '<p class="page">'+pageHtml(i)+'</p>'+
     (k<n?'<p class="note">✒ Bilbo sigue escribiendo esta página. Faltan '+fmt(Math.max(0,ends[i]-km))+' km de camino para leerla entera.</p>':'')+
-    '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof pregHtml==='function'?pregHtml(i):'')+miniBtn(i));
+    '<div class="bubble">'+embHtml(s.who,s.icon)+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof pregHtml==='function'?pregHtml(i):'')+miniBtn(i));
   $('bk').onclick=function(){ openTab('libro'); }; bindMini();
 }
 function faceStyle(h,size){ if((FACE[h]||0)>=FACEN) return 'background:#5a7a3a;border-radius:50%'; return 'background-image:url('+M.faces+');background-size:'+(size*FACEN)+'px '+size+'px;background-position:-'+((FACE[h]||0)*size)+'px 0'; }
@@ -726,8 +732,8 @@ var TABS={
   libro:function(){return '<h2>Libro de Bilbo</h2><p class="note">Cada tramo escribe su página mientras lo recorres.</p><ol class="list">'+T.map(function(s,i){var o=i<=reached, k=leidas(i), n=frases(i).length;return '<li class="'+(o?'':'locked')+'"><span class="n">'+(i+1)+'</span><span class="t">'+(o?'<button type="button" data-page="'+i+'">'+s.title+'</button>':'Página en blanco')+'</span><span class="k">'+(o?(k<n?'escribiéndose':'completa'):'km '+s.km)+'</span></li>';}).join('')+'</ol>';},
   comunidad:function(){var l=people.slice().sort(function(a,b){return b.pasos_totales-a.pasos_totales;});
     return '<h2>La Comunidad</h2><ol class="list people">'+l.map(function(p){var mine=me&&p.nombre===me.nombre, k=mine?km:Math.min(TOTAL_KM,Number(p.pasos_totales)/STEPS_PER_KM);return '<li class="'+(mine?'me':'')+'"><span class="face" style="'+faceStyle(p.hobbit,36)+'"></span><span class="t">'+p.nombre+'</span><span class="k">'+fmt(k)+' km<br>'+T[tramoAt(k)].name+'</span></li>';}).join('')+'</ol>'+
-    '<div class="bubble">'+ICON.balsa+'<div><b>Tu clave del atajo</b><i>Solo hace falta una vez, al instalar el atajo del iPhone. No se la pases a nadie.</i></div></div>'+
-    '<button class="ghost" type="button" id="copyKey">Copiar mi clave del atajo</button>'+
+    (window.LocAndroid?'':'<div class="bubble">'+(M.ui&&M.ui.i_sync?'<img src="'+M.ui.i_sync+'" alt="">':'<span></span>')+'<div><b>Tu clave del atajo</b><i>Solo para instalar el atajo del iPhone, una vez. No se la pases a nadie.</i></div></div>'+
+    '<button class="ghost" type="button" id="copyKey">Copiar mi clave del atajo</button>')+
     '<button class="ghost" type="button" id="logout">Salir ('+(me?me.nombre:'')+')</button>';},
   zurron:function(){var got=ITEMS.filter(function(_,i){return i<=reached;}).length;
     return '<h2>Zurrón</h2><p class="note">'+got+' de '+ITEMS.length+' objetos del camino. Cada sitio nuevo te deja uno.</p><div class="bag">'+ITEMS.map(function(it,i){var o=i<=reached;return '<div class="item'+(o?'':' no')+'"><div class="box">'+objIcon(it.i)+'</div>'+(o?it.n:'¿?')+'</div>';}).join('')+'</div>';}

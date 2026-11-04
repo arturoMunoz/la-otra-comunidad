@@ -142,7 +142,7 @@ function jugarZurron(el,cerrar){
       el.innerHTML='<div class="hd"><h2>Hacer el zurrón</h2><button class="x" type="button" aria-label="Cerrar">×</button></div>'+
         '<div class="end"><div class="stars" aria-label="'+st+' de 3 estrellas">'+mjStars(st)+'</div><p><b>'+pts+' puntos.</b> '+frase+'</p>'+
         (packed.length?'<div class="got">'+packed.map(mjIcon).join('')+'</div>':'')+
-        '<p class="note">Mejor resultado: '+mjStars(mjBest('zurron'))+'. Lo que da cada estrella está por decidir.</p>'+
+        premiosHtml('zurron')+
         '<div class="row2"><button class="ghost" type="button" id="mjR">Otra vez</button><button class="go" type="button" id="mjOk">Seguir andando</button></div></div>';
       el.querySelector('.x').onclick=cerrar; el.querySelector('#mjOk').onclick=cerrar; el.querySelector('#mjR').onclick=jugar;
     }
@@ -190,7 +190,7 @@ function mjIntro(el,id,titulo,html,go,cerrar){
 function mjFin(el,id,titulo,st,texto,otra,cerrar){
   mjSaveBest(id,st);
   el.innerHTML=mjCabecera(titulo)+'<div class="end"><div class="stars" aria-label="'+st+' de 3 estrellas">'+mjStars(st)+'</div><p>'+texto+'</p>'+
-    '<p class="note">Mejor resultado: '+mjStars(mjBest(id))+'. Lo que da cada estrella está por decidir.</p>'+
+    premiosHtml(id)+
     '<div class="row2"><button class="ghost" type="button" id="mjR">Otra vez</button><button class="go" type="button" id="mjOk">Seguir andando</button></div></div>';
   el.querySelector('.x').onclick=cerrar; el.querySelector('#mjOk').onclick=cerrar; el.querySelector('#mjR').onclick=otra;
 }
@@ -663,9 +663,9 @@ var PREG=[
 function pregEstado(){ return store.get('preguntas',{}); }
 function pregHtml(i){
   var P=PREG[i]; if(!P) return '';
-  if(leidas(i)<frases(i).length) return '<div class="bubble">'+ICON.libro+'<div><b>Pregunta de esta página</b><i>Se abre cuando Bilbo termine de escribirla. Lee la página entera y contesta.</i></div></div>';
+  if(leidas(i)<frases(i).length) return '<div class="bubble">'+(M.ui&&M.ui.i_libro?'<img src="'+M.ui.i_libro+'" alt="">':'<span></span>')+'<div><b>Pregunta de esta página</b><i>Se abre cuando Bilbo termine de escribirla. Lee la página entera y contesta.</i></div></div>';
   var e=pregEstado(), r=e[i];
-  if(r!=null) return '<div class="bubble">'+ICON.libro+'<div><b>'+(r===P.ok?'✔ Acertaste':'✘ Fallaste')+'</b><i>'+P.q+' '+P.o[P.ok]+'.</i></div></div>';
+  if(r!=null) return '<div class="bubble">'+(M.ui&&M.ui.i_libro?'<img src="'+M.ui.i_libro+'" alt="">':'<span></span>')+'<div><b>'+(r===P.ok?'✔ Acertaste':'✘ Fallaste')+'</b><i>'+P.q+' '+P.o[P.ok]+'.</i></div></div>';
   return '<div class="preg"><b>'+P.q+'</b>'+[[0,1,2],[1,0,2],[2,1,0],[1,2,0],[0,2,1],[2,0,1],[1,0,2],[2,1,0]][i%8].map(function(j){return '<button type="button" class="opt" data-preg="'+i+'" data-r="'+j+'">'+P.o[j]+'</button>';}).join('')+'<span class="note">Solo hay un intento.</span></div>';
 }
 function pregAciertos(){ var e=pregEstado(); return PREG.filter(function(p,i){return e[i]===p.ok;}).length; }
@@ -689,7 +689,7 @@ function iluHtml(i){ return (M.libro&&M.libro[i])?'<img class="ilu" src="'+M.lib
   '@keyframes dlgIn{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}'+
   '.dlg .who{position:absolute;left:14px;top:-2px;transform:translateY(-100%);display:flex;align-items:center;gap:6px;background:#2b1d0e;color:#f3e2b4;'+
     'font-family:var(--title);font-weight:700;font-size:.9rem;padding:4px 10px 3px 6px;clip-path:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% 100%,0 100%)}'+
-  '.dlg .who svg,.dlg .who img{width:22px;height:22px;image-rendering:pixelated}'+
+  '.dlg .who svg,.dlg .who img{width:22px;height:22px;image-rendering:pixelated}'+'.dlg .who img.emb{width:34px;height:34px;margin:-8px 0 -8px -6px;image-rendering:auto}'+
   '.dlg p{margin:0;font-size:1.05rem;line-height:1.4;min-height:2.8em;white-space:pre-wrap}'+
   '.dlg .nx{position:absolute;right:14px;bottom:6px;font-size:.85rem;animation:dlgB .7s steps(2) infinite}'+
   '@keyframes dlgB{50%{transform:translateY(3px);opacity:.35}}'+
@@ -716,7 +716,7 @@ function dialogo(lineas,alAcabar){
   var k=0, pos=0, timer=null, full='';
   function pinta(){
     var L=lineas[k]; full=L.t; pos=0;
-    box.innerHTML=(L.who?'<div class="who">'+(L.icon&&ICON[L.icon]?ICON[L.icon]:'')+L.who+'</div>':'')+'<p></p><span class="pg">'+(lineas.length>1?(k+1)+'/'+lineas.length:'')+'</span><span class="nx" hidden>▼</span>';
+    box.innerHTML=(L.who?'<div class="who">'+embHtml(L.who,L.icon)+L.who+'</div>':'')+'<p></p><span class="pg">'+(lineas.length>1?(k+1)+'/'+lineas.length:'')+'</span><span class="nx" hidden>▼</span>';
     var p=box.querySelector('p'); clearInterval(timer);
     timer=setInterval(function(){ pos++; p.textContent=full.slice(0,pos); if(pos%3===1&&full[pos-1]!==' ') blip();
       if(pos>=full.length){ clearInterval(timer); timer=null; box.querySelector('.nx').hidden=false; } },26);
@@ -807,7 +807,7 @@ eqGanado=function(){ var g=_eqG(); Object.keys(EQ).forEach(function(k){ var e=EQ
 function eqIcon(k){ var e=EQ[k]; if(M.ropaIco&&M.ropaIco[k]) return '<img src="'+M.ropaIco[k]+'" alt="">'; if(e&&e.tinte){ var c='rgb('+e.tinte.join(',')+')';
     return e.hueco==='piernas'?'<svg viewBox="0 0 20 20" width="70%" height="70%"><path d="M5 2h10l1 16h-5l-1-9-1 9H4z" fill="'+c+'" stroke="#2b1d0e" stroke-width="1.2"/></svg>'
       :'<svg viewBox="0 0 20 20" width="70%" height="70%"><path d="M8 2h4l5 16H3z" fill="'+c+'" stroke="#2b1d0e" stroke-width="1.2"/><circle cx="10" cy="3" r="1.6" fill="#d9b44a" stroke="#2b1d0e" stroke-width=".6"/></svg>'; }
-  return '<img src="'+M.equipo[k]+'" alt="">'; }
+  return M.equipo&&M.equipo[k]?'<img src="'+M.equipo[k]+'" alt="">':'<b style="font-size:1.5rem;color:#6a4f2c">?</b>'; }
 var ROPAIMG={}, TINTC={};
 (function(){ if(!M.ropa) return; Object.keys(M.ropa).forEach(function(k){ if(typeof M.ropa[k]!=='string') return; var i=new Image(); i.src=M.ropa[k]; ROPAIMG[k]=i; }); })();
 function tinto(capa,rgb,a,b){ var key=capa+rgb.join(','); if(TINTC[key]) return TINTC[key]; var im=ROPAIMG[capa]; if(!im||!im.complete||!im.width) return null;
@@ -1536,7 +1536,29 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     pant_verde:['raro','Musgo del Bosque Cerrado en las rodillas, de serie.'],
     pant_azul:['comun','De faena. El granjero Maggot tenía unos iguales.'],
     pant_gris:['raro','Para la Calzada y su niebla: no se nota el barro.'],
-    pant_mostaza:['valioso','Llamativos. Para cuando ya no haga falta esconderse.']
+    pant_mostaza:['valioso','Amarillos como las botas del que cantaba junto al río. Imposible pasar desapercibido.'],
+    llave:['comun','La puerta redonda quedó cerrada a tus espaldas antes del amanecer. Pesa poco, pero cuesta llevarla.'],
+    pant_pardo:['comun','Pardos como la tierra de Hobbiton. Para salir de noche sin llamar la atención.'],
+    pipa:['valioso','Brezo de la Comarca y un pellizco de hoja de Valle Largo para la primera parada.'],
+    bellota:['comun','Cayó del árbol bajo el que te escondiste mientras algo husmeaba en el camino.'],
+    capa_hiedra:['raro','Verde de seto y de hiedra. Tumbado en la cuneta, no eres más que otra mata.'],
+    sombrero_musgo:['valioso','Bajo el ala no se te ve la cara desde el camino. Ni con buen olfato.'],
+    seta:['comun','La más grande de los campos del granjero Maggot. Mejor no preguntar cómo llegó a tu bolsillo.'],
+    pant_pana:['raro','Pana gruesa de granja. Aguanta zarzas, barro y algún mordisco de perro.'],
+    sombrero_paja:['valioso','Paja de la Ciénaga, ala ancha. Al granjero ya no le robas setas: ahora te las regala.'],
+    pertiga:['comun','Con ella se empuja la balsadera de Gamosto de una orilla a otra del Brandivino.'],
+    capa_rio:['raro','Azul de río a la luz de la luna. En Los Gamos todo el mundo sabe de barcas.'],
+    gorra_gamos:['valioso','Gorra de barquero de Los Gamos. Para la Comarca, cosa de raros: allí nadie se sube a un bote.'],
+    pina:['comun','Del Bosque Viejo. Juras que la rama se movió para dejarla caer encima de ti.'],
+    capa_corteza:['raro','Del color de la corteza. Quizá así los árboles no se fijen tanto en ti.'],
+    corona_hiedra:['valioso','Hiedra del Bosque Viejo trenzada en corona. Ni se te ocurra decir en voz alta que la arrancaste.'],
+    yesca:['comun','Con esto Sam intentó hacer fuego junto al sauce. El árbol no se lo tomó nada bien.'],
+    pant_sauce:['raro','Verde pálido de hoja de sauce. Mejor no echarse la siesta con ellos puestos.'],
+    pluma_azul:['valioso','Azul como la del sombrero de quien llegó cantando por la orilla del Tornasauce.'],
+    nata:['comun','Nata amarilla, pan blanco y miel: así se cenaba en la casa de la colina.'],
+    corona_lirios:['elfico','Lirios del agua del Tornasauce, frescos aunque pasen los días. Un regalo de la casa de la colina.'],
+    moneda:['comun','Del tesoro del túmulo. Lo dejaron sobre la hierba para que fuera de quien lo encontrara.'],
+    diadema:['elfico','Oro antiguo de los túmulos. Al despertar en la piedra fría, la llevabas puesta sin saber por qué.']
   };
   var DICHOS=['«No todos los que vagan están perdidos.» Pero llevar algo de abrigo ayuda.',
     'Un hobbit sin zurrón es un hobbit que vuelve a casa a cenar.',
@@ -1941,445 +1963,474 @@ Si falta alguna imagen, aparece un hueco gris.
 
 
 function jugarCancion(el,cerrar){
-  var ID='cancion', TIT='Seguir la canción';
-  var PASO=60/112, VIAJE=1.5, VENTANA=.21;
+  var ID='cancion',TIT='Seguir la canción',PASO=60/126,VIAJE=1.1,VENTANA=.16,COLA=.34;
+  var tipos='SSSSSSSSSSS'+'SDSSDSDDS'+'SSDLSLDSLDLSLDSLDLSS';
+  var frec=[392,493.88,587.33,783.99],col=['#649f45','#c04b43','#dbb44d','#4a93bd'],MAX=56,FIN=VIAJE+.8+39*PASO+.85;
 
-  var patron=[
-    0,1,2,1,0,1,2,2,
-    1,1,2,1,0,0,1,2,
-    2,1,0,1,2,2,1,0,
-    0,1,2,1,2,1,0,0,
-    0,1,2,2,1,2,1,0,
-    2,1,0,1,2,1,0,2
-  ];
-
-  var tonoCarril=[392,493.88,587.33];
-
-  /*
-  IMÁGENES NECESARIAS:
-
-  M.mj.cancion_fondo
-  Bosque otoñal con sendero, formato vertical.
-  Sin personajes ni textos.
-
-  M.mj.cancion_nota
-  Nota musical dorada, sprite cuadrado.
-  Fondo transparente.
-
-  Si falta una imagen aparece un rectángulo gris.
-  La melodía es original, generada con Web Audio.
-  */
-
-  function imagen(k){
-    return mjImg(k,
-      '<div style="width:100%;height:100%;background:#777;border:2px solid #555"></div>'
-    );
+  function nota(){
+    return mjImg('cancion_nota','<div style="width:100%;height:100%;background:#777;border:2px solid #555"></div>');
   }
 
   function intro(){
+    var n='<span style="display:inline-block;width:24px;height:24px">'+nota()+'</span>';
     mjIntro(el,ID,TIT,
-      '<p>Entre los árboles suena una canción alegre. Cada nota parece marcar el camino.</p>',
-      empezar,cerrar
-    );
+      '<p>Tom canta en su casa junto al Tornasauce y su alegre canción llena el aire.</p>'+
+      '<div class="ex" style="justify-content:space-around;gap:4px">'+
+      '<div>'+n+' Toca</div>'+
+      '<div>'+n+n+' A la vez</div>'+
+      '<div>'+n+'<span style="color:#bd9131">╱</span> Arrastra</div></div>',
+      empezar,cerrar);
   }
 
   function empezar(){
     if(el._stop) el._stop();
 
-    el.innerHTML=
-      mjCabecera(TIT,
-        '<div class="stat"><span id="canT">28 s</span></div>'
-      )+
+    el.innerHTML=mjCabecera(TIT,'<div class="stat"><span id="canT">22 s</span></div>')+
+      '<style>'+
+      '@keyframes canSube{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-42px)}}'+
+      '#canF .canPop{position:absolute;top:calc(77% - 44px);z-index:8;pointer-events:none;font:800 12px var(--body);white-space:nowrap;text-shadow:0 2px 3px #111;animation:canSube .65s ease-out forwards}'+
+      '</style>'+
+      '<div class="field" id="canF" style="background:#777;touch-action:none;user-select:none;-webkit-user-select:none">'+
+      '<div style="position:absolute;inset:0;pointer-events:none">'+mjImg('cancion_fondo','<div style="width:100%;height:100%;background:#777"></div>')+'</div>'+
+      '<div style="position:absolute;inset:0;background:rgba(15,21,15,.52);pointer-events:none"></div>'+
+      '<div id="canCarriles" style="position:absolute;inset:0;display:flex;pointer-events:none"></div>'+
+      '<div style="position:absolute;left:0;right:0;top:77%;height:5px;background:#f4d37e;box-shadow:0 0 9px #e2a54a;z-index:2;pointer-events:none"></div>'+
+      '<div id="canNotas" style="position:absolute;inset:0;z-index:3;pointer-events:none"></div>'+
+      '<div id="canHilo" style="position:absolute;height:6px;border-radius:8px;transform-origin:left center;z-index:5;pointer-events:none;display:none;box-shadow:0 0 12px #f8d78a"></div>'+
+      '<div id="canBotones" style="position:absolute;inset:0;z-index:6;pointer-events:none"></div>'+
+      '<div id="canCuenta" style="position:absolute;inset:0;display:grid;place-items:center;z-index:7;pointer-events:none;font:800 clamp(65px,22vw,105px) var(--title);color:#f5df9f;text-shadow:0 4px 3px #26180a,0 0 25px #dfaa48">3</div>'+
+      '<div class="meter" style="z-index:9;pointer-events:none"><span id="canP">Puntos 0 / 56 · Racha 0</span><div class="b"><i id="canB" style="background:#e2a54a"></i></div></div></div>';
 
-      '<div class="field" id="canF" style="background:#777;touch-action:manipulation">'+
-
-        '<div style="position:absolute;inset:0;pointer-events:none">'+
-          imagen('cancion_fondo')+
-        '</div>'+
-
-        '<div style="position:absolute;inset:0;background:rgba(18,24,16,.44);pointer-events:none"></div>'+
-
-        '<div id="canCarriles" style="position:absolute;inset:0;display:flex;pointer-events:none">'+
-          '<div style="width:33.333%;border-right:2px solid rgba(246,237,214,.26)"></div>'+
-          '<div style="width:33.334%;border-right:2px solid rgba(246,237,214,.26)"></div>'+
-          '<div style="width:33.333%"></div>'+
-        '</div>'+
-
-        '<div style="position:absolute;left:0;right:0;top:77%;height:6px;background:#f2d27a;box-shadow:0 0 10px #e2a54a;pointer-events:none;z-index:2"></div>'+
-
-        '<div id="canNotas" style="position:absolute;inset:0;pointer-events:none;z-index:3"></div>'+
-
-        '<div id="canToques" style="position:absolute;inset:0;display:flex;z-index:4"></div>'+
-
-        '<div class="meter" style="pointer-events:none">'+
-          '<span id="canS">Aciertos 0 / '+patron.length+'</span>'+
-          '<div class="b"><i id="canB" style="background:#e2a54a"></i></div>'+
-        '</div>'+
-
-      '</div>';
-
-    var caja=el.querySelector('#canNotas');
-    var zona=el.querySelector('#canToques');
-    var reloj=el.querySelector('#canT');
-    var puntos=el.querySelector('#canS');
-    var barra=el.querySelector('#canB');
-
-    var notas=[];
-    var teclas=[];
-    var aciertos=0;
-    var combo=0;
-    var mejorCombo=0;
-
-    var inicio=performance.now();
-    var raf=0;
-    var terminado=false;
-    var audio=null;
-
-    var FIN=VIAJE+(patron.length-1)*PASO+.7;
-
-    /*
-    Audio sintetizado, sin archivos externos.
-    Se activa desde el botón Empezar.
-    */
+    var F=el.querySelector('#canF'),capa=el.querySelector('#canNotas');
+    var carriles=el.querySelector('#canCarriles'),botones=el.querySelector('#canBotones');
+    var reloj=el.querySelector('#canT'),marcador=el.querySelector('#canP');
+    var barra=el.querySelector('#canB'),cuenta=el.querySelector('#canCuenta'),hilo=el.querySelector('#canHilo');
+    var eventos=[],dedos={},brillos=[],puntos=0,racha=0;
+    var inicio=performance.now()+3000,raf=0,cerrado=false,audio=null,i;
 
     try{
-      var Audio=window.AudioContext||
-                window.webkitAudioContext;
-
-      if(Audio){
-        audio=new Audio();
-        if(audio.state==='suspended'){
-          audio.resume();
-        }
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(AC){
+        audio=new AC();
+        if(audio.state==='suspended') audio.resume();
       }
-    }catch(ex){
-      audio=null;
-    }
+    }catch(e){audio=null;}
 
-    function sonar(frecuencia,duracion,volumen,cuando){
-      if(!audio) return;
-
+    function tono(f,duracion,vol,espera,final){
+      if(!audio||audio.state==='closed') return;
       try{
-        var t=typeof cuando==='number'?
-          cuando:audio.currentTime+.005;
-
-        t=Math.max(t,audio.currentTime+.005);
-
-        var os=audio.createOscillator();
-        var g=audio.createGain();
-
-        os.type='triangle';
-
-        os.frequency.setValueAtTime(frecuencia,t);
-
+        var t=audio.currentTime+Math.max(.005,espera||0);
+        var o=audio.createOscillator(),g=audio.createGain();
+        o.type='triangle';
+        o.frequency.setValueAtTime(f,t);
+        if(final) o.frequency.linearRampToValueAtTime(final,t+duracion);
         g.gain.setValueAtTime(.0001,t);
-
-        g.gain.exponentialRampToValueAtTime(
-          volumen,t+.018
-        );
-
-        g.gain.exponentialRampToValueAtTime(
-          .0001,t+duracion
-        );
-
-        os.connect(g);
+        g.gain.exponentialRampToValueAtTime(vol,t+.014);
+        g.gain.exponentialRampToValueAtTime(.0001,t+duracion);
+        o.connect(g);
         g.connect(audio.destination);
-
-        os.start(t);
-        os.stop(t+duracion+.025);
-
-      }catch(ex){}
+        o.start(t);
+        o.stop(t+duracion+.025);
+      }catch(e){}
     }
 
-    /*
-    Se busca la nota pendiente más cercana
-    a la línea de impacto en el carril pulsado.
-    */
-
-    function tocar(carril){
-      if(terminado) return;
-
-      var t=(performance.now()-inicio)/1000;
-
-      var elegido=null;
-      var distancia=VENTANA+.001;
-      var i,n,d;
-
-      for(i=0;i<notas.length;i++){
-        n=notas[i];
-
-        if(n.carril!==carril||n.estado){
-          continue;
-        }
-
-        d=Math.abs(n.t-t);
-
-        if(d<=VENTANA&&d<distancia){
-          elegido=n;
-          distancia=d;
-        }
-      }
-
-      if(elegido){
-        elegido.estado=1;
-        elegido.el.style.display='none';
-
-        aciertos++;
-        combo++;
-
-        mejorCombo=Math.max(mejorCombo,combo);
-
-        sonar(tonoCarril[carril]*2,.105,.038);
-
-        if(typeof blip==='function'){
-          blip();
-        }
-
-      }else{
-        combo=0;
-      }
-
-      teclas[carril].brillo=t+.12;
-
-      puntos.textContent=
-        'Aciertos '+aciertos+' / '+notas.length;
-
-      barra.style.width=
-        (100*aciertos/notas.length)+'%';
+    function pieza(c,tam){
+      var e=document.createElement('div');
+      e.style.cssText='position:absolute;width:'+tam+'px;height:'+tam+'px;transform:translate(-50%,-50%);display:none';
+      e.innerHTML=
+        '<div style="position:absolute;inset:0;border:4px solid '+col[c]+';border-radius:50%;background:'+col[c]+'77;box-shadow:0 0 9px '+col[c]+'"></div>'+
+        '<div style="position:absolute;inset:5px">'+nota()+'</div>';
+      capa.appendChild(e);
+      return e;
     }
 
-    /*
-    Tres carriles táctiles.
-    Cada carril ocupa un tercio del campo.
-    */
+    function enlace(){
+      var e=document.createElement('div');
+      e.style.cssText='position:absolute;height:7px;border-radius:4px;box-shadow:0 0 7px #eaca62;transform-origin:left center;display:none';
+      capa.appendChild(e);
+      return e;
+    }
 
-    function vincular(carril){
-      var b=document.createElement('button');
+    for(i=0;i<4;i++){
+      var v=document.createElement('div');
+      v.style.cssText='width:25%;height:100%;border-right:1px solid rgba(246,237,214,.22);background:linear-gradient(180deg,transparent 0%,'+col[i]+'1c 77%,transparent 100%)';
+      carriles.appendChild(v);
 
-      b.type='button';
-
-      b.setAttribute(
-        'aria-label','Carril '+(carril+1)
-      );
-
+      var b=document.createElement('div');
       b.style.cssText=
-        'position:relative;'+
-        'width:33.333%;'+
-        'height:100%;'+
-        'padding:0;'+
-        'border:0;'+
-        'background:transparent;'+
-        'touch-action:manipulation;'+
-        'cursor:pointer;';
+        'position:absolute;left:'+((i+.5)*25)+'%;top:77%;width:58px;height:58px;transform:translate(-50%,-50%);'+
+        'border:5px solid #231c16;border-radius:50%;'+
+        'background:radial-gradient(circle at 38% 30%,#ffffff55,'+col[i]+' 58%,#231c16 100%);'+
+        'box-shadow:0 3px 0 #130f0a,0 0 8px '+col[i]+';transition:transform .07s,box-shadow .07s';
+      botones.appendChild(b);
+      brillos.push({el:b,hasta:0,pulso:0});
+    }
 
-      b.onpointerdown=function(e){
-        e.preventDefault();
-        tocar(carril);
+    for(i=0;i<tipos.length;i++){
+      var a=(i*7+Math.floor(i/5))%4,tipo=tipos.charAt(i),b=-1;
+      if(tipo==='D') b=(a+1+i%3)%4;
+      if(tipo==='L') b=a>1?a-(1+i%2):a+(1+i%2);
+
+      var ev={
+        tipo:tipo,a:a,b:b,t:VIAJE+.8+i*PASO,
+        estado:0,hecho:0,musica:false,pulsados:{},
+        icono:pieza(a,50)
       };
-
-      zona.appendChild(b);
-
-      teclas.push({
-        el:b,
-        brillo:0
-      });
+      if(tipo!=='S'){
+        ev.linea=enlace();
+        ev.icono2=pieza(b,tipo==='D'?50:28);
+      }
+      eventos.push(ev);
     }
 
-    var c;
-
-    for(c=0;c<3;c++){
-      vincular(c);
+    function tiempo(){
+      return (performance.now()-inicio)/1000;
     }
 
-    /*
-    Se crean 48 notas con una secuencia
-    de tres alturas musicales.
-    */
-
-    var k;
-
-    for(k=0;k<patron.length;k++){
-      var nEl=document.createElement('div');
-
-      nEl.style.cssText=
-        'position:absolute;'+
-        'width:48px;'+
-        'height:48px;'+
-        'transform:translate(-50%,-50%);'+
-        'display:none;'+
-        'filter:drop-shadow(0 0 6px #e2a54a);';
-
-      nEl.style.left=
-        ((patron[k]+.5)/3*100)+'%';
-
-      nEl.innerHTML=imagen('cancion_nota');
-
-      caja.appendChild(nEl);
-
-      notas.push({
-        carril:patron[k],
-        t:VIAJE+k*PASO,
-        estado:0,
-        sonando:false,
-        el:nEl
-      });
+    function carril(e){
+      var r=F.getBoundingClientRect();
+      return Math.max(0,Math.min(3,Math.floor((e.clientX-r.left)/r.width*4)));
     }
 
-    /*
-    Limpieza del bucle y del audio.
-    */
+    function enBoton(e){
+      var r=F.getBoundingClientRect();
+      return Math.abs(e.clientY-r.top-r.height*.77)<=Math.max(48,r.height*.095);
+    }
+
+    function flash(c){
+      brillos[c].hasta=performance.now()+190;
+    }
+
+    function pop(c,t,ok){
+      var p=document.createElement('span');
+      p.className='canPop';
+      p.textContent=t;
+      p.style.left=((c+.5)*25)+'%';
+      p.style.color=ok?'#fff2b2':'#b9bac0';
+      F.appendChild(p);
+      p.onanimationend=function(){
+        if(p.parentNode) p.parentNode.removeChild(p);
+      };
+    }
+
+    function juicio(d){
+      return Math.abs(d)<=.06?'¡Perfecto!':'¡Bien!';
+    }
+
+    function sumar(n){
+      puntos+=n;
+      racha+=n;
+      marcador.textContent='Puntos '+puntos+' / '+MAX+' · Racha '+racha;
+      barra.style.width=(100*puntos/MAX)+'%';
+      if(typeof blip==='function') blip();
+    }
+
+    function ocultar(v){
+      v.icono.style.display='none';
+      if(v.icono2) v.icono2.style.display='none';
+      if(v.linea) v.linea.style.display='none';
+    }
+
+    function fallo(v,t){
+      if(v.estado) return;
+      v.estado=2;
+      v.fallo=t;
+      racha=0;
+      marcador.textContent='Puntos '+puntos+' / '+MAX+' · Racha 0';
+      v.icono.style.filter='grayscale(1) brightness(.6)';
+      if(v.icono2) v.icono2.style.filter='grayscale(1) brightness(.6)';
+      if(v.linea) v.linea.style.filter='grayscale(1)';
+
+      if(v.tipo==='D'){
+        pop(v.a,'Fallo',false);
+        pop(v.b,'Fallo',false);
+      }else{
+        pop(v.tipo==='L'&&v.hecho?v.b:v.a,'Fallo',false);
+      }
+      if(v.tipo==='L') hilo.style.display='none';
+    }
+
+    function acierto(v,n){
+      v.estado=1;
+      ocultar(v);
+      sumar(n);
+      flash(v.a);
+      if(v.b>=0) flash(v.b);
+      hilo.style.display='none';
+    }
+
+    function moverHilo(v,e){
+      var r=F.getBoundingClientRect();
+      var x1=(v.a+.5)*r.width/4,y1=.77*r.height;
+      var x2=e.clientX-r.left,y2=e.clientY-r.top;
+      var dx=x2-x1,dy=y2-y1;
+
+      hilo.style.left=x1+'px';
+      hilo.style.top=y1+'px';
+      hilo.style.width=Math.sqrt(dx*dx+dy*dy)+'px';
+      hilo.style.transform='rotate('+Math.atan2(dy,dx)*180/Math.PI+'deg)';
+      hilo.style.background='linear-gradient(90deg,'+col[v.a]+','+col[v.b]+')';
+      hilo.style.display='block';
+    }
+
+    F.onpointerdown=function(e){
+      if(cerrado||tiempo()<0) return;
+      e.preventDefault();
+      if(!enBoton(e)) return;
+
+      var c=carril(e),t=tiempo(),v=null,dist=VENTANA+.001,j,d,q;
+      dedos[e.pointerId]={c:c,ev:null};
+      brillos[c].pulso=performance.now()+110;
+
+      try{F.setPointerCapture(e.pointerId);}catch(err){}
+
+      for(j=0;j<eventos.length;j++){
+        q=eventos[j];
+        if(q.estado||(q.tipo==='L'?(q.a!==c||q.hecho):(q.a!==c&&q.b!==c))) continue;
+        d=Math.abs(t-q.t);
+        if(d<=VENTANA&&d<dist){
+          v=q;
+          dist=d;
+        }
+      }
+
+      if(!v) return;
+
+      if(v.tipo==='S'){
+        pop(c,juicio(t-v.t),true);
+        acierto(v,1);
+        return;
+      }
+
+      if(v.tipo==='L'){
+        v.hecho=1;
+        v.dedo=e.pointerId;
+        dedos[e.pointerId].ev=v;
+        sumar(1);
+        flash(c);
+        pop(c,juicio(t-v.t),true);
+        moverHilo(v,e);
+        return;
+      }
+
+      if(v.pulsados[c]) return;
+      v.pulsados[c]={id:e.pointerId,t:t};
+      dedos[e.pointerId].ev=v;
+      dedos[e.pointerId].hitLane=c;
+
+      var p1=v.pulsados[v.a],p2=v.pulsados[v.b];
+
+      if(p1&&p2&&p1.id!==p2.id&&Math.abs(p1.t-p2.t)<=VENTANA){
+        pop(v.a,juicio(p1.t-v.t),true);
+        pop(v.b,juicio(p2.t-v.t),true);
+        acierto(v,2);
+      }
+    };
+
+    function completarArrastre(p,e){
+      var v=p.ev;
+      if(!v||v.tipo!=='L'||!v.hecho||v.estado||v.dedo!==e.pointerId) return false;
+
+      if(carril(e)===v.b&&tiempo()<=v.t+COLA){
+        pop(v.b,'¡Bien!',true);
+        tono(frec[v.b],.16,.055);
+        acierto(v,1);
+        return true;
+      }
+      return false;
+    }
+
+    F.onpointermove=function(e){
+      var p=dedos[e.pointerId];
+      if(!p||cerrado) return;
+      e.preventDefault();
+      p.c=carril(e);
+
+      if(p.ev&&p.ev.tipo==='L'&&!p.ev.estado){
+        moverHilo(p.ev,e);
+        completarArrastre(p,e);
+      }
+    };
+
+    function soltar(e){
+      var p=dedos[e.pointerId];
+      if(!p) return;
+      var v=p.ev;
+
+      if(v&&!v.estado){
+        if(v.tipo==='L'&&v.dedo===e.pointerId){
+          if(e.type==='pointerup') completarArrastre(p,e);
+          if(!v.estado) fallo(v,tiempo());
+        }else if(v.tipo==='D'&&v.pulsados[p.hitLane]&&v.pulsados[p.hitLane].id===e.pointerId){
+          delete v.pulsados[p.hitLane];
+        }
+      }
+      delete dedos[e.pointerId];
+    }
+
+    F.onpointerup=soltar;
+    F.onpointercancel=soltar;
+    F.onlostpointercapture=soltar;
+
+    function posicionar(e,c,y){
+      e.style.left=((c+.5)*25)+'%';
+      e.style.top=y+'%';
+      e.style.display='block';
+    }
+
+    function dibujar(v,t){
+      if(v.estado===1){
+        ocultar(v);
+        return;
+      }
+      if(v.estado===2&&t>v.fallo+.28){
+        ocultar(v);
+        return;
+      }
+
+      var resto=v.t-t,y=77-resto/VIAJE*68,y2=y;
+
+      if(v.tipo==='L'){
+        if(v.hecho){
+          y=77;
+          y2=77-((v.t+COLA-t)/VIAJE)*68;
+        }else{
+          y2=y-COLA/VIAJE*68;
+        }
+      }
+
+      if(v.estado!==2&&resto>VIAJE){
+        ocultar(v);
+        return;
+      }
+      if(y>115||y< -25){
+        ocultar(v);
+        return;
+      }
+
+      posicionar(v.icono,v.a,y);
+      if(v.icono2) posicionar(v.icono2,v.b,y2);
+
+      if(v.linea){
+        var x1=(v.a+.5)*F.clientWidth/4,x2=(v.b+.5)*F.clientWidth/4;
+        var yy1=y*F.clientHeight/100,yy2=y2*F.clientHeight/100;
+        var dx=x2-x1,dy=yy2-yy1;
+
+        v.linea.style.left=x1+'px';
+        v.linea.style.top=yy1+'px';
+        v.linea.style.width=Math.sqrt(dx*dx+dy*dy)+'px';
+        v.linea.style.transform='rotate('+Math.atan2(dy,dx)*180/Math.PI+'deg)';
+        v.linea.style.background=v.tipo==='D'?
+          'linear-gradient(90deg,#bd902f,#fae1a0,#bd902f)':
+          'linear-gradient(90deg,'+col[v.a]+','+col[v.b]+')';
+        v.linea.style.display='block';
+      }
+    }
 
     function limpiar(){
-      terminado=true;
-
+      if(cerrado) return;
+      cerrado=true;
       cancelAnimationFrame(raf);
+      F.onpointerdown=null;
+      F.onpointermove=null;
+      F.onpointerup=null;
+      F.onpointercancel=null;
+      F.onlostpointercapture=null;
 
       if(audio){
-        try{
-          audio.close();
-        }catch(ex){}
-
+        try{audio.close();}catch(e){}
         audio=null;
       }
     }
 
-    /*
-    Recuento de estrellas:
-    3: 85% o más.
-    2: 60% o más.
-    1: 35% o más.
-    0: menos del 35%.
-    */
-
     function terminar(){
-      if(terminado) return;
-
-      var ratio=aciertos/notas.length;
-
-      var st=
-        ratio>=.85?3:
-        ratio>=.60?2:
-        ratio>=.35?1:0;
-
-      var texto=
-        st===3?
-          'La melodía resuena perfecta entre los árboles. ¡Qué alegre marcha!':
-        st===2?
-          'La canción te acompaña, aunque algunas notas se escapan.':
-        st===1?
-          'Recuerdas parte de la melodía y sigues caminando.':
-          'La canción se pierde entre las hojas antes de que puedas seguirla.';
+      if(cerrado) return;
+      var p=puntos/MAX;
+      var st=p>=.85?3:p>=.60?2:p>=.35?1:0;
+      var frases=[
+        'La melodía se dispersa por el bosque y apenas consigues seguirla.',
+        'Algunas notas se escapan, pero la canción sigue viva en tus pasos.',
+        'Tu ritmo acompaña la alegría de la casa hasta el último compás.',
+        'Cada nota encaja a la perfección. La música ilumina el camino.'
+      ];
 
       limpiar();
-
-      mjFin(
-        el,ID,TIT,st,texto,empezar,cerrar
-      );
+      mjFin(el,ID,TIT,st,frases[st],empezar,cerrar);
     }
 
-    /*
-    Animación sincronizada con el tiempo.
-    Cada nota cae hasta la línea del 77%.
-    */
-
     function tick(ahora){
-      if(terminado) return;
+      if(cerrado) return;
 
-      var t=(ahora-inicio)/1000;
-      var i,n,resta,y;
+      var t=(ahora-inicio)/1000,j,v,resto;
+      var listos=[0,0,0,0],pres=[0,0,0,0];
 
-      reloj.textContent=
-        Math.max(0,Math.ceil(FIN-t))+' s';
+      reloj.textContent=Math.max(0,Math.ceil(FIN-Math.max(0,t)))+' s';
 
-      for(i=0;i<notas.length;i++){
-        n=notas[i];
-
-        if(n.estado){
-          continue;
-        }
-
-        resta=n.t-t;
-
-        /*
-        Programación anticipada del sonido.
-        La nota suena cuando alcanza la línea.
-        */
-
-        if(!n.sonando&&
-           resta<=.12&&
-           resta>-.26){
-
-          n.sonando=true;
-
-          if(audio){
-            sonar(
-              tonoCarril[n.carril],
-              .23,
-              .07,
-              audio.currentTime+
-                Math.max(.005,resta)
-            );
-
-            /*
-            Acompañamiento grave al inicio
-            de cada grupo de cuatro notas.
-            */
-
-            if(i%4===0){
-              sonar(
-                196,
-                .32,
-                .026,
-                audio.currentTime+
-                  Math.max(.005,resta)
-              );
-            }
-          }
-        }
-
-        /*
-        Nota fallada: desaparece
-        después de la ventana de pulsación.
-        */
-
-        if(resta< -VENTANA){
-          n.estado=2;
-          n.el.style.display='none';
-          combo=0;
-
-        }else if(resta<=VIAJE){
-
-          y=77-(resta/VIAJE)*68;
-
-          n.el.style.top=y+'%';
-          n.el.style.display='block';
-
-        }else{
-          n.el.style.display='none';
-        }
+      if(t<0){
+        cuenta.textContent=Math.ceil(-t);
+        raf=requestAnimationFrame(tick);
+        return;
       }
 
-      /*
-      Breve destello del carril pulsado.
-      */
+      cuenta.style.display='none';
 
-      for(i=0;i<teclas.length;i++){
-        teclas[i].el.style.background=
-          teclas[i].brillo>t?
-          'rgba(242,210,122,.23)':
-          'transparent';
+      for(j=0;j<eventos.length;j++){
+        v=eventos[j];
+        resto=v.t-t;
+
+        if(!v.musica&&resto<=.13&&resto>-.12){
+          v.musica=true;
+          var espera=Math.max(.005,resto);
+
+          if(v.tipo==='D'){
+            tono(frec[v.a],.25,.044,espera);
+            tono(frec[v.b],.25,.036,espera);
+          }else if(v.tipo==='L'){
+            tono(frec[v.a],COLA,.055,espera,frec[v.b]);
+          }else{
+            tono(frec[v.a],.22,.05,espera);
+          }
+
+          if(j%4===0) tono(196,.25,.014,espera);
+        }
+
+        if(!v.estado&&((v.tipo==='L'&&v.hecho)?t>v.t+COLA:t>v.t+VENTANA)){
+          fallo(v,t);
+        }
+
+        if(!v.estado&&Math.abs(resto)<=VENTANA){
+          if(v.tipo!=='L'||!v.hecho) listos[v.a]=1;
+          if(v.tipo==='D') listos[v.b]=1;
+        }
+        if(!v.estado&&v.tipo==='L'&&v.hecho) listos[v.b]=1;
+
+        dibujar(v,t);
+      }
+
+      for(j in dedos){
+        if(dedos.hasOwnProperty(j)) pres[dedos[j].c]=1;
+      }
+
+      for(j=0;j<4;j++){
+        var listo=listos[j];
+        var pr=pres[j]||brillos[j].pulso>ahora;
+        var dest=brillos[j].hasta>ahora;
+        var enRacha=racha>=10;
+        var b=brillos[j].el;
+
+        b.style.transform='translate(-50%,-50%) scale('+(pr?.9:listo?1.12:1)+')';
+        b.style.boxShadow='0 3px 0 #130f0a,0 0 '+(pr||listo||dest||enRacha?25:8)+'px '+col[j]+(listo?',0 0 0 4px #fff0b8':'');
+        b.style.borderColor=listo?'#ffebaf':'#231c16';
       }
 
       if(t>=FIN){
         terminar();
         return;
       }
-
       raf=requestAnimationFrame(tick);
     }
 
     el._stop=limpiar;
-
     raf=requestAnimationFrame(tick);
   }
 
@@ -2859,3 +2910,44 @@ MINI.niebla={titulo:'Encontrar a los otros en la niebla',tramo:13,jugar:jugarNie
   M.mj=M.mj||{}; var n=0;
   for(var i=0;i<otros.length&&n<3;i++){ var f=window.hobbitFoto&&hobbitFoto(otros[i]); if(f){ n++; M.mj['niebla_amigo'+n]=f; } }
   return j(el,cerrar); }; })();
+
+/* ================= PREMIOS DE LOS MINIJUEGOS (04/11/2026) =================
+   Cada minijuego da 3 cosas, una por estrella, ligadas a su capítulo. Cuenta el mejor resultado (mjBest).
+   1 estrella: objeto de bolsillo (solo icono, no se dibuja encima). 2: ropa teñida. 3: objeto de cabeza o cara. */
+var PREMIOS={zurron:['llave','pant_pardo','pipa'],arbol:['bellota','capa_hiedra','sombrero_musgo'],setas:['seta','pant_pana','sombrero_paja'],
+  balsa:['pertiga','capa_rio','gorra_gamos'],bosque:['pina','capa_corteza','corona_hiedra'],sauce:['yesca','pant_sauce','pluma_azul'],
+  cancion:['nata','pant_mostaza','corona_lirios'],niebla:['moneda','capa_gris','diadema']};
+(function(){
+  var N={llave:'Llave de Bolsón Cerrado',pant_pardo:'Pantalón pardo de Hobbiton',pipa:'Pipa de brezo',
+    bellota:'Bellota del escondite',capa_hiedra:'Capa verde hiedra',sombrero_musgo:'Sombrero verde musgo',
+    seta:'Seta gorda de la Ciénaga',pant_pana:'Pantalón de pana de la granja',sombrero_paja:'Sombrero de paja de la Ciénaga',
+    pertiga:'Pértiga de la balsadera',capa_rio:'Capa azul del Brandivino',gorra_gamos:'Gorra de barquero de Los Gamos',
+    pina:'Piña del Bosque Viejo',capa_corteza:'Capa color corteza',corona_hiedra:'Corona de hiedra',
+    yesca:'Yesca y pedernal',pant_sauce:'Pantalón verde sauce',pluma_azul:'Pluma azul',
+    nata:'Cuenco de nata amarilla',pant_mostaza:'Pantalón mostaza',corona_lirios:'Corona de lirios de agua',
+    moneda:'Moneda del túmulo',capa_gris:'Capa gris élfica',diadema:'Diadema de oro del túmulo'};
+  var TINTE={pant_pardo:[110,78,48],capa_hiedra:[52,88,52],pant_pana:[120,62,42],capa_rio:[52,92,128],capa_corteza:[92,74,58],pant_sauce:[118,132,70]};
+  var CAB={pipa:'cara',pluma_azul:'pelo'};
+  Object.keys(PREMIOS).forEach(function(id){ PREMIOS[id].forEach(function(k,i){
+    var e=EQ[k]||(EQ[k]={}), tit=MINI[id]?MINI[id].titulo:'el Bosque Viejo';
+    e.n=N[k]; e.mj=id; e.st=i+1; e.por=['★','★★','★★★'][i]+' en «'+tit+'»'; delete e.km;
+    if(i===0){ e.hueco='bolsillo'; window.CAPA_SKIP=window.CAPA_SKIP||{}; CAPA_SKIP[k]=1; }
+    else if(i===1){ if(TINTE[k]){ e.tinte=TINTE[k]; e.hueco=/^capa/.test(k)?'espalda':'piernas'; } }
+    else { e.hueco=CAB[k]||'cabeza'; e.w=e.w||18; e.dx=e.dx!=null?e.dx:-9; e.dy=e.dy!=null?e.dy:(e.hueco==='cara'?14:2); }
+  }); });
+  var _g=eqGanado; eqGanado=function(){ var g=_g(); Object.keys(EQ).forEach(function(k){ var e=EQ[k]; if(e.mj&&mjBest(e.mj)>=e.st&&g.indexOf(k)<0) g.push(k); }); return g; };
+  var c=document.createElement('style'); c.textContent=
+    '.mj .premios{display:flex;gap:8px;justify-content:center;margin:4px 0}'+
+    '.mj .premios>div{display:flex;flex-direction:column;align-items:center;gap:3px;width:31%;font-size:.74rem;font-weight:700;text-align:center;line-height:1.15}'+
+    '.mj .premios .box{width:52px;height:52px;border:2px solid #2b1d0e;display:grid;place-items:center;background:rgba(160,110,50,.18)}'+
+    '.mj .premios .box img,.mj .premios .box svg{width:72%;height:72%;object-fit:contain;image-rendering:pixelated}'+
+    '.mj .premios span{color:#c9a03a;letter-spacing:.05em}'+
+    '.mj .premios .no{opacity:.45}.mj .premios .no img{filter:brightness(0) opacity(.4)}';
+  document.head.appendChild(c);
+})();
+function premiosHtml(id){ var b=mjBest(id), P=PREMIOS[id];
+  var h='<p class="note">Mejor resultado: '+mjStars(b)+'.'+(P?' Lo ganado va al Vestuario.':'')+'</p>';
+  if(!P) return h;
+  return h+'<div class="premios">'+P.map(function(k,i){ var ok=b>i;
+    return '<div class="'+(ok?'':'no')+'"><span>'+['★','★★','★★★'][i]+'</span><div class="box">'+eqIcon(k)+'</div>'+EQ[k].n+'</div>'; }).join('')+'</div>'; }
+

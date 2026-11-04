@@ -49,12 +49,14 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Pasos: iPhone atajo (7 días) y APK Android (30 días) → `loc_pasos_dias` (versión tolerante en `supabase/la-otra-comunidad-dias.sql`).
 
 ## Pendiente (04/11/2026)
-- Emblemas de los 9 personajes de los bocadillos (Gandalf, vecino, Sam, Gildor, Pippin, Maggot, Merry, Tom, Mantecona): prompt dado a Arturo; al llegar la hoja, recortar y sustituir los SVG de `ICON` en los bocadillos (son dibujos por código, hay que quitarlos).
+- Emblemas de los 9 personajes: HECHO 04/11 (`assets/emb/`, `manifest.emb`, `embHtml(who,icon)` en src.html; original en `tools/ui/emblemas.png`). Los SVG de `ICON` quedan solo de reserva si aparece un personaje nuevo sin emblema: pedirle el suyo a ChatGPT con el mismo estilo de medallón.
+- Iconos dibujados por código quitados de la UI: clave del atajo (ahora `ui.i_sync`, oculto en Android) y preguntas del libro (`ui.i_libro`).
 - Minijuego «bosque» (tramo 9) con el kit.
 - Vídeo entreacto II → III (Bree → Cima de los Vientos).
 - SQL por ejecutar o confirmar: `supabase/la-otra-comunidad-semana.sql` (loc_semana), `la-otra-comunidad-registrados.sql`.
 - Porru veía el doble de pasos en iPhone (probable iPhone + reloj): filtro «Fuente» en el atajo; sin confirmar.
-- Ropa del Acto II: capa gris élfica y pantalón mostaza (en `OBJ` con km:1e9), falta su km y su dibujo en maniquí.
+- Premios de minijuegos (3 por juego, uno por estrella) montados: ver `docs/premios.md`. Faltan los dibujos (prompts A y B en ese doc) y guardar las estrellas en Supabase (ahora solo en el móvil). Capa gris y pantalón mostaza ya se ganan con estrellas (niebla y canción).
+- «Seguir la canción» rehecha el 04/11 (ChatGPT, 2 vueltas): 4 carriles con botones de colores tipo Guitar Hero (solo cuentan los toques cerca de los botones), aviso «¡ahora!», ¡Perfecto!/¡Bien!/Fallo, cuenta atrás 3-2-1, notas a la vez y arrastre, ~21 s, 56 puntos. Falta probar con dos pulgares en iPhone.
 - Objetos de cabeza del sistema por capas (tiara, sombrero, etc.).
 
 ## Estado antiguo (Versión 3, 28/10/2026)

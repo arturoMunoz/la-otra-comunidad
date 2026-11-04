@@ -1120,7 +1120,13 @@
 "pant_verde": "assets/eq/pant_verde.webp",
 "pant_azul": "assets/eq/pant_azul.webp",
 "pant_gris": "assets/eq/pant_gris.webp",
-"pant_mostaza": "assets/eq/pant_mostaza.webp"
+"pant_mostaza": "assets/eq/pant_mostaza.webp",
+"pant_pardo": "assets/eq/pant_pardo.webp",
+"capa_hiedra": "assets/eq/capa_hiedra.webp",
+"pant_pana": "assets/eq/pant_pana.webp",
+"capa_rio": "assets/eq/capa_rio.webp",
+"capa_corteza": "assets/eq/capa_corteza.webp",
+"pant_sauce": "assets/eq/pant_sauce.webp"
 },
 "andarPJ": {
 "fer": {
@@ -1433,5 +1439,16 @@
 173,
 121
 ]
+},
+"emb": {
+"gandalf": "assets/emb/gandalf.webp",
+"vecino": "assets/emb/vecino.webp",
+"sam": "assets/emb/sam.webp",
+"gildor": "assets/emb/gildor.webp",
+"pippin": "assets/emb/pippin.webp",
+"maggot": "assets/emb/maggot.webp",
+"merry": "assets/emb/merry.webp",
+"tom": "assets/emb/tom.webp",
+"mantecona": "assets/emb/mantecona.webp"
 }
 }
