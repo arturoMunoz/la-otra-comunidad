@@ -690,7 +690,7 @@ function iluHtml(i){ return (M.libro&&M.libro[i])?'<img class="ilu" src="'+M.lib
   '@keyframes dlgIn{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}'+
   '.dlg .who{position:absolute;left:14px;top:-2px;transform:translateY(-100%);display:flex;align-items:center;gap:6px;background:#2b1d0e;color:#f3e2b4;'+
     'font-family:var(--title);font-weight:700;font-size:.9rem;padding:4px 10px 3px 6px;clip-path:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% 100%,0 100%)}'+
-  '.dlg .who svg,.dlg .who img{width:22px;height:22px;image-rendering:pixelated}'+
+  '.dlg .who svg,.dlg .who img{width:30px;height:30px;object-fit:contain;image-rendering:pixelated}'+
   '.dlg p{margin:0;font-size:1.05rem;line-height:1.4;min-height:2.8em;white-space:pre-wrap}'+
   '.dlg .nx{position:absolute;right:14px;bottom:6px;font-size:.85rem;animation:dlgB .7s steps(2) infinite}'+
   '@keyframes dlgB{50%{transform:translateY(3px);opacity:.35}}'+
@@ -717,7 +717,7 @@ function dialogo(lineas,alAcabar){
   var k=0, pos=0, timer=null, full='';
   function pinta(){
     var L=lineas[k]; full=L.t; pos=0;
-    box.innerHTML=(L.who?'<div class="who">'+(L.icon&&ICON[L.icon]?ICON[L.icon]:'')+L.who+'</div>':'')+'<p></p><span class="pg">'+(lineas.length>1?(k+1)+'/'+lineas.length:'')+'</span><span class="nx" hidden>▼</span>';
+    box.innerHTML=(L.who?'<div class="who">'+(typeof emblema==='function'?emblema(L.who,L.icon):(L.icon&&ICON[L.icon]?ICON[L.icon]:''))+L.who+'</div>':'')+'<p></p><span class="pg">'+(lineas.length>1?(k+1)+'/'+lineas.length:'')+'</span><span class="nx" hidden>▼</span>';
     var p=box.querySelector('p'); clearInterval(timer);
     timer=setInterval(function(){ pos++; p.textContent=full.slice(0,pos); if(pos%3===1&&full[pos-1]!==' ') blip();
       if(pos>=full.length){ clearInterval(timer); timer=null; box.querySelector('.nx').hidden=false; } },26);

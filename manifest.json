@@ -1433,5 +1433,16 @@
 173,
 121
 ]
+},
+"emblemas": {
+"gandalf": "assets/ui/emb_gandalf.webp",
+"vecino": "assets/ui/emb_vecino.webp",
+"sam": "assets/ui/emb_sam.webp",
+"gildor": "assets/ui/emb_gildor.webp",
+"pippin": "assets/ui/emb_pippin.webp",
+"maggot": "assets/ui/emb_maggot.webp",
+"merry": "assets/ui/emb_merry.webp",
+"tom": "assets/ui/emb_tom.webp",
+"mantecona": "assets/ui/emb_mantecona.webp"
 }
 }

@@ -106,8 +106,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-
 .sheet h2{font-family:var(--title);font-weight:700;font-size:1.35rem;line-height:1.15;margin:0}
 .eyebrow{font-weight:800;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--amber-ink)}
 .sheet p{margin:0}
-.bubble{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;background:var(--paper2);border-radius:10px;padding:10px}
-.bubble svg,.bubble img{width:32px;height:32px;object-fit:contain;image-rendering:pixelated}
+.bubble{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start;background:var(--paper2);border-radius:10px;padding:10px}
+.bubble svg,.bubble img{width:44px;height:44px;object-fit:contain;image-rendering:pixelated}
 .bubble b{display:block;font-size:.88rem}
 .mini{font-weight:700;color:var(--moss)}
 .primary{background:var(--moss);color:#fbf6e8;border:0;border-radius:10px;padding:13px;font-size:1rem}
@@ -229,6 +229,9 @@ var ends=[5,15,35,55,75,90,110,115,125,140,150,165,175,200,210];
 if(M.papiro){ document.documentElement.style.setProperty('--papiro','url("'+M.papiro+'")'); document.documentElement.classList.add('papiro'); }
 ICON.cayado='<svg viewBox="0 0 28 28"><path d="M9 25L17 6c1-3 5-3 6 0" fill="none" stroke="#7a5426" stroke-width="2.6" stroke-linecap="round"/><path d="M12 18l4 2" stroke="#5f8a32" stroke-width="2"/></svg>';
 ICON.farol='<svg viewBox="0 0 28 28"><path d="M14 3v3" stroke="#3a3127" stroke-width="2"/><rect x="9" y="6" width="10" height="3" rx="1" fill="#3a3127"/><rect x="9.5" y="9" width="9" height="12" rx="1.5" fill="#f2b233" stroke="#3a3127" stroke-width="1.6"/><path d="M14 12c-2 2-2 4 0 6 2-2 2-4 0-6z" fill="#fff3c4"/><rect x="8" y="21" width="12" height="3" rx="1" fill="#3a3127"/></svg>';
+/* emblema de cada personaje del libro (dibujos de ChatGPT); si no hay, el icono antiguo */
+var EMB_DE=[[/gandalf/i,'gandalf'],[/vecino/i,'vecino'],[/sam/i,'sam'],[/gildor|elfo/i,'gildor'],[/pippin/i,'pippin'],[/maggot|granjero/i,'maggot'],[/merry/i,'merry'],[/tom|bombadil/i,'tom'],[/mantecona|cebadilla|posadero/i,'mantecona']];
+function emblema(who,icon){ var e=M.emblemas||{}; for(var i=0;i<EMB_DE.length;i++){ if(EMB_DE[i][0].test(who||'')&&e[EMB_DE[i][1]]) return '<img src="'+e[EMB_DE[i][1]]+'" alt="">'; } return ICON[icon]||''; }
 function objIcon(k){ return (M.objetos&&M.objetos[k])?'<img src="'+M.objetos[k]+'" alt="" style="width:72%;aspect-ratio:1;object-fit:contain;image-rendering:pixelated">':(ICON[k]||'<b style="font-size:1.5rem;color:#7a5a32">?</b>'); }
 var ITEMS=[
   {n:'Llave de la puerta redonda', i:'casa'},
@@ -704,7 +707,7 @@ function openArrival(i){
   mark(i); var s=T[i];
   openSheet('<span class="eyebrow">Has llegado · Tramo '+(i+1)+' · '+s.cap+'</span><h2>'+s.title+'</h2>'+(typeof iluHtml==='function'?iluHtml(i):'')+
     '<p class="page">'+pageHtml(i)+'</p>'+
-    '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof zMomentoHtml==='function'?zMomentoHtml(i):'')+
+    '<div class="bubble">'+emblema(s.who,s.icon)+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof zMomentoHtml==='function'?zMomentoHtml(i):'')+
     '<p class="note">✒ El resto de la historia se escribe en el Libro de Bilbo mientras caminas. Al zurrón: <b>'+ITEMS[i].n+'</b>.</p>'+
     miniBtn(i)+
     '<button class="primary" id="shOk" type="button">Seguir andando</button>');
@@ -718,7 +721,7 @@ function openPage(i){
   openSheet('<button class="back" id="bk" type="button">‹ Libro de Bilbo</button><span class="eyebrow">Página '+(i+1)+' · '+s.cap+' · km '+s.km+'–'+ends[i]+'</span><h2>'+s.title+'</h2>'+(typeof iluHtml==='function'?iluHtml(i):'')+
     '<p class="page">'+pageHtml(i)+'</p>'+
     (k<n?'<p class="note">✒ Bilbo sigue escribiendo esta página. Faltan '+fmt(Math.max(0,ends[i]-km))+' km de camino para leerla entera.</p>':'')+
-    '<div class="bubble">'+ICON[s.icon]+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof pregHtml==='function'?pregHtml(i):'')+miniBtn(i));
+    '<div class="bubble">'+emblema(s.who,s.icon)+'<div><b>'+s.who+'</b><i>'+s.say+'</i></div></div>'+(typeof pregHtml==='function'?pregHtml(i):'')+miniBtn(i));
   $('bk').onclick=function(){ openTab('libro'); }; bindMini();
 }
 function faceStyle(h,size){ if((FACE[h]||0)>=FACEN) return 'background:#5a7a3a;border-radius:50%'; return 'background-image:url('+M.faces+');background-size:'+(size*FACEN)+'px '+size+'px;background-position:-'+((FACE[h]||0)*size)+'px 0'; }

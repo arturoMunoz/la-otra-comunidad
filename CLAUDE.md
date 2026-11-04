@@ -45,11 +45,11 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Mapa: `assets/mapa3.webp` (1024x3456, 3 trozos de ChatGPT unidos, original en `tools/mapa/`). `M.mapa.idx=true`: cada sitio de `lugares` lleva el índice de su punto en `ruta`, y `rutaPunto` avanza por el camino pintado. Sin línea de ruta propia (solo lo andado en dorado).
 - Minijuegos: Acto I zurron, arbol, setas, balsa. Acto II sauce (10), cancion (11), niebla (13, los 3 amigos son jugadores reales con `hobbitFoto(h)`). Falta «bosque» (9, el bosque cambia los caminos).
 - Zurrón Acto II: farol_cricava, rama, sauce, lirio, miel, daga, jarra (`M.objetos`).
+- Emblemas de los personajes del libro: `M.emblemas` (assets/ui/emb_*.webp, de ChatGPT) vía `emblema(who,icon)` en bocadillos y diálogos; los SVG de `ICON` solo quedan de reserva.
 - Menú principal con botones de hierro forjado (`largo_forja`). Pergamino de pasos con los últimos 7 días y la semana de la Comunidad (`loc_semana`).
 - Pasos: iPhone atajo (7 días) y APK Android (30 días) → `loc_pasos_dias` (versión tolerante en `supabase/la-otra-comunidad-dias.sql`).
 
 ## Pendiente (04/11/2026)
-- Emblemas de los 9 personajes de los bocadillos (Gandalf, vecino, Sam, Gildor, Pippin, Maggot, Merry, Tom, Mantecona): prompt dado a Arturo; al llegar la hoja, recortar y sustituir los SVG de `ICON` en los bocadillos (son dibujos por código, hay que quitarlos).
 - Minijuego «bosque» (tramo 9) con el kit.
 - Vídeo entreacto II → III (Bree → Cima de los Vientos).
 - SQL por ejecutar o confirmar: `supabase/la-otra-comunidad-semana.sql` (loc_semana), `la-otra-comunidad-registrados.sql`.
