@@ -1199,6 +1199,8 @@ function zPuntos(){
   var p=acier.length+(z.flags.samFeliz?1:0)-(z.flags.samEnfadado?1:0)-(z.flags.pesado?1:0)+(z.flags.ligero?1:0);
   return {p:Math.max(0,p),acier:acier};
 }
+/* sello de cada acto: dibujo de ChatGPT (M.sellos.a1_oro…); mientras no llegue, no se pinta nada (fuera el círculo con el número) */
+function selloHtml(acto,metal){ var k='a'+acto+'_'+metal; return (M.sellos&&M.sellos[k])?'<img class="sello-img" src="'+M.sellos[k]+'" alt="">':''; }
 function zSello(){ var p=zPuntos().p; return p>=4?{n:'oro',t:'Sello de oro del Acto I',c:'#d4a531'}:p>=2?{n:'plata',t:'Sello de plata del Acto I',c:'#b8bfc6'}:{n:'bronce',t:'Sello de bronce del Acto I',c:'#b07a43'}; }
 function zTitulo(){ var z=zEstado()||{flags:{},items:[]};
   if(z.flags.samFeliz) return 'El que hizo caso a Sam';
@@ -1244,7 +1246,7 @@ function jugarDecisiones(el,cerrar){
   '.mj .opt{text-align:left;background:rgba(255,244,214,.55);border:2px solid #2b1d0e;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;color:#2b1d0e;box-shadow:0 3px 0 rgba(0,0,0,.25)}'+
   '.mj .opt b{font-size:1rem}.mj .opt span{font-weight:500;font-size:.88rem;color:#6a4f2c}'+
   '.mj .opt:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25)}'+
-  '.sello{flex:none;width:92px;height:92px;border-radius:50%;margin:0 auto;display:grid;place-items:center;border:4px solid #2b1d0e;box-shadow:inset 0 0 0 6px rgba(255,255,255,.35),0 4px 0 rgba(0,0,0,.3);font-family:var(--title);font-weight:700;font-size:1.6rem;color:#2b1d0e}';
+  '.sello-img{display:block;width:120px;height:120px;margin:0 auto;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 4px 4px rgba(0,0,0,.35))}'+'.sello{flex:none;width:92px;height:92px;border-radius:50%;margin:0 auto;display:grid;place-items:center;border:4px solid #2b1d0e;box-shadow:inset 0 0 0 6px rgba(255,255,255,.35),0 4px 0 rgba(0,0,0,.3);font-family:var(--title);font-weight:700;font-size:1.6rem;color:#2b1d0e}';
   document.head.appendChild(c); })();
 MINI.zurron={titulo:'Hacer el zurrón', tramo:0, jugar:jugarDecisiones};
 
@@ -1253,7 +1255,7 @@ function finActo2(){
   if(store.get('fin2',false)) return false;
   store.set('fin2',true);
   openSheet('<span class="eyebrow">Bree · 210 km</span><h2>Fin del Acto II</h2>'+
-    '<div class="sello" style="background:#b8bfc6">II</div>'+
+    selloHtml(2,'plata')+
     '<p>Habéis cruzado el Bosque Viejo, salido vivos de los túmulos y llegado a Bree. Y en la posada, delante de todos, el Anillo ha hecho de las suyas.</p>'+
     '<p class="note">El Acto III, hacia la Cima de los Vientos, se abrirá pronto.</p>'+
     '<button class="primary" id="shOk" type="button">Seguir</button>');
@@ -1266,7 +1268,7 @@ function finActo(){
   var z=zEstado(), s=zSello(), pz=zPuntos();
   var lineas=Object.keys(ZMOM).map(function(i){ var ok=pz.acier.indexOf(i)>=0; return '<li>'+(ok?'✔':'✘')+' '+T[i].name+'</li>'; }).join('');
   openSheet('<span class="eyebrow">Cricava · 115 km</span><h2>Fin del Acto I</h2>'+
-    '<div class="sello" style="background:'+s.c+'">I</div><p style="text-align:center"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>'+
+    selloHtml(1,s.n)+'<p style="text-align:center"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>'+
     (z?'<p>Así os ha ido con lo que llevabas:</p><ul class="note" style="margin:0;padding-left:1.2em">'+lineas+'</ul>':'<p class="note">No hiciste el zurrón en Bolsón Cerrado, así que el viaje fue a la buena de Dios.</p>')+
     (function(){ store.set('fin1',true); var g=eqGanado(); return g.length?'<p><b>Has ganado:</b></p><div class="got">'+g.map(function(k){return '<div style="display:flex;flex-direction:column;align-items:center;font-weight:700;font-size:.8rem;max-width:90px;text-align:center"><div style="width:44px;height:44px;display:grid;place-items:center">'+eqIcon(k)+'</div>'+EQ[k].n+'</div>';}).join('')+'</div><p class="note">Ya lo llevas puesto. Puedes quitártelo o ponerte otra cosa en Zurrón › Vestuario.</p>':''; })()+
     '<button class="primary" id="shOk" type="button">Seguir hacia el Bosque Viejo</button>');
@@ -1293,7 +1295,7 @@ function verEntreacto(n,alAcabar){
 document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verEnt1'){ closeSheet(); verEntreacto(1); } });
 /* el zurrón muestra lo que llevas y el sello */
 TABS.zurron=function(){ var z=zEstado(), done=store.get('fin1',false), s=done?zSello():null;
-  return '<h2>Zurrón</h2>'+(s?'<div class="sello" style="background:'+s.c+'">I</div><p style="text-align:center;margin:0"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>':'')+
+  return '<h2>Zurrón</h2>'+(s?selloHtml(1,s.n)+'<p style="text-align:center;margin:0"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>':'')+
     (z?'<p class="note">Lo que metiste al salir de Bolsón Cerrado:</p><div class="bag">'+z.items.map(function(k){return '<div class="item"><div class="box">'+mjIcon(ZICO[k])+'</div>'+ZNOM[k]+'</div>';}).join('')+'</div>'
       :'<div class="empty">Todavía no has hecho el zurrón. Se hace al salir de Bolsón Cerrado.</div>')+
     '<p class="note">Objetos del camino:</p><div class="bag">'+ITEMS.map(function(it,i){var o=i<=reached;return '<div class="item'+(o?'':' no')+'"><div class="box">'+objIcon(it.i)+'</div>'+(o?it.n:'¿?')+'</div>';}).join('')+'</div>'; };
