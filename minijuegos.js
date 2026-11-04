@@ -1471,7 +1471,7 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
   Object.keys(C.capas).forEach(function(k){ img(k,C.capas[k]); });
   Object.keys(C.cabezas).forEach(function(h){ img('cab_'+h,C.cabezas[h]); });
   /* qué objeto del Vestuario va en qué capa */
-  var CAPA_DE={capa:['capa',[110,82,52]],capa_verde:['capa'],capa_granate:['capa'],capa_gris:['capa'],pant_verde:['pantalon'],pant_azul:['pantalon'],pant_gris:['pantalon'],pant_mostaza:['pantalon'],cantimplora_cinto:['cantimplora']};
+  var CAPA_DE={panuelo_sam:['panuelo_sam'],broche:['broche'],capa:['capa',[110,82,52]],capa_verde:['capa'],capa_granate:['capa'],capa_gris:['capa'],pant_verde:['pantalon'],pant_azul:['pantalon'],pant_gris:['pantalon'],pant_mostaza:['pantalon'],cantimplora_cinto:['cantimplora']};
   window.CAPA_SKIP={}; Object.keys(CAPA_DE).forEach(function(k){ CAPA_SKIP[k]=1; });
   function tinte(im,rgb,a,b){ var c=document.createElement('canvas'); c.width=im.width; c.height=im.height; var x=c.getContext('2d'); x.drawImage(im,0,0);
     var d=x.getImageData(0,0,c.width,c.height), p=d.data;
@@ -1491,15 +1491,16 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
   function listo(h){ var ks=Object.keys(C.capas).concat(['cab_'+h]); return ks.every(function(k){ return IM[k]&&IM[k].complete&&IM[k].width; }); }
   var firma='', H=null;
   function monta(h){
-    var puesto=eqPuesto(), capa=null, pant=null, cant=false;
+    var puesto=eqPuesto(), capa=null, pant=null, cant=false, extra=[];
     puesto.forEach(function(k){ var e=EQ[k], d=CAPA_DE[k]||(e&&e.tinte&&(e.hueco==='espalda'||e.hueco==='piernas')?[e.hueco==='espalda'?'capa':'pantalon']:null); if(!d) return; var t=d[1]||(e&&e.tinte);
-      if(d[0]==='capa') capa=t; else if(d[0]==='pantalon') pant=t; else if(d[0]==='cantimplora') cant=true; });
+      if(d[0]==='capa') capa=t; else if(d[0]==='pantalon') pant=t; else if(d[0]==='cantimplora') cant=true; else if(IM[d[0]]) extra.push(IM[d[0]]); });
     var FW=53, FH=74, n=Math.round(IM.cuerpo.width/FW), cv=document.createElement('canvas'); cv.width=FW*n; cv.height=FH; var x=cv.getContext('2d'); x.imageSmoothingEnabled=false;
     x.drawImage(pielCuerpo(h),0,0);
     if(pant) x.drawImage(tinte(IM.pantalon,pant,.3,1.25),0,0);
     if(cant) x.drawImage(IM.cantimplora,0,0);
     x.drawImage(IM.mochila,0,0);
     if(capa) x.drawImage(tinte(IM.capa,capa,.25,1.1),0,0);   /* la capa por encima de la mochila */
+    extra.forEach(function(im){ x.drawImage(im,0,0); });   /* pañuelo, broche… (dibujados sobre el maniquí) */
     x.drawImage(IM['cab_'+h],0,0);
     /* al andar todo el hobbit (cuerpo y cabeza juntos) sube y baja 1 px: abajo con las piernas abiertas, arriba al cruzarlas */
     var BOB=[1,0,-1,0,1,0,-1,0];
@@ -2966,4 +2967,10 @@ function estrellasSync(){
     r.forEach(function(x){ if(x&&x.juego) store.set('mj.'+x.juego, Number(x.estrellas)||0); });
   }).catch(function(){});
 }
+
+/* ================= OBJETOS DE CABEZA dibujados sobre el maniquí (tools/capas_cabeza.py, 04/11/2026) =================
+   w = ancho en px de juego; dx desde el centro de la cabeza; dy desde lo alto del pelo. */
+(function(){ var P={"tiara":{"w":32,"dx":-17,"dy":1},"pluma":{"w":24,"dx":-28,"dy":2},"gafas":{"w":33,"dx":-17,"dy":9},"pipa":{"w":15,"dx":7,"dy":22},"sombrero_musgo":{"w":51,"dx":-27,"dy":-7},"sombrero_paja":{"w":51,"dx":-28,"dy":-7},"gorra_gamos":{"w":33,"dx":-19,"dy":-5},"corona_hiedra":{"w":44,"dx":-24,"dy":-4},"pluma_azul":{"w":22,"dx":-26,"dy":-6},"corona_lirios":{"w":46,"dx":-27,"dy":-4},"diadema":{"w":35,"dx":-19,"dy":3}};
+  Object.keys(P).forEach(function(k){ if(!EQ[k]) return; EQ[k].w=P[k].w; EQ[k].dx=P[k].dx; EQ[k].dy=P[k].dy;
+    if(M.equipo&&M.equipo[k]&&!EQIMG[k]){ var i=new Image(); i.src=M.equipo[k]; EQIMG[k]=i; } }); })();
 

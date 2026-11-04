@@ -858,7 +858,15 @@
 "cantimplora_cinto": "assets/eq/cantimplora_cinto.webp",
 "pluma": "assets/eq/pluma.webp",
 "gafas": "assets/eq/gafas.webp",
-"tiara": "assets/eq/tiara.webp"
+"tiara": "assets/eq/tiara.webp",
+"pipa": "assets/eq/pipa.webp",
+"sombrero_musgo": "assets/eq/sombrero_musgo.webp",
+"sombrero_paja": "assets/eq/sombrero_paja.webp",
+"gorra_gamos": "assets/eq/gorra_gamos.webp",
+"corona_hiedra": "assets/eq/corona_hiedra.webp",
+"pluma_azul": "assets/eq/pluma_azul.webp",
+"corona_lirios": "assets/eq/corona_lirios.webp",
+"diadema": "assets/eq/diadema.webp"
 },
 "prologo": {
 "video": "assets/prologo/prologo.mp4",
@@ -1374,7 +1382,9 @@
 "capa": "assets/pj/capas/capa.webp",
 "pantalon": "assets/pj/capas/pantalon.webp",
 "mochila": "assets/pj/capas/mochila.webp",
-"cantimplora": "assets/pj/capas/cantimplora.webp"
+"cantimplora": "assets/pj/capas/cantimplora.webp",
+"panuelo_sam": "assets/pj/capas/panuelo_sam.webp",
+"broche": "assets/pj/capas/broche.webp"
 },
 "cabezas": {
 "arturo": "assets/pj/capas/cab_arturo.webp",

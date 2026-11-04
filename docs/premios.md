@@ -57,3 +57,8 @@ Same again, FOUR new items on the same cyan mannequin heads:
 - Objetos de cuerpo (hoja de 12 poses cada uno, plantilla 3 de `prompts-capas.md`): pañuelo de Sam, broche del mapa, pañuelo rojo de Bilbo, cazo abollado. Hoy se pegan como PNG antiguo.
 - Objetos de cabeza (plantilla 4, 3 imágenes de 4): sombrero ancho, tiara, pluma de escribano, gafas (Acto I) + los 8 de ★★★.
 - Iconos de bolsillo: prompt A (solo icono, no van encima del hobbit).
+
+### Hecho el 04/11 (tarde)
+- Cuerpo: pañuelo de Sam y broche (tools/capas_cuerpo.py, ancla en el cuello) → `pj/capas/panuelo_sam|broche.webp`, en `manifest.capas.capas` y `CAPA_DE`.
+- Cabeza (tools/capas_cabeza.py): tiara, pluma, gafas, pipa, sombrero_musgo, sombrero_paja, gorra_gamos, corona_hiedra, pluma_azul, corona_lirios, diadema → `assets/eq/`, w/dx/dy al final de minijuegos.js.
+- Por repetir: pañuelo rojo y cazo (salieron sobre un maniquí de frente, no el nuestro) y el sombrero ancho (salió puntiagudo de mago). Adjuntar `docs/maniqui_cian.png`.
