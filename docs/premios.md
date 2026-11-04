@@ -51,3 +51,9 @@ Same again, FOUR new items on the same cyan mannequin heads:
 3) A crown of white and pale yellow water-lilies with green pads, from the Withywindle, Goldberry's flowers.
 4) A thin circlet of ancient gold with a small pale jewel at the front, from the treasure of the Barrow-downs.
 ```
+
+## Dibujos que faltan (lista completa, 04/11/2026)
+- Ropa teñida (capas y pantalones): NO necesita dibujo; se pinta tiñendo `pj/capas/capa` y `pantalon` (arreglado: antes las 6 nuevas no salían puestas).
+- Objetos de cuerpo (hoja de 12 poses cada uno, plantilla 3 de `prompts-capas.md`): pañuelo de Sam, broche del mapa, pañuelo rojo de Bilbo, cazo abollado. Hoy se pegan como PNG antiguo.
+- Objetos de cabeza (plantilla 4, 3 imágenes de 4): sombrero ancho, tiara, pluma de escribano, gafas (Acto I) + los 8 de ★★★.
+- Iconos de bolsillo: prompt A (solo icono, no van encima del hobbit).

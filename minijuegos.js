@@ -1492,7 +1492,7 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
   var firma='', H=null;
   function monta(h){
     var puesto=eqPuesto(), capa=null, pant=null, cant=false;
-    puesto.forEach(function(k){ var d=CAPA_DE[k]; if(!d) return; var t=d[1]||(EQ[k]&&EQ[k].tinte);
+    puesto.forEach(function(k){ var e=EQ[k], d=CAPA_DE[k]||(e&&e.tinte&&(e.hueco==='espalda'||e.hueco==='piernas')?[e.hueco==='espalda'?'capa':'pantalon']:null); if(!d) return; var t=d[1]||(e&&e.tinte);
       if(d[0]==='capa') capa=t; else if(d[0]==='pantalon') pant=t; else if(d[0]==='cantimplora') cant=true; });
     var FW=53, FH=74, n=Math.round(IM.cuerpo.width/FW), cv=document.createElement('canvas'); cv.width=FW*n; cv.height=FH; var x=cv.getContext('2d'); x.imageSmoothingEnabled=false;
     x.drawImage(pielCuerpo(h),0,0);
