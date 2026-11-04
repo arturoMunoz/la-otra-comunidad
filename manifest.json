@@ -289,7 +289,12 @@
 "juncos": "assets/mj/juncos.webp",
 "sauce_fondo": "assets/mj/sauce_fondo.webp",
 "cancion_fondo": "assets/mj/cancion_fondo.webp",
-"niebla_fondo": "assets/mj/niebla_fondo.webp"
+"niebla_fondo": "assets/mj/niebla_fondo.webp",
+"sauce_rama": "assets/mj/sauce_rama.webp",
+"sauce_chispa": "assets/mj/sauce_chispa.webp",
+"cancion_nota": "assets/mj/cancion_nota.webp",
+"sauce_despierto": "assets/mj/sauce_despierto.webp",
+"sauce_dormido": "assets/mj/sauce_dormido.webp"
 },
 "papiro": "assets/papiro.webp",
 "andar": {
