@@ -28,3 +28,10 @@ Personajes del libro (Tom, Baya de Oro, el tumulario, Trancos, Mantecona): solo 
 7. Túmulos en la niebla
 8. Salida de las Quebradas → Camino del Este al atardecer
 9. Bree de noche con lluvia, puerta y la posada
+
+## Montado (04/11/2026)
+- En el juego son 7 tramos: 115, 125, 140, 150, 165, 175 y 200 (Camino del Este y Bree, acaba en 210). Bree es una escena en el km 206 dentro del último tramo.
+- Fondos: a2_cerca, a2_bosque, a2_claro (provisional en el Tornasauce hasta que llegue el del sauce; luego el claro pasa a escena en km 133), a2_tom, a2_colinas, a2_tumulos, a2_camino, a2_bree.
+- Zurrón: farol_cricava, rama, sauce, lirio, miel, daga, jarra (sin dibujo aún: sale «?»). La herradura se quitó.
+- Fin del acto: `finActo2()` (km 210) → `verEntreacto(2)`.
+- Minijuegos: los programa ChatGPT con el contrato `jugar(el, cerrar)` (ver prompt LOC-MINI v1 en el chat del 04/11).
