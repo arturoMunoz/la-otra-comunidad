@@ -60,6 +60,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Premios de minijuegos (3 por juego, uno por estrella) montados: ver `docs/premios.md`. Faltan los dibujos (prompts A y B en ese doc). Estrellas en la cuenta: `supabase/la-otra-comunidad-estrellas.sql` (tabla `loc_estrellas`, `loc_estrellas()`/`loc_estrella()`) POR EJECUTAR; el cliente (`estrellasSync` en minijuegos.js) ya lo usa y si no está sigue en el móvil. Capa gris y pantalón mostaza ya se ganan con estrellas (niebla y canción).
 - «Seguir la canción» rehecha el 04/11 (ChatGPT, 2 vueltas): 4 carriles con botones de colores tipo Guitar Hero (solo cuentan los toques cerca de los botones), aviso «¡ahora!», ¡Perfecto!/¡Bien!/Fallo, cuenta atrás 3-2-1, notas a la vez y arrastre, ~21 s, 56 puntos. Falta probar con dos pulgares en iPhone.
 - Objetos de cabeza del sistema por capas (tiara, sombrero, etc.).
+- MÁS VERSIONES DEL TIPO GUITAR HERO (a Henar le gusta, 04/11/2026): antes de la segunda, sacar el motor de `jugarCancion` a una función común con configuración (notas/patrón, tempo, colores, fondo, textos) para que cada versión nueva sea solo datos. Candidatos con sentido en el libro: la canción del Poney Pisador en Bree (Frodo sobre la mesa), canciones de los elfos en Rivendel, la rima para llamar a Tom en los túmulos.
 
 ## Estado antiguo (Versión 3, 28/10/2026)
 - Fase 1: capítulos 1-5, Bolsón Cerrado → Cricava, 115 km, 8 tramos. 1 km = 1.350 pasos.
