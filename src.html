@@ -181,7 +181,7 @@ ol.list li.me .t{color:var(--amber-ink);font-weight:800}
   <div class="top">
     <div class="row">
       <span class="pill" id="hudName">Bolsón Cerrado<small>Tramo 1 · Cap. 3</small></span>
-      <span class="pill r" id="hudKm">0,0 km<small>de 115</small></span>
+      <span class="pill r" id="hudKm">0,0 km<small>de 210</small></span>
     </div>
     <div class="prog"><div class="l"><span id="nextTxt">Cargando el camino…</span><span id="wx"></span></div><div class="bar"><i id="nextBar"></i></div></div>
     <button class="diary" id="diary" type="button" hidden><svg viewBox="0 0 28 28"><rect x="6" y="5" width="16" height="19" rx="2" fill="#9c2f22"/><rect x="8" y="7" width="12" height="15" rx="1" fill="none" stroke="#e8c26a" stroke-width="1.2"/></svg><span id="diaryTxt"></span></button>
@@ -219,17 +219,17 @@ var DEMO = __DEMO__;
 var SB_URL = 'https://egdnytvckttgvybdbvmw.supabase.co';
 var SB_KEY = '__KEY__';
 var ATAJO = 'La Otra Comunidad';
-var STEPS_PER_KM = 1350, TOTAL_KM = 115;
+var STEPS_PER_KM = 1350, TOTAL_KM = 210, FIN_ACTO1 = 115, FIN_NOMBRE = 'Bree';
 var LUGAR = {nombre:'Madrid', lat:40.43, lon:-3.81};
 var M = __MAN__;
 var FACE = {porru:0, adrian:1, carlos:2, fer:3, edo:4, rodri:5, arturo:6, patri:7, juanpablo:8};
 var FACEN = M.facesN||7;
 __DATA__
-var ends=[5,15,35,55,75,90,110,115];
+var ends=[5,15,35,55,75,90,110,115,125,140,150,165,175,200,210];
 if(M.papiro){ document.documentElement.style.setProperty('--papiro','url("'+M.papiro+'")'); document.documentElement.classList.add('papiro'); }
 ICON.cayado='<svg viewBox="0 0 28 28"><path d="M9 25L17 6c1-3 5-3 6 0" fill="none" stroke="#7a5426" stroke-width="2.6" stroke-linecap="round"/><path d="M12 18l4 2" stroke="#5f8a32" stroke-width="2"/></svg>';
 ICON.farol='<svg viewBox="0 0 28 28"><path d="M14 3v3" stroke="#3a3127" stroke-width="2"/><rect x="9" y="6" width="10" height="3" rx="1" fill="#3a3127"/><rect x="9.5" y="9" width="9" height="12" rx="1.5" fill="#f2b233" stroke="#3a3127" stroke-width="1.6"/><path d="M14 12c-2 2-2 4 0 6 2-2 2-4 0-6z" fill="#fff3c4"/><rect x="8" y="21" width="12" height="3" rx="1" fill="#3a3127"/></svg>';
-function objIcon(k){ return (M.objetos&&M.objetos[k])?'<img src="'+M.objetos[k]+'" alt="" style="width:72%;aspect-ratio:1;object-fit:contain;image-rendering:pixelated">':ICON[k]; }
+function objIcon(k){ return (M.objetos&&M.objetos[k])?'<img src="'+M.objetos[k]+'" alt="" style="width:72%;aspect-ratio:1;object-fit:contain;image-rendering:pixelated">':(ICON[k]||'<b style="font-size:1.5rem;color:#7a5a32">?</b>'); }
 var ITEMS=[
   {n:'Llave de la puerta redonda', i:'casa'},
   {n:'Pipa del Dragón Verde', i:'pipa'},
@@ -238,7 +238,14 @@ var ITEMS=[
   {n:'Cayado del atajo', i:'cayado'},
   {n:'Cesta de setas', i:'cesta'},
   {n:'Farol de la calzada', i:'farol'},
-  {n:'Cuerda de la balsa', i:'balsa'}
+  {n:'Cuerda de la balsa', i:'balsa'},
+  {n:'Farol de Cricava', i:'farol_cricava'},
+  {n:'Rama torcida del Bosque Viejo', i:'rama'},
+  {n:'Hoja del Viejo Sauce', i:'sauce'},
+  {n:'Lirio de agua de Baya de Oro', i:'lirio'},
+  {n:'Pan y miel de casa de Tom', i:'miel'},
+  {n:'Daga de Oesternesse', i:'daga'},
+  {n:'Jarra del Poney Pisador', i:'jarra'}
 ];
 
 /* ---------- utilidades ---------- */
@@ -582,7 +589,8 @@ function setKm(v){
 }
 function flushPending(){
   if(!$('sheet').hidden) return;
-  if(km>=TOTAL_KM-0.001 && pending.length===0 && typeof finActo==='function' && finActo()) return;
+  if(km>=FIN_ACTO1-0.001 && pending.length===0 && typeof finActo==='function' && finActo()) return;
+  if(km>=TOTAL_KM-0.001 && pending.length===0 && typeof finActo2==='function' && finActo2()) return;
   pending=pending.filter(function(i){return !shown.has(i) && i<=tramoAt(km);});
   if(pending.length) openArrival(pending.shift());
 }
@@ -590,7 +598,7 @@ function renderHud(){
   var t=T[curT], nxt=T[curT+1], a=t.km, b=ends[curT];
   $('hudName').innerHTML=t.name+'<small>Tramo '+(curT+1)+' · '+t.cap+'</small>';
   $('hudKm').innerHTML=fmt(km)+' km<small>de '+TOTAL_KM+'</small>';
-  $('nextTxt').textContent = nxt ? 'Faltan '+fmt(Math.max(0,b-km))+' km para '+nxt.name : (km>=TOTAL_KM?'Has llegado a Cricava':'Faltan '+fmt(TOTAL_KM-km)+' km para Cricava');
+  $('nextTxt').textContent = nxt ? 'Faltan '+fmt(Math.max(0,b-km))+' km para '+nxt.name : (km>=TOTAL_KM?'Has llegado a '+FIN_NOMBRE:'Faltan '+fmt(TOTAL_KM-km)+' km para '+FIN_NOMBRE);
   $('nextBar').style.width=Math.min(100,(km-a)/(b-a)*100)+'%';
   $('steps').textContent=stepsToday.toLocaleString('es-ES');
   $('todayKm').textContent=fmt(stepsToday/STEPS_PER_KM);

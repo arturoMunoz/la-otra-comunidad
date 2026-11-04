@@ -435,6 +435,17 @@ function jugarDecisiones(el,cerrar){
   document.head.appendChild(c); })();
 MINI.zurron={titulo:'Hacer el zurrón', tramo:0, jugar:jugarDecisiones};
 
+/* final del acto II al llegar a Bree */
+function finActo2(){
+  if(store.get('fin2',false)) return false;
+  store.set('fin2',true);
+  openSheet('<span class="eyebrow">Bree · 210 km</span><h2>Fin del Acto II</h2>'+
+    '<div class="sello" style="background:#b8bfc6">II</div>'+
+    '<p>Habéis cruzado el Bosque Viejo, salido vivos de los túmulos y llegado a Bree. Y en la posada, delante de todos, el Anillo ha hecho de las suyas.</p>'+
+    '<p class="note">El Acto III, hacia la Cima de los Vientos, se abrirá pronto.</p>'+
+    '<button class="primary" id="shOk" type="button">Seguir</button>');
+  $('shOk').onclick=function(){ closeSheet(); verEntreacto(2); }; return true;
+}
 /* final del acto I al llegar a Cricava */
 function finActo(){
   if(store.get('fin1',false)) return false;
@@ -1063,7 +1074,7 @@ function menuPinta(pant){
     var z=document.createElement('div'); z.className='pasoZ';
     z.innerHTML='<div class="pz"><span class="eyebrow">Hoy</span><b class="g">'+($('steps')?$('steps').textContent:'0')+'</b><span>pasos · '+($('todayKm')?$('todayKm').textContent:'0,0')+' km</span>'+
       '<div class="sem" id="pzSem"><small>Cargando la semana…</small></div><hr><span class="eyebrow">Desde que empezó el viaje</span><b class="m">'+tot.toLocaleString('es-ES')+' pasos</b><span>'+fmt(tot/STEPS_PER_KM)+' km andados</span>'+
-      (nx?'<span>Faltan '+fmt(Math.max(0,nx.km-km))+' km para '+nx.name+'</span>':'<span>Faltan '+fmt(Math.max(0,TOTAL_KM-km))+' km para Cricava</span>')+
+      (nx?'<span>Faltan '+fmt(Math.max(0,nx.km-km))+' km para '+nx.name+'</span>':'<span>Faltan '+fmt(Math.max(0,TOTAL_KM-km))+' km para '+FIN_NOMBRE+'</span>')+
       (pos?'<span>Vas '+pos+'º de '+orden.length+' en la Comunidad</span>':'')+'<small>Toca para cerrar</small></div>';
     z.onclick=function(){ z.classList.remove('on'); setTimeout(function(){ z.remove(); },250); };
     $('app').appendChild(z); requestAnimationFrame(function(){ z.classList.add('on'); })

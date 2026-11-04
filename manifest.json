@@ -64,7 +64,22 @@
 "espejo": true
 }
 ],
-[{"src": "assets/tramos/t5v_0.webp", "y": -192, "v": 0.4, "hd": 3, "espejo": true}, {"src": "assets/tramos/t5v_1.webp", "y": 210, "v": 1.0, "hd": 3, "espejo": true}],
+[
+{
+"src": "assets/tramos/t5v_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/t5v_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
 [
 {
 "src": "assets/tramos/t6v_0.webp",
@@ -107,6 +122,118 @@
 },
 {
 "src": "assets/tramos/t8b_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a2_cerca_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a2_cerca_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a2_bosque_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a2_bosque_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a2_claro_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a2_claro_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a2_tom_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a2_tom_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a2_colinas_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a2_colinas_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a2_tumulos_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a2_tumulos_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a2_camino_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a2_camino_1.webp",
 "y": 210,
 "v": 1.0,
 "hd": 3,
@@ -594,6 +721,25 @@
 {
 "src": "assets/tramos/e113_1.webp",
 "y": 209,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+]
+},
+{
+"km": 206,
+"capas": [
+{
+"src": "assets/tramos/a2_bree_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a2_bree_1.webp",
+"y": 210,
 "v": 1.0,
 "hd": 3,
 "espejo": true
