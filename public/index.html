@@ -534,6 +534,7 @@ Promise.all([
   requestAnimationFrame(loop);
 });
 function start(){
+  if(typeof estrellasSync==='function') estrellasSync();
   rpc('loc_leidas').then(function(r){ shown=new Set((r||[]).map(Number)); refresh(); }).catch(function(){ refresh(); });
 }
 function refresh(){
@@ -884,7 +885,7 @@ function mjIcon(it){ var k=it.k||it; if(M.mj&&M.mj[k]) return '<img src="'+M.mj[
 var BAG_SVG='<svg viewBox="0 0 86 70"><path d="M14 22h58l-6 44H20z" fill="#8a5a2a" stroke="#3a2a14" stroke-width="3"/><path d="M14 22c4-14 54-14 58 0" fill="#a8763a" stroke="#3a2a14" stroke-width="3"/><rect x="38" y="30" width="10" height="12" rx="2" fill="#e8c26a" stroke="#3a2a14" stroke-width="2"/></svg>';
 
 function mjBest(id){ return store.get('mj.'+id, 0); }
-function mjSaveBest(id,st){ if(st>mjBest(id)) store.set('mj.'+id, st); }
+function mjSaveBest(id,st){ if(st>mjBest(id)) store.set('mj.'+id, st); if(me&&!DEMO) rpc('loc_estrella',{p_juego:id,p_estrellas:st}).catch(function(){}); }
 function mjStars(n){ var s=''; for(var i=0;i<3;i++) s+=(i<n?'★':'<span class="off">★</span>'); return s; }
 
 var MINI={ zurron:{titulo:'Hacer el zurrón', tramo:0, jugar:jugarZurron} };
@@ -3761,6 +3762,21 @@ function premiosHtml(id){ var b=mjBest(id), P=PREMIOS[id];
   if(!P) return h;
   return h+'<div class="premios">'+P.map(function(k,i){ var ok=b>i;
     return '<div class="'+(ok?'':'no')+'"><span>'+['★','★★','★★★'][i]+'</span><div class="box">'+eqIcon(k)+'</div>'+EQ[k].n+'</div>'; }).join('')+'</div>'; }
+
+/* ================= ESTRELLAS EN LA CUENTA (supabase/la-otra-comunidad-estrellas.sql) =================
+   Al entrar: la primera vez en cada cuenta sube lo que hubiera en el móvil; luego manda lo de la cuenta.
+   Si el SQL aún no está ejecutado, falla en silencio y todo sigue en el móvil como antes. */
+function estrellasSync(){
+  if(DEMO||!me) return;
+  var flag='mjCuenta.'+me.id, ids=Object.keys(MINI), sub=[];
+  if(!store.get(flag,false)) ids.forEach(function(id){ var b=mjBest(id); if(b>0) sub.push(rpc('loc_estrella',{p_juego:id,p_estrellas:b})); });
+  Promise.all(sub).then(function(){ return rpc('loc_estrellas'); }).then(function(r){
+    if(!Array.isArray(r)) return;
+    store.set(flag,true);
+    ids.forEach(function(id){ store.del('mj.'+id); });
+    r.forEach(function(x){ if(x&&x.juego) store.set('mj.'+x.juego, Number(x.estrellas)||0); });
+  }).catch(function(){});
+}
 
 
 if('serviceWorker' in navigator && !DEMO && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(function(){}); }

@@ -477,6 +477,7 @@ Promise.all([
   requestAnimationFrame(loop);
 });
 function start(){
+  if(typeof estrellasSync==='function') estrellasSync();
   rpc('loc_leidas').then(function(r){ shown=new Set((r||[]).map(Number)); refresh(); }).catch(function(){ refresh(); });
 }
 function refresh(){

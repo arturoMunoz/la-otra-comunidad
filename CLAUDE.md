@@ -30,7 +30,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Máster del juego (toque de rol/JRPG): solo Arturo. Él también juega, así que lo que haga como Máster tiene que verse en el grupo.
 
 ## Cómo se trabaja (para una sesión nueva)
-- Construir: `python3 build.py` (web, con `?v=` en los assets). Prototipo: `python3 build.py --demo-files <scratchpad>/demo/index.html`, copiar `public/assets` a `<scratchpad>/demo/assets` y publicar en el Artifact https://claude.ai/artifact/3QbVGnRiGz3LkGq8Xz2M3U con el mapa `files` (solo hace falta pasar los archivos nuevos o cambiados).
+- Construir: `python3 build.py` (web, con `?v=` en los assets). Prototipo: `python3 build.py --demo-files <scratchpad>/demo/index.html`, copiar `public/assets` a `<scratchpad>/demo/assets` y publicar en el Artifact https://claude.ai/artifact/Fcc57y5NctqsYtqfbvwjNs (slug 76589623-d12f-4cae-b733-9f416d2a3b5c; el antiguo 3QbVGnRiGz3LkGq8Xz2M3U ya no se puede tocar desde sesiones nuevas) con el mapa `files` (solo hace falta pasar los archivos nuevos o cambiados).
 - Probar: servidor `python3 -m http.server 8766` en la carpeta demo (lanzado en segundo plano) + Playwright; en el prototipo `me` se pone con `localStorage loc.demoMe`, km con `loc.demoSteps`/`loc.km`.
 - Fondos: `ESPEJO=1 Q=84 HD=3 ALTO=420 python3 tools/fondo.py tools/fondos/X.png NOMBRE FILA_PIES` (FILA_PIES ≈ 1380-1415 en las de 1024x1536). Capas en manifest con "hd":3,"espejo":true, y=-192 / y=210.
 - Recortes sobre magenta: con scipy (máscara r,b>150 g<120, componentes, quitar borde rosa). Originales de ChatGPT en `tools/fondos`, `tools/ui`, `tools/mapa`.
@@ -55,7 +55,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Vídeo entreacto II → III (Bree → Cima de los Vientos).
 - SQL por ejecutar o confirmar: `supabase/la-otra-comunidad-semana.sql` (loc_semana), `la-otra-comunidad-registrados.sql`.
 - Porru veía el doble de pasos en iPhone (probable iPhone + reloj): filtro «Fuente» en el atajo; sin confirmar.
-- Premios de minijuegos (3 por juego, uno por estrella) montados: ver `docs/premios.md`. Faltan los dibujos (prompts A y B en ese doc) y guardar las estrellas en Supabase (ahora solo en el móvil). Capa gris y pantalón mostaza ya se ganan con estrellas (niebla y canción).
+- Premios de minijuegos (3 por juego, uno por estrella) montados: ver `docs/premios.md`. Faltan los dibujos (prompts A y B en ese doc). Estrellas en la cuenta: `supabase/la-otra-comunidad-estrellas.sql` (tabla `loc_estrellas`, `loc_estrellas()`/`loc_estrella()`) POR EJECUTAR; el cliente (`estrellasSync` en minijuegos.js) ya lo usa y si no está sigue en el móvil. Capa gris y pantalón mostaza ya se ganan con estrellas (niebla y canción).
 - «Seguir la canción» rehecha el 04/11 (ChatGPT, 2 vueltas): 4 carriles con botones de colores tipo Guitar Hero (solo cuentan los toques cerca de los botones), aviso «¡ahora!», ¡Perfecto!/¡Bien!/Fallo, cuenta atrás 3-2-1, notas a la vez y arrastre, ~21 s, 56 puntos. Falta probar con dos pulgares en iPhone.
 - Objetos de cabeza del sistema por capas (tiara, sombrero, etc.).
 
