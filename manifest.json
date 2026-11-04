@@ -297,7 +297,9 @@
 "sauce_dormido": "assets/mj/sauce_dormido.webp",
 "bosque_fondo": "assets/mj/bosque_fondo.webp",
 "bosque_arbol": "assets/mj/bosque_arbol.webp",
-"bosque_claro": "assets/mj/bosque_claro.webp"
+"bosque_claro": "assets/mj/bosque_claro.webp",
+"tumulo_fondo": "assets/mj/tumulo_fondo.webp",
+"tumulo_mano": "assets/mj/tumulo_mano.webp"
 },
 "papiro": "assets/papiro.webp",
 "andar": {

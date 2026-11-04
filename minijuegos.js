@@ -2795,467 +2795,454 @@ function jugarBosque(el,cerrar){
 MINI.bosque={titulo:'El bosque cambia los caminos',tramo:9,jugar:jugarBosque};
 
 
+/* ---------- LA MANO EN EL TÚMULO (tramo 13) · arcade tipo Whac-A-Mole, ChatGPT 04/11/2026 ---------- */
+/* 
+IMÁGENES:
+M.mj.tumulo_fondo: interior vertical de piedra de un túmulo, luz fría verdosa.
+M.mj.tumulo_mano: mano de sombra fría apuntando hacia arriba, fondo transparente.
+Si faltan, se muestra un hueco gris.
+*/
+
 function jugarNiebla(el,cerrar){
-  var ID='niebla', TIT='Encontrar a los otros en la niebla';
+  var ID='niebla',TIT='La mano en el túmulo',DUR=30;
 
-  /*
-  IMÁGENES NECESARIAS:
-
-  M.mj.niebla_fondo
-  Páramo oscuro cubierto de niebla, vertical.
-
-  M.mj.niebla_amigo1
-  Primer hobbit, cuerpo entero.
-
-  M.mj.niebla_amigo2
-  Segundo hobbit, cuerpo entero.
-
-  M.mj.niebla_amigo3
-  Tercer hobbit, cuerpo entero.
-
-  Los tres personajes deben tener fondo transparente.
-  Si falta una imagen, aparece un hueco gris.
-  */
-
-  function imagen(clave){
-    return mjImg(clave,
-      '<div style="width:100%;height:100%;background:#777;border:2px solid #555"></div>'
-    );
+  function img(k){
+    return mjImg(k,'<div style="width:100%;height:100%;background:#777;border:2px solid #555"></div>');
   }
 
   function intro(){
     mjIntro(el,ID,TIT,
-      '<p>La niebla se ha tragado a tus compañeros. Sus voces se pierden entre las colinas frías.</p>',
-      empezar,cerrar
-    );
+      '<p>Despiertas sobre la piedra fría del túmulo y algo se arrastra hacia tus amigos.</p>',
+      empezar,cerrar);
   }
 
   function empezar(){
-    if(el._stop) el._stop();
+    if(el._stop)el._stop();
 
-    el.innerHTML=
-      mjCabecera(TIT,
-        '<div class="stat"><span id="nieblaCuenta">0 / 3</span></div>'
-      )+
-
-      '<div class="field" id="nieblaCampo" style="background:#777;touch-action:none;cursor:crosshair">'+
-
-        '<div style="position:absolute;inset:0;pointer-events:none">'+
-          imagen('niebla_fondo')+
-        '</div>'+
-
-        '<div id="nieblaAmigos" style="position:absolute;inset:0;pointer-events:none"></div>'+
-
-        '<div id="nieblaVelo" style="position:absolute;inset:0;pointer-events:none;background:#050b10"></div>'+
-
-        '<div id="nieblaFoco" style="position:absolute;width:30px;height:30px;border:2px solid #f3d994;border-radius:50%;background:radial-gradient(circle,#fff9d8 0,#e8bd69 20%,rgba(232,189,105,.10) 68%,transparent 75%);box-shadow:0 0 18px #d3b16e;transform:translate(-50%,-50%);pointer-events:none;z-index:5"></div>'+
-
-        '<div class="meter" style="pointer-events:none;z-index:6">'+
-          '<span>Frío</span>'+
-          '<div class="b"><i id="nieblaFrio" style="background:#7eb1c9"></i></div>'+
-        '</div>'+
-
-        '<div class="whisper" id="nieblaMensaje" style="top:34%;z-index:7"></div>'+
-
+    el.innerHTML=mjCabecera(TIT,
+      '<div class="stat"><span id="tumT">30 s</span><span id="tumP">0 cortes</span></div><button class="x" type="button" aria-label="Cerrar">×</button>')+
+      '<style>'+
+      '#tumF .tumFondo img{object-fit:cover!important}'+
+      '@keyframes tumTiritar{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}'+
+      '@keyframes tumDestello{0%{opacity:1;transform:translate(-50%,-50%) scale(.5) rotate(45deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.6) rotate(45deg)}}'+
+      '</style>'+
+      '<div class="field" id="tumF" style="touch-action:none;background:#777;user-select:none;-webkit-user-select:none">'+
+      '<div class="tumFondo" style="position:absolute;inset:0;pointer-events:none">'+img('tumulo_fondo')+'</div>'+
+      '<div style="position:absolute;inset:0;background:rgba(5,17,18,.32);pointer-events:none"></div>'+
+      '<div id="tumAmigos" style="position:absolute;inset:0;pointer-events:none;z-index:3"></div>'+
+      '<div id="tumManos" style="position:absolute;inset:0;pointer-events:none;z-index:4"></div>'+
+      '<div id="tumLuz" style="position:absolute;inset:0;background:linear-gradient(#ffe5a8,rgba(245,185,94,.5) 40%,transparent);opacity:0;transition:opacity 1s;pointer-events:none;z-index:6"></div>'+
+      '<div id="tumCuenta" style="position:absolute;inset:0;display:grid;place-items:center;color:#f6e6bc;font:800 clamp(65px,21vw,110px) var(--title);text-shadow:0 3px 6px #15140f,0 0 24px #dac58d;pointer-events:none;z-index:8">3</div>'+
       '</div>';
 
-    var F=el.querySelector('#nieblaCampo');
-    var A=el.querySelector('#nieblaAmigos');
-    var velo=el.querySelector('#nieblaVelo');
-    var foco=el.querySelector('#nieblaFoco');
-    var barra=el.querySelector('#nieblaFrio');
-    var cuenta=el.querySelector('#nieblaCuenta');
-    var mensaje=el.querySelector('#nieblaMensaje');
+    var F=el.querySelector('#tumF');
+    var A=el.querySelector('#tumAmigos');
+    var MN=el.querySelector('#tumManos');
+    var L=el.querySelector('#tumLuz');
+    var reloj=el.querySelector('#tumT');
+    var puntosEl=el.querySelector('#tumP');
+    var cuenta=el.querySelector('#tumCuenta');
 
-    var x=.50, y=.83;
-    var frio=0, encontrados=0, amigos=[];
-    var previo=performance.now();
-    var raf=0, ultimoPitido=0, mensajeHasta=0;
-    var acabado=false, arrastrando=false;
-    var dedo=null, audio=null;
+    var amigos=[],manos=[],puntos=0;
+    var terminado=false,alba=false,albaInicio=0;
+    var raf=0,inicio=performance.now()+3000;
+    var anterior=performance.now(),siguiente=1.2,audio=null;
+    var candidatos=[],p,i,j,tmp;
 
-    /*
-    Sonidos suaves de proximidad.
-    No necesita archivos de audio.
-    */
+    if(typeof people!=='undefined'&&people&&typeof people.length==='number'){
+      for(i=0;i<people.length;i++){
+        p=people[i];
+        if(!p)continue;
+        if(typeof me!=='undefined'&&me&&(
+          p===me||
+          (p.id!=null&&me.id!=null&&String(p.id)===String(me.id))||
+          (p.nombre&&me.nombre&&p.nombre===me.nombre)
+        ))continue;
+        candidatos.push(p);
+      }
+    }
 
-    var Audio=window.AudioContext||
-              window.webkitAudioContext;
+    for(i=candidatos.length-1;i>0;i--){
+      j=Math.floor(Math.random()*(i+1));
+      tmp=candidatos[i];
+      candidatos[i]=candidatos[j];
+      candidatos[j]=tmp;
+    }
+
+    function retrato(n,p){
+      if(!p||typeof hobbitFoto!=='function')return;
+
+      try{
+        var h=hobbitFoto(p.hobbit),im;
+
+        if(typeof h==='string'&&h){
+          if(h.charAt(0)==='<'){
+            n.innerHTML=h;
+          }else{
+            im=document.createElement('img');
+            im.src=h;
+            n.appendChild(im);
+          }
+        }else if(h&&h.nodeType){
+          n.appendChild(h.cloneNode(true));
+        }
+
+        var imgs=n.querySelectorAll('img');
+
+        for(var q=0;q<imgs.length;q++){
+          imgs[q].style.cssText=
+            'width:100%;height:100%;object-fit:cover;image-rendering:pixelated';
+        }
+      }catch(e){}
+    }
+
+    for(i=0;i<3;i++){
+      p=candidatos[i]||null;
+
+      var grupo=document.createElement('div');
+      grupo.style.cssText=
+        'position:absolute;left:'+((i+.5)*100/3)+'%;top:15%;width:31%;'+
+        'transform:translate(-50%,-50%);display:flex;align-items:center;'+
+        'flex-direction:column;gap:4px;text-align:center';
+
+      var cara=document.createElement('div');
+      cara.style.cssText=
+        'width:64px;height:64px;max-width:75%;aspect-ratio:1;'+
+        'border-radius:50%;border:3px solid #c9ba92;background:#62412a;'+
+        'overflow:hidden;animation:tumTiritar .48s linear infinite;'+
+        'box-shadow:0 0 9px #b5d1d0';
+
+      retrato(cara,p);
+
+      var nombre=document.createElement('span');
+      nombre.style.cssText=
+        'color:#f5ebd4;font-weight:800;font-size:12px;'+
+        'text-shadow:0 2px 3px #000;max-width:100%;overflow:hidden;'+
+        'text-overflow:ellipsis;white-space:nowrap';
+
+      nombre.textContent=p&&p.nombre?p.nombre:'Compañero';
+
+      grupo.appendChild(cara);
+      grupo.appendChild(nombre);
+      A.appendChild(grupo);
+
+      amigos.push({
+        x:(i+.5)/3,
+        y:.15,
+        muerto:false,
+        cara:cara
+      });
+    }
 
     try{
-      if(Audio){
-        audio=new Audio();
+      var AC=window.AudioContext||window.webkitAudioContext;
 
-        if(audio.state==='suspended'){
-          audio.resume();
-        }
+      if(AC){
+        audio=new AC();
+        if(audio.state==='suspended')audio.resume();
       }
     }catch(e){
       audio=null;
     }
 
-    function tono(frecuencia,volumen){
-      if(!audio||audio.state==='closed') return;
+    function metal(){
+      if(!audio||audio.state==='closed')return;
 
       try{
+        if(audio.state==='suspended')audio.resume();
+
         var t=audio.currentTime;
-        var os=audio.createOscillator();
+        var o1=audio.createOscillator();
+        var o2=audio.createOscillator();
         var g=audio.createGain();
 
-        os.type='sine';
-        os.frequency.setValueAtTime(frecuencia,t);
+        o1.type='sine';
+        o2.type='triangle';
+
+        o1.frequency.setValueAtTime(1150,t);
+        o1.frequency.exponentialRampToValueAtTime(650,t+.14);
+
+        o2.frequency.setValueAtTime(1700,t);
+        o2.frequency.exponentialRampToValueAtTime(1050,t+.13);
 
         g.gain.setValueAtTime(.0001,t);
+        g.gain.exponentialRampToValueAtTime(.065,t+.009);
+        g.gain.exponentialRampToValueAtTime(.0001,t+.19);
 
-        g.gain.exponentialRampToValueAtTime(
-          volumen,t+.025
-        );
-
-        g.gain.exponentialRampToValueAtTime(
-          .0001,t+.19
-        );
-
-        os.connect(g);
+        o1.connect(g);
+        o2.connect(g);
         g.connect(audio.destination);
 
-        os.start(t);
-        os.stop(t+.21);
-
+        o1.start(t);
+        o2.start(t);
+        o1.stop(t+.20);
+        o2.stop(t+.20);
       }catch(e){}
     }
 
-    /*
-    Tres compañeros escondidos en distintas
-    zonas del escenario.
-    */
+    function vivos(){
+      var a=[];
+      for(var z=0;z<3;z++){
+        if(!amigos[z].muerto)a.push(z);
+      }
+      return a;
+    }
 
-    function crearAmigo(clave,px,py){
-      var c=document.createElement('div');
+    function crear(t){
+      var disponibles=vivos();
+      if(!disponibles.length)return;
 
-      c.style.cssText=
-        'position:absolute;'+
-        'width:70px;'+
-        'height:88px;'+
-        'transform:translate(-50%,-50%);';
+      var destino=disponibles[Math.floor(Math.random()*disponibles.length)];
+      var modo=Math.random(),x,y;
 
-      c.style.left=(px*100)+'%';
-      c.style.top=(py*100)+'%';
+      if(modo<.58){
+        x=.08+Math.random()*.84;
+        y=1.08;
+      }else if(modo<.79){
+        x=-.10;
+        y=.63+Math.random()*.29;
+      }else{
+        x=1.10;
+        y=.63+Math.random()*.29;
+      }
 
-      c.innerHTML=
-        '<div class="halo" style="position:absolute;inset:-15px;background:radial-gradient(circle,rgba(250,217,137,.65),transparent 70%);opacity:0"></div>'+
-        '<div style="position:absolute;inset:0">'+
-          imagen(clave)+
-        '</div>';
+      var n=document.createElement('div');
+      n.style.cssText=
+        'position:absolute;left:0;top:0;width:64px;height:128px;'+
+        'transform:translate(-50%,-50%);filter:drop-shadow(0 0 6px #cfe9ef) drop-shadow(0 0 14px #85b4c1) brightness(1.25);'+
+        'will-change:left,top;pointer-events:none';
 
-      A.appendChild(c);
+      n.innerHTML=img('tumulo_mano');
+      MN.appendChild(n);
 
-      amigos.push({
-        x:px,
-        y:py,
-        el:c,
-        halo:c.querySelector('.halo'),
-        hallado:false
+      manos.push({
+        x:x,y:y,px:0,py:0,target:destino,
+        t:t,phase:Math.random()*6.28,
+        muerta:false,el:n
       });
     }
 
-    crearAmigo(
-      'niebla_amigo1',
-      .16+Math.random()*.17,
-      .28+Math.random()*.18
-    );
+    function destello(x,y){
+      var d=document.createElement('div');
 
-    crearAmigo(
-      'niebla_amigo2',
-      .66+Math.random()*.17,
-      .37+Math.random()*.17
-    );
+      d.style.cssText=
+        'position:absolute;left:'+x+'px;top:'+y+'px;'+
+        'width:55px;height:55px;pointer-events:none;z-index:7;'+
+        'background:linear-gradient(90deg,transparent 43%,#fff 49%,#fff 52%,transparent 58%),'+
+        'linear-gradient(transparent 43%,#fff 49%,#fff 52%,transparent 58%);'+
+        'filter:drop-shadow(0 0 12px white);'+
+        'animation:tumDestello .22s ease-out forwards';
 
-    crearAmigo(
-      'niebla_amigo3',
-      .66+Math.random()*.17,
-      .71+Math.random()*.12
-    );
+      MN.appendChild(d);
 
-    /*
-    Distancia real en píxeles entre la luz
-    y cada compañero.
-    */
-
-    function distancia(a){
-      var dx=(a.x-x)*F.clientWidth;
-      var dy=(a.y-y)*F.clientHeight;
-
-      return Math.sqrt(dx*dx+dy*dy);
+      d.onanimationend=function(){
+        if(d.parentNode)d.parentNode.removeChild(d);
+      };
     }
 
-    /*
-    La niebla es casi opaca.
-    Solo se revela el pequeño círculo
-    alrededor del dedo.
+    function cortar(h){
+      if(h.muerta)return;
 
-    La luz se vuelve más cálida e intensa
-    cuanto más cerca está un compañero.
-    */
+      h.muerta=true;
+      puntos++;
+      puntosEl.textContent=puntos+' cortes';
 
-    function pintar(){
-      var px=x*F.clientWidth;
-      var py=y*F.clientHeight;
+      metal();
+      destello(h.px,h.py);
 
-      var cerca=9999;
-      var i,d;
-
-      velo.style.background=
-        'radial-gradient(circle at '+px+'px '+py+'px,'+
-        'rgba(5,9,13,.03) 0px,'+
-        'rgba(5,9,13,.14) 40px,'+
-        'rgba(5,9,13,.78) 106px,'+
-        'rgba(5,9,13,.985) 172px)';
-
-      foco.style.left=(x*100)+'%';
-      foco.style.top=(y*100)+'%';
-
-      for(i=0;i<amigos.length;i++){
-        if(amigos[i].hallado) continue;
-
-        d=distancia(amigos[i]);
-
-        if(d<cerca) cerca=d;
-
-        amigos[i].halo.style.opacity=
-          d<195?
-          (0.12+.75*(1-d/195)).toFixed(2):
-          '0';
-      }
-
-      foco.style.boxShadow=
-        '0 0 '+
-        Math.round(
-          16+32*Math.max(0,1-cerca/210)
-        )+
-        'px '+
-        (cerca<185?'#f4cc7d':'#9bafaa');
-
-      barra.style.width=frio.toFixed(1)+'%';
-
-      return cerca;
+      h.el.style.transition='opacity .17s,transform .17s';
+      h.el.style.opacity='0';
+      h.el.style.transform='translate(-50%,-50%) scale(.1)';
+      h.borrar=performance.now()+180;
     }
 
-    /*
-    Resultado:
-    0 estrellas si vence el frío.
-    1 estrella si escapan por poco.
-    2 estrellas si queda bastante calor.
-    3 estrellas si encuentran a todos rápido.
-    */
+    F.onpointerdown=function(e){
+      if(terminado||alba||performance.now()<inicio)return;
 
-    function terminar(victoria){
-      if(acabado) return;
+      e.preventDefault();
 
-      limpiar();
-
-      var estrellas=victoria?
-        (frio<35?3:frio<68?2:1):0;
-
-      var textos=[
-        'El frío vence. La niebla os separa y las voces se apagan.',
-        'Encuentras a los tres, aunque casi os alcanza el frío.',
-        'Los tres vuelven a reunirse antes de que caiga la noche.',
-        'Reúnes a todos sin perder la calma. ¡La niebla no puede con vosotros!'
-      ];
-
-      mjFin(
-        el,ID,TIT,
-        estrellas,
-        textos[estrellas],
-        empezar,cerrar
-      );
-    }
-
-    /*
-    Mover el círculo de luz con un dedo.
-    Al acercarse lo suficiente a un amigo,
-    este queda encontrado automáticamente.
-    */
-
-    function explorar(e){
       var r=F.getBoundingClientRect();
+      var x=e.clientX-r.left,y=e.clientY-r.top;
+      var mejor=null,dist=64,k,h,d;
 
-      x=Math.max(
-        .05,
-        Math.min(.95,(e.clientX-r.left)/r.width)
-      );
+      for(k=0;k<manos.length;k++){
+        h=manos[k];
+        if(h.muerta)continue;
 
-      y=Math.max(
-        .10,
-        Math.min(.92,(e.clientY-r.top)/r.height)
-      );
+        d=Math.sqrt(
+          Math.pow(x-h.px,2)+
+          Math.pow(y-h.py,2)
+        );
 
-      var i;
-
-      for(i=0;i<amigos.length;i++){
-
-        if(!amigos[i].hallado&&
-           distancia(amigos[i])<49){
-
-          amigos[i].hallado=true;
-          amigos[i].el.style.display='none';
-
-          encontrados++;
-
-          frio=Math.max(0,frio-7);
-
-          cuenta.textContent=encontrados+' / 3';
-
-          mensaje.textContent=
-            '¡Compañero encontrado!';
-
-          mensaje.classList.add('on');
-
-          mensajeHasta=
-            performance.now()+900;
-
-          tono(660,.035);
-
-          if(typeof blip==='function'){
-            blip();
-          }
-
-          if(encontrados===3){
-            terminar(true);
-            return;
-          }
+        if(d<dist){
+          dist=d;
+          mejor=h;
         }
       }
 
-      pintar();
+      if(mejor)cortar(mejor);
+    };
+
+    function perderAmigo(k){
+      if(amigos[k].muerto)return;
+
+      amigos[k].muerto=true;
+      amigos[k].cara.style.filter='grayscale(1) brightness(.55)';
+      amigos[k].cara.style.borderColor='#818e93';
+      amigos[k].cara.style.boxShadow='0 0 11px #8aaab6';
+      amigos[k].cara.style.animation='none';
+
+      var otros=vivos(),z,h;
+
+      for(z=manos.length-1;z>=0;z--){
+        h=manos[z];
+
+        if(!h.muerta&&h.target===k){
+          h.el.remove();
+          manos.splice(z,1);
+        }
+      }
+
+      if(!otros.length)terminar();
     }
 
-    /*
-    Controles táctiles.
-    Un solo dedo, sin desplazamiento
-    de la página mientras se explora.
-    */
+    function limpiar(){
+      if(terminado)return;
 
-    F.onpointerdown=function(e){
-      if(acabado||arrastrando) return;
+      terminado=true;
+      cancelAnimationFrame(raf);
+      F.onpointerdown=null;
 
-      e.preventDefault();
-
-      arrastrando=true;
-      dedo=e.pointerId;
-
-      try{
-        F.setPointerCapture(dedo);
-      }catch(err){}
-
-      explorar(e);
-    };
-
-    F.onpointermove=function(e){
-      if(!arrastrando||
-         e.pointerId!==dedo||
-         acabado) return;
-
-      e.preventDefault();
-      explorar(e);
-    };
-
-    function soltar(e){
-      if(e.pointerId===dedo){
-        arrastrando=false;
-        dedo=null;
+      if(audio){
+        try{audio.close();}catch(e){}
+        audio=null;
       }
     }
 
-    F.onpointerup=soltar;
-    F.onpointercancel=soltar;
-    F.onlostpointercapture=soltar;
+    function terminar(){
+      if(terminado)return;
 
-    /*
-    El frío aumenta continuamente.
-    Los sonidos son más frecuentes y agudos
-    cuando la luz se aproxima a alguien.
-    */
+      var st=vivos().length;
+
+      var txt=[
+        'La oscuridad se cierra y el silencio se adueña de la cámara.',
+        'Una voz responde al amanecer, aunque la noche ha dejado su huella.',
+        'Dos compañeros resisten hasta la primera luz entre las piedras.',
+        'Los tres alcanzan juntos la mañana: las sombras retroceden.'
+      ];
+
+      limpiar();
+      mjFin(el,ID,TIT,st,txt[st],empezar,cerrar);
+    }
 
     function tick(ahora){
-      if(acabado) return;
+      if(terminado)return;
 
-      var dt=Math.max(
-        0,
-        Math.min(.12,(ahora-previo)/1000)
-      );
+      var t=(ahora-inicio)/1000;
+      var dt=Math.max(0,Math.min(.05,(ahora-anterior)/1000));
+      anterior=ahora;
 
-      previo=ahora;
-
-      frio=Math.min(
-        100,
-        frio+dt*2.05
-      );
-
-      var cerca=pintar();
-
-      if(mensajeHasta&&ahora>mensajeHasta){
-        mensaje.classList.remove('on');
-        mensajeHasta=0;
-      }
-
-      if(frio>=100){
-        terminar(false);
+      if(t<0){
+        cuenta.textContent=Math.ceil(-t);
+        raf=requestAnimationFrame(tick);
         return;
       }
 
-      if(cerca<220&&
-         ahora-ultimoPitido>
-         350+900*Math.min(1,cerca/220)){
+      cuenta.style.display='none';
+      reloj.textContent=Math.max(0,Math.ceil(DUR-t))+' s';
 
-        ultimoPitido=ahora;
+      if(t>=DUR&&!alba){
+        alba=true;
+        albaInicio=ahora;
+        L.style.opacity='1';
 
-        tono(
-          350+Math.round(
-            (1-cerca/220)*290
-          ),
-          .009+.015*(1-cerca/220)
-        );
+        for(i=0;i<manos.length;i++){
+          manos[i].el.style.transition='opacity .7s,transform .7s';
+          manos[i].el.style.opacity='0';
+          manos[i].el.style.transform='translate(-50%,-50%) scale(.2)';
+        }
+      }
+
+      if(alba){
+        if(ahora-albaInicio>=900){
+          terminar();
+          return;
+        }
+
+        raf=requestAnimationFrame(tick);
+        return;
+      }
+
+      if(t>=siguiente){
+        var max=t<10?2:3;
+
+        if(manos.length<max)crear(t);
+
+        siguiente=t+1.2-.58*Math.min(1,t/DUR);
+      }
+
+      var w=F.clientWidth,hgt=F.clientHeight;
+
+      for(i=manos.length-1;i>=0;i--){
+        var h=manos[i];
+
+        if(h.muerta){
+          if(ahora>=h.borrar){
+            h.el.remove();
+            manos.splice(i,1);
+          }
+          continue;
+        }
+
+        var destino=amigos[h.target];
+
+        if(destino.muerto){
+          h.el.remove();
+          manos.splice(i,1);
+          continue;
+        }
+
+        var dx=(destino.x-h.x)*w;
+        var dy=(destino.y-h.y)*hgt;
+        var distancia=Math.sqrt(dx*dx+dy*dy);
+
+        if(distancia<30){
+          perderAmigo(h.target);
+          if(terminado)return;
+          continue;
+        }
+
+        var ux=dx/distancia,uy=dy/distancia;
+        var vel=67+66*Math.min(1,t/DUR);
+
+        h.x+=ux*vel*dt/w;
+        h.y+=uy*vel*dt/hgt;
+
+        var vaiven=Math.sin((t-h.t)*7+h.phase)*5;
+
+        h.px=h.x*w-uy*vaiven;
+        h.py=h.y*hgt+ux*vaiven;
+
+        h.el.style.left=h.px+'px';
+        h.el.style.top=h.py+'px';
+
+        h.el.style.transform=
+          'translate(-50%,-50%) rotate('+
+          Math.atan2(dx,-dy)*180/Math.PI+'deg)';
       }
 
       raf=requestAnimationFrame(tick);
     }
 
-    /*
-    Limpieza al cerrar, terminar o repetir.
-    */
-
-    function limpiar(){
-      acabado=true;
-
-      cancelAnimationFrame(raf);
-
-      F.onpointerdown=null;
-      F.onpointermove=null;
-      F.onpointerup=null;
-      F.onpointercancel=null;
-      F.onlostpointercapture=null;
-
-      if(audio){
-        try{
-          audio.close();
-        }catch(e){}
-
-        audio=null;
-      }
-    }
-
+    el.querySelector('.x').onclick=cerrar;
     el._stop=limpiar;
-
-    pintar();
-
     raf=requestAnimationFrame(tick);
   }
 
   intro();
 }
 
-MINI.niebla={titulo:'Encontrar a los otros en la niebla',tramo:13,jugar:jugarNiebla};
+MINI.niebla={titulo:'La mano en el túmulo',tramo:13,jugar:jugarNiebla};
 
 /* en la niebla, los tres que buscas son de verdad tres de la Comunidad (con su cara) */
 (function(){ var j=MINI.niebla.jugar; MINI.niebla.jugar=function(el,cerrar){
