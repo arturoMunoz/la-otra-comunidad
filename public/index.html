@@ -3658,7 +3658,7 @@ function jugarNiebla(el,cerrar){
     var amigos=[],manos=[],puntos=0;
     var terminado=false,alba=false,albaInicio=0;
     var raf=0,inicio=performance.now()+3000;
-    var anterior=performance.now(),siguiente=1.2,audio=null;
+    var anterior=performance.now(),siguiente=.6,audio=null;
     var candidatos=[],p,i,j,tmp;
 
     if(typeof people!=='undefined'&&people&&typeof people.length==='number'){
@@ -3875,7 +3875,7 @@ function jugarNiebla(el,cerrar){
 
       var r=F.getBoundingClientRect();
       var x=e.clientX-r.left,y=e.clientY-r.top;
-      var mejor=null,dist=64,k,h,d;
+      var mejor=null,dist=56,k,h,d;
 
       for(k=0;k<manos.length;k++){
         h=manos[k];
@@ -3986,11 +3986,11 @@ function jugarNiebla(el,cerrar){
       }
 
       if(t>=siguiente){
-        var max=t<10?2:3;
+        var max=t<8?3:t<18?4:5;
 
         if(manos.length<max)crear(t);
 
-        siguiente=t+1.2-.58*Math.min(1,t/DUR);
+        siguiente=t+.85-.5*Math.min(1,t/DUR);
       }
 
       var w=F.clientWidth,hgt=F.clientHeight;
@@ -4025,7 +4025,7 @@ function jugarNiebla(el,cerrar){
         }
 
         var ux=dx/distancia,uy=dy/distancia;
-        var vel=67+66*Math.min(1,t/DUR);
+        var vel=95+100*Math.min(1,t/DUR);
 
         h.x+=ux*vel*dt/w;
         h.y+=uy*vel*dt/hgt;
