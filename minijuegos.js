@@ -181,7 +181,7 @@ var SVG_SETA='<svg viewBox="0 0 40 40"><path d="M6 20a14 12 0 0 1 28 0z" fill="#
 var SVG_PERRO='<svg viewBox="0 0 40 40"><ellipse cx="20" cy="24" rx="13" ry="11" fill="#7a5426" stroke="#2b2418" stroke-width="2"/><path d="M8 16l-2-10 9 6zM32 16l2-10-9 6z" fill="#5a3e1e" stroke="#2b2418" stroke-width="2"/><circle cx="15" cy="22" r="2" fill="#2b2418"/><circle cx="25" cy="22" r="2" fill="#2b2418"/><ellipse cx="20" cy="29" rx="4" ry="3" fill="#2b2418"/></svg>';
 var SVG_JINETE='<svg viewBox="0 0 120 110"><path d="M10 100l12-40c4-14 18-22 34-22h20c14 0 24 8 28 20l8 42h-12l-6-26-10 6v20H72V80H44v20H32V78l-8 22z" fill="#120e0a"/><path d="M60 40c-4-18 0-34 12-38 10 6 12 22 6 38z" fill="#1d1712"/></svg>';
 
-function mjImg(k,alt){ return (M.mj&&M.mj[k])?'<img src="'+M.mj[k]+'" alt="" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated">':(alt||''); }
+function mjImg(k,alt){ return (M.mj&&M.mj[k])?'<img src="'+M.mj[k]+'" alt="" style="width:100%;height:100%;object-fit:'+(/_fondo$/.test(k)?'cover':'contain')+';image-rendering:pixelated">':(alt||''); }
 function mjCabecera(t,extra){ return '<div class="hd"><h2>'+t+'</h2>'+(extra||'<button class="x" type="button" aria-label="Cerrar">×</button>')+'</div>'; }
 function mjIntro(el,id,titulo,html,go,cerrar){
   el.innerHTML=mjCabecera(titulo)+'<div class="intro">'+html+(mjBest(id)?'<p class="note">Tu mejor resultado: '+mjStars(mjBest(id))+'</p>':'')+'<button class="go" type="button" id="mjGo">Empezar</button></div>';
@@ -1485,6 +1485,8 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     for(var i=0;i<p.length;i+=4){ if(!p[i+3]) continue; var r=p[i],g=p[i+1],bb=p[i+2];
       if(r>=120&&bb>=0.63*g&&g>0.5*r&&g<0.85*r&&r-bb>35){ p[i]=Math.min(255,r*k[0]); p[i+1]=Math.min(255,g*k[1]); p[i+2]=Math.min(255,bb*k[2]); } }
     x.putImageData(d,0,0); return PC[h]=c; }
+  window.hobbitFoto=function(h){ if(!C.cabezas[h]||!listo(h)) return null; var FW=53,FH=74,c=document.createElement('canvas'); c.width=FW; c.height=FH; var x=c.getContext('2d'); x.imageSmoothingEnabled=false;
+    [pielCuerpo(h),IM.mochila,tinte(IM.capa,[110,82,52],.25,1.1),IM['cab_'+h]].forEach(function(im){ x.drawImage(im,FW*8,0,FW,FH,0,0,FW,FH); }); try{ return c.toDataURL(); }catch(e){ return null; } };
   function listo(h){ var ks=Object.keys(C.capas).concat(['cab_'+h]); return ks.every(function(k){ return IM[k]&&IM[k].complete&&IM[k].width; }); }
   var firma='', H=null;
   function monta(h){
@@ -1615,3 +1617,1245 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
       var r2=document.createElement('img'); r2.className='rodillo abajo'; r2.src=M.ui.rodillo; r2.alt=''; w.appendChild(r2); } }); }); });
   mo.observe(document.getElementById('app'),{childList:true});
 })();
+
+/* ================= ACTO II · minijuegos escritos con ChatGPT (kit-minijuegos.html) ================= */
+
+function jugarSauce(el,cerrar){
+  var ID='sauce', TIT='No dormirse bajo el sauce', DUR=40;
+
+  function imagen(k){
+    return mjImg(k,
+      '<div style="width:100%;height:100%;background:#777;border:2px solid #555"></div>'
+    );
+  }
+
+  function intro(){
+    mjIntro(el,ID,TIT,
+      '<p>El viejo sauce murmura junto al río. Bajo sus ramas, los ojos pesan y el sueño parece irresistible…</p>',
+      empezar,cerrar
+    );
+  }
+
+  function empezar(){
+    if(el._stop) el._stop();
+
+    el.innerHTML=
+      mjCabecera(TIT,
+        '<div class="stat"><span id="sauceT">40 s</span></div>'
+      )+
+      '<style>'+
+      '#sauceF .sauceLuz{position:absolute;width:68px;height:68px;padding:8px;border:0;background:transparent;pointer-events:auto;touch-action:manipulation;cursor:pointer;animation:saucePulso .8s ease-in-out infinite alternate;filter:drop-shadow(0 0 10px #f6d076);z-index:6}'+
+      '#sauceF .sauceLuz:before{content:"";position:absolute;inset:8px;border:2px solid rgba(250,218,132,.85);border-radius:50%;box-shadow:0 0 15px #f5c65e,inset 0 0 12px #e7a145}'+
+      '#sauceF .sauceLuz span{position:relative;display:block;width:100%;height:100%}'+
+      '@keyframes saucePulso{from{opacity:.6;transform:scale(.86)}to{opacity:1;transform:scale(1.1)}}'+
+      '</style>'+
+
+      '<div class="field" id="sauceF" style="background:#777;touch-action:manipulation">'+
+
+        '<div id="sauceEsc" style="position:absolute;inset:0;overflow:hidden;pointer-events:none">'+
+
+          '<div style="position:absolute;inset:0">'+
+            imagen('sauce_fondo')+
+          '</div>'+
+
+          '<div id="sauceR1" style="position:absolute;left:-64%;top:12%;width:82%;height:40%;transform-origin:left center">'+
+            imagen('sauce_rama')+
+          '</div>'+
+
+          '<div id="sauceR2" style="position:absolute;right:-64%;top:23%;width:82%;height:40%;transform-origin:right center;transform:scaleX(-1)">'+
+            imagen('sauce_rama')+
+          '</div>'+
+
+          '<div style="position:absolute;left:36%;bottom:14%;width:28%;height:37%">'+
+            '<div style="position:absolute;inset:0">'+
+              imagen('sauce_despierto')+
+            '</div>'+
+            '<div id="sauceDormido" style="position:absolute;inset:0;opacity:0">'+
+              imagen('sauce_dormido')+
+            '</div>'+
+          '</div>'+
+
+          '<div id="sauceSombra" style="position:absolute;inset:0;background:#060907;opacity:0"></div>'+
+
+          '<div id="sauceOjo1" style="position:absolute;top:0;left:0;right:0;height:0;background:linear-gradient(#0d100b,rgba(13,16,11,.8),transparent)"></div>'+
+
+          '<div id="sauceOjo2" style="position:absolute;bottom:0;left:0;right:0;height:0;background:linear-gradient(transparent,rgba(13,16,11,.8),#0d100b)"></div>'+
+
+        '</div>'+
+
+        '<div class="meter">'+
+          '<span>Sueño</span>'+
+          '<div class="b"><i id="sauceB" style="background:#ad713a"></i></div>'+
+        '</div>'+
+
+        '<div id="sauceChispas" style="position:absolute;inset:0;pointer-events:none;z-index:6"></div>'+
+
+      '</div>';
+
+    var F=el.querySelector('#sauceF');
+    var escena=el.querySelector('#sauceEsc');
+    var barra=el.querySelector('#sauceB');
+    var sombra=el.querySelector('#sauceSombra');
+    var dormido=el.querySelector('#sauceDormido');
+    var ojo1=el.querySelector('#sauceOjo1');
+    var ojo2=el.querySelector('#sauceOjo2');
+    var r1=el.querySelector('#sauceR1');
+    var r2=el.querySelector('#sauceR2');
+    var chispas=el.querySelector('#sauceChispas');
+    var reloj=el.querySelector('#sauceT');
+
+    var tiempo=0;
+    var sueno=17;
+    var maxSueno=17;
+    var aciertos=0;
+    var perdidas=0;
+    var ultimo=performance.now();
+    var proxima=.75;
+    var luces=[];
+    var raf=0;
+    var terminado=false;
+
+    /* Oscurecimiento, desenfoque, párpados y ramas */
+
+    function pintar(){
+      var p=sueno/100;
+      var avance=tiempo/DUR;
+
+      barra.style.width=sueno+'%';
+
+      sombra.style.opacity=
+        (Math.pow(p,1.35)*.84).toFixed(3);
+
+      escena.style.filter=
+        'brightness('+(1-.53*p).toFixed(3)+') '+
+        'blur('+(p*3.2).toFixed(2)+'px)';
+
+      dormido.style.opacity=
+        Math.max(0,Math.min(1,(sueno-18)/57)).toFixed(3);
+
+      ojo1.style.height=(p*32).toFixed(1)+'%';
+      ojo2.style.height=(p*32).toFixed(1)+'%';
+
+      r1.style.left=
+        (-64+24*avance+27*p).toFixed(1)+'%';
+
+      r2.style.right=
+        (-64+24*avance+27*p).toFixed(1)+'%';
+
+      reloj.textContent=
+        Math.max(0,Math.ceil(DUR-tiempo))+' s';
+    }
+
+    /* Aparición aleatoria de luciérnagas */
+
+    function aparecer(){
+      if(luces.length>=3) return;
+
+      var b=document.createElement('button');
+
+      b.type='button';
+      b.className='sauceLuz';
+      b.setAttribute('aria-label','Luciérnaga');
+
+      b.style.left=(10+Math.random()*70)+'%';
+      b.style.top=(17+Math.random()*52)+'%';
+
+      b.innerHTML=
+        '<span>'+imagen('sauce_chispa')+'</span>';
+
+      chispas.appendChild(b);
+
+      var luz={
+        n:b,
+        muere:tiempo+1.35+Math.random()*.45
+      };
+
+      luces.push(luz);
+
+      b.onclick=function(e){
+        e.preventDefault();
+
+        if(terminado||b._usada) return;
+
+        b._usada=true;
+        aciertos++;
+
+        sueno=Math.max(0,sueno-25);
+
+        blip();
+
+        if(b.parentNode){
+          b.parentNode.removeChild(b);
+        }
+
+        var i=luces.indexOf(luz);
+
+        if(i!==-1){
+          luces.splice(i,1);
+        }
+
+        pintar();
+      };
+    }
+
+    /* Resultado final */
+
+    function acabar(gano){
+      if(terminado) return;
+
+      terminado=true;
+      cancelAnimationFrame(raf);
+
+      var i;
+      var st=0;
+
+      for(i=0;i<luces.length;i++){
+        if(luces[i].n.parentNode){
+          luces[i].n.parentNode.removeChild(luces[i].n);
+        }
+      }
+
+      luces=[];
+
+      if(gano){
+        st=maxSueno<48&&perdidas<=6?3:
+           maxSueno<78?2:1;
+      }
+
+      var txt=!gano?
+        'El viejo sauce vence. Los ojos se cierran y las ramas te envuelven…':
+        st===3?
+        'Ni el murmullo del sauce logra dormirte. ¡Seguís vuestro camino!':
+        st===2?
+        'Luchas contra el sopor y consigues apartarte de las ramas.':
+        'Te despiertas justo a tiempo para escapar del viejo sauce.';
+
+      mjFin(el,ID,TIT,st,txt,empezar,cerrar);
+    }
+
+    /* Bucle de juego: sobrevivir 40 segundos */
+
+    function tick(ahora){
+      if(terminado) return;
+
+      var dt=Math.max(
+        0,
+        Math.min(.1,(ahora-ultimo)/1000)
+      );
+
+      ultimo=ahora;
+      tiempo+=dt;
+
+      sueno=Math.min(
+        100,
+        sueno+dt*(5.5+3*tiempo/DUR)
+      );
+
+      if(sueno>maxSueno){
+        maxSueno=sueno;
+      }
+
+      if(tiempo>=proxima){
+        aparecer();
+
+        proxima=tiempo+1.65+Math.random()*.65;
+      }
+
+      var i;
+
+      for(i=luces.length-1;i>=0;i--){
+        if(tiempo>=luces[i].muere){
+
+          if(luces[i].n.parentNode){
+            luces[i].n.parentNode.removeChild(
+              luces[i].n
+            );
+          }
+
+          luces.splice(i,1);
+          perdidas++;
+
+          sueno=Math.min(100,sueno+3);
+        }
+      }
+
+      pintar();
+
+      if(sueno>=100){
+        acabar(false);
+        return;
+      }
+
+      if(tiempo>=DUR){
+        acabar(true);
+        return;
+      }
+
+      raf=requestAnimationFrame(tick);
+    }
+
+    /* Limpieza al cerrar o repetir */
+
+    el._stop=function(){
+      terminado=true;
+      cancelAnimationFrame(raf);
+    };
+
+    pintar();
+    raf=requestAnimationFrame(tick);
+  }
+
+  intro();
+}
+
+MINI.sauce={
+  titulo:'No dormirse bajo el sauce',
+  tramo:10,
+  jugar:jugarSauce
+};
+
+/*
+IMÁGENES NECESARIAS EN M.mj
+
+M.mj.sauce_fondo
+Valle del Withywindle con el viejo sauce.
+Fondo vertical, cálido y somnoliento.
+
+M.mj.sauce_despierto
+Hobbit sentado bajo el árbol, ojos abiertos.
+
+M.mj.sauce_dormido
+Exactamente el mismo hobbit, tamaño y postura,
+pero con los ojos cerrados.
+
+M.mj.sauce_rama
+Rama larga y retorcida del viejo sauce,
+con hojas colgantes. Fondo transparente.
+
+M.mj.sauce_chispa
+Pequeña luciérnaga o chispa dorada.
+Fondo transparente.
+
+Si falta alguna imagen, aparece un hueco gris.
+*/
+
+
+function jugarCancion(el,cerrar){
+  var ID='cancion', TIT='Seguir la canción';
+  var PASO=60/112, VIAJE=1.5, VENTANA=.21;
+
+  var patron=[
+    0,1,2,1,0,1,2,2,
+    1,1,2,1,0,0,1,2,
+    2,1,0,1,2,2,1,0,
+    0,1,2,1,2,1,0,0,
+    0,1,2,2,1,2,1,0,
+    2,1,0,1,2,1,0,2
+  ];
+
+  var tonoCarril=[392,493.88,587.33];
+
+  /*
+  IMÁGENES NECESARIAS:
+
+  M.mj.cancion_fondo
+  Bosque otoñal con sendero, formato vertical.
+  Sin personajes ni textos.
+
+  M.mj.cancion_nota
+  Nota musical dorada, sprite cuadrado.
+  Fondo transparente.
+
+  Si falta una imagen aparece un rectángulo gris.
+  La melodía es original, generada con Web Audio.
+  */
+
+  function imagen(k){
+    return mjImg(k,
+      '<div style="width:100%;height:100%;background:#777;border:2px solid #555"></div>'
+    );
+  }
+
+  function intro(){
+    mjIntro(el,ID,TIT,
+      '<p>Entre los árboles suena una canción alegre. Cada nota parece marcar el camino.</p>',
+      empezar,cerrar
+    );
+  }
+
+  function empezar(){
+    if(el._stop) el._stop();
+
+    el.innerHTML=
+      mjCabecera(TIT,
+        '<div class="stat"><span id="canT">28 s</span></div>'
+      )+
+
+      '<div class="field" id="canF" style="background:#777;touch-action:manipulation">'+
+
+        '<div style="position:absolute;inset:0;pointer-events:none">'+
+          imagen('cancion_fondo')+
+        '</div>'+
+
+        '<div style="position:absolute;inset:0;background:rgba(18,24,16,.44);pointer-events:none"></div>'+
+
+        '<div id="canCarriles" style="position:absolute;inset:0;display:flex;pointer-events:none">'+
+          '<div style="width:33.333%;border-right:2px solid rgba(246,237,214,.26)"></div>'+
+          '<div style="width:33.334%;border-right:2px solid rgba(246,237,214,.26)"></div>'+
+          '<div style="width:33.333%"></div>'+
+        '</div>'+
+
+        '<div style="position:absolute;left:0;right:0;top:77%;height:6px;background:#f2d27a;box-shadow:0 0 10px #e2a54a;pointer-events:none;z-index:2"></div>'+
+
+        '<div id="canNotas" style="position:absolute;inset:0;pointer-events:none;z-index:3"></div>'+
+
+        '<div id="canToques" style="position:absolute;inset:0;display:flex;z-index:4"></div>'+
+
+        '<div class="meter" style="pointer-events:none">'+
+          '<span id="canS">Aciertos 0 / '+patron.length+'</span>'+
+          '<div class="b"><i id="canB" style="background:#e2a54a"></i></div>'+
+        '</div>'+
+
+      '</div>';
+
+    var caja=el.querySelector('#canNotas');
+    var zona=el.querySelector('#canToques');
+    var reloj=el.querySelector('#canT');
+    var puntos=el.querySelector('#canS');
+    var barra=el.querySelector('#canB');
+
+    var notas=[];
+    var teclas=[];
+    var aciertos=0;
+    var combo=0;
+    var mejorCombo=0;
+
+    var inicio=performance.now();
+    var raf=0;
+    var terminado=false;
+    var audio=null;
+
+    var FIN=VIAJE+(patron.length-1)*PASO+.7;
+
+    /*
+    Audio sintetizado, sin archivos externos.
+    Se activa desde el botón Empezar.
+    */
+
+    try{
+      var Audio=window.AudioContext||
+                window.webkitAudioContext;
+
+      if(Audio){
+        audio=new Audio();
+        if(audio.state==='suspended'){
+          audio.resume();
+        }
+      }
+    }catch(ex){
+      audio=null;
+    }
+
+    function sonar(frecuencia,duracion,volumen,cuando){
+      if(!audio) return;
+
+      try{
+        var t=typeof cuando==='number'?
+          cuando:audio.currentTime+.005;
+
+        t=Math.max(t,audio.currentTime+.005);
+
+        var os=audio.createOscillator();
+        var g=audio.createGain();
+
+        os.type='triangle';
+
+        os.frequency.setValueAtTime(frecuencia,t);
+
+        g.gain.setValueAtTime(.0001,t);
+
+        g.gain.exponentialRampToValueAtTime(
+          volumen,t+.018
+        );
+
+        g.gain.exponentialRampToValueAtTime(
+          .0001,t+duracion
+        );
+
+        os.connect(g);
+        g.connect(audio.destination);
+
+        os.start(t);
+        os.stop(t+duracion+.025);
+
+      }catch(ex){}
+    }
+
+    /*
+    Se busca la nota pendiente más cercana
+    a la línea de impacto en el carril pulsado.
+    */
+
+    function tocar(carril){
+      if(terminado) return;
+
+      var t=(performance.now()-inicio)/1000;
+
+      var elegido=null;
+      var distancia=VENTANA+.001;
+      var i,n,d;
+
+      for(i=0;i<notas.length;i++){
+        n=notas[i];
+
+        if(n.carril!==carril||n.estado){
+          continue;
+        }
+
+        d=Math.abs(n.t-t);
+
+        if(d<=VENTANA&&d<distancia){
+          elegido=n;
+          distancia=d;
+        }
+      }
+
+      if(elegido){
+        elegido.estado=1;
+        elegido.el.style.display='none';
+
+        aciertos++;
+        combo++;
+
+        mejorCombo=Math.max(mejorCombo,combo);
+
+        sonar(tonoCarril[carril]*2,.105,.038);
+
+        if(typeof blip==='function'){
+          blip();
+        }
+
+      }else{
+        combo=0;
+      }
+
+      teclas[carril].brillo=t+.12;
+
+      puntos.textContent=
+        'Aciertos '+aciertos+' / '+notas.length;
+
+      barra.style.width=
+        (100*aciertos/notas.length)+'%';
+    }
+
+    /*
+    Tres carriles táctiles.
+    Cada carril ocupa un tercio del campo.
+    */
+
+    function vincular(carril){
+      var b=document.createElement('button');
+
+      b.type='button';
+
+      b.setAttribute(
+        'aria-label','Carril '+(carril+1)
+      );
+
+      b.style.cssText=
+        'position:relative;'+
+        'width:33.333%;'+
+        'height:100%;'+
+        'padding:0;'+
+        'border:0;'+
+        'background:transparent;'+
+        'touch-action:manipulation;'+
+        'cursor:pointer;';
+
+      b.onpointerdown=function(e){
+        e.preventDefault();
+        tocar(carril);
+      };
+
+      zona.appendChild(b);
+
+      teclas.push({
+        el:b,
+        brillo:0
+      });
+    }
+
+    var c;
+
+    for(c=0;c<3;c++){
+      vincular(c);
+    }
+
+    /*
+    Se crean 48 notas con una secuencia
+    de tres alturas musicales.
+    */
+
+    var k;
+
+    for(k=0;k<patron.length;k++){
+      var nEl=document.createElement('div');
+
+      nEl.style.cssText=
+        'position:absolute;'+
+        'width:48px;'+
+        'height:48px;'+
+        'transform:translate(-50%,-50%);'+
+        'display:none;'+
+        'filter:drop-shadow(0 0 6px #e2a54a);';
+
+      nEl.style.left=
+        ((patron[k]+.5)/3*100)+'%';
+
+      nEl.innerHTML=imagen('cancion_nota');
+
+      caja.appendChild(nEl);
+
+      notas.push({
+        carril:patron[k],
+        t:VIAJE+k*PASO,
+        estado:0,
+        sonando:false,
+        el:nEl
+      });
+    }
+
+    /*
+    Limpieza del bucle y del audio.
+    */
+
+    function limpiar(){
+      terminado=true;
+
+      cancelAnimationFrame(raf);
+
+      if(audio){
+        try{
+          audio.close();
+        }catch(ex){}
+
+        audio=null;
+      }
+    }
+
+    /*
+    Recuento de estrellas:
+    3: 85% o más.
+    2: 60% o más.
+    1: 35% o más.
+    0: menos del 35%.
+    */
+
+    function terminar(){
+      if(terminado) return;
+
+      var ratio=aciertos/notas.length;
+
+      var st=
+        ratio>=.85?3:
+        ratio>=.60?2:
+        ratio>=.35?1:0;
+
+      var texto=
+        st===3?
+          'La melodía resuena perfecta entre los árboles. ¡Qué alegre marcha!':
+        st===2?
+          'La canción te acompaña, aunque algunas notas se escapan.':
+        st===1?
+          'Recuerdas parte de la melodía y sigues caminando.':
+          'La canción se pierde entre las hojas antes de que puedas seguirla.';
+
+      limpiar();
+
+      mjFin(
+        el,ID,TIT,st,texto,empezar,cerrar
+      );
+    }
+
+    /*
+    Animación sincronizada con el tiempo.
+    Cada nota cae hasta la línea del 77%.
+    */
+
+    function tick(ahora){
+      if(terminado) return;
+
+      var t=(ahora-inicio)/1000;
+      var i,n,resta,y;
+
+      reloj.textContent=
+        Math.max(0,Math.ceil(FIN-t))+' s';
+
+      for(i=0;i<notas.length;i++){
+        n=notas[i];
+
+        if(n.estado){
+          continue;
+        }
+
+        resta=n.t-t;
+
+        /*
+        Programación anticipada del sonido.
+        La nota suena cuando alcanza la línea.
+        */
+
+        if(!n.sonando&&
+           resta<=.12&&
+           resta>-.26){
+
+          n.sonando=true;
+
+          if(audio){
+            sonar(
+              tonoCarril[n.carril],
+              .23,
+              .07,
+              audio.currentTime+
+                Math.max(.005,resta)
+            );
+
+            /*
+            Acompañamiento grave al inicio
+            de cada grupo de cuatro notas.
+            */
+
+            if(i%4===0){
+              sonar(
+                196,
+                .32,
+                .026,
+                audio.currentTime+
+                  Math.max(.005,resta)
+              );
+            }
+          }
+        }
+
+        /*
+        Nota fallada: desaparece
+        después de la ventana de pulsación.
+        */
+
+        if(resta< -VENTANA){
+          n.estado=2;
+          n.el.style.display='none';
+          combo=0;
+
+        }else if(resta<=VIAJE){
+
+          y=77-(resta/VIAJE)*68;
+
+          n.el.style.top=y+'%';
+          n.el.style.display='block';
+
+        }else{
+          n.el.style.display='none';
+        }
+      }
+
+      /*
+      Breve destello del carril pulsado.
+      */
+
+      for(i=0;i<teclas.length;i++){
+        teclas[i].el.style.background=
+          teclas[i].brillo>t?
+          'rgba(242,210,122,.23)':
+          'transparent';
+      }
+
+      if(t>=FIN){
+        terminar();
+        return;
+      }
+
+      raf=requestAnimationFrame(tick);
+    }
+
+    el._stop=limpiar;
+
+    raf=requestAnimationFrame(tick);
+  }
+
+  intro();
+}
+
+MINI.cancion={titulo:'Seguir la canción',tramo:11,jugar:jugarCancion};
+
+
+function jugarNiebla(el,cerrar){
+  var ID='niebla', TIT='Encontrar a los otros en la niebla';
+
+  /*
+  IMÁGENES NECESARIAS:
+
+  M.mj.niebla_fondo
+  Páramo oscuro cubierto de niebla, vertical.
+
+  M.mj.niebla_amigo1
+  Primer hobbit, cuerpo entero.
+
+  M.mj.niebla_amigo2
+  Segundo hobbit, cuerpo entero.
+
+  M.mj.niebla_amigo3
+  Tercer hobbit, cuerpo entero.
+
+  Los tres personajes deben tener fondo transparente.
+  Si falta una imagen, aparece un hueco gris.
+  */
+
+  function imagen(clave){
+    return mjImg(clave,
+      '<div style="width:100%;height:100%;background:#777;border:2px solid #555"></div>'
+    );
+  }
+
+  function intro(){
+    mjIntro(el,ID,TIT,
+      '<p>La niebla se ha tragado a tus compañeros. Sus voces se pierden entre las colinas frías.</p>',
+      empezar,cerrar
+    );
+  }
+
+  function empezar(){
+    if(el._stop) el._stop();
+
+    el.innerHTML=
+      mjCabecera(TIT,
+        '<div class="stat"><span id="nieblaCuenta">0 / 3</span></div>'
+      )+
+
+      '<div class="field" id="nieblaCampo" style="background:#777;touch-action:none;cursor:crosshair">'+
+
+        '<div style="position:absolute;inset:0;pointer-events:none">'+
+          imagen('niebla_fondo')+
+        '</div>'+
+
+        '<div id="nieblaAmigos" style="position:absolute;inset:0;pointer-events:none"></div>'+
+
+        '<div id="nieblaVelo" style="position:absolute;inset:0;pointer-events:none;background:#050b10"></div>'+
+
+        '<div id="nieblaFoco" style="position:absolute;width:30px;height:30px;border:2px solid #f3d994;border-radius:50%;background:radial-gradient(circle,#fff9d8 0,#e8bd69 20%,rgba(232,189,105,.10) 68%,transparent 75%);box-shadow:0 0 18px #d3b16e;transform:translate(-50%,-50%);pointer-events:none;z-index:5"></div>'+
+
+        '<div class="meter" style="pointer-events:none;z-index:6">'+
+          '<span>Frío</span>'+
+          '<div class="b"><i id="nieblaFrio" style="background:#7eb1c9"></i></div>'+
+        '</div>'+
+
+        '<div class="whisper" id="nieblaMensaje" style="top:34%;z-index:7"></div>'+
+
+      '</div>';
+
+    var F=el.querySelector('#nieblaCampo');
+    var A=el.querySelector('#nieblaAmigos');
+    var velo=el.querySelector('#nieblaVelo');
+    var foco=el.querySelector('#nieblaFoco');
+    var barra=el.querySelector('#nieblaFrio');
+    var cuenta=el.querySelector('#nieblaCuenta');
+    var mensaje=el.querySelector('#nieblaMensaje');
+
+    var x=.50, y=.83;
+    var frio=0, encontrados=0, amigos=[];
+    var previo=performance.now();
+    var raf=0, ultimoPitido=0, mensajeHasta=0;
+    var acabado=false, arrastrando=false;
+    var dedo=null, audio=null;
+
+    /*
+    Sonidos suaves de proximidad.
+    No necesita archivos de audio.
+    */
+
+    var Audio=window.AudioContext||
+              window.webkitAudioContext;
+
+    try{
+      if(Audio){
+        audio=new Audio();
+
+        if(audio.state==='suspended'){
+          audio.resume();
+        }
+      }
+    }catch(e){
+      audio=null;
+    }
+
+    function tono(frecuencia,volumen){
+      if(!audio||audio.state==='closed') return;
+
+      try{
+        var t=audio.currentTime;
+        var os=audio.createOscillator();
+        var g=audio.createGain();
+
+        os.type='sine';
+        os.frequency.setValueAtTime(frecuencia,t);
+
+        g.gain.setValueAtTime(.0001,t);
+
+        g.gain.exponentialRampToValueAtTime(
+          volumen,t+.025
+        );
+
+        g.gain.exponentialRampToValueAtTime(
+          .0001,t+.19
+        );
+
+        os.connect(g);
+        g.connect(audio.destination);
+
+        os.start(t);
+        os.stop(t+.21);
+
+      }catch(e){}
+    }
+
+    /*
+    Tres compañeros escondidos en distintas
+    zonas del escenario.
+    */
+
+    function crearAmigo(clave,px,py){
+      var c=document.createElement('div');
+
+      c.style.cssText=
+        'position:absolute;'+
+        'width:70px;'+
+        'height:88px;'+
+        'transform:translate(-50%,-50%);';
+
+      c.style.left=(px*100)+'%';
+      c.style.top=(py*100)+'%';
+
+      c.innerHTML=
+        '<div class="halo" style="position:absolute;inset:-15px;background:radial-gradient(circle,rgba(250,217,137,.65),transparent 70%);opacity:0"></div>'+
+        '<div style="position:absolute;inset:0">'+
+          imagen(clave)+
+        '</div>';
+
+      A.appendChild(c);
+
+      amigos.push({
+        x:px,
+        y:py,
+        el:c,
+        halo:c.querySelector('.halo'),
+        hallado:false
+      });
+    }
+
+    crearAmigo(
+      'niebla_amigo1',
+      .16+Math.random()*.17,
+      .28+Math.random()*.18
+    );
+
+    crearAmigo(
+      'niebla_amigo2',
+      .66+Math.random()*.17,
+      .37+Math.random()*.17
+    );
+
+    crearAmigo(
+      'niebla_amigo3',
+      .66+Math.random()*.17,
+      .71+Math.random()*.12
+    );
+
+    /*
+    Distancia real en píxeles entre la luz
+    y cada compañero.
+    */
+
+    function distancia(a){
+      var dx=(a.x-x)*F.clientWidth;
+      var dy=(a.y-y)*F.clientHeight;
+
+      return Math.sqrt(dx*dx+dy*dy);
+    }
+
+    /*
+    La niebla es casi opaca.
+    Solo se revela el pequeño círculo
+    alrededor del dedo.
+
+    La luz se vuelve más cálida e intensa
+    cuanto más cerca está un compañero.
+    */
+
+    function pintar(){
+      var px=x*F.clientWidth;
+      var py=y*F.clientHeight;
+
+      var cerca=9999;
+      var i,d;
+
+      velo.style.background=
+        'radial-gradient(circle at '+px+'px '+py+'px,'+
+        'rgba(5,9,13,.03) 0px,'+
+        'rgba(5,9,13,.14) 40px,'+
+        'rgba(5,9,13,.78) 106px,'+
+        'rgba(5,9,13,.985) 172px)';
+
+      foco.style.left=(x*100)+'%';
+      foco.style.top=(y*100)+'%';
+
+      for(i=0;i<amigos.length;i++){
+        if(amigos[i].hallado) continue;
+
+        d=distancia(amigos[i]);
+
+        if(d<cerca) cerca=d;
+
+        amigos[i].halo.style.opacity=
+          d<195?
+          (0.12+.75*(1-d/195)).toFixed(2):
+          '0';
+      }
+
+      foco.style.boxShadow=
+        '0 0 '+
+        Math.round(
+          16+32*Math.max(0,1-cerca/210)
+        )+
+        'px '+
+        (cerca<185?'#f4cc7d':'#9bafaa');
+
+      barra.style.width=frio.toFixed(1)+'%';
+
+      return cerca;
+    }
+
+    /*
+    Resultado:
+    0 estrellas si vence el frío.
+    1 estrella si escapan por poco.
+    2 estrellas si queda bastante calor.
+    3 estrellas si encuentran a todos rápido.
+    */
+
+    function terminar(victoria){
+      if(acabado) return;
+
+      limpiar();
+
+      var estrellas=victoria?
+        (frio<35?3:frio<68?2:1):0;
+
+      var textos=[
+        'El frío vence. La niebla os separa y las voces se apagan.',
+        'Encuentras a los tres, aunque casi os alcanza el frío.',
+        'Los tres vuelven a reunirse antes de que caiga la noche.',
+        'Reúnes a todos sin perder la calma. ¡La niebla no puede con vosotros!'
+      ];
+
+      mjFin(
+        el,ID,TIT,
+        estrellas,
+        textos[estrellas],
+        empezar,cerrar
+      );
+    }
+
+    /*
+    Mover el círculo de luz con un dedo.
+    Al acercarse lo suficiente a un amigo,
+    este queda encontrado automáticamente.
+    */
+
+    function explorar(e){
+      var r=F.getBoundingClientRect();
+
+      x=Math.max(
+        .05,
+        Math.min(.95,(e.clientX-r.left)/r.width)
+      );
+
+      y=Math.max(
+        .10,
+        Math.min(.92,(e.clientY-r.top)/r.height)
+      );
+
+      var i;
+
+      for(i=0;i<amigos.length;i++){
+
+        if(!amigos[i].hallado&&
+           distancia(amigos[i])<49){
+
+          amigos[i].hallado=true;
+          amigos[i].el.style.display='none';
+
+          encontrados++;
+
+          frio=Math.max(0,frio-7);
+
+          cuenta.textContent=encontrados+' / 3';
+
+          mensaje.textContent=
+            '¡Compañero encontrado!';
+
+          mensaje.classList.add('on');
+
+          mensajeHasta=
+            performance.now()+900;
+
+          tono(660,.035);
+
+          if(typeof blip==='function'){
+            blip();
+          }
+
+          if(encontrados===3){
+            terminar(true);
+            return;
+          }
+        }
+      }
+
+      pintar();
+    }
+
+    /*
+    Controles táctiles.
+    Un solo dedo, sin desplazamiento
+    de la página mientras se explora.
+    */
+
+    F.onpointerdown=function(e){
+      if(acabado||arrastrando) return;
+
+      e.preventDefault();
+
+      arrastrando=true;
+      dedo=e.pointerId;
+
+      try{
+        F.setPointerCapture(dedo);
+      }catch(err){}
+
+      explorar(e);
+    };
+
+    F.onpointermove=function(e){
+      if(!arrastrando||
+         e.pointerId!==dedo||
+         acabado) return;
+
+      e.preventDefault();
+      explorar(e);
+    };
+
+    function soltar(e){
+      if(e.pointerId===dedo){
+        arrastrando=false;
+        dedo=null;
+      }
+    }
+
+    F.onpointerup=soltar;
+    F.onpointercancel=soltar;
+    F.onlostpointercapture=soltar;
+
+    /*
+    El frío aumenta continuamente.
+    Los sonidos son más frecuentes y agudos
+    cuando la luz se aproxima a alguien.
+    */
+
+    function tick(ahora){
+      if(acabado) return;
+
+      var dt=Math.max(
+        0,
+        Math.min(.12,(ahora-previo)/1000)
+      );
+
+      previo=ahora;
+
+      frio=Math.min(
+        100,
+        frio+dt*2.05
+      );
+
+      var cerca=pintar();
+
+      if(mensajeHasta&&ahora>mensajeHasta){
+        mensaje.classList.remove('on');
+        mensajeHasta=0;
+      }
+
+      if(frio>=100){
+        terminar(false);
+        return;
+      }
+
+      if(cerca<220&&
+         ahora-ultimoPitido>
+         350+900*Math.min(1,cerca/220)){
+
+        ultimoPitido=ahora;
+
+        tono(
+          350+Math.round(
+            (1-cerca/220)*290
+          ),
+          .009+.015*(1-cerca/220)
+        );
+      }
+
+      raf=requestAnimationFrame(tick);
+    }
+
+    /*
+    Limpieza al cerrar, terminar o repetir.
+    */
+
+    function limpiar(){
+      acabado=true;
+
+      cancelAnimationFrame(raf);
+
+      F.onpointerdown=null;
+      F.onpointermove=null;
+      F.onpointerup=null;
+      F.onpointercancel=null;
+      F.onlostpointercapture=null;
+
+      if(audio){
+        try{
+          audio.close();
+        }catch(e){}
+
+        audio=null;
+      }
+    }
+
+    el._stop=limpiar;
+
+    pintar();
+
+    raf=requestAnimationFrame(tick);
+  }
+
+  intro();
+}
+
+MINI.niebla={titulo:'Encontrar a los otros en la niebla',tramo:13,jugar:jugarNiebla};
+
+/* en la niebla, los tres que buscas son de verdad tres de la Comunidad (con su cara) */
+(function(){ var j=MINI.niebla.jugar; MINI.niebla.jugar=function(el,cerrar){
+  var otros=(people||[]).filter(function(p){ return !(me&&p.nombre===me.nombre); }).map(function(p){ return p.hobbit; });
+  if(otros.length<3) otros=otros.concat(['porru','fer','edo','rodri','carlos']);
+  otros.sort(function(){ return Math.random()-.5; });
+  M.mj=M.mj||{}; var n=0;
+  for(var i=0;i<otros.length&&n<3;i++){ var f=window.hobbitFoto&&hobbitFoto(otros[i]); if(f){ n++; M.mj['niebla_amigo'+n]=f; } }
+  return j(el,cerrar); }; })();

@@ -286,7 +286,10 @@
 "rio": "assets/mj/rio.webp",
 "muelle": "assets/mj/muelle.webp",
 "sombra": "assets/mj/sombra.webp",
-"juncos": "assets/mj/juncos.webp"
+"juncos": "assets/mj/juncos.webp",
+"sauce_fondo": "assets/mj/sauce_fondo.webp",
+"cancion_fondo": "assets/mj/cancion_fondo.webp",
+"niebla_fondo": "assets/mj/niebla_fondo.webp"
 },
 "papiro": "assets/papiro.webp",
 "andar": {
