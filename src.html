@@ -587,6 +587,7 @@ function loop(now){
 
 /* ---------- avance ---------- */
 function setKm(v){
+  if(Math.abs(target-v)<1e-6) v=target;   /* sin esto se quedaba en 139,9999… y no «llegaba» al tramo */
   km=v; store.set('km',km);
   var t=tramoAt(km);
   if(t!==curT){ prevT=curT; curT=t; }
