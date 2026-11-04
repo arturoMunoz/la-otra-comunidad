@@ -2443,15 +2443,9 @@ function jugarCancion(el,cerrar){
 
 MINI.cancion={titulo:'Seguir la canción',tramo:11,jugar:jugarCancion};
 
-/* ---------- EL BOSQUE CAMBIA LOS CAMINOS (tramo 9, Bosque Viejo) · ChatGPT 04/11/2026 ---------- */
-/* IMÁGENES:
-M.mj.bosque_fondo: bosque oscuro vertical, sin personajes.
-M.mj.bosque_arbol: árbol visto desde arriba, cuadrado, fondo transparente.
-M.mj.bosque_claro: claro con una colina pelada, imagen cuadrada.
-Si falta alguna imagen, aparece un hueco gris. */
-
+/* ---------- EL BOSQUE CAMBIA LOS CAMINOS (tramo 9) · arcade de esquivar tipo Spy Hunter, ChatGPT 04/11/2026 ---------- */
 function jugarBosque(el,cerrar){
-  var ID='bosque',TIT='El bosque cambia los caminos',COL=5,FIL=7,DUR=40;
+  var ID='bosque',TIT='El bosque cambia los caminos',DUR=30,Y=.83;
 
   function img(k){
     return mjImg(k,'<div style="width:100%;height:100%;background:#777;border:2px solid #555"></div>');
@@ -2459,283 +2453,339 @@ function jugarBosque(el,cerrar){
 
   function intro(){
     mjIntro(el,ID,TIT,
-      '<p>Los árboles se cierran a vuestro paso y todos los senderos parecen bajar hacia el río.</p>',
+      '<p>Los árboles se cierran a vuestro paso y hay que correr hacia el claro de la colina pelada.</p>',
       empezar,cerrar);
   }
 
   function empezar(){
     if(el._stop)el._stop();
 
-    el.innerHTML=mjCabecera(TIT,
-      '<div class="stat"><span id="bosT">40 s</span></div>')+
+    el.innerHTML=
+      mjCabecera(TIT,'<div class="stat"><span id="bosT">30 s</span></div>')+
       '<style>'+
-      '@keyframes bosEmpuja{0%,100%{transform:translate(-50%,-50%)}25%{transform:translate(calc(-50% - 5px),-50%)}55%{transform:translate(calc(-50% + 5px),-50%)}75%{transform:translate(calc(-50% - 2px),-50%)}}'+
-      '@keyframes bosBrilla{0%,100%{box-shadow:0 0 7px #e3cc7d}50%{box-shadow:0 0 20px #f8e8aa,0 0 7px #fff inset}}'+
+      '#bosF .bosBg img{object-fit:cover!important;display:block}'+
+      '@keyframes bosGolpe{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}'+
+      '@keyframes bosParpadeo{0%,49%{opacity:1}50%,100%{opacity:.18}}'+
       '</style>'+
+
       '<div class="field" id="bosF" style="background:#777;touch-action:none;user-select:none;-webkit-user-select:none">'+
-      '<div style="position:absolute;inset:0;pointer-events:none">'+img('bosque_fondo')+'</div>'+
-      '<div style="position:absolute;inset:0;background:rgba(12,24,12,.42);pointer-events:none"></div>'+
-      '<div id="bosG" style="position:absolute;inset:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(7,minmax(0,1fr));z-index:2"></div>'+
+
+      '<div id="bosBgs" style="position:absolute;inset:0;overflow:hidden;pointer-events:none">'+
+      '<div id="bosBg1" style="position:absolute;left:0;top:0;width:100%;height:200%"><div class="bosBg" style="position:absolute;left:0;top:0;width:100%;height:50%;transform:scaleY(-1)">'+img('bosque_fondo')+'</div><div class="bosBg" style="position:absolute;left:0;top:50%;width:100%;height:50%">'+img('bosque_fondo')+'</div></div>'+
+      '<div id="bosBg2" style="position:absolute;left:0;top:0;width:100%;height:200%"><div class="bosBg" style="position:absolute;left:0;top:0;width:100%;height:50%;transform:scaleY(-1)">'+img('bosque_fondo')+'</div><div class="bosBg" style="position:absolute;left:0;top:50%;width:100%;height:50%">'+img('bosque_fondo')+'</div></div>'+
+      '</div>'+
+
+      '<div style="position:absolute;inset:0;background:rgba(9,19,9,.17);pointer-events:none"></div>'+
+
+      '<div id="bosOb" style="position:absolute;inset:0;pointer-events:none"></div>'+
+
+      '<div id="bosClaro" style="position:absolute;left:50%;top:-40%;width:76%;aspect-ratio:1;transform:translate(-50%,-50%);display:none;pointer-events:none;filter:drop-shadow(0 0 13px #f3d887)">'+
+      img('bosque_claro')+
+      '</div>'+
+
+      '<div id="bosFicha" style="position:absolute;left:50%;top:83%;width:56px;height:56px;max-width:19%;border:3px solid #ecd59a;border-radius:50%;background:#704524;box-shadow:0 2px 9px #111;overflow:hidden;transform:translate(-50%,-50%);transition:left .12s ease-out;pointer-events:none;z-index:5"></div>'+
+
+      '<div id="bosVidas" style="position:absolute;top:10px;left:10px;display:flex;gap:10px;z-index:7;pointer-events:none"></div>'+
+
+      '<div id="bosCuenta" style="position:absolute;inset:0;display:grid;place-items:center;z-index:8;color:#f3dfac;font:800 clamp(70px,24vw,110px) var(--title);text-shadow:0 4px 3px #19150e,0 0 18px #dca951;pointer-events:none">3</div>'+
+
       '</div>';
 
-    var F=el.querySelector('#bosF'),G=el.querySelector('#bosG');
+    var F=el.querySelector('#bosF');
+    var ob=el.querySelector('#bosOb');
+    var bg1=el.querySelector('#bosBg1');
+    var bg2=el.querySelector('#bosBg2');
+    var claro=el.querySelector('#bosClaro');
+    var ficha=el.querySelector('#bosFicha');
+    var vidasUI=el.querySelector('#bosVidas');
     var reloj=el.querySelector('#bosT');
-    var mapa=[],celdas=[],arboles=[];
-    var jugador=32,salida=Math.floor(Math.random()*COL);
-    var finalizado=false,raf=0,inicio=performance.now();
-    var ultimoPaso=0,proximoBosque=3,ultimoToque=-1;
+    var cuenta=el.querySelector('#bosCuenta');
 
-    function vecinos(i){
-      var a=[],x=i%COL,y=Math.floor(i/COL);
-      if(x>0)a.push(i-1);
-      if(x<COL-1)a.push(i+1);
-      if(y>0)a.push(i-COL);
-      if(y<FIL-1)a.push(i+COL);
-      return a;
-    }
-
-    function hayRuta(){
-      if(mapa[jugador]||mapa[salida])return false;
-
-      var cola=[jugador],v={},k=0,i,j,ns;
-      v[jugador]=true;
-
-      while(k<cola.length){
-        i=cola[k++];
-        if(i===salida)return true;
-        ns=vecinos(i);
-
-        for(j=0;j<ns.length;j++){
-          if(!v[ns[j]]&&!mapa[ns[j]]){
-            v[ns[j]]=true;
-            cola.push(ns[j]);
-          }
-        }
-      }
-      return false;
-    }
-
-    function iniciarMapa(){
-      var intento,i,cuantos,puestos;
-
-      for(intento=0;intento<120;intento++){
-        for(i=0;i<35;i++)mapa[i]=0;
-
-        cuantos=12+Math.floor(Math.random()*3);
-        puestos=0;
-
-        while(puestos<cuantos){
-          i=Math.floor(Math.random()*35);
-          if(i!==jugador&&i!==salida&&!mapa[i]){
-            mapa[i]=1;
-            puestos++;
-          }
-        }
-        if(hayRuta())return;
-      }
-
-      for(i=0;i<35;i++)mapa[i]=0;
-    }
-
-    iniciarMapa();
-
-    for(var i=0;i<35;i++){
-      var c=document.createElement('div');
-      c.setAttribute('data-c',i);
-
-      c.style.cssText=
-        'position:relative;min-width:0;min-height:0;overflow:hidden;'+
-        'border:1px solid rgba(218,197,117,.20);background:'+
-        (i%2?'rgba(76,77,34,.21)':'rgba(90,76,35,.28)');
-
-      var a=document.createElement('div');
-      a.style.cssText=
-        'position:absolute;inset:3%;opacity:0;transition:opacity .26s ease;pointer-events:none';
-      a.innerHTML=img('bosque_arbol');
-      c.appendChild(a);
-
-      if(i===salida){
-        var s=document.createElement('div');
-        s.style.cssText=
-          'position:absolute;inset:5%;border-radius:25%;'+
-          'animation:bosBrilla 1.3s ease-in-out infinite;pointer-events:none';
-        s.innerHTML=img('bosque_claro');
-        c.appendChild(s);
-      }
-
-      G.appendChild(c);
-      celdas.push(c);
-      arboles.push(a);
-    }
-
-    var ficha=document.createElement('div');
-    ficha.style.cssText=
-      'position:absolute;left:50%;top:50%;width:min(60%,48px);'+
-      'aspect-ratio:1;border-radius:50%;border:3px solid #e9d49c;'+
-      'box-shadow:0 2px 6px #16170c;transform:translate(-50%,-50%);'+
-      'z-index:4;overflow:hidden;pointer-events:none;background:#694226';
-
+    var hojas=[],arboles=[],lane=1,vidas=3;
+    var scroll=0,semilla=0,proxima=.7,claroY=-.45;
+    var escenaFinal=false,invulnerable=0,activo=null;
+    var raf=0,terminado=false;
+    var t0=performance.now()+3000;
+    var anterior=performance.now();
     var foto=null;
 
     try{
       if(typeof hobbitFoto==='function'&&typeof me!=='undefined'&&me){
         foto=hobbitFoto(me.hobbit);
       }
-    }catch(ex){}
+    }catch(e){}
 
     if(foto){
       if(typeof foto==='string'){
         ficha.innerHTML=foto.charAt(0)==='<'?
-          foto:
-          '<img src="'+foto+'" alt="" style="width:100%;height:100%;object-fit:cover">';
+          foto:'<img src="'+foto+'" alt="">';
       }else if(foto.nodeType){
         ficha.appendChild(foto.cloneNode(true));
       }
+
+      var fotos=ficha.querySelectorAll('img');
+
+      for(var z=0;z<fotos.length;z++){
+        fotos[z].style.cssText=
+          'width:100%;height:100%;object-fit:cover;image-rendering:pixelated';
+      }
     }
 
-    function pintar(){
-      for(var j=0;j<35;j++){
-        arboles[j].style.opacity=mapa[j]?'1':'0';
+    for(var h=0;h<3;h++){
+      var hoja=document.createElement('i');
+
+      hoja.style.cssText='display:block;width:30px;height:30px;filter:drop-shadow(0 2px 2px #111)';
+      hoja.innerHTML=(M.ui&&M.ui.i_hoja)?'<img src="'+M.ui.i_hoja+'" alt="" style="width:100%;height:100%;object-fit:contain">':'';
+
+      vidasUI.appendChild(hoja);
+      hojas.push(hoja);
+    }
+
+    function carril(c){
+      lane=Math.max(0,Math.min(2,c));
+      ficha.style.left=((lane+.5)*100/3)+'%';
+    }
+
+    function nuevoNodo(c){
+      var n=document.createElement('div');
+
+      n.style.cssText=
+        'position:absolute;width:31%;aspect-ratio:1;'+
+        'left:'+((c+.5)*100/3)+'%;top:-20%;'+
+        'transform:translate(-50%,-50%);'+
+        'transition:left .22s ease-in-out,opacity .18s;'+
+        'will-change:top;z-index:3';
+
+      n.innerHTML=img('bosque_arbol');
+      ob.appendChild(n);
+
+      return {c:c,el:n};
+    }
+
+    function fila(){
+      var tipo=['s','d','s','c','d','s','d','c'][semilla%8];
+      var hueco=Math.floor(Math.random()*3);
+      var nodos=[],j;
+
+      semilla++;
+
+      if(tipo==='s'){
+        nodos.push(nuevoNodo(Math.floor(Math.random()*3)));
+      }else if(tipo==='d'){
+        for(j=0;j<3;j++){
+          if(j!==hueco)nodos.push(nuevoNodo(j));
+        }
+      }else{
+        for(j=0;j<3;j++)nodos.push(nuevoNodo(j));
       }
-      celdas[jugador].appendChild(ficha);
+
+      var destino=hueco===0?1:
+        hueco===2?1:
+        (Math.random()<.5?0:2);
+
+      arboles.push({
+        tipo:tipo,n:nodos,y:-.17,
+        abierto:false,hueco:hueco,destino:destino
+      });
+    }
+
+    function perder(){
+      if(invulnerable>0)return;
+
+      vidas--;
+      invulnerable=1;
+
+      hojas[vidas].style.filter='grayscale(1)';
+      hojas[vidas].style.opacity='.22';
+
+      F.style.animation='none';
+      F.offsetWidth;
+      F.style.animation='bosGolpe .24s';
+
+      ficha.style.animation='bosParpadeo .16s linear infinite';
+
+      if(vidas===0)terminar(false);
     }
 
     function limpiar(){
-      if(finalizado)return;
-      finalizado=true;
+      if(terminado)return;
+
+      terminado=true;
       cancelAnimationFrame(raf);
+
       F.onpointerdown=null;
+      F.onpointermove=null;
+      F.onpointerup=null;
+      F.onpointercancel=null;
+      F.onlostpointercapture=null;
     }
 
-    function terminar(gano,t){
-      if(finalizado)return;
-      limpiar();
+    function terminar(gano){
+      if(terminado)return;
 
-      var st=gano?(t<20?3:t<30?2:1):0;
-      var frases=[
-        'Los árboles cierran el paso y el valle os reclama.',
-        'Alcanzáis el claro cuando el bosque ya parecía venceros.',
-        'Entre raíces y sombras encontráis una salida antes de que caiga la noche.',
-        'El bosque cambia de rumbo, pero vuestros pasos encuentran el claro sin vacilar.'
+      var st=gano?vidas:0;
+
+      var textos=[
+        'Los troncos cierran el último paso y el bosque os retiene.',
+        'Alcanzáis el claro con las últimas fuerzas y una sola hoja.',
+        'Las ramas os rozan, pero lográis salir del bosque.',
+        'Ni una rama os alcanza: la colina aparece ante vosotros.'
       ];
 
-      mjFin(el,ID,TIT,st,frases[st],empezar,cerrar);
-    }
-
-    function tocar(i){
-      if(finalizado||i<0||i>34||mapa[i]||i===jugador)return;
-
-      var ns=vecinos(jugador),valido=false,j;
-      var t=(performance.now()-inicio)/1000;
-
-      for(j=0;j<ns.length;j++){
-        if(ns[j]===i)valido=true;
-      }
-
-      if(!valido||t-ultimoToque<.12)return;
-
-      jugador=i;
-      ultimoPaso=t;
-      ultimoToque=t;
-      pintar();
-
-      if(jugador===salida)terminar(true,t);
+      limpiar();
+      mjFin(el,ID,TIT,st,textos[st],empezar,cerrar);
     }
 
     F.onpointerdown=function(e){
-      if(finalizado)return;
+      if(terminado||performance.now()<t0||activo)return;
+
       e.preventDefault();
 
-      var n=e.target;
+      activo={
+        id:e.pointerId,
+        x:e.clientX,
+        movio:false
+      };
 
-      while(n&&n!==F&&
-        (!n.getAttribute||n.getAttribute('data-c')===null)){
-        n=n.parentNode;
-      }
+      try{
+        F.setPointerCapture(e.pointerId);
+      }catch(ex){}
+    };
 
-      if(n&&n!==F){
-        tocar(Number(n.getAttribute('data-c')));
+    F.onpointermove=function(e){
+      if(!activo||activo.id!==e.pointerId||terminado)return;
+
+      e.preventDefault();
+
+      var paso=Math.max(30,F.clientWidth*.09);
+      var dx=e.clientX-activo.x;
+
+      while(Math.abs(dx)>=paso){
+        carril(lane+(dx>0?1:-1));
+        activo.x+=dx>0?paso:-paso;
+        activo.movio=true;
+        dx=e.clientX-activo.x;
       }
     };
 
-    function moverArboles(){
-      var n=3+Math.floor(Math.random()*2);
-      var usados={},z,j,vs,d,opciones,origen,destino;
+    function soltar(e){
+      if(!activo||activo.id!==e.pointerId)return;
 
-      for(z=0;z<n;z++){
-        opciones=[];
-
-        for(var i=0;i<35;i++){
-          if(!mapa[i]||usados[i])continue;
-
-          vs=vecinos(i);
-
-          for(j=0;j<vs.length;j++){
-            d=vs[j];
-
-            if(mapa[d]||d===jugador||
-               d===salida||usados[d])continue;
-
-            mapa[i]=0;
-            mapa[d]=1;
-
-            if(hayRuta())opciones.push([i,d]);
-
-            mapa[d]=0;
-            mapa[i]=1;
-          }
-        }
-
-        if(!opciones.length)break;
-
-        var mov=opciones[Math.floor(Math.random()*opciones.length)];
-        origen=mov[0];
-        destino=mov[1];
-
-        mapa[origen]=0;
-        mapa[destino]=1;
-        usados[origen]=true;
-        usados[destino]=true;
+      if(e.type==='pointerup'&&!activo.movio){
+        var x=e.clientX-F.getBoundingClientRect().left;
+        carril(lane+(x<F.clientWidth/2?-1:1));
       }
 
-      pintar();
+      activo=null;
     }
 
+    F.onpointerup=soltar;
+    F.onpointercancel=soltar;
+    F.onlostpointercapture=soltar;
+
     function tick(ahora){
-      if(finalizado)return;
+      if(terminado)return;
 
-      var t=(ahora-inicio)/1000;
-      reloj.textContent=Math.max(0,Math.ceil(DUR-t))+' s';
+      var dt=Math.max(0,Math.min(.05,(ahora-anterior)/1000));
+      anterior=ahora;
 
-      if(t>=DUR){
-        terminar(false,t);
+      var t=(ahora-t0)/1000;
+
+      if(t<0){
+        cuenta.textContent=Math.ceil(-t);
+        raf=requestAnimationFrame(tick);
         return;
       }
 
-      if(t>=proximoBosque){
-        moverArboles();
-        proximoBosque+=3;
+      cuenta.style.display='none';
+      reloj.textContent=Math.max(0,Math.ceil(DUR-t))+' s';
+
+      var vel=.32+.19*Math.min(1,t/DUR);
+      var H=F.clientHeight;
+
+      scroll=(scroll+dt*vel*H)%(2*H);
+
+      bg1.style.transform='translate3d(0,'+(scroll-2*H)+'px,0)';
+      bg2.style.transform='translate3d(0,'+scroll+'px,0)';
+
+      if(invulnerable>0){
+        invulnerable=Math.max(0,invulnerable-dt);
+
+        if(!invulnerable){
+          ficha.style.animation='none';
+        }
       }
 
-      if(t-ultimoPaso>=2){
-        ultimoPaso=t;
-        var abajo=jugador+COL;
+      if(t>=DUR&&!escenaFinal){
+        escenaFinal=true;
+        claro.style.display='block';
 
-        if(abajo<35&&!mapa[abajo]){
-          jugador=abajo;
-          pintar();
+        for(var q=0;q<arboles.length;q++){
+          for(var p=0;p<arboles[q].n.length;p++){
+            arboles[q].n[p].el.remove();
+          }
+        }
 
-          ficha.style.animation='none';
-          ficha.offsetWidth;
-          ficha.style.animation='bosEmpuja .28s ease';
+        arboles=[];
+      }
+
+      if(escenaFinal){
+        claroY+=dt*.72;
+        claro.style.top=(claroY*100)+'%';
+
+        if(claroY>=Y){
+          terminar(true);
+          return;
+        }
+
+      }else{
+        if(t>=proxima&&t<28.2){
+          fila();
+          proxima=t+Math.max(.88,1.26-.32*t/DUR);
+        }
+
+        for(var i=arboles.length-1;i>=0;i--){
+          var r=arboles[i];
+          r.y+=dt*vel;
+
+          if(r.tipo==='c'&&!r.abierto&&r.y>=Y-vel*.6){
+            r.abierto=true;
+
+            r.n[r.hueco].c=r.destino;
+            r.n[r.hueco].el.style.left=
+              ((r.destino+.5)*100/3)+'%';
+          }
+
+          for(var j=0;j<r.n.length;j++){
+            var a=r.n[j];
+
+            a.el.style.top=(r.y*100)+'%';
+
+            if(!invulnerable&&
+               Math.abs(r.y-Y)<.085&&
+               a.c===lane){
+
+              perder();
+
+              if(terminado)return;
+            }
+          }
+
+          if(r.y>1.2){
+            for(j=0;j<r.n.length;j++){
+              r.n[j].el.remove();
+            }
+
+            arboles.splice(i,1);
+          }
         }
       }
 
       raf=requestAnimationFrame(tick);
     }
 
+    carril(1);
     el._stop=limpiar;
-    pintar();
     raf=requestAnimationFrame(tick);
   }
 
