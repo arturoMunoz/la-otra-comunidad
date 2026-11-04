@@ -3330,3 +3330,13 @@ function estrellasSync(){
       c.width=w; c.height=h; x=c.getContext('2d'); x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high'; x.drawImage(i,0,0,w,h); c.complete=true; EQIMG[k]=c; };
     if(M.equipo&&M.equipo[k]) i.src=M.equipo[k]; }); })();
 
+/* ================= LOS MINIJUEGOS SALTAN SOLOS (04/11/2026) =================
+   La primera vez que llegas a un sitio con minijuego, al abrirse su página de llegada el minijuego se abre solo.
+   Después se puede repetir desde esa página o desde el Libro de Bilbo. */
+(function(){ var _bm=bindMini; bindMini=function(){ _bm.apply(this,arguments);
+  if(typeof sheet==='undefined'||!sheet||sheet.hidden) return;
+  var ey=sheet.querySelector('.eyebrow'), b=sheet.querySelector('[data-mini]');
+  if(!b||!ey||ey.textContent.indexOf('Has llegado')<0) return;
+  var id=b.dataset.mini, k='mjAuto.'+id; if(store.get(k,false)||mjBest(id)>0) return;
+  store.set(k,true); setTimeout(function(){ if(!sheet.hidden) abrirMinijuego(id); },700); }; })();
+

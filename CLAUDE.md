@@ -45,6 +45,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Fondos Acto II: a2_cerca, a2_bosque, a2_sauce, a2_tom, a2_colinas, a2_tumulos, a2_camino + escenas a2_claro (km 133) y a2_bree (km 206). Plan y notas en `docs/acto2.md`.
 - Mapa: `assets/mapa3.webp` (1024x3456, 3 trozos de ChatGPT unidos, original en `tools/mapa/`). `M.mapa.idx=true`: cada sitio de `lugares` lleva el índice de su punto en `ruta`, y `rutaPunto` avanza por el camino pintado. Sin línea de ruta propia (solo lo andado en dorado).
 - Minijuegos: Acto I zurron, arbol, setas, balsa. Acto II sauce (10), cancion (11), niebla (13, los 3 amigos son jugadores reales con `hobbitFoto(h)`). bosque (9, ChatGPT 04/11, 2ª versión: arcade de esquivar tipo Spy Hunter, 3 carriles, árboles que bajan y uno que se aparta en el último momento, 3 vidas con `ui.i_hoja`, 30 s y llega el claro; fondo en espejo para que no se vea la costura).
+- Los minijuegos SALTAN SOLOS la primera vez que llegas a su sitio (`bindMini` envuelto al final de minijuegos.js, marca `mjAuto.<id>`); revisado el 04/11 que los 8 se abren. `setKm` ajusta el km al objetivo si está a <0,002 (antes se quedaba a 0,0002 y no «llegaba» al tramo).
 - Zurrón Acto II: farol_cricava, rama, sauce, lirio, miel, daga, jarra (`M.objetos`).
 - Menú principal con botones de hierro forjado (`largo_forja`). Pergamino de pasos con los últimos 7 días y la semana de la Comunidad (`loc_semana`).
 - Pasos: iPhone atajo (7 días) y APK Android (30 días) → `loc_pasos_dias` (versión tolerante en `supabase/la-otra-comunidad-dias.sql`).
