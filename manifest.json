@@ -294,7 +294,10 @@
 "sauce_chispa": "assets/mj/sauce_chispa.webp",
 "cancion_nota": "assets/mj/cancion_nota.webp",
 "sauce_despierto": "assets/mj/sauce_despierto.webp",
-"sauce_dormido": "assets/mj/sauce_dormido.webp"
+"sauce_dormido": "assets/mj/sauce_dormido.webp",
+"bosque_fondo": "assets/mj/bosque_fondo.webp",
+"bosque_arbol": "assets/mj/bosque_arbol.webp",
+"bosque_claro": "assets/mj/bosque_claro.webp"
 },
 "papiro": "assets/papiro.webp",
 "andar": {
@@ -1462,5 +1465,13 @@
 "merry": "assets/emb/merry.webp",
 "tom": "assets/emb/tom.webp",
 "mantecona": "assets/emb/mantecona.webp"
+},
+"sellos": {
+"a1_bronce": "assets/sellos/a1_bronce.webp",
+"a1_plata": "assets/sellos/a1_plata.webp",
+"a1_oro": "assets/sellos/a1_oro.webp",
+"a2_bronce": "assets/sellos/a2_bronce.webp",
+"a2_plata": "assets/sellos/a2_plata.webp",
+"a2_oro": "assets/sellos/a2_oro.webp"
 }
 }
