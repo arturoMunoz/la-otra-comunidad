@@ -61,4 +61,6 @@ Same again, FOUR new items on the same cyan mannequin heads:
 ### Hecho el 04/11 (tarde)
 - Cuerpo: pañuelo de Sam y broche (tools/capas_cuerpo.py, ancla en el cuello) → `pj/capas/panuelo_sam|broche.webp`, en `manifest.capas.capas` y `CAPA_DE`.
 - Cabeza (tools/capas_cabeza.py): tiara, pluma, gafas, pipa, sombrero_musgo, sombrero_paja, gorra_gamos, corona_hiedra, pluma_azul, corona_lirios, diadema → `assets/eq/`, w/dx/dy al final de minijuegos.js.
-- Por repetir: pañuelo rojo y cazo (salieron sobre un maniquí de frente, no el nuestro) y el sombrero ancho (salió puntiagudo de mago). Adjuntar `docs/maniqui_cian.png`.
+- Pañuelo rojo y cazo (2ª vuelta, ChatGPT con `docs/maniqui_con_pantalon.png`; el primero lo bloqueó por «contenido sexual» con el maniquí sin ropa): tools/capas_cintura.py, ancla en los pies, quietos con el fotograma de andar 3. Sombrero redondo: cabeza4 (HWR=1.03 HHR=0.965).
+- YA NO FALTA NINGÚN DIBUJO DE OBJETO PUESTO. Solo quedan los 8 iconos de bolsillo (prompt A).
+- Para pedir objetos: adjuntar SIEMPRE `docs/maniqui_con_pantalon.png` y hablar de «plantilla / accesorio de disfraz», nunca de cuerpo o cadera.

@@ -1384,7 +1384,9 @@
 "mochila": "assets/pj/capas/mochila.webp",
 "cantimplora": "assets/pj/capas/cantimplora.webp",
 "panuelo_sam": "assets/pj/capas/panuelo_sam.webp",
-"broche": "assets/pj/capas/broche.webp"
+"broche": "assets/pj/capas/broche.webp",
+"panuelo_rojo": "assets/pj/capas/panuelo_rojo.webp",
+"cazo": "assets/pj/capas/cazo.webp"
 },
 "cabezas": {
 "arturo": "assets/pj/capas/cab_arturo.webp",

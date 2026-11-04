@@ -18,7 +18,7 @@ for j,(k,(_,idn)) in enumerate(zip(claves,figs)):
     w=[(m[y].sum(),y) for y in range(top+int(hgt*.15),top+int(hgt*.5))]; neck=min(w)[1]
     feet=ys.max(); L=feet-neck
     # cabeza estimada con las proporciones del maniquí sin nada en la cabeza (la de la pipa): ancho 0.70*L, alto 0.62*L
-    hw=0.626*L; top=neck-0.61*L
+    import os; hw=float(os.environ.get('HWR',0.626))*L; top=neck-float(os.environ.get('HHR',0.61))*L
     hx=np.nonzero(m[neck-5:neck+5].any(0))[0].mean()
     x0,x1=cols[j],cols[j+1]
     reg=np.zeros_like(mag); reg[:neck+30,x0:x1]=(~mag&~cyan&~dark)[:neck+30,x0:x1]

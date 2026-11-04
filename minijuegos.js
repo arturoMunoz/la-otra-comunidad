@@ -1471,7 +1471,7 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
   Object.keys(C.capas).forEach(function(k){ img(k,C.capas[k]); });
   Object.keys(C.cabezas).forEach(function(h){ img('cab_'+h,C.cabezas[h]); });
   /* qué objeto del Vestuario va en qué capa */
-  var CAPA_DE={panuelo_sam:['panuelo_sam'],broche:['broche'],capa:['capa',[110,82,52]],capa_verde:['capa'],capa_granate:['capa'],capa_gris:['capa'],pant_verde:['pantalon'],pant_azul:['pantalon'],pant_gris:['pantalon'],pant_mostaza:['pantalon'],cantimplora_cinto:['cantimplora']};
+  var CAPA_DE={panuelo_sam:['panuelo_sam'],broche:['broche'],panuelo_rojo:['panuelo_rojo'],cazo:['cazo'],capa:['capa',[110,82,52]],capa_verde:['capa'],capa_granate:['capa'],capa_gris:['capa'],pant_verde:['pantalon'],pant_azul:['pantalon'],pant_gris:['pantalon'],pant_mostaza:['pantalon'],cantimplora_cinto:['cantimplora']};
   window.CAPA_SKIP={}; Object.keys(CAPA_DE).forEach(function(k){ CAPA_SKIP[k]=1; });
   function tinte(im,rgb,a,b){ var c=document.createElement('canvas'); c.width=im.width; c.height=im.height; var x=c.getContext('2d'); x.drawImage(im,0,0);
     var d=x.getImageData(0,0,c.width,c.height), p=d.data;
@@ -2970,7 +2970,7 @@ function estrellasSync(){
 
 /* ================= OBJETOS DE CABEZA dibujados sobre el maniquí (tools/capas_cabeza.py, 04/11/2026) =================
    w = ancho en px de juego; dx desde el centro de la cabeza; dy desde lo alto del pelo. */
-(function(){ var P={"tiara":{"w":32,"dx":-17,"dy":1},"pluma":{"w":24,"dx":-28,"dy":2},"gafas":{"w":33,"dx":-17,"dy":9},"pipa":{"w":15,"dx":7,"dy":22},"sombrero_musgo":{"w":51,"dx":-27,"dy":-7},"sombrero_paja":{"w":51,"dx":-28,"dy":-7},"gorra_gamos":{"w":33,"dx":-19,"dy":-5},"corona_hiedra":{"w":44,"dx":-24,"dy":-4},"pluma_azul":{"w":22,"dx":-26,"dy":-6},"corona_lirios":{"w":46,"dx":-27,"dy":-4},"diadema":{"w":35,"dx":-19,"dy":3}};
+(function(){ var P={"sombrero":{"w":43,"dx":-23,"dy":-5},"tiara":{"w":32,"dx":-17,"dy":1},"pluma":{"w":24,"dx":-28,"dy":2},"gafas":{"w":33,"dx":-17,"dy":9},"pipa":{"w":15,"dx":7,"dy":22},"sombrero_musgo":{"w":51,"dx":-27,"dy":-7},"sombrero_paja":{"w":51,"dx":-28,"dy":-7},"gorra_gamos":{"w":33,"dx":-19,"dy":-5},"corona_hiedra":{"w":44,"dx":-24,"dy":-4},"pluma_azul":{"w":22,"dx":-26,"dy":-6},"corona_lirios":{"w":46,"dx":-27,"dy":-4},"diadema":{"w":35,"dx":-19,"dy":3}};
   Object.keys(P).forEach(function(k){ if(!EQ[k]) return; EQ[k].w=P[k].w; EQ[k].dx=P[k].dx; EQ[k].dy=P[k].dy;
     if(M.equipo&&M.equipo[k]&&!EQIMG[k]){ var i=new Image(); i.src=M.equipo[k]; EQIMG[k]=i; } }); })();
 
