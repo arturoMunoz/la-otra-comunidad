@@ -3640,8 +3640,8 @@ function haceTxt(t){ if(!t) return null; var d=new Date(t); if(isNaN(d)) return 
   h=d.toLocaleTimeString('es-ES',{timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit'}), n=Math.round((Date.parse(hoy)-Date.parse(f))/864e5);
   return {n:n,txt:n<=0?'hoy '+h:n===1?'ayer '+h:'hace '+n+' días ('+f.slice(8,10)+'/'+f.slice(5,7)+')'}; }
 function actividadPanel(){ var B=$('authBox');
-  B.innerHTML='<div class="menu mform"><p class="hola">Quién usa la app</p><div id="actL" class="actL"><p class="dato">Cargando…</p></div><button type="button" class="sec" id="aVolver">‹ Volver al Máster</button></div>';
-  $('aVolver').onclick=masterPanel;
+  B.innerHTML='<div class="menu mform"><p class="hola">Quién usa la app</p><div id="actL" class="actL"><p class="dato">Cargando…</p></div><button type="button" class="sec" id="aVolver">‹ Volver</button></div>';
+  $('aVolver').onclick=function(){ menuPinta('inicio'); };
   rpc('loc_actividad').then(function(r){ if(!Array.isArray(r)) throw new Error('sin datos');
     var L=r.map(function(x){ var ab=haceTxt(x.abierto), se=haceTxt(x.sesion), sy=haceTxt(x.ultima_sync), ult=ab||se; return {x:x,ab:ab,se:se,sy:sy,n:ult?ult.n:9999}; });
     L.sort(function(a,b){ return a.n-b.n||String(a.x.nombre).localeCompare(b.x.nombre); });
@@ -3695,7 +3695,7 @@ function verCarta(c){ var d=document.createElement('div'); d.className='carta'; 
     var red=document.createElement('div'); red.innerHTML='<div class="m2red">'+[['mapa','Mapa'],['comunidad','Comunidad'],['zurron','Zurrón'],['ajustes','Ajustes']].map(function(b){
       return '<button type="button" data-m2="'+b[0]+'"><img src="'+U[b[0]]+'" alt="">'+b[1]+'</button>'; }).join('')+'</div>';
     mj.after(red.firstChild, red.lastChild);
-    if(esMaster()){ var mb=document.createElement('button'); mb.type='button'; mb.className='sec'; mb.id='mMaster'; mb.innerHTML='<img src="'+M.master.emblema+'" alt="" style="width:26px;height:26px;vertical-align:-7px;margin-right:6px">Máster del Maia'; (ca||mj).before(mb); mb.onclick=masterPanel; }
+    if(esMaster()){ var mb=document.createElement('button'); mb.type='button'; mb.className='sec'; mb.id='mMaster'; mb.innerHTML='<img src="'+M.master.emblema+'" alt="" style="width:26px;height:26px;vertical-align:-7px;margin-right:6px">Máster del Maia'; (ca||mj).before(mb); mb.onclick=masterPanel; var ab=document.createElement('button'); ab.type='button'; ab.className='sec'; ab.id='mActivMenu'; ab.textContent='Quién usa la app'; mb.after(ab); ab.onclick=actividadPanel; }
     B.querySelectorAll('[data-m2]').forEach(function(b){ var on=U[b.dataset.m2+'_on'];
       b.onpointerdown=function(){ if(on) b.firstChild.src=on; }; b.onpointerup=b.onpointerleave=function(){ b.firstChild.src=U[b.dataset.m2]; };
       b.onclick=function(){ var k=b.dataset.m2; if(k==='ajustes'){ menuPinta('ajustes'); return; } aJugar(); setTimeout(function(){ openTab(k); },350); }; }); };
