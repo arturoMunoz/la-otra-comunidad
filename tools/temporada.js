@@ -326,9 +326,15 @@ function b64uBytes(t){ t=t.replace(/-/g,'+').replace(/_/g,'/'); while(t.length%4
 function avisosEstado(){ if(window.LocAndroid) return 'android'; if(DEMO) return store.get('demoAvisos',false)?'activo':'inactivo';
   if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)) return /iPhone|iPad/.test(navigator.userAgent)?'instalar':'nosoporta';
   if(Notification.permission==='denied') return 'denegado'; return store.get('avisosOn',false)&&Notification.permission==='granted'?'activo':'inactivo'; }
+function avisosComoDesbloquear(){ var ios=/iPhone|iPad/.test(navigator.userAgent), d=document.createElement('div'); d.className='mst';
+  d.innerHTML='<div class="avPaso"><h3>Activar los avisos</h3><p>El móvil los tiene bloqueados para el juego y una web no puede abrir los ajustes por ti. Son tres toques:</p><ol>'+
+    (ios?'<li>Abre <b>Ajustes</b> del iPhone.</li><li>Entra en <b>Notificaciones</b> y busca <b>La Otra Comunidad</b>.</li><li>Activa <b>Permitir notificaciones</b> y vuelve al juego.</li>'
+        :'<li>Mantén pulsado el <b>icono del juego</b> en la pantalla de inicio y toca <b>Información de la aplicación</b> (la «i»).</li><li>Entra en <b>Notificaciones</b>.</li><li>Actívalas y vuelve al juego.</li>')+
+    '</ol><button type="button">Hecho, ya está</button></div>';
+  document.body.appendChild(d); d.querySelector('button').onclick=function(){ d.remove(); if(Notification.permission!=='denied') avisosActivar(); else miAviso('<div><b>Siguen bloqueados</b>Cierra el juego del todo y vuelve a abrirlo después de cambiarlo.</div>',6000); }; }
 function avisosGuardar(sub){ var j=sub.toJSON(); return rpc('loc_push_guardar',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth}); }
 function avisosActivar(){ if(DEMO){ store.set('demoAvisos',true); miAviso('<div><b>Avisos activados</b>En el juego de verdad te llegarán al móvil.</div>'); return Promise.resolve(true); }
-  return Notification.requestPermission().then(function(p){ if(p!=='granted') throw new Error(p==='denied'?'Has dicho que no. Se cambia en los ajustes del móvil.':'No has dado permiso.');
+  return Notification.requestPermission().then(function(p){ if(p==='denied'){ avisosComoDesbloquear(); throw new Error('Están bloqueados en el móvil.'); } if(p!=='granted') throw new Error('No has dado permiso.');
     return navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }); })
   .then(function(reg){ return reg.pushManager.getSubscription().then(function(s){ return s||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uBytes(VAPID_PUB)}); }); })
   .then(function(sub){ return avisosGuardar(sub); })
@@ -345,12 +351,14 @@ function avisosResumen(r){ if(!r) return ''; if(r.error) return 'Fallo al mandar
   if(avisosEstado()==='inactivo'&&!store.get('avisosPregunta',false)){ store.set('avisosPregunta',true);
     setTimeout(function(){ miAviso('<div><b>¿Avisos en el móvil?</b>Te avisamos de los mensajes del Máster, de sitios nuevos y si se te apaga la hoguera. <button type="button" class="avSi">Activar</button></div>',12000); },4000); } }; })();
 document.addEventListener('click',function(e){ if(e.target&&e.target.classList&&e.target.classList.contains('avSi')) avisosActivar(); });
-(function(){ var c=document.createElement('style'); c.textContent='.tAviso .avSi{display:block;margin-top:6px;background:#4f6b2e;color:#fbf6e8;border:0;padding:7px 14px;font:700 .9rem var(--body)}'; document.head.appendChild(c); })();
+(function(){ var c=document.createElement('style'); c.textContent='.tAviso .avSi{display:block;margin-top:6px;background:#4f6b2e;color:#fbf6e8;border:0;padding:7px 14px;font:700 .9rem var(--body)}'+
+  '.avPaso{width:min(90vw,400px);background:#f3e2b4;border:3px solid #2b1d0e;box-shadow:0 8px 24px #000;padding:18px 18px 16px;color:#2b1d0e;box-sizing:border-box}.avPaso h3{margin:0 0 6px;font-family:var(--title)}.avPaso p{margin:0 0 8px;font-size:.92rem}'+
+  '.avPaso ol{margin:0 0 12px;padding-left:20px;font-size:.98rem;line-height:1.45}.avPaso li{margin-bottom:6px}.avPaso button{width:100%;background:#4f6b2e;color:#fbf6e8;border:0;padding:11px;font:700 1rem var(--body)}'; document.head.appendChild(c); })();
 (function(){ var _mp=menuPinta; menuPinta=function(pant){ _mp(pant); if(pant!=='inicio') return; var st=avisosEstado(); if(st==='activo'||st==='android'||st==='nosoporta') return;
   var ca=$('mCuenta'); if(!ca) return; var b=document.createElement('button'); b.type='button'; b.className='sec'; b.id='mAvisos';
   b.textContent=st==='instalar'?'Avisos en el móvil: cómo activarlos':st==='denegado'?'Avisos bloqueados en este móvil':'Activar avisos en el móvil'; ca.before(b);
   b.onclick=function(){ if(st==='instalar'){ miAviso('<div><b>Primero instala el juego</b>En Safari toca Compartir → «Añadir a pantalla de inicio» y abre el juego desde ese icono. Ahí ya podrás activar los avisos.</div>',9000); return; }
-    if(st==='denegado'){ miAviso('<div><b>Los tienes bloqueados</b>Actívalos en los ajustes del móvil → Notificaciones → La Otra Comunidad.</div>',8000); return; }
+    if(st==='denegado'){ avisosComoDesbloquear(); return; }
     avisosActivar().then(function(ok){ if(ok) b.remove(); }); }; }; })();
 
 /* ---------- prototipo: datos inventados para todo lo nuevo ---------- */
