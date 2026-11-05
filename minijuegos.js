@@ -1491,6 +1491,34 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
   window.hobbitFoto=function(h){ if(!C.cabezas[h]||!listo(h)) return null; var FW=53,FH=74,c=document.createElement('canvas'); c.width=FW; c.height=FH; var x=c.getContext('2d'); x.imageSmoothingEnabled=false;
     [pielCuerpo(h),IM.mochila,tinte(IM.capa,[110,82,52],.25,1.1),IM['cab_'+h]].forEach(function(im){ x.drawImage(im,FW*8,0,FW,FH,0,0,FW,FH); }); try{ return c.toDataURL(); }catch(e){ return null; } };
   function listo(h){ var ks=Object.keys(C.capas).concat(['cab_'+h]); return ks.every(function(k){ return IM[k]&&IM[k].complete&&IM[k].width; }); }
+  /* ===== objetos de cabeza AJUSTADOS a cada hobbit (05/11/2026) =====
+     El cráneo está en el mismo sitio en todos (las cabezas se colocaron por el cuello); lo que cambia es el pelo.
+     Ojos ≈ altura de lo alto del cuerpo (cuTop); frente de la cara ≈ x 38,5 + vaivén del torso.
+     Sombreros: el ala va sobre la frente, el ancho sale del pelo de cada uno y el pelo que asoma por encima se borra. */
+  var ALA={"sombrero": 0.348, "sombrero_musgo": 0.389, "sombrero_paja": 0.434, "gorra_gamos": 0.422};
+  var CABFIT={sombrero:{t:'som',kw:1.18},sombrero_musgo:{t:'som',kw:1.25},sombrero_paja:{t:'som',kw:1.3},gorra_gamos:{t:'som',kw:1.0,ala:-9},
+    corona_hiedra:{t:'cor',kw:1.0},corona_lirios:{t:'cor',kw:1.02},tiara:{t:'fre',kw:.9},diadema:{t:'fre',kw:.9},
+    gafas:{t:'gaf',w:15},pipa:{t:'pip',w:11},pluma:{t:'plu',hh:15},pluma_azul:{t:'plu',hh:17}};
+  var HIMG={}; Object.keys(CABFIT).forEach(function(k){ if(M.equipo&&M.equipo[k]){ var i=new Image(); i.src=M.equipo[k]; HIMG[k]=i; } window.CAPA_SKIP=window.CAPA_SKIP||{}; CAPA_SKIP[k]=1; });
+  var ANC={};
+  function anclas(h,cab){ if(ANC[h]) return ANC[h]; var FW=53, n=12, cu=IM.cuerpo, c1=document.createElement('canvas'); c1.width=cu.width; c1.height=cu.height;
+    var g=c1.getContext('2d'); g.drawImage(cu,0,0); var dc=g.getImageData(0,0,c1.width,c1.height).data;
+    g.clearRect(0,0,c1.width,c1.height); g.drawImage(cab,0,0); var dh=g.getImageData(0,0,c1.width,c1.height).data, W=c1.width, out=[];
+    for(var f=0;f<n;f++){ var top=-1, sx=0, cnt=0, x, y;
+      for(y=0;y<c1.height&&top<0;y++) for(x=f*FW;x<(f+1)*FW;x++) if(dc[(y*W+x)*4+3]>0){ top=y; break; }
+      for(y=top;y<top+3;y++) for(x=f*FW;x<(f+1)*FW;x++) if(dc[(y*W+x)*4+3]>0){ sx+=x-f*FW; cnt++; }
+      var ojo=top, cxT=cnt?sx/cnt:20, ht=-1, L=99, R=-1;
+      for(y=0;y<ojo-2;y++) for(x=f*FW;x<(f+1)*FW;x++) if(dh[(y*W+x)*4+3]>0){ if(ht<0) ht=y; var xx=x-f*FW; if(xx<L) L=xx; if(xx>R) R=xx; }
+      out.push({ojo:ojo,cara:38.5+(cxT-19.4),pt:ht<0?ojo-14:ht,L:L,R:R}); }
+    return ANC[h]=out; }
+  function cabRect(k,h,f,cab){ var c=CABFIT[k], im=HIMG[k], A=anclas(h,IM['cab_'+h])[f], hw=A.R-A.L+1, mx=(A.L+A.R)/2, w, hh, r={k:k,f:f};
+    if(c.t==='som'){ w=hw*c.kw; hh=im.height*w/im.width; var ala=A.ojo+(c.ala!=null?c.ala:-5); r.x=mx+1-w/2; r.y=ala-hh*(ALA[k]||.4); r.borra=ala-1; }
+    else if(c.t==='cor'){ w=hw*c.kw; hh=im.height*w/im.width; r.x=mx+1-w/2; r.y=(A.pt+A.ojo)/2-1-hh/2; }
+    else if(c.t==='fre'){ w=hw*c.kw; hh=im.height*w/im.width; r.x=mx+1-w/2; r.y=A.ojo-6-hh/2; }
+    else if(c.t==='gaf'){ w=c.w; hh=im.height*w/im.width; r.x=A.cara+1-w; r.y=A.ojo-hh/2; }
+    else if(c.t==='pip'){ w=c.w; hh=im.height*w/im.width; r.x=A.cara-3; r.y=A.ojo+4; }
+    else { hh=c.hh; w=im.width*hh/im.height; r.x=A.L+hw*.32-w/2; r.y=A.ojo-1-hh; }
+    r.x=Math.round(r.x); r.y=Math.round(r.y); r.w=Math.max(2,Math.round(w)); r.h=Math.max(2,Math.round(hh)); return r; }
   var firma='', H=null;
   function monta(h){
     var puesto=eqPuesto(), capa=null, pant=null, cant=false, extra=[];
@@ -1503,7 +1531,13 @@ function salirRecuerdo(){ RECUERDO=null; PASEO.dir=0; document.body.classList.re
     x.drawImage(IM.mochila,0,0);
     if(capa) x.drawImage(tinte(IM.capa,capa,.25,1.1),0,0);   /* la capa por encima de la mochila */
     extra.forEach(function(im){ x.drawImage(im,0,0); });   /* pañuelo, broche… (dibujados sobre el maniquí) */
-    x.drawImage(IM['cab_'+h],0,0);
+    var cab=IM['cab_'+h], ajus=puesto.filter(function(k){ return CABFIT[k]&&HIMG[k]&&HIMG[k].complete&&HIMG[k].width; });
+    if(ajus.length){ var cc=document.createElement('canvas'); cc.width=cab.width; cc.height=cab.height; var cx=cc.getContext('2d'); cx.drawImage(cab,0,0); cab=cc;
+      var dibujos=[]; for(var f=0;f<n;f++) ajus.forEach(function(k){ var r=cabRect(k,h,f,cc); if(!r) return; dibujos.push(r);
+        if(r.borra){ cx.clearRect(f*FW+r.x-1,0,r.w+2,Math.max(0,Math.round(r.borra))); } }); }
+    x.drawImage(cab,0,0);
+    if(ajus&&ajus.length){ x.save(); x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high';
+      dibujos.forEach(function(r){ x.drawImage(HIMG[r.k],r.f*FW+r.x,r.y,r.w,r.h); }); x.restore(); }
     /* al andar todo el hobbit (cuerpo y cabeza juntos) sube y baja 1 px: abajo con las piernas abiertas, arriba al cruzarlas */
     var BOB=[1,0,-1,0,1,0,-1,0];
     function trozo(a,b){ var c=document.createElement('canvas'); c.width=FW*(b-a); c.height=FH; var g=c.getContext('2d'); g.imageSmoothingEnabled=false;
