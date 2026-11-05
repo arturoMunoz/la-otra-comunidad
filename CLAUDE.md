@@ -53,7 +53,8 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 ## Temporada (05/11/2026) — `supabase/la-otra-comunidad-temporada.sql` POR EJECUTAR (sin él, cada parte falla en silencio)
 - Código: bloque «TEMPORADA» al final de minijuegos.js (fuente legible en `tools/temporada.js`; se pegó tal cual).
 - Reto semanal de la Comunidad: 25 km × registrados, lunes a domingo (hora de Madrid); premio para todos: un trofeo que rota entre 8 (`M.trofeos`, `TROFEOS`). Panel en la Comunidad (placa y barra de ChatGPT) y vitrina en el Zurrón.
-- Duelo de la semana: emparejados al azar con semilla de la semana (`dueloDe`). Hoguera: racha de días con ≥5.000 pasos, un perdón por semana (`hoguera()`).
+- Duelo de la semana: emparejados al azar con semilla de la semana (`dueloDe`).
+- Hoguera (05/11): días SEGUIDOS ABRIENDO EL JUEGO, un perdón por semana. 9 fases con dibujo animado (2 fotogramas, `M.hoguera`): 1 Ascuas, 3 Chispa, 7 Fuego de campamento, 14 Hoguera, 30 Gran hoguera, 60 Fuego de los elfos (azul), 90 Almenara, 120 Fuego de Amon Sûl (lenguas verdes), 180 Llama de Anor (verde, objetivo 6 meses). Aviso al subir de fase, fuego grande en la Comunidad, pequeño arriba, en la carta del día y «Fuegos encendidos» en el Zurrón. Días guardados en el móvil y en `loc_aperturas` (SQL `la-otra-comunidad-hoguera.sql`, POR EJECUTAR). La hoja de ChatGPT tenía 10 fases: la 9.ª (mitad verde) no se usa.
 - Fardos: uno al llegar a cada sitio (desde que se instaló esto) y uno de bienvenida; se abren andando +6 km (+3 el primero). Dentro, ropa teñida nueva (`FARDO_POOL`, 10 prendas, iconos en assets/eq). Tabla `loc_paquetes`.
 - Cosas del camino: 8 objetos en km fijos (`CAMINO`, dibujos en assets/camino), aviso al pasar y colección en el Zurrón.
 - Ropa de los demás: `loc_jugadores.equipo` (se guarda al ponerse/quitarse algo) y `hobbitVestido(h,equipo,f)`; en la Comunidad cada uno sale vestido.

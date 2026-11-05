@@ -112,15 +112,38 @@ function dueloHtml(){ if(!me) return ''; var R=retoDatos(), riv=dueloDe(R.lunes)
   var pl=new Date(Date.parse(R.lunes)-7*864e5).toISOString().slice(0,10), rp=dueloDe(pl)[me.nombre], ps=R.sem[pl], res='';
   if(rp&&ps){ var x=ps.de[me.nombre]||0, y=ps.de[rp]||0; res='<div class="sub" style="grid-column:1/-1;font-size:.78rem">La semana pasada '+(x>y?'ganaste a '+rp:x<y?rp+' te ganó':'empataste con '+rp)+'.</div>'; }
   return '<div class="tcard" style="display:block"><b style="text-align:center;margin-bottom:4px">Duelo de la semana</b><div class="duelo"><div>'+fotoDe(me.nombre)+'<br>Tú<br><b>'+fmt(a)+' km</b></div><div class="vs">contra</div><div>'+fotoDe(riv)+'<br>'+riv+'<br><b>'+fmt(b)+' km</b></div>'+res+'</div></div>'; }
-/* ---------- hoguera (racha de días) ---------- */
-function hoguera(){ var m={}; TEMP.dias.forEach(function(d){ m[String(d.fecha).slice(0,10)]=Number(d.pasos); });
-  var hoy=hoyMadrid(), n=0, perdon=-99, hoyOk=(m[hoy]||0)>=HOGUERA_MIN, i, d, primero=TEMP.dias.length?String(TEMP.dias[0].fecha).slice(0,10):hoy;
-  if(hoyOk) n++;
-  for(i=1;i<120;i++){ d=hoyMadrid(-i); if(d<primero) break; if((m[d]||0)>=HOGUERA_MIN){ n++; continue; } if(i-perdon>=7){ perdon=i; continue; } break; }
-  return {dias:n,hoy:m[hoy]||0,hoyOk:hoyOk}; }
-function hogueraHtml(){ var H=hoguera(), d=H.dias, nom=d>=14?'Gran hoguera':d>=7?'Hoguera':d>=3?'Llama':d>=1?'Chispa':'Apagada';
-  return '<div class="tcard"><img src="'+(M.master&&M.master.descanso||'')+'" alt="" style="'+(d?'':'filter:grayscale(1) brightness(.6)')+'"><div><b>Tu hoguera: '+nom+(d?' · '+d+' '+(d===1?'día':'días'):'')+'</b>'+
-    (H.hoyOk?'Hoy ya la has avivado.':'Hoy llevas '+H.hoy.toLocaleString('es-ES')+' de '+HOGUERA_MIN.toLocaleString('es-ES')+' pasos para mantenerla.')+' Si fallas un día, Sam la reaviva (una vez por semana).</div></div>'; }
+/* ---------- hoguera: días seguidos abriendo el juego (05/11/2026). 9 fases, objetivo 6 meses. SQL: la-otra-comunidad-hoguera.sql ---------- */
+var HFASES=[[1,'Ascuas'],[3,'Chispa'],[7,'Fuego de campamento'],[14,'Hoguera'],[30,'Gran hoguera'],[60,'Fuego de los elfos'],[90,'Almenara'],[120,'Fuego de Amon Sûl'],[180,'Llama de Anor']];
+function aperturas(){ return store.get('aperturas',[]); }
+function apuntaApertura(){ var a=aperturas(), h=hoyMadrid(); if(a.indexOf(h)<0){ a.push(h); a.sort(); store.set('aperturas',a.slice(-420)); }
+  if(me&&!DEMO) rpc('loc_abrir',{p_dias:a.slice(-60)}).then(function(r){ if(Array.isArray(r)&&r.length){ var m=aperturas(); r.forEach(function(x){ var f=String(x.fecha||x).slice(0,10); if(m.indexOf(f)<0) m.push(f); }); m.sort(); store.set('aperturas',m.slice(-420)); hogueraHito(); } }).catch(function(){});
+  hogueraHito(); }
+function hoguera(){ var a={}, l=aperturas(); l.forEach(function(d){ a[d]=1; }); var n=0, perdon=-99, i, d, primero=l.length?l[0]:hoyMadrid();
+  if(a[hoyMadrid()]) n++;
+  for(i=1;i<420;i++){ d=hoyMadrid(-i); if(d<primero) break; if(a[d]){ n++; continue; } if(i-perdon>=7&&n>0){ perdon=i; continue; } break; }
+  var f=-1; HFASES.forEach(function(x,k){ if(n>=x[0]) f=k; }); return {dias:n,fase:f,sig:HFASES[f+1]||null}; }
+function hogueraImg(f,cls){ if(f<0||!M.hoguera) return ''; var fr=M.hoguera[f]; return '<img class="hogf '+(cls||'')+'" src="'+fr[0]+'" data-a="'+fr[0]+'" data-b="'+fr[1]+'" alt="">'; }
+setInterval(function(){ var t=Math.floor(Date.now()/380)%2; document.querySelectorAll('img.hogf').forEach(function(im){ var u=t?im.dataset.b:im.dataset.a; if(im.getAttribute('src')!==u) im.setAttribute('src',u); }); },380);
+function hogueraHito(){ var H=hoguera(), mx=store.get('hogueraMax',-1); if(H.fase>mx){ store.set('hogueraMax',H.fase); if(mx>=0||H.fase>0) miAviso(hogueraImg(H.fase,'mini')+'<div><b>¡Tu hoguera crece! '+HFASES[H.fase][1]+'</b>'+H.dias+' días seguidos de viaje. '+(H.sig?'Siguiente: '+H.sig[1]+' a los '+H.sig[0]+' días.':'Has llegado a la llama más grande.')+'</div>',7000); }
+  hogueraHud(); }
+function hogueraHtml(){ var H=hoguera(), f=H.fase, prev=f>=0?HFASES[f][0]:0, pc=H.sig?Math.min(100,(H.dias-prev)/(H.sig[0]-prev)*100):100;
+  return '<div class="tcard hogc">'+(f>=0?hogueraImg(f,'grande'):'<div class="grande"></div>')+'<div style="flex:1"><b>'+(f>=0?HFASES[f][1]:'Hoguera apagada')+' · '+H.dias+' '+(H.dias===1?'día':'días')+' seguidos</b>'+
+    (H.sig?'Próximo hito: <b style="display:inline">'+H.sig[1]+'</b> a los '+H.sig[0]+' días (faltan '+(H.sig[0]-H.dias)+').':'¡La Llama de Anor! Has llegado al final.')+
+    '<div class="rbar" style="height:22px;margin:6px 0 2px"><i style="width:'+(pc*.91).toFixed(1)+'%"></i></div><span style="font-size:.78rem">Abre el juego cada día para avivarla. Si fallas un día, Sam la reaviva (una vez por semana).</span></div></div>'; }
+function hogueraHud(){ var w=$('wx'); if(!w) return; var H=hoguera(), o=w.querySelector('.hogw'); if(o) o.remove(); if(H.fase<0) return;
+  var s=document.createElement('span'); s.className='hogw'; s.innerHTML=hogueraImg(H.fase,'hud')+H.dias+' · '; w.insertBefore(s,w.firstChild); }
+setInterval(hogueraHud,6000);
+(function(){ var c=document.createElement('style'); c.textContent='.hogc{align-items:flex-end}.hogc .grande,.hogc img.grande{width:84px;height:168px;object-fit:contain;object-position:bottom;flex:none}'+
+  '.tAviso img.hogf.mini{width:42px;height:84px;object-fit:contain;object-position:bottom}#wx img.hogf.hud{width:12px;height:24px;object-fit:contain;object-position:bottom;vertical-align:-6px;margin-right:2px}'+
+  '.hogz{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;align-items:end}.hogz div{text-align:center;font-size:.66rem;font-weight:700}.hogz img{width:100%;height:auto;aspect-ratio:1/2;object-fit:contain;object-position:bottom}.hogz .no img{filter:brightness(0) opacity(.25)}';
+  document.head.appendChild(c); })();
+(function(){ var _z=TABS.zurron; TABS.zurron=function(){ var mx=store.get('hogueraMax',-1);
+  return _z()+'<h2 style="font-size:1.1rem;margin-top:14px">Fuegos encendidos</h2><p class="note">Cada fase de tu hoguera que alcanzas se queda aquí para siempre.</p><div class="hogz">'+
+    HFASES.map(function(x,k){ var ok=k<=mx; return '<div class="'+(ok?'':'no')+'"><img src="'+(M.hoguera?M.hoguera[k][0]:'')+'" alt="">'+(ok?x[1]:x[0]+' días')+'</div>'; }).join('')+'</div>'; }; })();
+(function(){ var _s=start; start=function(){ _s.apply(this,arguments); apuntaApertura(); }; })();
+document.addEventListener('visibilitychange',function(){ if(!document.hidden&&me) apuntaApertura(); });
+if(DEMO&&!store.get('aperturas',null)){ (function(){ var a=[]; for(var i=23;i>=0;i--) if(i!==9) a.push(hoyMadrid(-i)); store.set('aperturas',a); })(); }
+
 /* ---------- Comunidad: reto + duelo + hoguera + Maia + carta, y los hobbits vestidos ---------- */
 (function(){ var _c=TABS.comunidad; TABS.comunidad=function(){ var h=_c();
   h=h.replace(/<span class="face" style="[^"]*"><\/span><span class="t">([^<]+)<\/span>/g,function(m,n){ var p=persona(n); if(!p) return m;

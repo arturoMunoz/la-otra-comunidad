@@ -1533,5 +1533,43 @@
 "hatillo": "assets/camino/hatillo.webp",
 "zarzamora": "assets/camino/zarzamora.webp",
 "piedra_runa": "assets/camino/piedra_runa.webp"
-}
+},
+"hoguera": [
+[
+"assets/hoguera/f1a.webp",
+"assets/hoguera/f1b.webp"
+],
+[
+"assets/hoguera/f2a.webp",
+"assets/hoguera/f2b.webp"
+],
+[
+"assets/hoguera/f3a.webp",
+"assets/hoguera/f3b.webp"
+],
+[
+"assets/hoguera/f4a.webp",
+"assets/hoguera/f4b.webp"
+],
+[
+"assets/hoguera/f5a.webp",
+"assets/hoguera/f5b.webp"
+],
+[
+"assets/hoguera/f6a.webp",
+"assets/hoguera/f6b.webp"
+],
+[
+"assets/hoguera/f7a.webp",
+"assets/hoguera/f7b.webp"
+],
+[
+"assets/hoguera/f8a.webp",
+"assets/hoguera/f8b.webp"
+],
+[
+"assets/hoguera/f9a.webp",
+"assets/hoguera/f9b.webp"
+]
+]
 }
