@@ -230,6 +230,7 @@ function masterMostrar(){ if(!me) return; var visto=store.get('masterVisto',0), 
 function masterListaHtml(){ var l=TEMP.master.filter(masterParaMi).slice(0,4); if(!l.length) return '';
   return '<div class="tcard" style="display:block"><b style="display:flex;align-items:center;gap:8px"><img src="'+M.master.emblema+'" alt="" style="width:34px;height:34px">Mensajes de '+MAIA+'</b>'+
     l.map(function(m){ var x=masterTexto(m); return '<p style="margin:6px 0 0;font-size:.85rem"><b>'+x.titulo+'.</b> '+String(m.texto||'').replace(/</g,'&lt;')+(x.efecto?' <i>'+x.efecto+'</i>':'')+'</p>'; }).join('')+'</div>'; }
+var MDESC={mensaje:'les sale tu texto en un pergamino al abrir el juego. No cambia nada más.',viento:'sus pasos de ese día valen ×1,5 en los km (andan un 50 % más por el camino). Los pasos reales no cambian.',tormenta:'sus pasos de ese día valen ×0,75 en los km (avanzan un 25 % menos). Los pasos reales no cambian.',descanso:'solo un mensaje con el dibujo del descanso. No cambia los km.',regalo:'les llega un fardo con la prenda que elijas y lo pueden abrir al momento en el Zurrón.',peligro:'solo un mensaje con el dibujo del peligro. No cambia los km.',bendicion:'solo un mensaje con el dibujo de la bendición. No cambia los km.'};
 function masterPanel(){ var B=$('authBox'), tipo='mensaje';
   var nombres=(people||[]).map(function(p){ return p.nombre; }).sort();
   B.innerHTML='<div class="menu mform"><p class="hola">Máster · '+MAIA+'</p><div class="mtipos">'+Object.keys(MTIPOS).map(function(k){ return '<button type="button" data-mt="'+k+'" aria-pressed="'+(k===tipo)+'"><img src="'+M.master[MTIPOS[k][1]]+'" alt="">'+MTIPOS[k][0]+'</button>'; }).join('')+'</div>'+
@@ -237,9 +238,9 @@ function masterPanel(){ var B=$('authBox'), tipo='mensaje';
     '<label>Qué día</label><select id="mDia"><option value="0">Hoy</option><option value="1">Mañana</option></select>'+
     '<label>Para quién</label><select id="mPara"><option value="">Toda la Comunidad</option>'+nombres.map(function(n){ return '<option>'+n+'</option>'; }).join('')+'</select>'+
     '<div id="mRegW" hidden><label>Qué regalo</label><select id="mReg">'+FARDO_POOL.map(function(k){ return '<option value="'+k+'">'+EQ[k].n+'</option>'; }).join('')+'</select></div>'+
-    '<p class="dato" id="mInfo" style="color:#f3d9a8;font-size:.8rem"></p><button type="button" id="mEnviar">Enviar</button><button type="button" class="sec" id="mActiv">Quién usa la app</button><button type="button" class="sec" id="mVolver">‹ Volver</button></div>';
+    '<p class="dato" id="mInfo" style="color:#f3d9a8;font-size:.86rem;line-height:1.35;background:rgba(0,0,0,.35);border-radius:8px;padding:8px 10px"></p><button type="button" id="mEnviar">Enviar</button><button type="button" class="sec" id="mActiv">Quién usa la app</button><button type="button" class="sec" id="mVolver">‹ Volver</button></div>';
   function pinta(){ B.querySelectorAll('[data-mt]').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.mt===tipo)); }); $('mRegW').hidden=tipo!=='regalo';
-    var f=MTIPOS[tipo][2]; $('mInfo').textContent=f!==1?'Los pasos de ese día contarán ×'+String(f).replace('.',',')+' en los km.':tipo==='regalo'?'Les llega un fardo que se abre al momento.':'Solo un mensaje: no cambia los km.'; }
+    $('mInfo').innerHTML='<b>'+MTIPOS[tipo][0]+':</b> '+MDESC[tipo]; }
   B.querySelectorAll('[data-mt]').forEach(function(b){ b.onclick=function(){ tipo=b.dataset.mt; pinta(); }; }); pinta();
   $('mVolver').onclick=function(){ menuPinta('inicio'); }; $('mActiv').onclick=actividadPanel;
   $('mEnviar').onclick=function(){ var bt=$('mEnviar'); bt.disabled=true; bt.textContent='Enviando…';
