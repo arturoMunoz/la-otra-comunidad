@@ -242,6 +242,8 @@ function masterPanel(){ var B=$('authBox'), tipo='mensaje';
   function pinta(){ B.querySelectorAll('[data-mt]').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.mt===tipo)); }); $('mRegW').hidden=tipo!=='regalo';
     $('mInfo').innerHTML='<b>'+MTIPOS[tipo][0]+':</b> '+MDESC[tipo]; }
   B.querySelectorAll('[data-mt]').forEach(function(b){ b.onclick=function(){ tipo=b.dataset.mt; pinta(); }; }); pinta();
+  if(!nombres.length) rpc('loc_comunidad').then(function(r){ if(!Array.isArray(r)) return; var sel=$('mPara'); if(!sel) return;
+    r.map(function(x){ return x.nombre; }).filter(Boolean).sort().forEach(function(n){ var o=document.createElement('option'); o.textContent=n; sel.appendChild(o); }); }).catch(function(){});
   $('mVolver').onclick=function(){ menuPinta('inicio'); }; $('mActiv').onclick=actividadPanel;
   $('mSoloAviso').onclick=function(){ var t=$('mTxt').value.trim(); if(!t){ $('mInfo').textContent='Escribe el texto del aviso arriba, en «Qué les dices».'; return; }
     var bt=$('mSoloAviso'); bt.disabled=true; masterAvisoMovil(MAIA,t,$('mPara').value).then(function(n){ bt.disabled=false; $('mInfo').textContent=n===false?'No se ha podido mandar el aviso. ¿Está ejecutado el SQL de los avisos?':'Aviso mandado al móvil.'; }); };
