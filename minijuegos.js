@@ -3634,17 +3634,17 @@ function masterPanel(){ var B=$('authBox'), tipo='mensaje';
     r.map(function(x){ return x.nombre; }).filter(Boolean).sort().forEach(function(n){ var o=document.createElement('option'); o.textContent=n; sel.appendChild(o); }); }).catch(function(){});
   $('mVolver').onclick=function(){ menuPinta('inicio'); }; $('mActiv').onclick=actividadPanel;
   $('mSoloAviso').onclick=function(){ var t=$('mTxt').value.trim(); if(!t){ $('mInfo').textContent='Escribe el texto del aviso arriba, en «Qué les dices».'; return; }
-    var bt=$('mSoloAviso'); bt.disabled=true; masterAvisoMovil(MAIA,t,$('mPara').value).then(function(n){ bt.disabled=false; $('mInfo').textContent=n===false?'No se ha podido mandar el aviso. ¿Está ejecutado el SQL de los avisos?':'Aviso mandado al móvil.'; }); };
+    var bt=$('mSoloAviso'); bt.disabled=true; $('mInfo').textContent='Mandando…'; masterAvisoMovil(MAIA,t,$('mPara').value).then(function(){ bt.disabled=false; }); };
   $('mEnviar').onclick=function(){ var bt=$('mEnviar'); bt.disabled=true; bt.textContent='Enviando…';
     rpc('loc_master_enviar',{p_tipo:tipo,p_texto:$('mTxt').value,p_dia:hoyMadrid(+$('mDia').value),p_efecto:MTIPOS[tipo][2],p_para:$('mPara').value,p_regalo:tipo==='regalo'?$('mReg').value:''})
-      .then(function(){ bt.textContent='Enviado'; $('mInfo').textContent='Les saldrá al abrir el juego.'; if($('mMovil').checked) masterAvisoMovil(MAIA+': '+MTIPOS[tipo][0],$('mTxt').value||MDESC[tipo].replace(/^./,function(c){return c.toUpperCase();}),$('mPara').value); tempCargar(); setTimeout(function(){ menuPinta('inicio'); },1400); })
+      .then(function(){ bt.textContent='Enviado'; $('mInfo').textContent='Les saldrá al abrir el juego.'; tempCargar(); if($('mMovil').checked){ $('mInfo').textContent='Guardado en el juego. Mandando al móvil…'; masterAvisoMovil(MAIA+': '+MTIPOS[tipo][0],$('mTxt').value||MDESC[tipo].replace(/^./,function(c){return c.toUpperCase();}),$('mPara').value).then(function(){ bt.disabled=false; bt.textContent='Enviar'; }); } else setTimeout(function(){ menuPinta('inicio'); },1400); })
       .catch(function(e){ bt.disabled=false; bt.textContent='Enviar'; $('mInfo').textContent='No se ha podido: '+(e&&e.message||e)+'. ¿Está ejecutado el SQL de la temporada?'; }); }; }
 
 /* ---------- Máster: quién usa la app (SQL: la-otra-comunidad-actividad.sql) ---------- */
 function haceTxt(t){ if(!t) return null; var d=new Date(t); if(isNaN(d)) return null; var hoy=hoyMadrid(), f=d.toLocaleDateString('sv-SE',{timeZone:'Europe/Madrid'}),
   h=d.toLocaleTimeString('es-ES',{timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit'}), n=Math.round((Date.parse(hoy)-Date.parse(f))/864e5);
   return {n:n,txt:n<=0?'hoy '+h:n===1?'ayer '+h:'hace '+n+' días ('+f.slice(8,10)+'/'+f.slice(5,7)+')'}; }
-function masterAvisoMovil(titulo,texto,para){ return rpc('loc_aviso_enviar',{p_titulo:titulo,p_texto:texto,p_para:para||''}).then(function(n){ avisosYa(); return n; }).catch(function(){ return false; }); }
+function masterAvisoMovil(titulo,texto,para){ return rpc('loc_aviso_enviar',{p_titulo:titulo,p_texto:texto,p_para:para||''}).then(function(n){ return avisosYa(); }).then(function(r){ var i=$('mInfo'); if(i) i.textContent=avisosResumen(r); return r; }).catch(function(e){ var i=$('mInfo'); if(i) i.textContent='No se ha podido guardar el aviso: '+(e&&e.message||e); return false; }); }
 function actividadPanel(){ var B=$('authBox');
   B.innerHTML='<div class="menu mform"><p class="hola">Quién usa la app</p><div id="actL" class="actL"><p class="dato">Cargando…</p></div><button type="button" class="sec" id="aVolver">‹ Volver</button></div>';
   $('aVolver').onclick=function(){ menuPinta('inicio'); };
@@ -3724,7 +3724,11 @@ function avisosActivar(){ if(DEMO){ store.set('demoAvisos',true); miAviso('<div>
   .catch(function(e){ miAviso('<div><b>No se han podido activar los avisos</b>'+(e&&e.message||e)+'</div>',7000); return false; }); }
 function avisosRefresca(){ if(DEMO||window.LocAndroid||avisosEstado()!=='activo') return;
   navigator.serviceWorker.ready.then(function(reg){ return reg.pushManager.getSubscription(); }).then(function(sub){ if(sub) avisosGuardar(sub).catch(function(){}); else store.set('avisosOn',false); }).catch(function(){}); }
-function avisosYa(){ if(DEMO) return; try{ fetch('api/avisos',{method:'POST'}).catch(function(){}); }catch(e){} }
+function avisosYa(){ if(DEMO) return Promise.resolve({enviados:1,fallidos:0});
+  return fetch('api/avisos',{method:'POST'}).then(function(r){ return r.text().then(function(t){ try{ return JSON.parse(t); }catch(e){ return {error:'El servidor de avisos no contesta bien ('+r.status+')'}; } }); }).catch(function(e){ return {error:'No se ha podido llamar al servidor de avisos'}; }); }
+function avisosResumen(r){ if(!r) return ''; if(r.error) return 'Fallo al mandar al móvil: '+r.error;
+  if(!r.enviados&&!r.fallidos) return 'Guardado, pero no ha salido a ningún móvil: nadie de los elegidos tiene los avisos activados todavía (cada uno tiene que tocar «Activar avisos en el móvil»).';
+  return 'Mandado a '+r.enviados+' '+(r.enviados===1?'móvil':'móviles')+(r.fallidos?' · '+r.fallidos+' no han llegado (móviles que ya no existen o han quitado el permiso)':'')+'.'; }
 (function(){ var _s=start; start=function(){ _s.apply(this,arguments); avisosRefresca();
   if(avisosEstado()==='inactivo'&&!store.get('avisosPregunta',false)){ store.set('avisosPregunta',true);
     setTimeout(function(){ miAviso('<div><b>¿Avisos en el móvil?</b>Te avisamos de los mensajes del Máster, de sitios nuevos y si se te apaga la hoguera. <button type="button" class="avSi">Activar</button></div>',12000); },4000); } }; })();
