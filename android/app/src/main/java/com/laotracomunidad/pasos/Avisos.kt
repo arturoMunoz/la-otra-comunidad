@@ -49,7 +49,7 @@ object Avisos {
         for (i in 0 until lista.length()) {
             val a = lista.getJSONObject(i)
             val noti = android.app.Notification.Builder(c, CANAL)
-                .setSmallIcon(android.R.drawable.ic_popup_reminder)
+                .setSmallIcon(R.drawable.ic_aviso)
                 .setLargeIcon(icono)
                 .setColor(android.graphics.Color.rgb(200, 138, 38))
                 .setContentTitle(a.optString("titulo", "La Otra Comunidad"))
