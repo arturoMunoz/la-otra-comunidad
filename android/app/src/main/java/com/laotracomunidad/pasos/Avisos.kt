@@ -45,10 +45,13 @@ object Avisos {
         val nm = c.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val abre = PendingIntent.getActivity(c, 0, Intent(c, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val icono = try { android.graphics.BitmapFactory.decodeResource(c.resources, R.mipmap.ic_launcher) } catch (e: Exception) { null }
         for (i in 0 until lista.length()) {
             val a = lista.getJSONObject(i)
             val noti = android.app.Notification.Builder(c, CANAL)
                 .setSmallIcon(android.R.drawable.ic_popup_reminder)
+                .setLargeIcon(icono)
+                .setColor(android.graphics.Color.rgb(200, 138, 38))
                 .setContentTitle(a.optString("titulo", "La Otra Comunidad"))
                 .setContentText(a.optString("texto", ""))
                 .setStyle(android.app.Notification.BigTextStyle().bigText(a.optString("texto", "")))
