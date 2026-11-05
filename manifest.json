@@ -1571,5 +1571,17 @@
 "assets/hoguera/f9a.webp",
 "assets/hoguera/f9b.webp"
 ]
-]
+],
+"ui2": {
+"boton": "assets/ui2/boton.webp",
+"boton_on": "assets/ui2/boton_on.webp",
+"aviso": "assets/ui2/aviso.webp",
+"aviso_oro": "assets/ui2/aviso_oro.webp",
+"aviso_l": "assets/ui2/aviso_l.webp",
+"aviso_m": "assets/ui2/aviso_m.webp",
+"aviso_r": "assets/ui2/aviso_r.webp",
+"aviso_oro_l": "assets/ui2/aviso_oro_l.webp",
+"aviso_oro_m": "assets/ui2/aviso_oro_m.webp",
+"aviso_oro_r": "assets/ui2/aviso_oro_r.webp"
+}
 }
