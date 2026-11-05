@@ -50,6 +50,17 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Menú principal con botones de hierro forjado (`largo_forja`). Pergamino de pasos con los últimos 7 días y la semana de la Comunidad (`loc_semana`).
 - Pasos: iPhone atajo (7 días) y APK Android (30 días) → `loc_pasos_dias` (versión tolerante en `supabase/la-otra-comunidad-dias.sql`).
 
+## Temporada (05/11/2026) — `supabase/la-otra-comunidad-temporada.sql` POR EJECUTAR (sin él, cada parte falla en silencio)
+- Código: bloque «TEMPORADA» al final de minijuegos.js (fuente legible en `tools/temporada.js`; se pegó tal cual).
+- Reto semanal de la Comunidad: 25 km × registrados, lunes a domingo (hora de Madrid); premio para todos: un trofeo que rota entre 8 (`M.trofeos`, `TROFEOS`). Panel en la Comunidad (placa y barra de ChatGPT) y vitrina en el Zurrón.
+- Duelo de la semana: emparejados al azar con semilla de la semana (`dueloDe`). Hoguera: racha de días con ≥5.000 pasos, un perdón por semana (`hoguera()`).
+- Fardos: uno al llegar a cada sitio (desde que se instaló esto) y uno de bienvenida; se abren andando +6 km (+3 el primero). Dentro, ropa teñida nueva (`FARDO_POOL`, 10 prendas, iconos en assets/eq). Tabla `loc_paquetes`.
+- Cosas del camino: 8 objetos en km fijos (`CAMINO`, dibujos en assets/camino), aviso al pasar y colección en el Zurrón.
+- Ropa de los demás: `loc_jugadores.equipo` (se guarda al ponerse/quitarse algo) y `hobbitVestido(h,equipo,f)`; en la Comunidad cada uno sale vestido.
+- Máster del Maia (Radagast el Pardo, solo `MASTER_NOMBRE='Arturo'`, también en loc_config 'master'): botón en el menú; manda mensaje, viento ×1,5, tormenta ×0,75, descanso, regalo (fardo que se abre al momento), peligro o bendición, para todos o uno, hoy o mañana. Los efectos cambian los km vía `loc_comunidad` (los pasos reales no se tocan). Todos lo ven en un pergamino al abrir (`masterMostrar`) y en la Comunidad; el efecto del día sale arriba junto al tiempo.
+- Carta del día: botón en la Comunidad; imagen 1080x1350 con la escena, el logo, tu hobbit vestido y tus datos; se comparte o se guarda.
+- Menú nuevo con el kit de ChatGPT (`M.menu2`): botón grande + 4 medallones (Mapa, Comunidad, Zurrón, Ajustes). OJO: el medallón de Comunidad lleva una figura de mago (parece Gandalf, contra las reglas): pedir otro con tres hobbits.
+
 ## Pendiente (04/11/2026)
 - Emblemas de los 9 personajes: HECHO 04/11 (`assets/emb/`, `manifest.emb`, `embHtml(who,icon)` en src.html; original en `tools/ui/emblemas.png`). Los SVG de `ICON` quedan solo de reserva si aparece un personaje nuevo sin emblema: pedirle el suyo a ChatGPT con el mismo estilo de medallón.
 - Iconos dibujados por código quitados de la UI: clave del atajo (ahora `ui.i_sync`, oculto en Android) y preguntas del libro (`ui.i_libro`).

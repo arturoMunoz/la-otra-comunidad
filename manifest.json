@@ -1139,7 +1139,17 @@
 "pant_pana": "assets/eq/pant_pana.webp",
 "capa_rio": "assets/eq/capa_rio.webp",
 "capa_corteza": "assets/eq/capa_corteza.webp",
-"pant_sauce": "assets/eq/pant_sauce.webp"
+"pant_sauce": "assets/eq/pant_sauce.webp",
+"capa_noche": "assets/eq/capa_noche.webp",
+"capa_ocre": "assets/eq/capa_ocre.webp",
+"capa_blanca": "assets/eq/capa_blanca.webp",
+"capa_negra": "assets/eq/capa_negra.webp",
+"capa_violeta": "assets/eq/capa_violeta.webp",
+"pant_rojo": "assets/eq/pant_rojo.webp",
+"pant_negro": "assets/eq/pant_negro.webp",
+"pant_crema": "assets/eq/pant_crema.webp",
+"pant_cobre": "assets/eq/pant_cobre.webp",
+"pant_azulnoche": "assets/eq/pant_azulnoche.webp"
 },
 "andarPJ": {
 "fer": {
@@ -1475,5 +1485,53 @@
 "a2_bronce": "assets/sellos/a2_bronce.webp",
 "a2_plata": "assets/sellos/a2_plata.webp",
 "a2_oro": "assets/sellos/a2_oro.webp"
+},
+"reto": {
+"placa": "assets/trofeos/placa.webp",
+"barra": "assets/trofeos/barra.webp"
+},
+"trofeos": {
+"estrella_elendil": "assets/trofeos/estrella_elendil.webp",
+"cuerno_gamos": "assets/trofeos/cuerno_gamos.webp",
+"farol_elfico": "assets/trofeos/farol_elfico.webp",
+"pipero_dragon": "assets/trofeos/pipero_dragon.webp",
+"miel_tom": "assets/trofeos/miel_tom.webp",
+"campana_bree": "assets/trofeos/campana_bree.webp",
+"mapa_comarca": "assets/trofeos/mapa_comarca.webp",
+"jarra_poney": "assets/trofeos/jarra_poney.webp"
+},
+"master": {
+"emblema": "assets/master/emblema.webp",
+"pergamino": "assets/master/pergamino.webp",
+"viento": "assets/master/viento.webp",
+"tormenta": "assets/master/tormenta.webp",
+"descanso": "assets/master/descanso.webp",
+"regalo": "assets/master/regalo.webp",
+"peligro": "assets/master/peligro.webp",
+"bendicion": "assets/master/bendicion.webp"
+},
+"menu2": {
+"boton": "assets/menu2/boton.webp",
+"boton_on": "assets/menu2/boton_on.webp",
+"mapa": "assets/menu2/mapa.webp",
+"comunidad": "assets/menu2/comunidad.webp",
+"zurron": "assets/menu2/zurron.webp",
+"ajustes": "assets/menu2/ajustes.webp",
+"panel": "assets/menu2/panel.webp",
+"divisor": "assets/menu2/divisor.webp",
+"mapa_on": "assets/menu2/mapa_on.webp",
+"comunidad_on": "assets/menu2/comunidad_on.webp",
+"zurron_on": "assets/menu2/zurron_on.webp",
+"ajustes_on": "assets/menu2/ajustes_on.webp"
+},
+"camino": {
+"boton": "assets/camino/boton.webp",
+"manzana": "assets/camino/manzana.webp",
+"pluma_cisne": "assets/camino/pluma_cisne.webp",
+"setas_anillo": "assets/camino/setas_anillo.webp",
+"penique": "assets/camino/penique.webp",
+"hatillo": "assets/camino/hatillo.webp",
+"zarzamora": "assets/camino/zarzamora.webp",
+"piedra_runa": "assets/camino/piedra_runa.webp"
 }
 }
