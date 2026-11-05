@@ -1,5 +1,17 @@
 name = "la-otra-comunidad"
 compatibility_date = "2026-10-01"
+main = "worker.js"
 
 [assets]
 directory = "./public"
+binding = "ASSETS"
+
+# Avisos al móvil: cada 15 minutos mira si hay avisos pendientes (los del Máster salen al momento).
+[triggers]
+crons = ["*/15 * * * *"]
+
+# Datos públicos (la clave es la publishable, la misma que va en la web). Los secretos VAPID_JWK y
+# PUSH_SECRETO se ponen en Cloudflare → Workers → la-otra-comunidad → Settings → Variables and Secrets.
+[vars]
+SUPA_URL = "https://egdnytvckttgvybdbvmw.supabase.co"
+SUPA_KEY = "sb_publishable_1-eGqPkYOPKsW-ZEtUBo7A_16RQQGdK"

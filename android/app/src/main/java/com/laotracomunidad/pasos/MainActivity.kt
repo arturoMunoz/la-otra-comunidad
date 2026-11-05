@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity() {
     private val fondo = HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
     private var estado: TextView? = null
     private var web: WebView? = null
+    private val pedirAvisos = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { _ -> }
     private val pedirSensor = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { _ -> sigueHC() }
     private val pedir = registerForActivityResult(PermissionController.createRequestPermissionResultContract()) { ok ->
         Pasos.programa(this); manda()
@@ -66,6 +67,10 @@ class MainActivity : ComponentActivity() {
             web = v
         }
         setContentView(w)
+        if (!Avisos.permiso(this) && !Pasos.prefs(this).getBoolean("avisosPedido", false)) {
+            Pasos.prefs(this).edit().putBoolean("avisosPedido", true).apply()
+            pedirAvisos.launch(android.Manifest.permission.POST_NOTIFICATIONS) }
+        lifecycleScope.launch { try { Avisos.mira(this@MainActivity) } catch (_: Exception) {} }
         lifecycleScope.launch { try { Pasos.sincroniza(this@MainActivity) } catch (_: Exception) {} }
     }
 

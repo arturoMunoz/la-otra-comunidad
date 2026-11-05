@@ -145,6 +145,7 @@ object Pasos {
         val req = PeriodicWorkRequestBuilder<Trabajo>(1, TimeUnit.HOURS)
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
         WorkManager.getInstance(c).enqueueUniquePeriodicWork("pasos", ExistingPeriodicWorkPolicy.UPDATE, req)
+        Avisos.programa(c)
     }
 }
 

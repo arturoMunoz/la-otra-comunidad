@@ -3626,20 +3626,23 @@ function masterPanel(){ var B=$('authBox'), tipo='mensaje';
     '<label>Qué día</label><select id="mDia"><option value="0">Hoy</option><option value="1">Mañana</option></select>'+
     '<label>Para quién</label><select id="mPara"><option value="">Toda la Comunidad</option>'+nombres.map(function(n){ return '<option>'+n+'</option>'; }).join('')+'</select>'+
     '<div id="mRegW" hidden><label>Qué regalo</label><select id="mReg">'+FARDO_POOL.map(function(k){ return '<option value="'+k+'">'+EQ[k].n+'</option>'; }).join('')+'</select></div>'+
-    '<p class="dato" id="mInfo" style="color:#f3d9a8;font-size:.86rem;line-height:1.35;background:rgba(0,0,0,.35);border-radius:8px;padding:8px 10px"></p><button type="button" id="mEnviar">Enviar</button><button type="button" class="sec" id="mActiv">Quién usa la app</button><button type="button" class="sec" id="mVolver">‹ Volver</button></div>';
+    '<label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="mMovil" checked style="width:20px;height:20px">Avisar también al móvil</label><p class="dato" id="mInfo" style="color:#f3d9a8;font-size:.86rem;line-height:1.35;background:rgba(0,0,0,.35);border-radius:8px;padding:8px 10px"></p><button type="button" id="mEnviar">Enviar</button><button type="button" class="sec" id="mSoloAviso">Solo aviso al móvil (sin efecto en el juego)</button><button type="button" class="sec" id="mActiv">Quién usa la app</button><button type="button" class="sec" id="mVolver">‹ Volver</button></div>';
   function pinta(){ B.querySelectorAll('[data-mt]').forEach(function(b){ b.setAttribute('aria-pressed',String(b.dataset.mt===tipo)); }); $('mRegW').hidden=tipo!=='regalo';
     $('mInfo').innerHTML='<b>'+MTIPOS[tipo][0]+':</b> '+MDESC[tipo]; }
   B.querySelectorAll('[data-mt]').forEach(function(b){ b.onclick=function(){ tipo=b.dataset.mt; pinta(); }; }); pinta();
   $('mVolver').onclick=function(){ menuPinta('inicio'); }; $('mActiv').onclick=actividadPanel;
+  $('mSoloAviso').onclick=function(){ var t=$('mTxt').value.trim(); if(!t){ $('mInfo').textContent='Escribe el texto del aviso arriba, en «Qué les dices».'; return; }
+    var bt=$('mSoloAviso'); bt.disabled=true; masterAvisoMovil(MAIA,t,$('mPara').value).then(function(n){ bt.disabled=false; $('mInfo').textContent=n===false?'No se ha podido mandar el aviso. ¿Está ejecutado el SQL de los avisos?':'Aviso mandado al móvil.'; }); };
   $('mEnviar').onclick=function(){ var bt=$('mEnviar'); bt.disabled=true; bt.textContent='Enviando…';
     rpc('loc_master_enviar',{p_tipo:tipo,p_texto:$('mTxt').value,p_dia:hoyMadrid(+$('mDia').value),p_efecto:MTIPOS[tipo][2],p_para:$('mPara').value,p_regalo:tipo==='regalo'?$('mReg').value:''})
-      .then(function(){ bt.textContent='Enviado'; $('mInfo').textContent='Les saldrá al abrir el juego.'; tempCargar(); setTimeout(function(){ menuPinta('inicio'); },1400); })
+      .then(function(){ bt.textContent='Enviado'; $('mInfo').textContent='Les saldrá al abrir el juego.'; if($('mMovil').checked) masterAvisoMovil(MAIA+': '+MTIPOS[tipo][0],$('mTxt').value||MDESC[tipo].replace(/^./,function(c){return c.toUpperCase();}),$('mPara').value); tempCargar(); setTimeout(function(){ menuPinta('inicio'); },1400); })
       .catch(function(e){ bt.disabled=false; bt.textContent='Enviar'; $('mInfo').textContent='No se ha podido: '+(e&&e.message||e)+'. ¿Está ejecutado el SQL de la temporada?'; }); }; }
 
 /* ---------- Máster: quién usa la app (SQL: la-otra-comunidad-actividad.sql) ---------- */
 function haceTxt(t){ if(!t) return null; var d=new Date(t); if(isNaN(d)) return null; var hoy=hoyMadrid(), f=d.toLocaleDateString('sv-SE',{timeZone:'Europe/Madrid'}),
   h=d.toLocaleTimeString('es-ES',{timeZone:'Europe/Madrid',hour:'2-digit',minute:'2-digit'}), n=Math.round((Date.parse(hoy)-Date.parse(f))/864e5);
   return {n:n,txt:n<=0?'hoy '+h:n===1?'ayer '+h:'hace '+n+' días ('+f.slice(8,10)+'/'+f.slice(5,7)+')'}; }
+function masterAvisoMovil(titulo,texto,para){ return rpc('loc_aviso_enviar',{p_titulo:titulo,p_texto:texto,p_para:para||''}).then(function(n){ avisosYa(); return n; }).catch(function(){ return false; }); }
 function actividadPanel(){ var B=$('authBox');
   B.innerHTML='<div class="menu mform"><p class="hola">Quién usa la app</p><div id="actL" class="actL"><p class="dato">Cargando…</p></div><button type="button" class="sec" id="aVolver">‹ Volver</button></div>';
   $('aVolver').onclick=function(){ menuPinta('inicio'); };
@@ -3702,6 +3705,36 @@ function verCarta(c){ var d=document.createElement('div'); d.className='carta'; 
       b.onclick=function(){ var k=b.dataset.m2; if(k==='ajustes'){ menuPinta('ajustes'); return; } aJugar(); setTimeout(function(){ openTab(k); },350); }; }); };
 })();
 
+/* ---------- avisos al móvil (05/11/2026). Web Push en iPhone/navegador (Worker + SQL la-otra-comunidad-avisos.sql);
+   en la app de Android los recoge la propia app cada 15 min. ---------- */
+var VAPID_PUB='BOL3diL7FtYeY28-Gmsm-btQHrMFX9oRllffiKJ0YVITb6oMqYVywcBcVCAo8X2TKsxSGV7MQaG9wtsdRGw5UOU';
+function b64uBytes(t){ t=t.replace(/-/g,'+').replace(/_/g,'/'); while(t.length%4) t+='='; var r=atob(t), o=new Uint8Array(r.length); for(var i=0;i<r.length;i++) o[i]=r.charCodeAt(i); return o; }
+function avisosEstado(){ if(window.LocAndroid) return 'android'; if(DEMO) return store.get('demoAvisos',false)?'activo':'inactivo';
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)) return /iPhone|iPad/.test(navigator.userAgent)?'instalar':'nosoporta';
+  if(Notification.permission==='denied') return 'denegado'; return store.get('avisosOn',false)&&Notification.permission==='granted'?'activo':'inactivo'; }
+function avisosGuardar(sub){ var j=sub.toJSON(); return rpc('loc_push_guardar',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth}); }
+function avisosActivar(){ if(DEMO){ store.set('demoAvisos',true); miAviso('<div><b>Avisos activados</b>En el juego de verdad te llegarán al móvil.</div>'); return Promise.resolve(true); }
+  return Notification.requestPermission().then(function(p){ if(p!=='granted') throw new Error(p==='denied'?'Has dicho que no. Se cambia en los ajustes del móvil.':'No has dado permiso.');
+    return navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }); })
+  .then(function(reg){ return reg.pushManager.getSubscription().then(function(s){ return s||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uBytes(VAPID_PUB)}); }); })
+  .then(function(sub){ return avisosGuardar(sub); })
+  .then(function(ok){ store.set('avisosOn',true); miAviso('<div><b>Avisos activados</b>Te llegarán al móvil los mensajes del Máster y los del camino.</div>'); return true; })
+  .catch(function(e){ miAviso('<div><b>No se han podido activar los avisos</b>'+(e&&e.message||e)+'</div>',7000); return false; }); }
+function avisosRefresca(){ if(DEMO||window.LocAndroid||avisosEstado()!=='activo') return;
+  navigator.serviceWorker.ready.then(function(reg){ return reg.pushManager.getSubscription(); }).then(function(sub){ if(sub) avisosGuardar(sub).catch(function(){}); else store.set('avisosOn',false); }).catch(function(){}); }
+function avisosYa(){ if(DEMO) return; try{ fetch('api/avisos',{method:'POST'}).catch(function(){}); }catch(e){} }
+(function(){ var _s=start; start=function(){ _s.apply(this,arguments); avisosRefresca();
+  if(avisosEstado()==='inactivo'&&!store.get('avisosPregunta',false)){ store.set('avisosPregunta',true);
+    setTimeout(function(){ miAviso('<div><b>¿Avisos en el móvil?</b>Te avisamos de los mensajes del Máster, de sitios nuevos y si se te apaga la hoguera. <button type="button" class="avSi">Activar</button></div>',12000); },4000); } }; })();
+document.addEventListener('click',function(e){ if(e.target&&e.target.classList&&e.target.classList.contains('avSi')) avisosActivar(); });
+(function(){ var c=document.createElement('style'); c.textContent='.tAviso .avSi{display:block;margin-top:6px;background:#4f6b2e;color:#fbf6e8;border:0;padding:7px 14px;font:700 .9rem var(--body)}'; document.head.appendChild(c); })();
+(function(){ var _mp=menuPinta; menuPinta=function(pant){ _mp(pant); if(pant!=='inicio') return; var st=avisosEstado(); if(st==='activo'||st==='android'||st==='nosoporta') return;
+  var ca=$('mCuenta'); if(!ca) return; var b=document.createElement('button'); b.type='button'; b.className='sec'; b.id='mAvisos';
+  b.textContent=st==='instalar'?'Avisos en el móvil: cómo activarlos':st==='denegado'?'Avisos bloqueados en este móvil':'Activar avisos en el móvil'; ca.before(b);
+  b.onclick=function(){ if(st==='instalar'){ miAviso('<div><b>Primero instala el juego</b>En Safari toca Compartir → «Añadir a pantalla de inicio» y abre el juego desde ese icono. Ahí ya podrás activar los avisos.</div>',9000); return; }
+    if(st==='denegado'){ miAviso('<div><b>Los tienes bloqueados</b>Actívalos en los ajustes del móvil → Notificaciones → La Otra Comunidad.</div>',8000); return; }
+    avisosActivar().then(function(ok){ if(ok) b.remove(); }); }; }; })();
+
 /* ---------- prototipo: datos inventados para todo lo nuevo ---------- */
 if(DEMO){ (function(){ var _d=demoRpc; demoRpc=function(fn,b){
   if(fn==='loc_pasos_semanas'){ var out=[], l=lunesDe(hoyMadrid()); [l,new Date(Date.parse(l)-6048e5).toISOString().slice(0,10),new Date(Date.parse(l)-12096e5).toISOString().slice(0,10)].forEach(function(s,k){
@@ -3715,5 +3748,7 @@ if(DEMO){ (function(){ var _d=demoRpc; demoRpc=function(fn,b){
   if(fn==='loc_master_enviar'){ var m=store.get('demoMaster',[]), id=(m[0]&&m[0].id||0)+1; m.unshift({id:id,creado:new Date().toISOString(),tipo:b.p_tipo,texto:b.p_texto,dia:b.p_dia,efecto:b.p_efecto,para:b.p_para||null,regalo:b.p_regalo||null}); store.set('demoMaster',m);
     if(b.p_regalo&&(!b.p_para||(me&&b.p_para===me.nombre))){ var q=store.get('demoFardos',[]); q.push({id:'master-'+id,contenido:b.p_regalo,km_abre:0,de:'master',abierto:false}); store.set('demoFardos',q); } return id; }
   if(fn==='loc_equipo_guardar') return null;
+  if(fn==='loc_aviso_enviar') return b.p_para?1:9;
+  if(fn==='loc_push_guardar') return true;
   if(fn==='loc_actividad') return DEMO_PEOPLE.map(function(p,i){ var h=Date.now()-[0.2,3,20,30,50,75,120,200,400][i%9]*36e5; return {nombre:p[0],cuenta:i!==8,abierto:i<5?new Date(h).toISOString():null,sesion:new Date(h-6e5).toISOString(),ultimo_dia:hoyMadrid(-(i>>1)),ultima_sync:new Date(h-9e5).toISOString(),pasos_7:52000-i*4700,dias_14:14-i}; });
   return _d(fn,b); }; })(); }
