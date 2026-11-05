@@ -31,6 +31,7 @@ object Avisos {
 
     suspend fun mira(c: Context) {
         val n = Pasos.nombre(c); if (n.isBlank()) return
+        if (!permiso(c)) return   // sin permiso no se recogen: si se recogieran, se perderían sin enseñarse
         val lista = withContext(Dispatchers.IO) {
             val con = URL(URL_AVISOS).openConnection() as HttpURLConnection
             con.requestMethod = "POST"; con.doOutput = true; con.connectTimeout = 15000; con.readTimeout = 15000
@@ -39,7 +40,7 @@ object Avisos {
             if (con.responseCode >= 300) return@withContext JSONArray()
             JSONArray(con.inputStream.bufferedReader().readText())
         }
-        if (lista.length() == 0 || !permiso(c)) return
+        if (lista.length() == 0) return
         canal(c)
         val nm = c.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val abre = PendingIntent.getActivity(c, 0, Intent(c, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),

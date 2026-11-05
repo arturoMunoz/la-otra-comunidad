@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
     private val fondo = HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
     private var estado: TextView? = null
     private var web: WebView? = null
-    private val pedirAvisos = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { _ -> }
+    private val pedirAvisos = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { ok -> if (ok) lifecycleScope.launch { try { Avisos.mira(this@MainActivity) } catch (_: Exception) {} } }
     private val pedirSensor = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { _ -> sigueHC() }
     private val pedir = registerForActivityResult(PermissionController.createRequestPermissionResultContract()) { ok ->
         Pasos.programa(this); manda()
