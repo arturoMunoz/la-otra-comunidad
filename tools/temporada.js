@@ -327,9 +327,9 @@ function avisosEstado(){ if(window.LocAndroid) return 'android'; if(DEMO) return
   if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)) return /iPhone|iPad/.test(navigator.userAgent)?'instalar':'nosoporta';
   if(Notification.permission==='denied') return 'denegado'; return store.get('avisosOn',false)&&Notification.permission==='granted'?'activo':'inactivo'; }
 function avisosComoDesbloquear(){ var ios=/iPhone|iPad/.test(navigator.userAgent), d=document.createElement('div'); d.className='mst';
-  d.innerHTML='<div class="avPaso"><h3>Activar los avisos</h3><p>El móvil los tiene bloqueados para el juego y una web no puede abrir los ajustes por ti. Son tres toques:</p><ol>'+
+  d.innerHTML='<div class="avPaso"><h3>Activar los avisos</h3><p>El móvil los tiene bloqueados para el juego y una web no puede abrir los ajustes por ti. Se hace así:</p><ol>'+
     (ios?'<li>Abre <b>Ajustes</b> del iPhone.</li><li>Entra en <b>Notificaciones</b> y busca <b>La Otra Comunidad</b>.</li><li>Activa <b>Permitir notificaciones</b> y vuelve al juego.</li>'
-        :'<li>Mantén pulsado el <b>icono del juego</b> en la pantalla de inicio y toca <b>Información de la aplicación</b> (la «i»).</li><li>Entra en <b>Notificaciones</b>.</li><li>Actívalas y vuelve al juego.</li>')+
+        :'<li>Abre <b>Chrome</b> (o el navegador desde el que instalaste el juego) → los tres puntos → <b>Ajustes</b> → <b>Configuración de sitios</b> → <b>Notificaciones</b>.</li><li>Busca <b>la-otra-comunidad…workers.dev</b> y ponlo en <b>Permitir</b>.</li><li>Si sigue sin salir: mantén pulsado el icono del juego → <b>Información de la aplicación</b> → <b>Notificaciones</b> → actívalas. Luego cierra el juego del todo y ábrelo.</li>')+
     '</ol><button type="button">Hecho, ya está</button></div>';
   document.body.appendChild(d); d.querySelector('button').onclick=function(){ d.remove(); if(Notification.permission!=='denied') avisosActivar(); else miAviso('<div><b>Siguen bloqueados</b>Cierra el juego del todo y vuelve a abrirlo después de cambiarlo.</div>',6000); }; }
 function avisosGuardar(sub){ var j=sub.toJSON(); return rpc('loc_push_guardar',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth}); }
@@ -354,10 +354,17 @@ document.addEventListener('click',function(e){ if(e.target&&e.target.classList&&
 (function(){ var c=document.createElement('style'); c.textContent='.tAviso .avSi{display:block;margin-top:6px;background:#4f6b2e;color:#fbf6e8;border:0;padding:7px 14px;font:700 .9rem var(--body)}'+
   '.avPaso{width:min(90vw,400px);background:#f3e2b4;border:3px solid #2b1d0e;box-shadow:0 8px 24px #000;padding:18px 18px 16px;color:#2b1d0e;box-sizing:border-box}.avPaso h3{margin:0 0 6px;font-family:var(--title)}.avPaso p{margin:0 0 8px;font-size:.92rem}'+
   '.avPaso ol{margin:0 0 12px;padding-left:20px;font-size:.98rem;line-height:1.45}.avPaso li{margin-bottom:6px}.avPaso button{width:100%;background:#4f6b2e;color:#fbf6e8;border:0;padding:11px;font:700 1rem var(--body)}'; document.head.appendChild(c); })();
-(function(){ var _mp=menuPinta; menuPinta=function(pant){ _mp(pant); if(pant!=='inicio') return; var st=avisosEstado(); if(st==='activo'||st==='android'||st==='nosoporta') return;
+function avisosProbar(){ var no='<div><b>¿No te ha salido arriba?</b>Entonces el móvil los bloquea. <button type="button" class="avSi avComo">Cómo desbloquearlos</button></div>';
+  if(DEMO){ miAviso(no,9000); return; }
+  navigator.serviceWorker.ready.then(function(reg){ return reg.showNotification('La Otra Comunidad',{body:'Así te llegarán los avisos del camino.',icon:'assets/icono-192.png',tag:'loc-prueba'}); })
+    .then(function(){ setTimeout(function(){ miAviso(no,9000); },1500); }).catch(function(){ avisosComoDesbloquear(); }); }
+document.addEventListener('click',function(e){ if(e.target&&e.target.classList&&e.target.classList.contains('avComo')) avisosComoDesbloquear(); });
+(function(){ var _mp=menuPinta; menuPinta=function(pant){ _mp(pant); if(pant!=='inicio') return; var st=avisosEstado(); if(st==='android') return;
   var ca=$('mCuenta'); if(!ca) return; var b=document.createElement('button'); b.type='button'; b.className='sec'; b.id='mAvisos';
-  b.textContent=st==='instalar'?'Avisos en el móvil: cómo activarlos':st==='denegado'?'Avisos bloqueados en este móvil':'Activar avisos en el móvil'; ca.before(b);
-  b.onclick=function(){ if(st==='instalar'){ miAviso('<div><b>Primero instala el juego</b>En Safari toca Compartir → «Añadir a pantalla de inicio» y abre el juego desde ese icono. Ahí ya podrás activar los avisos.</div>',9000); return; }
+  b.textContent=st==='activo'?'Avisos activados · probar':st==='nosoporta'?'Avisos en el móvil: este navegador no los admite':st==='instalar'?'Avisos en el móvil: cómo activarlos':st==='denegado'?'Avisos bloqueados en este móvil':'Activar avisos en el móvil'; ca.before(b);
+  b.onclick=function(){ if(st==='activo'){ avisosProbar(); return; }
+    if(st==='nosoporta'){ miAviso('<div><b>Este navegador no admite avisos</b>Instala el juego desde Chrome (Android) o desde Safari con «Añadir a pantalla de inicio» (iPhone) y ábrelo desde ese icono.</div>',9000); return; }
+    if(st==='instalar'){ miAviso('<div><b>Primero instala el juego</b>En Safari toca Compartir → «Añadir a pantalla de inicio» y abre el juego desde ese icono. Ahí ya podrás activar los avisos.</div>',9000); return; }
     if(st==='denegado'){ avisosComoDesbloquear(); return; }
     avisosActivar().then(function(ok){ if(ok) b.remove(); }); }; }; })();
 
