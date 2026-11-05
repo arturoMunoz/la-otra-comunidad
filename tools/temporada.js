@@ -40,16 +40,21 @@ function miAviso(html,ms){ var a=document.createElement('div'); a.className='tAv
 (function(){ var c=document.createElement('style'); c.textContent=
   '.tAviso{position:fixed;left:12px;right:12px;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;gap:12px;align-items:center;background:#f3e2b4;border:3px solid #2b1d0e;box-shadow:0 6px 18px rgba(0,0,0,.45),inset 0 0 0 2px rgba(255,240,200,.6);padding:10px 12px;color:#2b1d0e;font-size:.93rem;line-height:1.3;transform:translateY(30px);opacity:0;transition:.35s}'+
   '.tAviso.on{transform:none;opacity:1}.tAviso img{width:52px;height:52px;object-fit:contain;flex:none;image-rendering:pixelated}.tAviso b{display:block;font-family:var(--title)}'+
-  '.reto{position:relative;margin:4px 0 12px;padding:14px 16px 12px;background:url("'+(M.reto&&M.reto.placa||'')+'") center/100% 100% no-repeat;color:#f6e8c4;text-shadow:0 1px 2px #000}'+
-  '.reto h3{margin:0 0 2px;font-family:var(--title);font-size:1rem;color:#f6dc9a}.reto .sub{font-size:.8rem;opacity:.9}'+
-  '.rbar{position:relative;height:30px;margin:8px 0 4px;background:url("'+(M.reto&&M.reto.barra||'')+'") center/100% 100% no-repeat}'+
-  '.rbar i{position:absolute;left:4.5%;top:30%;bottom:30%;max-width:91%;background:linear-gradient(#f6d77c,#c48a2c);box-shadow:0 0 8px #f2c45a;border-radius:3px}'+
-  '.rtro{position:absolute;right:10px;top:-14px;width:58px;height:58px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.5))}.rtro.no{filter:grayscale(.9) brightness(.7) drop-shadow(0 3px 3px rgba(0,0,0,.5))}'+
-  '.rap{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.74rem;margin-top:4px;opacity:.95}'+
+  '.reto{margin:12px 0 4px}.reto .placa{position:relative;width:100%;aspect-ratio:900/202;background:url("'+(M.reto&&M.reto.placa||'')+'") center/100% 100% no-repeat;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4% 14% 2%;box-sizing:border-box;color:#f6e8c4;text-shadow:0 1px 0 #000,0 0 4px #000;text-align:center}'+
+  '.reto .placa h3{margin:0;font-family:var(--title);font-size:clamp(.95rem,4.6vw,1.15rem);color:#f8dc96;line-height:1.1}.reto .placa small{font-size:.74rem;font-weight:700;opacity:.95}'+
+  '.rpre{display:flex;align-items:center;gap:10px;margin:8px 4px 6px}.rpre img{width:58px;height:58px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}.rpre img.no{filter:grayscale(.85) brightness(.75) drop-shadow(0 2px 2px rgba(0,0,0,.45))}'+
+  '.rpre div{font-size:.86rem;line-height:1.25}.rpre b{display:block;font-family:var(--title);font-size:.95rem}'+
+  '.rb{position:relative;width:100%;aspect-ratio:900/78;background:url("'+(M.reto&&M.reto.barra||'')+'") center/100% 100% no-repeat}'+
+  '.rb i{position:absolute;left:4.9%;top:25.6%;height:46.2%;background:linear-gradient(#f9e08e,#c88a26);box-shadow:0 0 6px #f2c45a}.rb i.r{background:linear-gradient(#d9826a,#8e2f22);box-shadow:none}'+
+  '.rb span{position:absolute;inset:0;display:grid;place-items:center;font:800 .72rem var(--body);color:#fff8e6;text-shadow:0 1px 0 #000,0 0 3px #000,0 0 3px #000}'+
+  '.rap{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0 2px}.rap span{font-size:.72rem;padding:2px 7px;background:rgba(90,55,20,.12);border:1px solid rgba(60,35,10,.35);border-radius:10px}.rap span b{font-weight:800}'+
+  '.secT{margin:20px 0 6px;text-align:center}.secT h3{margin:0;font-family:var(--title);font-size:1.05rem}.secT img{display:block;width:78%;margin:2px auto 0}'+
+  '.duel2{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;text-align:center;gap:0 4px}.duel2 .pj{height:112px;display:flex;align-items:flex-end;justify-content:center}'+
+  '.duel2 .pj img{height:112px;width:auto;image-rendering:pixelated}.duel2 .el .pj img{transform:scaleX(-1)}.duel2 .vs{align-self:center;font:700 1.5rem var(--title);color:#8e2f22;text-shadow:0 1px 0 #f6e3b8;padding-bottom:30px}'+
+  '.duel2 .km{display:block;font:700 1.35rem var(--title);line-height:1.1;margin-top:4px}.duel2 .km small{font-size:.7rem}.duel2 .nm{font-size:.82rem;font-weight:700}.duel2 .gana .km{color:#9a6a12}'+
+  '.duel2 .rb{grid-column:1/-1;margin-top:8px}.duel2 .pas{grid-column:1/-1;font-size:.78rem;opacity:.8;margin-top:4px}'+
   '.tcard{display:flex;gap:10px;align-items:center;background:var(--paper2);border:2px solid #2b1d0e;padding:8px 10px;margin:8px 0;font-size:.9rem}'+
   '.tcard img{width:46px;height:46px;object-fit:contain;flex:none;image-rendering:pixelated}.tcard b{display:block;font-family:var(--title);font-size:.95rem}'+
-  '.duelo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;text-align:center;gap:6px}.duelo .vs{font-family:var(--title);font-weight:700}'+
-  '.duelo img{width:40px;height:56px;object-fit:contain;image-rendering:pixelated}'+
   '.people .vest{width:40px;height:56px;flex:none;display:grid;place-items:center}.people .vest img{width:40px;height:56px;object-fit:contain;image-rendering:pixelated}'+
   '.fardos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.fardo{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;font-size:.74rem;font-weight:700;padding:6px;border:2px solid #2b1d0e;background:rgba(160,110,50,.15)}'+
   '.fardo img{width:54px;height:54px;object-fit:contain}.fardo.cerrado img{filter:saturate(.6) brightness(.85)}.fardo.listo{animation:latido 1.2s ease-in-out infinite;background:#f6dc9a}@keyframes latido{50%{transform:scale(1.05)}}'+
@@ -58,7 +63,7 @@ function miAviso(html,ms){ var a=document.createElement('div'); a.className='tAv
   '.mst .emb{width:34%;margin-top:-6%;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}.mst .ev{width:20%}.mst h3{margin:0;font-family:var(--title);font-size:1.15rem}.mst p{margin:0;font-size:.98rem;line-height:1.35}'+
   '.mst .firma{font-style:italic;font-size:.85rem;opacity:.8}.mst button{margin-top:auto;background:#4f6b2e;color:#fbf6e8;border:0;padding:10px 18px;font:700 1rem var(--body)}'+
   '.mform label{display:block;color:#f3d9a8;font-size:.85rem;margin:6px 0 2px}.mform select,.mform textarea{width:100%;box-sizing:border-box;font:1rem var(--body);padding:8px;border-radius:8px;border:1px solid #c9b07a;background:#211a12;color:#f3ead2}'+
-  '.mform textarea{min-height:84px}.mtipos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.mtipos button{all:unset;cursor:pointer;text-align:center;font-size:.66rem;color:#f3d9a8;padding:4px;border-radius:8px}'+
+  '.menu .mtipos button:not(.sec){border:0;border-image:none;padding:4px;font:600 .66rem var(--body);color:#f3d9a8}.mform textarea{min-height:84px}.mtipos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.mtipos button{all:unset;cursor:pointer;text-align:center;font-size:.66rem;color:#f3d9a8;padding:4px;border-radius:8px}'+
   '.mtipos button img{width:100%;aspect-ratio:1;object-fit:contain}.mtipos button[aria-pressed=true]{background:rgba(246,220,154,.25);outline:2px solid #f6dc9a}'+
   '.carta{position:fixed;inset:0;z-index:70;background:rgba(10,8,5,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}'+
   '.carta img{max-width:100%;max-height:72vh;box-shadow:0 8px 24px #000}.carta p{color:#f3e2b4;margin:0;text-align:center;font-size:.9rem}.carta button{background:#e2a54a;border:0;padding:12px 20px;font:700 1rem var(--body)}'+
@@ -92,13 +97,13 @@ function retoDatos(){
 }
 function tempTrofeosAviso(){ var R=retoDatos(); R.ganados.forEach(function(g){ var k='retoOk.'+g.semana; if(store.get(k,false)) return; store.set(k,true);
   if(g.semana===R.lunes||Date.now()-Date.parse(g.semana)<15*864e5) miAviso('<img src="'+M.trofeos[g.t[0]]+'" alt=""><div><b>¡Reto de la Comunidad cumplido!</b>Todos ganáis: '+g.t[1]+'. Está en el Zurrón.</div>',7000); }); }
+function barraHtml(pc,txt,rival){ pc=Math.max(0,Math.min(100,pc)); return '<div class="rb"><i style="width:'+(pc*.902).toFixed(1)+'%"></i>'+(rival?'<i class="r" style="left:'+(4.9+pc*.902).toFixed(1)+'%;width:'+((100-pc)*.902).toFixed(1)+'%"></i>':'')+(txt?'<span>'+txt+'</span>':'')+'</div>'; }
 function retoHtml(){
   var R=retoDatos(), pc=Math.min(100,R.km/R.obj*100), ok=R.km>=R.obj, t=R.trofeo;
-  var ap=Object.keys(R.de).sort(function(a,b){ return R.de[b]-R.de[a]; }).map(function(n){ return n+' '+fmt(R.de[n]/STEPS_PER_KM); }).join(' · ');
-  return '<div class="reto"><img class="rtro'+(ok?'':' no')+'" src="'+(M.trofeos&&M.trofeos[t[0]]||'')+'" alt=""><h3>Reto de la semana</h3>'+
-    '<div class="sub">Entre todos, '+R.obj+' km'+(ok?' · ¡Cumplido! Todos ganáis «'+t[1]+'»':' · Premio para todos: '+t[1]+' · Quedan '+R.dias+' días')+'</div>'+
-    '<div class="rbar"><i style="width:'+(pc*.91).toFixed(1)+'%"></i></div><div class="sub"><b>'+fmt(R.km)+'</b> de '+R.obj+' km</div>'+
-    (ap?'<div class="rap">'+ap+'</div>':'')+'</div>';
+  var ap=Object.keys(R.de).sort(function(a,b){ return R.de[b]-R.de[a]; }).map(function(n){ return '<span>'+n+' <b>'+fmt(R.de[n]/STEPS_PER_KM)+'</b></span>'; }).join('');
+  return '<div class="reto"><div class="placa"><h3>Reto de la semana</h3><small>Entre todos, '+R.obj+' km</small></div>'+
+    '<div class="rpre"><img class="'+(ok?'':'no')+'" src="'+(M.trofeos&&M.trofeos[t[0]]||'')+'" alt=""><div>'+(ok?'<b>¡Cumplido!</b>Todos ganáis «'+t[1]+'». Ya está en el Zurrón.':'<b>Premio para todos</b>'+t[1]+' · quedan '+R.dias+' '+(R.dias===1?'día':'días'))+'</div></div>'+
+    barraHtml(pc,fmt(R.km)+' / '+R.obj+' km')+(ap?'<div class="rap">'+ap+'</div>':'')+'</div>';
 }
 /* ---------- duelo de la semana ---------- */
 function dueloDe(lunes){ var ns=registrados().map(function(p){ return p.nombre; }).sort(), r=semilla(semanaIdx(lunes)*7919+13);
@@ -107,11 +112,14 @@ function dueloDe(lunes){ var ns=registrados().map(function(p){ return p.nombre; 
 function persona(n){ return (people||[]).filter(function(p){ return p.nombre===n; })[0]; }
 function fotoDe(n){ var p=persona(n); if(!p) return ''; var u=(typeof hobbitVestido==='function')?hobbitVestido(p.hobbit,(me&&n===me.nombre)?eqPuesto():(TEMP.equipos[n]||[])):null;
   return u?'<img src="'+u+'" alt="">':'<span class="face" style="'+faceStyle(p.hobbit,36)+'"></span>'; }
+function secT(t){ return '<div class="secT"><h3>'+t+'</h3>'+(M.menu2&&M.menu2.divisor?'<img src="'+M.menu2.divisor+'" alt="">':'')+'</div>'; }
 function dueloHtml(){ if(!me) return ''; var R=retoDatos(), riv=dueloDe(R.lunes)[me.nombre]; if(!riv) return '';
-  var a=(R.de[me.nombre]||0)/STEPS_PER_KM, b=(R.de[riv]||0)/STEPS_PER_KM;
+  var a=(R.de[me.nombre]||0)/STEPS_PER_KM, b=(R.de[riv]||0)/STEPS_PER_KM, pc=a+b>0?a/(a+b)*100:50;
   var pl=new Date(Date.parse(R.lunes)-7*864e5).toISOString().slice(0,10), rp=dueloDe(pl)[me.nombre], ps=R.sem[pl], res='';
-  if(rp&&ps){ var x=ps.de[me.nombre]||0, y=ps.de[rp]||0; res='<div class="sub" style="grid-column:1/-1;font-size:.78rem">La semana pasada '+(x>y?'ganaste a '+rp:x<y?rp+' te ganó':'empataste con '+rp)+'.</div>'; }
-  return '<div class="tcard" style="display:block"><b style="text-align:center;margin-bottom:4px">Duelo de la semana</b><div class="duelo"><div>'+fotoDe(me.nombre)+'<br>Tú<br><b>'+fmt(a)+' km</b></div><div class="vs">contra</div><div>'+fotoDe(riv)+'<br>'+riv+'<br><b>'+fmt(b)+' km</b></div>'+res+'</div></div>'; }
+  if(rp&&ps){ var x=ps.de[me.nombre]||0, y=ps.de[rp]||0; res='<div class="pas">La semana pasada '+(x>y?'ganaste a '+rp:x<y?rp+' te ganó':'empataste con '+rp)+'.</div>'; }
+  return secT('Duelo de la semana')+'<div class="duel2"><div class="yo'+(a>b?' gana':'')+'"><div class="pj">'+fotoDe(me.nombre)+'</div><span class="km">'+fmt(a)+' <small>km</small></span><span class="nm">Tú</span></div>'+
+    '<div class="vs">VS</div><div class="el'+(b>a?' gana':'')+'"><div class="pj">'+fotoDe(riv)+'</div><span class="km">'+fmt(b)+' <small>km</small></span><span class="nm">'+riv+'</span></div>'+
+    barraHtml(pc,'',true)+res+'</div>'; }
 /* ---------- hoguera: días seguidos abriendo el juego (05/11/2026). 9 fases, objetivo 6 meses. SQL: la-otra-comunidad-hoguera.sql ---------- */
 var HFASES=[[1,'Ascuas'],[3,'Chispa'],[7,'Fuego de campamento'],[14,'Hoguera'],[30,'Gran hoguera'],[60,'Fuego de los elfos'],[90,'Almenara'],[120,'Fuego de Amon Sûl'],[180,'Llama de Anor']];
 function aperturas(){ return store.get('aperturas',[]); }
@@ -126,20 +134,29 @@ function hogueraImg(f,cls){ if(f<0||!M.hoguera) return ''; var fr=M.hoguera[f]; 
 setInterval(function(){ var t=Math.floor(Date.now()/380)%2; document.querySelectorAll('img.hogf').forEach(function(im){ var u=t?im.dataset.b:im.dataset.a; if(im.getAttribute('src')!==u) im.setAttribute('src',u); }); },380);
 function hogueraHito(){ var H=hoguera(), mx=store.get('hogueraMax',-1); if(H.fase>mx){ store.set('hogueraMax',H.fase); if(mx>=0||H.fase>0) miAviso(hogueraImg(H.fase,'mini')+'<div><b>¡Tu hoguera crece! '+HFASES[H.fase][1]+'</b>'+H.dias+' días seguidos de viaje. '+(H.sig?'Siguiente: '+H.sig[1]+' a los '+H.sig[0]+' días.':'Has llegado a la llama más grande.')+'</div>',7000); }
   hogueraHud(); }
-function hogueraHtml(){ var H=hoguera(), f=H.fase, prev=f>=0?HFASES[f][0]:0, pc=H.sig?Math.min(100,(H.dias-prev)/(H.sig[0]-prev)*100):100;
-  return '<div class="tcard hogc">'+(f>=0?hogueraImg(f,'grande'):'<div class="grande"></div>')+'<div style="flex:1"><b>'+(f>=0?HFASES[f][1]:'Hoguera apagada')+' · '+H.dias+' '+(H.dias===1?'día':'días')+' seguidos</b>'+
-    (H.sig?'Próximo hito: <b style="display:inline">'+H.sig[1]+'</b> a los '+H.sig[0]+' días (faltan '+(H.sig[0]-H.dias)+').':'¡La Llama de Anor! Has llegado al final.')+
-    '<div class="rbar" style="height:22px;margin:6px 0 2px"><i style="width:'+(pc*.91).toFixed(1)+'%"></i></div><span style="font-size:.78rem">Abre el juego cada día para avivarla. Si fallas un día, Sam la reaviva (una vez por semana).</span></div></div>'; }
-function hogueraHud(){ var w=$('wx'); if(!w) return; var H=hoguera(), o=w.querySelector('.hogw'); if(o) o.remove(); if(H.fase<0) return;
-  var s=document.createElement('span'); s.className='hogw'; s.innerHTML=hogueraImg(H.fase,'hud')+H.dias+' · '; w.insertBefore(s,w.firstChild); }
-setInterval(hogueraHud,6000);
-(function(){ var c=document.createElement('style'); c.textContent='.hogc{align-items:flex-end}.hogc .grande,.hogc img.grande{width:84px;height:168px;object-fit:contain;object-position:bottom;flex:none}'+
-  '.tAviso img.hogf.mini{width:42px;height:84px;object-fit:contain;object-position:bottom}#wx img.hogf.hud{width:12px;height:24px;object-fit:contain;object-position:bottom;vertical-align:-6px;margin-right:2px}'+
+function hogueraHtml(){ var H=hoguera(), f=H.fase, prev=f>=0?HFASES[f][0]:0, pc=H.sig?Math.min(100,(H.dias-prev)/(H.sig[0]-prev)*100):100, mx=store.get('hogueraMax',-1);
+  return '<h2>Tu hoguera</h2><div class="hogS">'+(f>=0?hogueraImg(f,'grande'):'<div class="grande apag"><img src="'+(M.hoguera?M.hoguera[0][0]:'')+'" alt=""></div>')+
+    '<h3>'+(f>=0?HFASES[f][1]:'Hoguera apagada')+'</h3><p class="dd"><b>'+H.dias+'</b> '+(H.dias===1?'día seguido':'días seguidos')+' de viaje</p>'+
+    barraHtml(pc,H.sig?'faltan '+(H.sig[0]-H.dias)+' para '+H.sig[1]:'¡La Llama de Anor!')+
+    '<p class="note">Abre el juego cada día para avivarla. Si fallas un día, Sam la reaviva (una vez por semana).</p></div>'+
+    secT('Fuegos encendidos')+'<div class="hogz">'+HFASES.map(function(x,k){ var ok=k<=mx; return '<div class="'+(ok?'':'no')+'"><img src="'+(M.hoguera?M.hoguera[k][0]:'')+'" alt="">'+(ok?x[1]:x[0]+' días')+'</div>'; }).join('')+'</div>'; }
+TABS.hoguera=hogueraHtml;
+function hogueraHud(){ var app=document.querySelector('.app'), bt=$('hogBtn'); if(!app) return;
+  if(!bt){ bt=document.createElement('button'); bt.type='button'; bt.id='hogBtn'; bt.className='hogBtn'; bt.onclick=function(){ openTab('hoguera'); };
+    var bo=app.querySelector('.bottom'); if(bo&&bo.nextSibling) app.insertBefore(bt,bo.nextSibling); else app.appendChild(bt); }
+  var H=hoguera(), k=H.fase+':'+H.dias; if(bt.dataset.k===k) return; bt.dataset.k=k;
+  bt.innerHTML=(H.fase>=0?hogueraImg(H.fase,'btn'):'<img class="btn apag" src="'+(M.hoguera?M.hoguera[0][0]:'')+'" alt="">')+'<span><b>'+H.dias+'</b>'+(H.dias===1?'día':'días')+'</span>'; }
+setInterval(hogueraHud,4000);
+(function(){ var c=document.createElement('style'); c.textContent=
+  '.hogBtn{all:unset;cursor:pointer;position:absolute;z-index:6;left:max(14px,env(safe-area-inset-left,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));height:80px;display:flex;align-items:flex-end;gap:4px;-webkit-tap-highlight-color:transparent}'+
+  '.hogBtn img{width:40px;height:80px;object-fit:contain;object-position:bottom;filter:drop-shadow(0 0 6px rgba(255,170,60,.55))}.hogBtn img.apag{filter:grayscale(1) brightness(.5)}'+
+  '.hogBtn span{display:flex;flex-direction:column;line-height:1;color:#f3ead2;font:700 .72rem var(--body);text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.9);padding-bottom:4px}.hogBtn b{font:700 1.35rem var(--title)}'+
+  '.app.out .hogBtn{display:none}'+
+  '.hogS{text-align:center}.hogS .grande{display:block;width:96px;height:192px;margin:0 auto;object-fit:contain;object-position:bottom}.hogS .grande.apag img{width:100%;height:100%;object-fit:contain;object-position:bottom;filter:grayscale(1) brightness(.4)}'+
+  '.hogS h3{margin:6px 0 0;font-family:var(--title);font-size:1.25rem}.hogS .dd{margin:0 0 8px}.hogS .dd b{font:700 1.2rem var(--title)}.hogS .note{margin-top:8px}'+
+  '.tAviso img.hogf.mini{width:42px;height:84px;object-fit:contain;object-position:bottom}'+
   '.hogz{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;align-items:end}.hogz div{text-align:center;font-size:.66rem;font-weight:700}.hogz img{width:100%;height:auto;aspect-ratio:1/2;object-fit:contain;object-position:bottom}.hogz .no img{filter:brightness(0) opacity(.25)}';
   document.head.appendChild(c); })();
-(function(){ var _z=TABS.zurron; TABS.zurron=function(){ var mx=store.get('hogueraMax',-1);
-  return _z()+'<h2 style="font-size:1.1rem;margin-top:14px">Fuegos encendidos</h2><p class="note">Cada fase de tu hoguera que alcanzas se queda aquí para siempre.</p><div class="hogz">'+
-    HFASES.map(function(x,k){ var ok=k<=mx; return '<div class="'+(ok?'':'no')+'"><img src="'+(M.hoguera?M.hoguera[k][0]:'')+'" alt="">'+(ok?x[1]:x[0]+' días')+'</div>'; }).join('')+'</div>'; }; })();
 (function(){ var _s=start; start=function(){ _s.apply(this,arguments); apuntaApertura(); }; })();
 document.addEventListener('visibilitychange',function(){ if(!document.hidden&&me) apuntaApertura(); });
 if(DEMO&&!store.get('aperturas',null)){ (function(){ var a=[]; for(var i=23;i>=0;i--) if(i!==9) a.push(hoyMadrid(-i)); store.set('aperturas',a); })(); }
@@ -149,9 +166,9 @@ if(DEMO&&!store.get('aperturas',null)){ (function(){ var a=[]; for(var i=23;i>=0
   h=h.replace(/<span class="face" style="[^"]*"><\/span><span class="t">([^<]+)<\/span>/g,function(m,n){ var p=persona(n); if(!p) return m;
     var u=(typeof hobbitVestido==='function')?hobbitVestido(p.hobbit,(me&&n===me.nombre)?eqPuesto():(TEMP.equipos[n]||[])):null;
     return u?'<span class="vest"><img src="'+u+'" alt=""></span><span class="t">'+n+'</span>':m; });
-  var extra=retoHtml()+dueloHtml()+hogueraHtml()+masterListaHtml()+'<button class="primary" type="button" id="cartaDia">Carta del día para el grupo</button>';
+  var extra=retoHtml()+dueloHtml()+masterListaHtml()+'<button class="primary" type="button" id="cartaDia">Carta del día para el grupo</button>';
   return h.replace('<h2>La Comunidad</h2>','<h2>La Comunidad</h2>'+extra); }; })();
-(function(){ var _ot=openTab; openTab=function(tab){ _ot(tab); if(tab==='comunidad'){ var b=$('cartaDia'); if(b) b.onclick=cartaDia; } }; })();
+document.addEventListener('click',function(e){ if(e.target&&e.target.id==='cartaDia') cartaDia(); });
 
 /* ---------- cosas del camino ---------- */
 (function(){ var desde=store.get('caminoDesde',null);
@@ -232,22 +249,23 @@ function masterPanel(){ var B=$('authBox'), tipo='mensaje';
 
 /* ---------- carta del día (imagen para mandar al grupo) ---------- */
 function cartaDia(){ if(!me) return; var Wc=1080, Hc=1350, c=document.createElement('canvas'); c.width=Wc; c.height=Hc; var x=c.getContext('2d');
-  var bg=new Image(), lg=new Image(), hb=new Image(), H=hoguera(), R=retoDatos(), t=T[tramoAt(km)], car=0;
+  var bg=new Image(), lg=new Image(), hb=new Image(), hg=new Image(), H=hoguera(), R=retoDatos(), t=T[tramoAt(km)], car=0;
   function listo(){ if(++car<3) return;
     try{ var s=Math.max(Wc/bg.width,Hc/bg.height); x.imageSmoothingEnabled=false; x.drawImage(bg,(Wc-bg.width*s)/2,(Hc-bg.height*s)*.35,bg.width*s,bg.height*s); }catch(e){ x.fillStyle='#3b2b17'; x.fillRect(0,0,Wc,Hc); }
     var g=x.createLinearGradient(0,Hc*.45,0,Hc); g.addColorStop(0,'rgba(15,10,5,0)'); g.addColorStop(1,'rgba(15,10,5,.92)'); x.fillStyle=g; x.fillRect(0,0,Wc,Hc);
     try{ x.imageSmoothingEnabled=true; var lw=760; x.drawImage(lg,(Wc-lw)/2,30,lw,lw*lg.height/lg.width); }catch(e){}
-    try{ x.imageSmoothingEnabled=false; x.drawImage(hb,Wc/2-53*5.2/2,Hc*.36,53*5.2,74*5.2); }catch(e){}
+    try{ x.imageSmoothingEnabled=false; x.drawImage(hb,Wc/2-53*5.2/2-60,Hc*.36,53*5.2,74*5.2); }catch(e){}
+    try{ if(hg.width){ x.imageSmoothingEnabled=true; x.drawImage(hg,Wc/2+90,Hc*.36+74*5.2-300,150,300); } }catch(e){}
     x.textAlign='center'; x.fillStyle='#f6dc9a'; x.shadowColor='#000'; x.shadowBlur=8;
     x.font='700 64px Cinzel, Georgia, serif'; x.fillText(me.nombre,Wc/2,Hc*.36+74*5.2+70);
     x.font='600 40px Alegreya Sans, sans-serif'; x.fillStyle='#f3ead2'; x.fillText(t.name+' · km '+fmt(km),Wc/2,Hc*.36+74*5.2+124);
     x.font='800 58px Alegreya Sans, sans-serif'; x.fillStyle='#ffe7a8'; x.fillText(Number(stepsToday||0).toLocaleString('es-ES')+' pasos hoy',Wc/2,Hc-170);
-    x.font='600 36px Alegreya Sans, sans-serif'; x.fillStyle='#f3ead2'; x.fillText('Hoguera: '+H.dias+(H.dias===1?' día':' días')+'  ·  Reto: '+fmt(R.km)+' de '+R.obj+' km',Wc/2,Hc-105);
+    x.font='600 36px Alegreya Sans, sans-serif'; x.fillStyle='#f3ead2'; x.fillText((H.fase>=0?HFASES[H.fase][1]:'Hoguera')+': '+H.dias+(H.dias===1?' día':' días')+'  ·  Reto: '+fmt(R.km)+' de '+R.obj+' km',Wc/2,Hc-105);
     x.font='italic 30px Alegreya Sans, sans-serif'; x.fillStyle='rgba(243,234,210,.8)'; x.fillText(new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}),Wc/2,Hc-50);
     c.toBlob(function(bl){ var f=new File([bl],'carta-'+hoyMadrid()+'.png',{type:'image/png'});
       if(navigator.canShare&&navigator.canShare({files:[f]})){ navigator.share({files:[f],title:'La Otra Comunidad'}).catch(function(){ verCarta(c); }); } else verCarta(c); },'image/png'); }
   bg.onload=bg.onerror=listo; lg.onload=lg.onerror=listo; hb.onload=hb.onerror=listo;
-  try{ bg.src=cv.toDataURL(); }catch(e){ listo(); } lg.src=M.logo||'assets/logo.webp';
+  try{ bg.src=cv.toDataURL(); }catch(e){ listo(); } lg.src=M.logo||'assets/logo.webp'; if(H.fase>=0&&M.hoguera) hg.src=M.hoguera[H.fase][0];
   var u=(typeof hobbitVestido==='function')?hobbitVestido(me.hobbit,eqPuesto(),8):null; if(u) hb.src=u; else listo(); }
 function verCarta(c){ var d=document.createElement('div'); d.className='carta'; d.innerHTML='<img alt="Carta del día"><p>Mantén pulsada la imagen para guardarla o compartirla en el grupo.</p><button type="button">Cerrar</button>';
   d.querySelector('img').src=c.toDataURL('image/png'); d.querySelector('button').onclick=function(){ d.remove(); }; document.body.appendChild(d); }
