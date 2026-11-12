@@ -98,11 +98,11 @@ const num = (v) => (Math.round(v * 10) / 10).toString().replace('.', ',');
 /* talentos: se cogen una vez y cambian cómo juegas */
 const TALENTOS = {
   sangre: {t: 'Sed de batalla', icono: 'corazon', d: 'Cada baja te cura <b>2 de vida</b>.'},
-  esquiva: {t: 'Esquiva de guerrero', icono: 'i_esquivar', d: 'Al esquivar sueltas una <b>onda que aparta y hiere</b>.'},
+  esquiva: {t: 'Esquiva de guerrero', icono: 'i_esquivar', d: 'Al esquivar, <b>onda que aparta y hiere</b>.'},
   aturde: {t: 'Golpe aturdidor', icono: 'i_remate', d: 'Uno de cada 4 golpes <b>aturde 1 s</b>.'},
-  aliento: {t: 'Último aliento', icono: 'escudo', d: 'Al bajar del 30 % de vida: <b>3 s invencible</b> y furia. Una vez por oleada.'},
+  aliento: {t: 'Último aliento', icono: 'escudo', d: 'Con poca vida: <b>3 s invencible</b> y furia. Una vez por oleada.'},
   botin: {t: 'Botín de Isengard', icono: 'moneda', d: '<b>+50 % de oro</b> en cada moneda.'},
-  ira: {t: 'Ira creciente', icono: 'i_cargado', d: 'Cada 8 bajas sin que te den: <b>+10 % de daño</b> (hasta +50 %). Si te dan, se pierde.'},
+  ira: {t: 'Ira creciente', icono: 'i_cargado', d: 'Cada 8 bajas sin que te den: <b>+10 % daño</b>. Si te dan, se pierde.'},
 };
 const BASE_MEJORAS = [
   {t: 'Filo afilado', d: (h) => `Daño <b>${num(danoH(h))} → ${num(danoH(h) * 1.4)}</b>`, f: (h) => h.dano *= 1.4},
@@ -1993,7 +1993,9 @@ function ofreceMejoras(cofre) {
   if ((J.cambios ?? 2) > 0) {const r = document.createElement('div'); r.className = 'cambiar'; r.textContent = '🎲 Cambiar cartas (' + (J.cambios ?? 2) + ')'; r.onclick = () => {J.cambios = (J.cambios ?? 2) - 1; ofreceMejoras(cofre);}; c.appendChild(r);}
   $('mejora').classList.remove('hidden');
   /* que el texto quepa siempre dentro del pergamino de la carta */
-  c.querySelectorAll('.carta div').forEach((d) => {let f = 1; d.style.fontSize = ''; while ((d.scrollHeight > d.clientHeight + 1 || d.scrollWidth > d.clientWidth + 1) && f > 0.4) {f -= 0.05; d.style.setProperty('--k', f);}});
+  /* que el texto quepa siempre dentro del pergamino: se mide al pintar, cuando carga la letra y al acabar la animación */
+  const ajusta = () => c.querySelectorAll('.carta div').forEach((d) => {let f = 1; d.style.setProperty('--k', 1); while ((d.scrollHeight > d.clientHeight + 1 || d.scrollWidth > d.clientWidth + 1) && f > 0.34) {f -= 0.04; d.style.setProperty('--k', f);}});
+  ajusta(); setTimeout(ajusta, 450); setTimeout(ajusta, 1200); if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajusta);
 }
 function siguientePendiente() {
   if (J.fin || J.pausa) return;
