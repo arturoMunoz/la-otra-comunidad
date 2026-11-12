@@ -1,0 +1,33 @@
+CRÉDITOS | ENEMIGOS DE ISENGARD
+
+Modelado y animación originales: Quaternius.
+Licencia de todos los modelos fuente: CC0 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Correspondencia entre cada archivo y su publicación original:
+
+uruk_hai.glb — Orc · Ultimate Monsters · Quaternius · CC0 1.0
+https://poly.pizza/m/5vO2YJsPEf
+
+orco_pequeno.glb — Goblin_Male · Ultimate Animated Character Pack · Quaternius · CC0 1.0
+https://opengameart.org/content/animated-characters-pack
+
+huargo.glb — Wolf · Ultimate Animated Animal Pack · Quaternius · CC0 1.0
+https://poly.pizza/m/P1gU3Qkr9r
+
+troll.glb — Giant · Giant (Poly Pizza) · Quaternius · CC0 1.0
+https://poly.pizza/m/BldaiPtyJa
+
+esqueleto.glb — Skeleton · Animated Monster Pack · Quaternius · CC0 1.0
+https://opengameart.org/content/lowpoly-animated-monsters
+
+dunlendino.glb — Viking_Male · Ultimate Animated Character Pack · Quaternius · CC0 1.0
+https://opengameart.org/content/animated-characters-pack
+
+arquero.glb — Ranger · RPG Characters · Quaternius · CC0 1.0
+https://opengameart.org/content/lowpoly-rpg-characters
+
+brujo.glb — Wizard · RPG Characters · Quaternius · CC0 1.0
+https://opengameart.org/content/lowpoly-rpg-characters
+
+Adaptación para este pack: selección de clips, paleta, atlas, integración de accesorios, normalización y renders.

@@ -1,0 +1,36 @@
+EL ABISMO DE HELM | MATERIALES PBR
+
+Fuentes descargadas de Poly Haven. Licencia de las fuentes y de estas adaptaciones: CC0 1.0 Universal.
+https://polyhaven.com/license
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Roca de acantilado (roca)
+Rock Face 03 · Dario Barresi, Rico Cilliers · CC0 1.0 Universal
+https://polyhaven.com/a/rock_face_03
+
+Sillares desgastados (sillares)
+White Sandstone Blocks 02 · Rob Tuytel · CC0 1.0 Universal
+https://polyhaven.com/a/white_sandstone_blocks_02
+
+Barro, hierba y charcos (barro)
+Muddy Tracks · Amal Kumar · CC0 1.0 Universal
+https://polyhaven.com/a/muddy_tracks
+Withered Grass · Charlotte Baglioni · CC0 1.0 Universal
+https://polyhaven.com/a/withered_grass
+
+Empedrado mojado (empedrado)
+Cobblestone Floor 04 · Rob Tuytel · CC0 1.0 Universal
+https://polyhaven.com/a/cobblestone_floor_04
+
+Madera de vigas (madera)
+Rough Wood · Rob Tuytel · CC0 1.0 Universal
+https://polyhaven.com/a/rough_wood
+
+Hierro oxidado (hierro)
+Rusty Metal 03 · Amal Kumar · CC0 1.0 Universal
+https://polyhaven.com/a/rusty_metal_03
+
+Adaptaciones: roca enfriada y sillares aclarados y desaturados. Barro compuesto con hierba seca aplanada y zonas de agua asignadas por altura. Empedrado oscurecido con una película de humedad más brillante en los huecos.
+Conversión de los tres mapas por material a WebP, 1024 × 1024 px, calidad 85. Bordes preparados para repetición en ambos ejes.
+
+Three.js: usa el albedo como map con THREE.SRGBColorSpace. Carga normal y rugosidad como normalMap y roughnessMap con THREE.NoColorSpace. La normal es tangente OpenGL (+Y). Para repetir, usa THREE.RepeatWrapping en wrapS y wrapT de los tres mapas y aplica el mismo repeat.

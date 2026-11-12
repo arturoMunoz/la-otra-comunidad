@@ -1,0 +1,380 @@
+CRÉDITOS | AUDIO DEL ABISMO DE HELM
+
+Las fuentes se relacionan a continuación con cada MP3 entregado. Las adaptaciones incluyen selección de tomas, montaje, mezcla, ecualización, dinámica, nivel y codificación. La música se ha editado para repetición.
+CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/
+Los dos extractos de Wolf howls proceden del U.S. Fish and Wildlife Service. La ficha los identifica como dominio público estadounidense (PD-USGov-FWS).
+
+FUENTES
+
+[01] male gruntyelling sounds
+HaelDB · CC0 1.0
+https://opengameart.org/content/male-gruntyelling-sounds
+
+[02] medieval sound effects weapon impacts
+Ben Jaszczak & Brian Nelson · CC0 1.0
+https://opengameart.org/content/medieval-sound-effects-weapon-impacts
+
+[03] rain and thunders
+kindland · CC0 1.0
+https://opengameart.org/content/rain-and-thunders
+
+[04] 50 rpg sound effects
+Kenney · CC0 1.0
+https://opengameart.org/content/50-rpg-sound-effects
+
+[05] Dark Forest Werewolf Howl 01
+SFXMint · CC0 1.0
+https://sfxmint.com/sounds/werewolf-howl-01
+
+[06] Wolf howls
+U.S. Fish and Wildlife Service · Dominio público (PD-USGov-FWS)
+https://commons.wikimedia.org/wiki/File:Wolf_howls.ogg
+
+[07] wolf monster sound
+CaveboyTup · CC0 1.0
+https://opengameart.org/content/wolf-monster-sound
+
+[08] Long Deep War Horn 01
+SFXMint · CC0 1.0
+https://sfxmint.com/sounds/war-horn-01
+
+[09] war horns
+Eldritch Grim · CC0 1.0
+https://opengameart.org/content/war-horns
+
+[10] 75 cc0 breaking falling hit sfx
+rubberduck · CC0 1.0
+https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx
+
+[11] medieval sound effects weapon textures
+Ben Jaszczak & Brian Nelson · CC0 1.0
+https://opengameart.org/content/medieval-sound-effects-weapon-textures
+
+[12] rpg sound pack
+artisticdude · CC0 1.0
+https://opengameart.org/content/rpg-sound-pack
+
+[13] Basic Spell Impacts
+lentikula · CC0 1.0
+https://lentikula.itch.io/freecc0-basic-spell-impacts-sfx
+
+[14] CoMiGo's Bleeps and Bloops
+Cosmo Myzrail Gorynych · CC0 1.0
+https://comigo.itch.io/bleeps-n-bloops
+
+[15] Sci-fi Sounds
+Kenney · CC0 1.0
+https://kenney.nl/assets/sci-fi-sounds
+
+[16] Impact Sounds
+Kenney · CC0 1.0
+https://kenney.nl/assets/impact-sounds
+
+[17] 8 wet squish slurp impacts
+Independent.nu · CC0 1.0
+https://opengameart.org/content/8-wet-squish-slurp-impacts
+
+[18] orc voice
+Tim Rockk · CC0 1.0
+https://opengameart.org/content/orc-voice
+
+[19] 35 wooden crackshitsdestructions
+Independent.nu · CC0 1.0
+https://opengameart.org/content/35-wooden-crackshitsdestructions
+
+[20] fantasy sound effects tinysized sfx
+Jan Schupke (Vehicle) · CC0 1.0
+https://opengameart.org/content/fantasy-sound-effects-tinysized-sfx
+
+[21] mild wind background noise
+Bashar3A · CC0 1.0
+https://opengameart.org/content/mild-wind-background-noise
+
+[22] 85 short music jingles
+Kenney · CC0 1.0
+https://opengameart.org/content/85-short-music-jingles
+
+[23] Fantasy Orchestral Theme
+Joth · CC0 1.0
+https://opengameart.org/content/fantasy-orchestral-theme
+
+[24] Hope
+MintoDog · CC0 1.0
+https://opengameart.org/content/hopeorchestral-battle-music
+
+[25] Great Labyrinth
+MintoDog · CC0 1.0
+https://opengameart.org/content/great-labyrinthorchestral-dungeon-music
+
+CORRESPONDENCIA CON LAS TOMAS ORIGINALES
+
+ambiente/batalla_lejana.mp3
+  [01] 1yell1.wav
+  [01] 1yell13.wav
+  [01] 1yell2.wav
+  [01] 1yell6.wav
+  [01] 2yell1.wav
+  [01] 2yell3.wav
+  [01] 2yell7.wav
+  [01] 3yell10.wav
+  [01] 3yell14.wav
+  [01] 3yell3.wav
+  [01] 3yell7.wav
+  [01] yell10.wav
+  [01] yell2.wav
+  [01] yell6.wav
+  [02] Sabre Norse Sword Hilt on Blade.wav
+  [02] Seax Axe Blade on Blade.wav
+  [02] Seax Axe Blade on Haft.wav
+  [02] Seax Dagger Blade on Blade.wav
+
+ambiente/lluvia_truenos.mp3
+  [03] Dark_Rainy_Night(ambience).ogg
+
+efectos/abrir_cofre_1.mp3
+  [04] metalLatch.ogg
+  [04] creak1.ogg
+
+efectos/abrir_cofre_2.mp3
+  [04] metalClick.ogg
+  [04] creak2.ogg
+
+efectos/abrir_cofre_3.mp3
+  [04] beltHandle1.ogg
+  [04] creak3.ogg
+
+efectos/aullido_huargo_1.mp3
+  [05] Dark Forest Werewolf Howl 01
+
+efectos/aullido_huargo_2.mp3
+  [06] Wolf_howls.ogg
+
+efectos/aullido_huargo_3.mp3
+  [06] Wolf_howls.ogg
+  [07] wolf_monster.mp3
+
+efectos/cuerno_lejano_1.mp3
+  [08] Long Deep War Horn 01
+
+efectos/cuerno_lejano_2.mp3
+  [09] war_horns.wav
+
+efectos/cuerno_lejano_3.mp3
+  [09] war_horns.wav
+
+efectos/derrumbe_muro_1.mp3
+  [10] bfh1_rock_breaking_01.ogg
+  [10] bfh1_rock_falling_04.ogg
+  [10] bfh1_rock_falling_07.ogg
+
+efectos/derrumbe_muro_2.mp3
+  [10] bfh1_rock_breaking_02.ogg
+  [10] bfh1_rock_falling_05.ogg
+  [10] bfh1_rock_falling_08.ogg
+
+efectos/derrumbe_muro_3.mp3
+  [10] bfh1_rock_breaking_03.ogg
+  [10] bfh1_rock_falling_06.ogg
+  [10] bfh1_rock_falling_09.ogg
+
+efectos/disparo_arco_1.mp3
+  [11] English Longbow Shoot.wav
+
+efectos/disparo_arco_2.mp3
+  [11] Scythian Recurve Shoot.wav
+
+efectos/disparo_arco_3.mp3
+  [11] English Longbow Shoot.wav
+
+efectos/disparo_ballesta_1.mp3
+  [11] Crossbow Shoot.wav
+  [11] Crossbow Lever Trigger.wav
+
+efectos/disparo_ballesta_2.mp3
+  [11] Crossbow Shoot.wav
+  [11] Crossbow Lever Trigger.wav
+
+efectos/disparo_ballesta_3.mp3
+  [11] Crossbow Shoot.wav
+  [11] Crossbow Lever Trigger.wav
+
+efectos/espada_armadura_1.mp3
+  [02] Seax Dagger Blade on Blade.wav
+  [12] chainmail1.wav
+
+efectos/espada_armadura_2.mp3
+  [02] Sabre Norse Sword Hilt on Blade.wav
+  [12] chainmail2.wav
+
+efectos/espada_armadura_3.mp3
+  [02] Seax Axe Blade on Blade.wav
+  [12] armor-light.wav
+
+efectos/espada_corte_1.mp3
+  [12] swing.wav
+
+efectos/espada_corte_2.mp3
+  [12] swing2.wav
+
+efectos/espada_corte_3.mp3
+  [12] swing3.wav
+
+efectos/explosion_fuego_1.mp3
+  [13] Fire Spell Impact 1_s06.wav
+  [14] BlastImpact_01_s01.wav
+
+efectos/explosion_fuego_2.mp3
+  [13] Fire Spell Impact 2_s06.wav
+  [14] BlastImpact_02_s01.wav
+
+efectos/explosion_fuego_3.mp3
+  [13] Fire Spell Impact 3_s06.wav
+  [14] BlastImpact_03_s01.wav
+
+efectos/explosion_piedras_1.mp3
+  [15] explosion_crunch_000_48kHz_16bit_0.78s_e875be4e_s04.wav
+  [10] bfh1_rock_falling_01.ogg
+
+efectos/explosion_piedras_2.mp3
+  [15] explosion_crunch_001_48kHz_16bit_1.36s_5803a7f0_s04.wav
+  [10] bfh1_rock_falling_02.ogg
+
+efectos/explosion_piedras_3.mp3
+  [15] explosion_crunch_002_48kHz_16bit_1.26s_e0852ce0_s04.wav
+  [10] bfh1_rock_falling_03.ogg
+
+efectos/flecha_clavada_1.mp3
+  [02] Seax Axe Blade on Haft.wav
+  [10] bfh1_wood_hit_01.ogg
+  [11] Scythian Recurve Arrow Passby.wav
+
+efectos/flecha_clavada_2.mp3
+  [02] Seax Axe Blade on Haft.wav
+  [10] bfh1_wood_hit_02.ogg
+  [11] Scythian Recurve Heavy Arrow Passby.wav
+
+efectos/flecha_clavada_3.mp3
+  [02] Seax Axe Blade on Haft.wav
+  [10] bfh1_wood_hit_03.ogg
+  [11] Crossbow Bolt Passby.wav
+
+efectos/golpe_carne_1.mp3
+  [16] impact_punch_heavy_000_48kHz_16bit_0.65s_8fb58ba7_s02.wav
+  [17] impactsplat01.mp3.flac
+
+efectos/golpe_carne_2.mp3
+  [16] impact_punch_heavy_001_48kHz_16bit_0.54s_fb104b0a_s02.wav
+  [17] impactsplat02.mp3.flac
+
+efectos/golpe_carne_3.mp3
+  [16] impact_punch_heavy_002_48kHz_16bit_0.46s_565485a1_s02.wav
+  [17] impactsplat03.mp3.flac
+
+efectos/grito_guerra_orco_1.mp3
+  [01] 1yell5.wav
+  [18] ORC FIGHT.wav
+
+efectos/grito_guerra_orco_2.mp3
+  [01] 2yell8.wav
+  [18] ORC FIGHT 2.wav
+
+efectos/grito_guerra_orco_3.mp3
+  [01] 3yell9.wav
+  [18] ORC FIGHT 3.wav
+
+efectos/madera_rota_1.mp3
+  [19] crack02.mp3.flac
+
+efectos/madera_rota_2.mp3
+  [19] crack04.mp3.flac
+
+efectos/madera_rota_3.mp3
+  [19] crack08.mp3.flac
+
+efectos/muerte_orco_1.mp3
+  [18] ORC DIES.wav
+
+efectos/muerte_orco_2.mp3
+  [18] ORC GRUNT 1.wav
+
+efectos/muerte_orco_3.mp3
+  [18] ORC GRUNT 2.wav
+
+efectos/muerte_orco_4.mp3
+  [18] ORC GRUNT 3.wav
+
+efectos/muerte_orco_5.mp3
+  [18] ORC GRUNT 4.wav
+
+efectos/muerte_orco_6.mp3
+  [18] ORC GRUNT 5.wav
+
+efectos/paso_barro_1.mp3
+  [20] mud-steps-01.wav
+
+efectos/paso_barro_2.mp3
+  [20] mud-steps-02.wav
+
+efectos/paso_barro_3.mp3
+  [20] mud-steps-03.wav
+
+efectos/rafaga_viento_1.mp3
+  [21] wind background noise 2.wav
+
+efectos/rafaga_viento_2.mp3
+  [21] wind background noise 2.wav
+
+efectos/rafaga_viento_3.mp3
+  [21] wind background noise 2.wav
+
+efectos/rayo_magico_1.mp3
+  [13] Lightning Spell Impact 1_s06.wav
+
+efectos/rayo_magico_2.mp3
+  [13] Lightning Spell Impact 2_s06.wav
+
+efectos/rayo_magico_3.mp3
+  [13] Lightning Spell Impact 3_s06.wav
+
+efectos/recoger_gema_1.mp3
+  [10] bfh1_glass_hit_01.ogg
+
+efectos/recoger_gema_2.mp3
+  [10] bfh1_glass_hit_02.ogg
+
+efectos/recoger_gema_3.mp3
+  [10] bfh1_glass_falling_03.ogg
+
+efectos/recoger_moneda_1.mp3
+  [12] coin.wav
+
+efectos/recoger_moneda_2.mp3
+  [12] coin2.wav
+
+efectos/recoger_moneda_3.mp3
+  [12] coin3.wav
+
+efectos/subir_nivel_1.mp3
+  [22] jingles_HIT03.ogg
+  [22] jingles_PIZZA03.ogg
+
+efectos/subir_nivel_2.mp3
+  [22] jingles_HIT10.ogg
+  [22] jingles_PIZZA10.ogg
+
+efectos/subir_nivel_3.mp3
+  [22] jingles_HIT15.ogg
+  [22] jingles_PIZZA15.ogg
+
+musica/alba_triunfal.mp3
+  [23] FantasyOrchestralTheme.mp3
+
+musica/batalla_epica.mp3
+  [24] hope_orchestral_battle_music_bpm165.flac
+
+musica/tregua_tensa.mp3
+  [25] great_labyrinth_bpm160.flac
+
+Los disparos de ballesta seleccionan las tomas 1, 3 y 6 de Crossbow Shoot. Los disparos de arco alternan arco largo inglés y arco recurvo escita. Los gruñidos de muerte son seis interpretaciones separadas de Tim Rockk. Las ráfagas usan tres momentos distintos de una grabación de campo.
+Cuerno 2 y 3: frases diferentes de War Horns (1,00–5,30 s y 22,35–27,50 s).
+Aullidos 2 y 3: pasajes diferentes de Wolf howls (3,10–9,90 s y 13,35–19,80 s), el tercero con una capa de Wolf Monster Sound.

@@ -68,6 +68,12 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Carta del día: botón en la Comunidad; imagen 1080x1350 con la escena, el logo, tu hobbit vestido y tus datos; se comparte o se guarda.
 - Menú nuevo con el kit de ChatGPT (`M.menu2`): botón grande + 4 medallones (Mapa, Comunidad, Zurrón, Ajustes). OJO: el medallón de Comunidad lleva una figura de mago (parece Gandalf, contra las reglas): pedir otro con tres hobbits.
 
+## El Abismo de Helm (12/11/2026)
+- Juego de defensa 3D (Three.js) como extensión: `public/abismo/` (se abre con el botón «El Abismo de Helm» del menú, `mAbismo` en minijuegos.js; desde el juego, la flecha de volver lleva a `../`).
+- Fuente de trabajo fuera del repo (`/home/claude/abismo` en la sesión) y prototipo en el Artifact https://claude.ai/artifact/FwNKJdrQEGfGxpZWaZLoHU. Para actualizar: copiar index.html, juego.js, grafico.js, three/, texturas/, iconos/, ui/, sonidos/{fx,amb,mus} y solo los modelos de la lista `NOMBRES` de juego.js.
+- Recursos: modelos de ChatGPT (packs 16-19, muralla, cuevas, escaleras, casco), KayKit y Quaternius (CC0), texturas Poly Haven (CC0), sonido CC0 (créditos en cada carpeta). Personajes del libro solo en bocadillos con emblema (`ui/emb_*.webp`).
+- Aún no guarda partidas ni ranking en Supabase.
+
 ## Pendiente (04/11/2026)
 - Emblemas de los 9 personajes: HECHO 04/11 (`assets/emb/`, `manifest.emb`, `embHtml(who,icon)` en src.html; original en `tools/ui/emblemas.png`). Los SVG de `ICON` quedan solo de reserva si aparece un personaje nuevo sin emblema: pedirle el suyo a ChatGPT con el mismo estilo de medallón.
 - Iconos dibujados por código quitados de la UI: clave del atajo (ahora `ui.i_sync`, oculto en Android) y preguntas del libro (`ui.i_libro`).
