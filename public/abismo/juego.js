@@ -44,7 +44,7 @@ const ENEMIGOS = {
   orco: {vida: 3, vel: 3.3, dano: 6, danoPuerta: 1.5, radio: .5, xp: 1, pts: 10, modelo: 'orco'},
   uruk: {vida: 6, vel: 2.7, dano: 10, danoPuerta: 2.5, radio: .6, xp: 2, pts: 20, modelo: 'uruk'},
   berserker: {vida: 8, vel: 4.4, dano: 9, danoPuerta: 35, radio: .6, xp: 3, pts: 30, modelo: 'berserker', correr: true},
-  warg: {vida: 5, vel: 6.2, dano: 8, danoPuerta: 1.5, radio: .8, xp: 2, pts: 25, modelo: 'warg', correr: true},
+  warg: {salta: true, vida: 5, vel: 6.2, dano: 8, danoPuerta: 1.5, radio: .8, xp: 2, pts: 25, modelo: 'warg', correr: true},
   ballestero: {vida: 7, vel: 2.6, dano: 12, danoPuerta: 2, radio: .6, xp: 4, pts: 35, modelo: 'ballestero', distancia: true},
   portaestandarte: {vida: 22, vel: 2.4, dano: 10, danoPuerta: 3, radio: .7, xp: 8, pts: 60, modelo: 'portaestandarte'},
   troll: {vida: 70, vel: 1.7, dano: 28, danoPuerta: 18, radio: 1.4, xp: 25, pts: 200, modelo: 'troll', pesado: true, golpe: 'golpear_suelo'},
@@ -756,6 +756,7 @@ function spawns(dt) {
   if (!J.desague && J.ola >= 3 && J.t >= J.olaIni + 18) {J.desague = true; antorchero(true);}
   if (J.brecha > 0) J.brecha -= dt;
   /* fuego de Isengard: Saruman manda sus bombas; marcan el suelo y estallan al segundo y medio */
+  if (J.cine) J.fuegoT = Math.max(J.fuegoT, J.t + 4);
   if (J.t > J.fuegoT) {J.fuegoT = J.t + rnd(18, 26); fuegoIsengard();}
   if (!J.jefeSale && J.ola >= NOLAS && J.t >= J.olaIni + 15) {J.jefeSale = true; J.jefe = creaEnemigo('capitan', {patio: true, x: 0, z: BRECHA.z + 1}); J.jefe.cdJefe = 2.5; $('bJefe').style.display = 'flex'; aviso('¡El capitán uruk entra en el patio!', 2400); J.temblor = 0.6;}
 }
@@ -811,8 +812,15 @@ function actualizaJinetes(dt) {
   }
 }
 /* los elfos de Lórien: llegan tras la primera tregua, unos al muro y otros contigo */
+function vanguardia() {
+  J.elfos = [];
+  for (const x of [-11, -2, 7]) {
+    const a = montar('elfo_kk', true); a.raiz.position.set(x, Y_MURO, Z_MURO_ARRIBA + 0.6); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'quieto');
+    J.elfos.push({a, muro: true, lento: true, x, z: Z_MURO_ARRIBA + 0.6, cd: rnd(1, 3)});
+  }
+}
 function llegaElfos() {
-  if (J.elfos) return; J.elfos = [];
+  if (J.elfosTodos) return; J.elfosTodos = true; J.elfos = J.elfos || [];
   aviso('¡Llegan los elfos de Lórien! Vienen a luchar a vuestro lado', 3200); suena('cuerno'); habla('haldir');
   for (let i = 0; i < 6; i++) {
     const a = montar('elfo_kk', true), x = -15 + i * 6 + rnd(-1, 1);
@@ -826,15 +834,15 @@ function llegaElfos() {
   }
 }
 function actualizaElfos(dt) {
-  if (!J.elfos && J.ola >= 4 && J.t > J.olaIni + 2) llegaElfos();
-  if (!J.elfos) return;
+  if (!J.elfosTodos && J.ola >= 4 && J.t > J.olaIni + 2) llegaElfos();
+  if (!J.elfos) vanguardia();
   const h = J.h;
   for (const el of J.elfos) {
     el.a.mixer.update(dt); el.cd -= dt;
     if (el.muro) {
       if (el.cd <= 0) {
         const ob = J.enemigos.filter((e) => !e.muerto && (e.fase === 'sube' || e.fase === 'hacia') && Math.abs(e.x - el.x) < 9 && e.z > -40).sort((a, b) => (b.d.antorcha ? 99 : 0) - (a.d.antorcha ? 99 : 0) || Math.abs(a.x - el.x) - Math.abs(b.x - el.x))[0];
-        if (ob) {el.cd = rnd(1.1, 1.6); pon(el.a, 'atacar', 0.05, true); el.a.raiz.rotation.y = Math.atan2(ob.x - el.x, ob.z - el.z); suena('disparo'); FUENTE = 'arquero'; if (ob.fase === 'sube' && Math.random() < 0.5) mata(ob, true); else hiere(ob, 3, 0, -1, 0.2);}
+        if (ob) {el.cd = el.lento ? rnd(2.6, 3.6) : rnd(1.1, 1.6); pon(el.a, 'atacar', 0.05, true); el.a.raiz.rotation.y = Math.atan2(ob.x - el.x, ob.z - el.z); suena('disparo'); FUENTE = 'arquero'; if (ob.fase === 'sube' && Math.random() < 0.5) mata(ob, true); else hiere(ob, 3, 0, -1, 0.2);}
       }
       continue;
     }
@@ -1255,15 +1263,21 @@ function limitaE(e) {
 /* «¡Atrás, al patio!»: el héroe salta del adarve y los que peleaban arriba bajan detrás */
 /* escaleras: dos rampas de piedra pegadas a la cara de dentro del muro; se suben y se bajan andando */
 const ESCALERAS = [{x0: -6, x1: -14.7, z: -16.3}, {x0: 6, x1: 14.7, z: -16.3}], LARGO_ESC = 11.3;
+/* posición en la escalera: u de 0 (abajo) a 1 (arriba); de 1 a 1,2 es el descansillo que entra al adarve */
+function posRampa(o, es, u) {
+  const dir = Math.sign(es.x1 - es.x0);
+  if (u <= 1) {o.x = es.x0 + (es.x1 - es.x0) * u; o.z = es.z; o.y = 0.15 + (Y_MURO - 0.15) * u;}
+  else {const q = (u - 1) / 0.2; o.x = es.x1 + dir * 0.3 * q; o.z = es.z + (ADARVE.z1 - 0.2 - es.z) * q; o.y = Y_MURO;}
+}
 function sueltaMuro() {for (const e of J.enemigos) if (e.enMuro && !e.muerto) {e.enMuro = false; e.fase = 'adarve'; e.sube = 0; e.cayendo = false;}}
 function escalera(h, mx, mz, dt) {
   if (h.baja > 0) return false;
   if (h.rampa) {
     const es = h.rampa, dir = Math.sign(es.x1 - es.x0), v = Math.max(-1, Math.min(1, mx * dir - mz * 0.8));
-    h.tr = Math.max(0, Math.min(1, h.tr + v * h.vel * 0.85 * dt / LARGO_ESC));
-    h.x = es.x0 + (es.x1 - es.x0) * h.tr; h.z = es.z; h.y = 0.15 + (Y_MURO - 0.15) * h.tr;
+    h.tr = Math.max(0, Math.min(1.2, h.tr + v * h.vel * 0.85 * dt / LARGO_ESC));
+    posRampa(h, es, h.tr);
     if (Math.abs(v) > 0.12) {h.rot = Math.atan2(v > 0 ? dir : -dir, 0); if (!ocupada(h.a)) pon(h.a, Math.abs(v) > 0.6 ? 'correr' : 'andar');} else if (!ocupada(h.a)) pon(h.a, 'quieto', 0.3);
-    if (h.tr >= 1) {h.rampa = null; J.enMuro = true; h.y = Y_MURO; h.z = ADARVE.z1 - 0.2; h.x = Math.max(ADARVE.x0, Math.min(ADARVE.x1, es.x1));}
+    if (h.tr >= 1.2) {h.rampa = null; J.enMuro = true; h.y = Y_MURO;}
     else if (h.tr <= 0) {h.rampa = null; h.y = 0.15; h.z = PATIO.z0 + 0.3; h.x = es.x0 - dir * 0.4;}
     return true;
   }
@@ -1272,7 +1286,7 @@ function escalera(h, mx, mz, dt) {
     if (!J.enMuro && Math.abs(h.x - es.x0) < 1.1 && h.z < PATIO.z0 + 1.2 && (mz < -0.4 || mx * dir > 0.5)) {h.rampa = es; h.tr = 0.02; return true;}
     if (J.enMuro && Math.abs(h.x - es.x1) < 1.3 && mz > 0.45) {
       const tr = J.tramos[dir < 0 ? 0 : 5]; if (tr.roto) return false;
-      J.enMuro = false; sueltaMuro(); h.rampa = es; h.tr = 0.98; return true;
+      J.enMuro = false; sueltaMuro(); h.rampa = es; h.tr = 1.18; return true;
     }
   }
   return false;
@@ -1291,6 +1305,7 @@ function llega(e) {
   else if (c.rugir && Math.random() < (e.d.pesado ? 0.8 : 0.22)) {pon(e.a, 'rugir', 0.1, true); e.pausaT = 0.9;}
 }
 function mueveEnemigo(e, dt) {
+  if (J.cine && !e.desagueHeroe && !e.muerto) return;
   const h = J.h, s = e.escala, warg = e.tipo === 'warg' || !!e.d.salta, dd = e.d;
   if (dd.ariete) return mueveAriete(e, dt);
   const fuerza = e.animado ? 1.4 : 1, vel = dd.vel * (e.animado ? 1.3 : 1) * (e.lento > 0 ? 0.5 : 1);
@@ -1339,6 +1354,15 @@ function mueveEnemigo(e, dt) {
     if (k >= 1) {dañaTramo(J.tramos[s.i - 1], e.d.pesado ? 16 : e.d.jefe ? 30 : 4); e.fase = 'adarve'; e.sube = 0; pon(e.a, e.a.clips.pasar_almena ? 'pasar_almena' : 'saltar', 0.05, true);}
   } else if (e.fase === 'adarve') {
     if (J.enMuro && !e.yaMuro) {e.fase = 'patio'; e.enMuro = e.yaMuro = true; e.y = Y_MURO; e.z = rnd(ADARVE.z0, ADARVE.z1); s.cola = Math.max(0, s.cola - 1); return;}
+    if (!e.d.salta) {
+      /* camina por el adarve hasta la escalera más cercana y baja por ella */
+      if (!e.esc) {e.esc = ESCALERAS.reduce((a, b) => Math.abs(b.x1 - e.x) < Math.abs(a.x1 - e.x) ? b : a); e.y = Y_MURO; e.u = 1.2; e.z = Math.max(ADARVE.z0, Math.min(ADARVE.z1, e.z)); s.cola = Math.max(0, s.cola - 1);}
+      const es = e.esc, dir = Math.sign(es.x1 - es.x0), v = dd.vel * (dd.correr ? 1.15 : 1);
+      if (Math.abs(e.x - (es.x1 + dir * 0.3)) > 0.25 && e.u >= 1.2) {const dx = es.x1 + dir * 0.3 - e.x; e.x += Math.sign(dx) * Math.min(Math.abs(dx), v * dt); e.z += (ADARVE.z1 - 0.2 - e.z) * Math.min(1, dt * 3); e.rot = Math.atan2(Math.sign(dx), 0); pon(e.a, dd.correr ? 'correr' : 'andar');}
+      else {e.u -= v * 0.8 * dt / LARGO_ESC; posRampa(e, es, e.u); e.rot = Math.atan2(e.u > 1 ? 0 : -dir, e.u > 1 ? 1 : 0); pon(e.a, dd.correr ? 'correr' : 'andar');
+        if (e.u <= 0) {e.fase = 'patio'; e.y = 0.15; e.z = PATIO.z0 + 0.4; e.x = es.x0 - dir * 0.5; e.esc = null; llega(e);}}
+      return;
+    }
     e.sube += dt / 0.9;
     const k = Math.min(1, e.sube);
     if (k > 0.35 && e.a.clips.caer && !e.cayendo) {e.cayendo = true; pon(e.a, 'caer', 0.1);}
@@ -1487,6 +1511,7 @@ addEventListener('pointerup', sueltaMando); addEventListener('pointercancel', su
 /* ---------- héroe y su arma propia ---------- */
 function mueveHeroe(dt) {
   const h = J.h;
+  if (J.cine) {h.inv = Math.max(h.inv, 0.3); if (!ocupada(h.a)) pon(h.a, 'quieto', 0.2); return;}
   if (h.baja > 0) {
     h.baja -= dt; const k = 1 - Math.max(0, h.baja) / 0.9, es = h.porEscalera;
     if (es) {h.x = h.bx + (es.x - h.bx) * Math.min(1, k * 3); h.z = h.bz + (es.abajo - h.bz) * k; h.y = Y_MURO * (1 - k) + 0.15 * k; h.rot = 0;}
@@ -2327,16 +2352,17 @@ function camara(dt) {
     const mando = !!enTregua(J.t) && !J.fin;
     J.zoomT = (J.zoomT || 0) + ((mando ? 1 : 0) - (J.zoomT || 0)) * Math.min(1, dt * 2.5);
     J.murT = (J.murT ?? 1) + ((J.enMuro ? 1 : 0) - (J.murT ?? 1)) * Math.min(1, dt * 2);
-    const w = J.murT, z = J.zoomT, alto = ((19 + 8 * k) * (1 - w) + 15 * w) * (1 - z) + 66 * z, atras = ((21 * (1 - k) + 6 * k) * (1 - w) + 10.5 * w) * (1 - z);
+    const w = J.murT, z = J.zoomT, alto = ((19 + 8 * k) * (1 - w) + 14 * w) * (1 - z) + 66 * z, atras = ((21 * (1 - k) + 6 * k) * (1 - w) + 10 * w) * (1 - z);
     camPos.set((h.x * 0.85) * (1 - z) + rnd(-tb, tb), alto + (h.y ?? 0.15) * (1 - z), (h.z + atras) * (1 - z) + 22 * z + rnd(-tb, tb));
     camPos.z = Math.min(camPos.z, 36.2 + 40 * z);
-    const fv = 47 + 19 * z; if (Math.abs(camera.fov - fv) > 0.05) {camera.fov = fv; camera.updateProjectionMatrix();}
+    const fv = 47 + 6 * w * (1 - z) + 19 * z; if (Math.abs(camera.fov - fv) > 0.05) {camera.fov = fv; camera.updateProjectionMatrix();}
     const f = 1 - Math.pow(0.001, Math.min(dt, 0.1));
     camera.position.lerp(camPos, f);
-    camMira.lerp(_v3.set((h.x * 0.85) * (1 - z), 0, (h.z - 8 * (1 - k) + 0.8 * k - 6.5 * w) * (1 - z) + 1 * z), f);
+    camMira.lerp(_v3.set((h.x * 0.85) * (1 - z), 0, (h.z - 8 * (1 - k) + 0.8 * k - 14 * w) * (1 - z) + 1 * z), f);
     let mx = camMira.x, mz = camMira.z;
     /* plano desde lo alto de la muralla mirando al berserker del desagüe */
     if (J.cineT > 0.01) {const c = J.cine || J.cineUlt, q = J.cineT * J.cineT * (3 - 2 * J.cineT); J.cineUlt = c; camera.position.lerp(_v4.set(c.x * 0.5 + 3, Y_MURO + 10, Z_MURO_ARRIBA + 9), q); mx += (c.x - mx) * q; mz += (c.z - mz) * q;}
+    if (z < 0.5) mz = Math.min(mz, camera.position.z - 4);
     camera.lookAt(mx + rnd(-tb, tb) * 0.3, 0, mz);
     if (window._camFija) {const c = window._camFija; camera.position.set(...c.p); camera.lookAt(...c.t);}
     luna.position.set(h.x - 22, 40, h.z + 14); luna.target.position.set(h.x, 0, h.z);
