@@ -877,7 +877,8 @@ function vuela(e) {
 const XT = [-14.333, -8.6, -2.867, 2.867, 8.6, 14.333];
 function estadoTramo(tr) {
   const base = tr.roto ? 'tramo_brecha' : tr.vida < tr.max * 0.55 ? 'tramo_danado' : tr.nivel ? 'tramo_reforzado' : 'tramo_entero';
-  return base === 'tramo_entero' && tr.i === 2 ? 'tramo_central_izq' : base === 'tramo_entero' && tr.i === 3 ? 'tramo_central_der' : base;
+  if (base !== 'tramo_entero') return base;
+  return ['tramo_extremo_izq', 'tramo_entero', 'tramo_central_izq', 'tramo_central_der', 'tramo_entero', 'tramo_extremo_der'][tr.i];
 }
 function ponTramo(tr) {
   const est = estadoTramo(tr); if (tr.est === est) return;
