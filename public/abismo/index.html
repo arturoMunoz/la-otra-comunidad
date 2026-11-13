@@ -42,7 +42,7 @@ canvas{display:block;position:fixed;inset:0}
 .carta img{position:absolute;left:28%;top:12.5%;width:44%;aspect-ratio:1;border-radius:50%}.carta{container-type:inline-size;--k:1}.carta div{position:absolute;left:15.5%;right:15.5%;top:57%;bottom:13.5%;overflow-wrap:break-word;hyphens:auto;display:flex;flex-direction:column;align-items:center;text-align:center;overflow:hidden}.carta b{display:block;color:#3a1e08;font-size:calc(9.6cqw * var(--k));line-height:1.05;margin-bottom:.15em}.carta small{color:#4a3018;font-size:calc(8.2cqw * var(--k));line-height:1.15}.carta em{display:block;font-style:normal;font-weight:700;font-size:calc(7.6cqw * var(--k));color:#2f7a2a;margin-top:.1em}
 
 body.tregua #txt{top:auto;bottom:16%;font-size:1.05rem}
-#txt{position:fixed;left:50%;top:36%;transform:translate(-50%,-50%);z-index:7;font:700 1.5rem Georgia,serif;color:#f2cf7c;text-shadow:0 2px 6px #000;pointer-events:none;opacity:0;transition:opacity .4s;text-align:center;width:90%}
+#txt{position:fixed;left:50%;top:47%;transform:translate(-50%,-50%);z-index:7;font:700 1.22rem/1.2 Georgia,serif;color:#f2cf7c;text-shadow:0 2px 6px #000;pointer-events:none;opacity:0;transition:opacity .4s;text-align:center;width:90%}
 #dbg{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:6;font:11px system-ui;background:#0008;color:#ccc;border:1px solid #555;border-radius:6px;padding:5px 8px;pointer-events:auto}
 #fps{position:fixed;left:10px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:6;font:11px system-ui;color:#aaa;text-shadow:0 1px 2px #000;pointer-events:none}
 #bEsq{position:fixed;right:14px;bottom:calc(100px + env(safe-area-inset-bottom));z-index:6;pointer-events:auto;width:64px;height:64px;border-radius:50%;border:2px solid #c9a75c;background:radial-gradient(#4a3a22ee,#1e160bee);padding:0;touch-action:none}
@@ -103,7 +103,20 @@ body.tregua #txt{top:auto;bottom:16%;font-size:1.05rem}
 #hoja>img{width:58px;height:58px;border-radius:50%;box-shadow:0 0 0 3px #b8893c;flex:none}#hoja>div{flex:1;display:flex;flex-direction:column;gap:4px}#hoja b{color:#f2cf7c;font-size:15px}
 #hojaB{align-self:flex-start;background:#2f6a22;color:#fff;border:1px solid #9fd07a;border-radius:10px;padding:8px 14px;font:700 14px Georgia,serif;box-shadow:0 3px 0 #173810}#hojaB.no{background:#4a4030;border-color:#7a6a50;box-shadow:none;color:#c9b28a}
 #hojaX{background:none;border:0;color:#f2cf7c;font-size:20px;align-self:flex-start;padding:0 4px}
-#trMuro{display:flex;gap:8px;margin:-2px 0 6px}#trMuro button{flex:1;background:#2f6a22;color:#fff;border:1px solid #9fd07a;border-radius:10px;padding:7px 6px;font:700 12.5px Georgia,serif;box-shadow:0 3px 0 #173810}#trMuro button.no{background:#4a4030;border-color:#7a6a50;box-shadow:none;color:#c9b28a}
+#trMuro{margin:-2px 0 6px}
+.trMT{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}.trMT b{font:700 14px Georgia,serif;color:#f3dfae}
+#trTramos{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+#trTramos button{position:relative;background:linear-gradient(#8c8577,#5e584c);border:1px solid #c9bfa8;border-radius:6px 6px 8px 8px;padding:5px 2px 4px;box-shadow:0 3px 0 #2c281f;color:#fff;font:700 12px Georgia,serif;display:flex;flex-direction:column;align-items:center;gap:2px}
+#trTramos button::before{content:'';position:absolute;top:-5px;left:8%;right:8%;height:5px;background:repeating-linear-gradient(90deg,#8c8577 0 22%,transparent 22% 39%)}
+#trTramos i{display:block;width:88%;height:6px;background:#2a2118;border-radius:3px;overflow:hidden}#trTramos u{display:block;height:100%;background:linear-gradient(#9fe36a,#3e9a2a)}
+#trTramos .mal u{background:linear-gradient(#ffcf5a,#d77a14)} #trTramos .roto{background:linear-gradient(#5a3b2b,#36231a);border-color:#d0603a} #trTramos .roto::before{display:none}
+#trTramos em{font-style:normal;color:#ffd75a;font-size:11px;line-height:1;min-height:11px}
+#trTramos small{font-size:11.5px;background:#2f6a22;border-radius:5px;padding:1px 4px;border:1px solid #9fd07a}
+#trTramos .no small{background:#4a4030;border-color:#7a6a50;color:#c9b28a}
+.trML{font:11.5px/1.3 Georgia,serif;color:#d8c39a;margin-top:5px;text-align:center}
+#trRep{flex:none!important;padding:5px 10px!important}
+#trMuro button.no{background:#4a4030;border-color:#7a6a50;box-shadow:none;color:#c9b28a}
+#trMuro #trRep{background:#2f6a22;color:#fff;border:1px solid #9fd07a;border-radius:10px;padding:7px 6px;font:700 12.5px Georgia,serif;box-shadow:0 3px 0 #173810}#trMuro button.no{background:#4a4030;border-color:#7a6a50;box-shadow:none;color:#c9b28a}
 .et{position:absolute;transform:translate(-50%,-100%);pointer-events:auto;background:#1d1710;border:solid transparent;border-width:8px;border-image:url(ui/carta.webp) 22 fill / 8px stretch;color:#f6e6bd;font:700 10.5px Georgia,serif;padding:1px 3px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:40px;touch-action:manipulation}
 .et.si>img{width:24px;height:24px}.et.si b{display:none}.et.si em{display:flex;line-height:0}.et.si em img{width:9px;height:9px}
 .et span{color:#ffdc7c;white-space:nowrap}.et em img{width:11px;height:11px}
@@ -193,6 +206,14 @@ body.tregua #bocadillo{display:none}
 .barra.jefe i{background:linear-gradient(#d08aff,#8a2be2 50%,#4a0f8a)!important}
 .datos{margin:4px 6px 0;font:800 11px system-ui!important;color:#f3e6c4;-webkit-text-stroke:2.5px #1a0f08;paint-order:stroke fill;text-shadow:none!important}.datos #oro::before{display:none}
 #armas{position:static!important;margin:6px 2px 0!important}
+/* escena: franjas de cine y fuera el HUD */
+#cineA,#cineB{position:fixed;left:0;right:0;height:0;background:#000;z-index:60;pointer-events:none;transition:height .45s ease}
+#cineA{top:0}#cineB{bottom:0}
+body.cine #cineA,body.cine #cineB{height:12vh}
+#bocadillo,#txt,#tregua,#hud,#bEsq,#bHab,#joy,#nums,#etiq{transition:opacity .35s}
+body.cine #bocadillo,body.cine #txt,body.cine #tregua,body.cine #hud,body.cine #bEsq,body.cine #bHab,body.cine #joy,body.cine #nums,body.cine #etiq{opacity:0;pointer-events:none}
+#cineTxt{position:fixed;left:0;right:0;bottom:calc(12vh + 14px);text-align:center;z-index:61;font:700 19px/1.25 Georgia,serif;color:#f3dfae;text-shadow:0 2px 6px #000;opacity:0;transition:opacity .4s;pointer-events:none;padding:0 18px}
+body.cine #cineTxt{opacity:1}
 </style>
 <script type="importmap">{"imports":{"three":"./three/three.module.js","three/addons/":"./three/addons/"}}</script>
 </head><body>
@@ -214,8 +235,9 @@ body.tregua #bocadillo{display:none}
   <div id="armas"></div>
 </div>
 <div id="etiq"></div>
-<div id="tregua"><div class="trCab"><b id="trT">Tregua</b><button id="trYa">¡Que vengan!</button></div><div id="trAyuda"></div><div id="trAm"></div><div id="trMuro"><button id="trRep"></button><button id="trRef"></button></div><div id="trTabs"><button data-p="muro">Reparar muro</button><button data-p="def">Construir</button></div><div id="trB"></div></div>
+<div id="tregua"><div class="trCab"><b id="trT">Tregua</b><button id="trYa">¡Que vengan!</button></div><div id="trAyuda"></div><div id="trAm"></div><div id="trMuro"><div class="trMT"><b>La muralla</b><button id="trRep"></button></div><div id="trTramos"></div><div class="trML">🔨 repara · 🧱 levanta lo caído · ⬆ refuerza: +50 de aguante y −12 % de daño (★ hasta 3)</div></div><div id="trTabs"><button data-p="muro">Reparar muro</button><button data-p="def">Construir</button></div><div id="trB"></div></div>
 <div id="joy"><b></b></div>
+<div id="cineA"></div><div id="cineB"></div><div id="cineTxt"></div>
 <div id="txt"></div>
 <div id="fps" style="display:none"></div>
 <div id="nums"></div>

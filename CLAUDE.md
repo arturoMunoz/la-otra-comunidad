@@ -73,6 +73,10 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Fuente de trabajo fuera del repo (`/home/claude/abismo` en la sesión) y prototipo en el Artifact https://claude.ai/artifact/FwNKJdrQEGfGxpZWaZLoHU. Para actualizar: copiar index.html, juego.js, grafico.js, three/, texturas/, iconos/, ui/, sonidos/{fx,amb,mus} y solo los modelos de la lista `NOMBRES` de juego.js.
 - Recursos: modelos de ChatGPT (packs 16-19, muralla, cuevas, escaleras, casco), KayKit y Quaternius (CC0), texturas Poly Haven (CC0), sonido CC0 (créditos en cada carpeta). Personajes del libro solo en bocadillos con emblema (`ui/emb_*.webp`).
 - Aún no guarda partidas ni ranking en Supabase.
+- Enemigos de Isengard rehechos por ChatGPT (packs 20, 21 y 21b, 13/11/2026): mismos huesos y clips que los viejos; se envuelven tal cual en base64 (NO pasar personajes por prep18, quita el skin).
+- Escena del desagüe (`J.cine`): el mundo se congela salvo el uruk que corre, franjas negras y sin HUD (clase `body.cine`); máx. 9 s.
+- Nadie aparece dentro del muro: por el desagüe reventado y por tramos caídos se entra andando (fases `brecha` y `cruza`, por los huecos reales de `tramo_brecha`, X del tramo ±0,9).
+- Muralla en la tregua: un botón por tramo (`#trTramos`), con vida, ★ de refuerzo y coste; reparar deja el tramo entero.
 
 ## Pendiente (04/11/2026)
 - Emblemas de los 9 personajes: HECHO 04/11 (`assets/emb/`, `manifest.emb`, `embHtml(who,icon)` en src.html; original en `tools/ui/emblemas.png`). Los SVG de `ICON` quedan solo de reserva si aparece un personaje nuevo sin emblema: pedirle el suyo a ChatGPT con el mismo estilo de medallón.

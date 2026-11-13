@@ -621,7 +621,7 @@ const _p = new THREE.Vector3();
 function numero(x, y, z, txt, cls = '') {
   if (enFranja(z) && y < 4) y += Y_MURO;
   let n = nums.find((k) => k.t >= 1);
-  if (!n) {if (nums.length >= 28) return; const el = document.createElement('div'); $('nums').appendChild(el); n = {el, t: 1}; nums.push(n);}
+  if (!n) {if (nums.length >= 14) return; const el = document.createElement('div'); $('nums').appendChild(el); n = {el, t: 1}; nums.push(n);}
   n.el.className = 'num ' + cls; n.el.textContent = txt; n.x = x + rnd(-.3, .3); n.y = y; n.z = z; n.t = 0; n.el.style.display = 'block';
 }
 /* «juice»: la moneda sale volando hasta el marcador de oro y el marcador bota */
@@ -698,6 +698,7 @@ function creaEnemigo(tipo, opc = {}) {
   const s = (d.escala || 1) * (elite ? 1.25 : 1); e.a.raiz.scale.setScalar(s); e.radio = d.radio * (elite ? 1.2 : 1);
   if (elite && P.brillo_elite) {const au = P.brillo_elite.clone(); au.scale.setScalar(0.8 / s); e.a.raiz.add(au);}
   if (opc.patio) {e.fase = 'patio'; e.x = opc.x; e.z = opc.z; e.y = 0.15; efecto('polvo', e.x, 0.15, e.z, {escala: 1.2, vida: 0.5});}
+  else if (opc.brecha) {e.fase = 'brecha'; e.x = BRECHA.x + rnd(-5, 5); e.z = opc.z ?? (Z_MURO_FUERA - rnd(6, 12)); e.y = 0.15;}
   else esc.cola++;
   e.a.raiz.position.set(e.x, e.y, e.z);
   scene.add(e.a.raiz); pon(e.a, d.correr ? 'correr' : 'andar');
@@ -739,7 +740,7 @@ function spawns(dt) {
   if (J.spawnT <= 0 && vivos < MAX_ENEMIGOS && J.porSalir > 0) {
     J.spawnT = Math.max(0.85, 2.4 - tE() / 200); J.porSalir--;
     const tipo = eligeTipo(), elite = tE() > 60 && Math.random() < 0.015;
-    if (enBrecha && Math.random() < 0.45) creaEnemigo(tipo, {patio: true, x: BRECHA.x + rnd(-2, 2), z: BRECHA.z + rnd(0, 1.5), elite});
+    if (enBrecha && Math.random() < 0.45) creaEnemigo(tipo, {brecha: true, elite});
     else creaEnemigo(tipo, {elite});
   }
   /* golpes de cada oleada */
@@ -758,7 +759,7 @@ function spawns(dt) {
   /* fuego de Isengard: Saruman manda sus bombas; marcan el suelo y estallan al segundo y medio */
   if (J.cine) J.fuegoT = Math.max(J.fuegoT, J.t + 4);
   if (J.t > J.fuegoT) {J.fuegoT = J.t + rnd(18, 26); fuegoIsengard();}
-  if (!J.jefeSale && J.ola >= NOLAS && J.t >= J.olaIni + 15) {J.jefeSale = true; J.jefe = creaEnemigo('capitan', {patio: true, x: 0, z: BRECHA.z + 1}); J.jefe.cdJefe = 2.5; $('bJefe').style.display = 'flex'; aviso('¡El capitán uruk entra en el patio!', 2400); J.temblor = 0.6;}
+  if (!J.jefeSale && J.ola >= NOLAS && J.t >= J.olaIni + 15) {J.jefeSale = true; J.jefe = creaEnemigo('capitan', {brecha: true, z: Z_MURO_FUERA - 6}); J.jefe.cdJefe = 2.5; $('bJefe').style.display = 'flex'; aviso('¡El capitán uruk entra en el patio!', 2400); J.temblor = 0.6;}
 }
 /* el ariete: golpea el tramo más débil desde fuera; cuando cae, entra y va a por la puerta */
 function mueveAriete(e, dt) {
@@ -909,7 +910,7 @@ function pintaMuro() {
 }
 function accionTramo(tr) {
   if (tr.roto) return ['reconstruir', COSTE.reconstruir, 'Reconstruir'];
-  if (tr.vida < tr.max - 1) return ['reparar', COSTE.reparar, 'Reparar'];
+  if (tr.vida < tr.max - 1) return ['reparar', COSTE.reparar * Math.ceil((tr.max - tr.vida) / 45), 'Reparar'];
   if (tr.nivel < 3) return ['reforzar', COSTE.reforzar * (tr.nivel + 1), 'Reforzar'];
   return [null, 0, 'Al máximo'];
 }
@@ -918,7 +919,7 @@ function haceTramo(k) {
   if (!acc || J.oro < c) return;
   J.oro -= c;
   if (acc === 'reconstruir') {t.roto = false; t.vida = t.max * 0.6; t.avisado = false; aviso('Tramo ' + (k + 1) + ' reconstruido', 900);}
-  if (acc === 'reparar') {t.vida = Math.min(t.max, t.vida + 45); t.avisado = false;}
+  if (acc === 'reparar') {t.vida = t.max; t.avisado = false;}
   if (acc === 'reforzar') {t.nivel++; t.max += 50; t.vida = t.max; aviso('Tramo ' + (k + 1) + ' reforzado', 900);}
   efecto('polvo', t.x, Y_MURO, Z_MURO_ARRIBA + 1, {escala: 1, vida: 0.5});
   andamio(t); aldeano(t.x + rnd(-1.5, 1.5), BRECHA.z + 0.6);
@@ -1110,19 +1111,30 @@ function costeMuro() {
   for (const t of J.tramos) {const [a, c] = accionTramo(t); if (a === 'reparar' || a === 'reconstruir') rep += c; else if (a === 'reforzar' && (!ref || c < ref[1])) ref = [t, c];}
   return [rep, ref];
 }
+/* la muralla en la tregua: un botón por tramo, en el mismo orden que se ven, con su vida y lo que cuesta */
 function pintaMuroBotones() {
-  const [rep, ref] = costeMuro(), a = $('trRep'), b = $('trRef');
-  a.textContent = rep ? '🔨 Reparar el muro · ' + rep : '🔨 Muro entero'; a.className = rep && J.oro >= Math.min(rep, COSTE.reparar) ? '' : 'no';
-  b.textContent = ref ? '⬆ Reforzar un tramo · ' + ref[1] : '⬆ Muro al máximo'; b.className = ref && J.oro >= ref[1] ? '' : 'no';
+  const [rep] = costeMuro(), a = $('trRep');
+  a.innerHTML = rep ? '🔨 Reparar todo <b>' + rep + '</b>' : '✓ Muro entero'; a.className = rep && J.oro >= Math.min(rep, COSTE.reparar) ? '' : 'no';
+  const el = $('trTramos'); if (el.children.length !== J.tramos.length) el.innerHTML = J.tramos.map((_, k) => '<button data-k="' + k + '"><i><u></u></i><em></em><small></small></button>').join('');
+  J.tramos.forEach((t, k) => {
+    const b = el.children[k], [acc, c] = accionTramo(t), pc = t.roto ? 0 : t.vida / t.max;
+    b.className = (t.roto ? 'roto ' : pc < 0.55 ? 'mal ' : '') + (acc && J.oro < c ? 'no' : '');
+    b.querySelector('u').style.width = Math.round(pc * 100) + '%';
+    b.querySelector('em').textContent = '★'.repeat(t.nivel) || '·';
+    b.querySelector('small').innerHTML = acc === 'reconstruir' ? '🧱 ' + c : acc === 'reparar' ? '🔨 ' + c : acc === 'reforzar' ? '⬆ ' + c : 'Máx';
+  });
 }
 $('trRep').addEventListener('click', () => {
   if (!J) return; let hecho = 0;
   J.tramos.forEach((t, k) => {const [a, c] = accionTramo(t); if ((a === 'reparar' || a === 'reconstruir') && J.oro >= c) {haceTramo(k); hecho++;}});
-  if (!hecho) aviso(costeMuro()[0] ? 'Te falta oro' : 'El muro está entero', 900); else suena('construir');
+  if (!hecho) aviso(costeMuro()[0] ? 'Te falta oro' : 'El muro está entero', 900); else {suena('construir'); pintaMuroBotones();}
 });
-$('trRef').addEventListener('click', () => {
-  if (!J) return; const [, ref] = costeMuro(); if (!ref) return; if (J.oro < ref[1]) {aviso('Te falta oro', 700); return;}
-  haceTramo(J.tramos.indexOf(ref[0])); suena('construir');
+$('trTramos').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button'); if (!b || !J) return; const k = +b.dataset.k, t = J.tramos[k], [acc, c] = accionTramo(t);
+  if (!acc) {aviso('Ese tramo ya está al máximo', 800); return;}
+  if (J.oro < c) {noHay(b); return;}
+  haceTramo(k); suena('construir'); pintaMuroBotones();
+  particula('piedras', t.x, Y_MURO, Z_MURO_ARRIBA, {n: 8, vel: 2, sube: 3, vida: 0.7, escala: 0.6, grav: 12, crece: 1}); efecto('polvo', t.x, Y_MURO, Z_MURO_ARRIBA + 1, {escala: 1.6, vida: 0.6, crece: 1.6});
 });
 function noHay(b) {b.classList.remove('sacude'); void b.offsetWidth; b.classList.add('sacude'); aviso('Te falta oro', 700);}
 $('etiq').addEventListener('pointerdown', (ev) => {
@@ -1197,7 +1209,7 @@ function explotaDesague() {
   aviso('¡Han volado el desagüe del muro!', 2600); if (J.enMuro) setTimeout(() => J && bajaAlPatio('¡El muro ha caído! ¡Atrás, a defender la puerta!'), 1300);
   for (const e of J.enemigos) if (!e.muerto && e.fase === 'patio' && Math.hypot(e.x - BRECHA.x, e.z - BRECHA.z) < 6) hiere(e, 50, e.x - BRECHA.x, e.z - BRECHA.z, 3);
   const h = J.h; if (Math.hypot(h.x - BRECHA.x, h.z - BRECHA.z) < 6) dañaHeroe(25);
-  for (let i = 0; i < 8; i++) creaEnemigo(azar(['orco', 'uruk', 'uruk', 'berserker']), {patio: true, x: BRECHA.x + rnd(-3, 3), z: BRECHA.z + rnd(0, 2)});
+  for (let i = 0; i < 8; i++) creaEnemigo(azar(['orco', 'uruk', 'uruk', 'berserker']), {brecha: true, z: Z_MURO_FUERA - 3 - i * 1.4});
 }
 
 function fuegoChaman() {
@@ -1298,6 +1310,11 @@ function bajaAlPatio(porque, es) {
   {h.baja = 0.9; h.porEscalera = null; pon(h.a, h.a.clips.saltar ? 'saltar' : 'esquivar', 0.05, true); aviso(porque || '¡Retirada! ¡Todos al patio!', 2400); if (!J.dichos.theoden) habla('theoden'); suena('cuerno');}
   sueltaMuro();
 }
+/* atravesar el muro por un hueco real (desagüe o tramo caído), andando y por encima de los escombros */
+function cruza(e, x1, alto) {
+  const z1 = BRECHA.z + rnd(0, 1.2), xf = x1;
+  e.fase = 'cruza'; e.cz = {x0: e.x, z0: e.z, x1: xf, z1, k: 0, alto, largo: Math.max(1, Math.hypot(xf - e.x, z1 - e.z))};
+}
 function llega(e) {
   if (Math.random() < 0.6) flip('fx_barro', e.x, 0.2, e.z, {tam: e.d.pesado ? 3.6 : 2.2, dur: 0.4, suma: false});
   const c = e.a.clips;
@@ -1325,13 +1342,28 @@ function mueveEnemigo(e, dt) {
   }
   if (e.pausaT > 0) {e.pausaT -= dt; return;}
   if (e.aturdido > 0) {e.aturdido -= dt; if (e.aturdido > 0.3 && e.a.clips.aturdido && !ocupada(e.a)) pon(e.a, 'aturdido'); return;}
-  if (e.desagueHeroe && e.fase === 'hacia' && !e.cineVisto && e.z > -44) {e.cineVisto = true; J.cine = {x: e.x, z: Z_MURO_FUERA - 1}; J.lenta = 2.2; aviso('¡Corre hacia el desagüe!', 1500);}
+  if (e.desagueHeroe && e.fase === 'hacia' && !e.cineVisto && e.z > -44) {e.cineVisto = true; J.cine = {x: e.x, z: Z_MURO_FUERA - 1, t: 0}; J.lenta = 2.2; $('cineTxt').textContent = 'Un uruk corre hacia el desagüe con el fuego de Orthanc…';}
   if (e.cineVisto && J.cine) {J.cine.x = e.x; J.cine.z = e.z;}
   if (e.prende > 0) {e.prende -= dt; if (e.prende <= 0) {vuela(e); if (e.desagueHeroe) setTimeout(() => {if (J) J.cine = null;}, 1300);} return;}
+  if (e.fase === 'brecha') {
+    /* van hacia el desagüe reventado y entran por él */
+    if (e.bx === undefined) e.bx = XT[e.x < 0 ? 2 : 3] + rnd(-0.9, 0.9);
+    const tx = e.bx, dx = tx - e.x, dz = Z_MURO_FUERA - 0.6 - e.z, dist = Math.hypot(dx, dz);
+    if (dist < 0.5) cruza(e, tx, 0.5);
+    else {e.x += dx / dist * vel * dt; e.z += dz / dist * vel * dt; e.rot = Math.atan2(dx, dz); pon(e.a, dd.correr ? 'correr' : 'andar');}
+    return;
+  }
+  if (e.fase === 'cruza') {
+    const c = e.cz; c.k = Math.min(1, c.k + dt * vel / c.largo);
+    e.x = c.x0 + (c.x1 - c.x0) * c.k; e.z = c.z0 + (c.z1 - c.z0) * c.k; e.y = 0.15 + c.alto * Math.sin(Math.PI * c.k); e.rot = Math.atan2(c.x1 - c.x0, c.z1 - c.z0);
+    pon(e.a, dd.correr ? 'correr' : 'andar');
+    if (c.k >= 1) {e.fase = 'patio'; e.y = 0.15; e.cz = null; llega(e);}
+    return;
+  }
   if (e.fase === 'hacia' && e.voladura) {
     const v = e.voladura, dx = v.tx - e.x, dz = Z_MURO_FUERA - 1.0 - e.z, dist = Math.hypot(dx, dz);
     if (v.tramo && v.tramo.roto) {v.tramo = null; v.desague = false;}
-    if (dist < 0.7) {if (v.tramo || v.desague) {if (!e.prende) {e.prende = 0.9; pon(e.a, e.a.clips.saltar_y_prender ? 'saltar_y_prender' : 'explotar', 0.05, true);}} else {e.fase = 'patio'; e.z = BRECHA.z; llega(e);} return;}
+    if (dist < 0.7) {if (v.tramo || v.desague) {if (!e.prende) {e.prende = 0.9; pon(e.a, e.a.clips.saltar_y_prender ? 'saltar_y_prender' : 'explotar', 0.05, true);}} else cruza(e, (Math.abs(v.tx) < 0.5 ? XT[e.x < 0 ? 2 : 3] : v.tx) + rnd(-0.9, 0.9), 0.5); return;}
     e.x += dx / dist * vel * dt; e.z += dz / dist * vel * dt; e.rot = Math.atan2(dx, dz); pon(e.a, 'correr');
     if (Math.random() < dt * 10) particula('bocanada', e.x, 2.4, e.z, {vel: 0.3, sube: 1.2, vida: 0.4, escala: 0.8, crece: 1.3, disp: 0.2});
     return;
@@ -1340,7 +1372,7 @@ function mueveEnemigo(e, dt) {
     const tx = s.x + Math.sin(e.x * 7) * 0.6, tz = Z_MURO_FUERA - 1.2;
     const dx = tx - e.x, dz = tz - e.z, dist = Math.hypot(dx, dz);
     const tr = J.tramos[s.i - 1];
-    if (tr.roto && dist < 1.2) {e.fase = 'patio'; e.x = s.x + rnd(-1.6, 1.6); e.z = BRECHA.z + rnd(0, 1); e.y = 0.15; efecto('polvo', e.x, 0.15, e.z, {escala: 1, vida: 0.4}); llega(e); return;}
+    if (tr.roto && dist < 1.2) {cruza(e, s.x + rnd(-0.9, 0.9), 0.5); return;}
     if (dist < 0.6) {
       if (warg) {e.fase = 'sube'; e.sube = 0; pon(e.a, e.a.clips.saltar_muro ? 'saltar_muro' : 'saltar', 0.05, true);}
       else if (s.estado === 'arriba') {e.fase = 'sube'; e.sube = 0; e.x = s.x; pon(e.a, 'trepar');}
@@ -1437,7 +1469,7 @@ function mueveJefe(e, dt) {
 }
 function finGolpeJefe(e) {
   if (e.golpeA === 'carga') {e.cargando = 0.9;}
-  if (e.golpeA === 'grito') {for (let i = 0; i < 6; i++) creaEnemigo(azar(['uruk', 'uruk', 'orco', 'ballestero']), {patio: true, x: e.x + rnd(-4, 4), z: e.z + rnd(-4, 4)});}
+  if (e.golpeA === 'grito') {for (let i = 0; i < 6; i++) creaEnemigo(azar(['uruk', 'uruk', 'orco', 'ballestero']), {brecha: true, z: Z_MURO_FUERA - 4 - i * 1.5});}
 }
 function disparaEnemigo(e, ang) {
   if (!P.virote_orco) return;
@@ -1762,12 +1794,13 @@ function hiere(e, n, dx, dz, emp = 0.8) {
   if (e.desagueHeroe && FUENTE === 'arquero') n *= 0.3;
   if (FUENTE === 'arquero') suena('clavada');
   const [n2, como] = resiste(e, n);
-  if (como === 'esquiva') {if (Math.random() < 0.5) numero(e.x, 2.2, e.z, '¡esquiva!', 'bloq'); return;}
-  if (como === 'bloq') {suena('metal'); if (Math.random() < 0.4) numero(e.x, 2.6, e.z, '¡clang!', 'bloq');}
+  if (como === 'esquiva') {if (!(J.txtT > J.t - 0.9)) {J.txtT = J.t; numero(e.x, 2.2, e.z, '¡esquiva!', 'bloq');} return;}
+  if (como === 'bloq') {suena('metal'); if (!(J.txtT > J.t - 0.9)) {J.txtT = J.t; numero(e.x, 2.6, e.z, '¡clang!', 'bloq');}}
   if (como === 'debil' && n2 >= 3) emp *= 1.3;
   n = n2;
   e.vida -= n; e.gdx = dx; e.gdz = dz; e.gn = n; golpeVisual(e.a); flip('fx_impacto', e.x + rnd(-0.2, 0.2), 1.2, e.z + rnd(-0.2, 0.2), {tam: n >= 6 ? 2.4 : 1.6, dur: 0.18, suelo: false}); if (n >= 3) particula('chispa', e.x, 1.1, e.z, {n: 2, vel: 3, sube: 2, vida: 0.3, escala: 0.4, grav: 9});
-  if (n >= 2.5) numero(e.x, e.d.pesado || e.d.jefe ? 4.2 : 2.3, e.z, Math.round(n), como === 'debil' ? 'debil' : n >= 8 ? 'gran' : '');
+  /* menos números: solo golpes que importan y como mucho uno cada 0,4 s por enemigo */
+  if ((n >= 5 || como === 'debil') && !(e.numT > J.t - 0.4)) e.numT = J.t, numero(e.x, e.d.pesado || e.d.jefe ? 4.2 : 2.3, e.z, Math.round(n), como === 'debil' ? 'debil' : n >= 8 ? 'gran' : '');
   if (e.fase === 'patio' && emp && !e.d.ariete) {const l = Math.hypot(dx, dz) || 1, k = e.d.jefe ? 0.05 : e.d.pesado ? 0.15 : 1; e.x += dx / l * emp * k; e.z += dz / l * emp * k; if (!e.d.jefe) e.aturdido = 0.12;}
   if (e.vida <= 0) {if (e.fase !== 'patio') e.cae = true; mata(e, false);}
   else if (!ocupada(e.a) && e.fase === 'patio' && e.golpe <= 0 && !e.d.jefe) pon(e.a, n >= 5 && e.a.clips.empujado ? 'empujado' : 'recibir_golpe', 0.05, true);
@@ -2214,6 +2247,7 @@ function actualizaDichos(dt) {
 }
 function aviso(t, ms = 1600) {const a = $('txt'); a.textContent = t; a.style.opacity = 1; clearTimeout(avisoT); avisoT = setTimeout(() => a.style.opacity = 0, ms);}
 function terminar(gana) {
+  document.body.classList.remove('cine');
   J.fin = true; if (!J.alba) paraMusica(); $('bEsq').classList.add('hidden'); $('bHab').classList.add('hidden'); $('tregua').style.display = 'none'; document.body.classList.remove('tregua');
   if (gana) J.puntos += Math.round(J.puerta) * 2;
   else pon(J.h.a, J.h.vida <= 0 ? 'morir' : 'quieto', 0.1, true);
@@ -2277,29 +2311,38 @@ function bucle() {
   GR.render(dt, !!(J && !J.pausa && !J.fin));
 }
 function paso(dt) {
-  J.t += dt;
-  if (AC && AC.state === 'running' && !J.fin) ponMusica(enTregua(J.t) ? 'tregua_tensa' : J.alba ? 'alba_triunfal' : 'batalla_epica');
-  actualizaDichos(dt);
-  spawns(dt);
+  /* durante la escena del desagüe el mundo se congela: solo se mueve el que carga contra el muro */
+  if (J.cine) {J.cine.t = (J.cine.t || 0) + dt; if (J.cine.t > 9) J.cine = null;}
+  const cine = !!J.cine;
+  if (cine !== J._cineCss) {J._cineCss = cine; document.body.classList.toggle('cine', cine); if (cine) {mando.activo = false; mando.x = mando.z = 0;}}
+  if (!cine) {
+    J.t += dt;
+    if (AC && AC.state === 'running' && !J.fin) ponMusica(enTregua(J.t) ? 'tregua_tensa' : J.alba ? 'alba_triunfal' : 'batalla_epica');
+    actualizaDichos(dt);
+    spawns(dt);
+  }
   llenaRejilla();
   mueveHeroe(dt);
   const h0 = J.h; for (const e of J.enemigos) if (!e.muerto) {const g = e.golpe; mueveEnemigo(e, dt); if (e.d.jefe && g > 0 && e.golpe <= 0) finGolpeJefe(e);}
-  separa();
-  actualizaArmas(dt);
-  actualizaProyectiles(dt);
-  actualizaEproy(dt);
-  actualizaCharcos(dt);
-  actualizaDefensas(dt);
-  actualizaFortaleza(dt);
-  actualizaArqueros(dt);
-  actualizaSubidas(dt);
-  actualizaJinetes(dt);
-  actualizaElfos(dt);
-  actualizaEscalas(dt);
-  actualizaGemas(dt);
-  actualizaManchas(dt);
+  if (!cine) {
+    separa();
+    actualizaArmas(dt);
+    actualizaProyectiles(dt);
+    actualizaEproy(dt);
+    actualizaCharcos(dt);
+    actualizaDefensas(dt);
+    actualizaFortaleza(dt);
+    actualizaArqueros(dt);
+    actualizaSubidas(dt);
+    actualizaJinetes(dt);
+    actualizaElfos(dt);
+    actualizaEscalas(dt);
+    actualizaGemas(dt);
+    actualizaManchas(dt);
+  }
   for (let i = J.enemigos.length - 1; i >= 0; i--) {
     const e = J.enemigos[i];
+    if (cine && !e.desagueHeroe && !e.vuela) {e.a.raiz.position.set(e.x, e.y, e.z); continue;}
     if (e.muerto) {
       e.muerto -= dt;
       if (e.vuela) {
@@ -2362,7 +2405,7 @@ function camara(dt) {
     camMira.lerp(_v3.set((h.x * 0.85) * (1 - z), 0, (h.z - 8 * (1 - k) + 0.8 * k - 14 * w) * (1 - z) + 1 * z), f);
     let mx = camMira.x, mz = camMira.z;
     /* plano desde lo alto de la muralla mirando al berserker del desagüe */
-    if (J.cineT > 0.01) {const c = J.cine || J.cineUlt, q = J.cineT * J.cineT * (3 - 2 * J.cineT); J.cineUlt = c; camera.position.lerp(_v4.set(c.x * 0.5 + 3, Y_MURO + 10, Z_MURO_ARRIBA + 9), q); mx += (c.x - mx) * q; mz += (c.z - mz) * q;}
+    if (J.cineT > 0.01) {const c = J.cine || J.cineUlt, q = J.cineT * J.cineT * (3 - 2 * J.cineT); J.cineUlt = c; camera.position.lerp(_v4.set(c.x + 4.5, Y_MURO + 4.5, Math.min(c.z + 12, Z_MURO_FUERA - 2.5)), q); mx += (c.x - mx) * q; mz += (c.z - mz) * q;}
     if (z < 0.5) mz = Math.min(mz, camera.position.z - 4);
     camera.lookAt(mx + rnd(-tb, tb) * 0.3, 0, mz);
     if (window._camFija) {const c = window._camFija; camera.position.set(...c.p); camera.lookAt(...c.t);}
@@ -2408,6 +2451,7 @@ window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
 window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
+window._desague = () => antorchero(true);
 window._monta = (n, x, z) => {const a = montar(n, true); a.raiz.position.set(x, 0.15, z); scene.add(a.raiz); const c = a.clips.quieto || Object.values(a.clips)[0]; if (c) c.play(); window._mezc = (window._mezc || []).concat(a.mixer); return a;};
 window._tramo = (k) => dañaTramo(J.tramos[k], 9999);
 window._mej = () => ofreceMejoras(false);
