@@ -193,6 +193,14 @@ const ND = {
   elfo: {flecha: [1, 2, 18, 3, 5], lluvia: [13, 19, 11, 13, 20], gracia: [11, 6, 12, 14, 8]},
   hobbit: {piedra: [3, 17, 1, 4, 5], punado: [13, 19, 2, 13, 20], pies: [11, 6, 12, 9, 8]},
 };
+/* papel de cada rama: color, etiqueta y contra qué amenazas sirve (iconos de enemigos) */
+const ROL = {
+  ataque: {t: 'ATAQUE', c: '#ff6a3d', contra: ['uruk_acorazado', 'puerta']},
+  aguante: {t: 'DEFENSA', c: '#4aa3ff', contra: ['corazon', 'escudo']},
+  hordas: {t: 'HORDAS', c: '#5fd04a', contra: ['oleada', 'huargo']},
+  apoyo: {t: 'APOYO', c: '#c27cff', contra: ['botas', 'corazon']},
+};
+const ROL_DE = {lanza: 'ataque', hacha: 'ataque', flecha: 'ataque', piedra: 'ataque', aguante: 'aguante', jinete: 'hordas', paso: 'hordas', lluvia: 'hordas', punado: 'hordas', gracia: 'apoyo', pies: 'apoyo'};
 const icoNodo = (tipo, rama, k) => {const n = ((ND[tipo] || {})[rama] || [])[k]; return n ? 'iconos/nd_' + String(n).padStart(2, '0') + '.webp' : null;};
 /* regla de los dos caminos: solo una rama pasa del 2, y como mucho dos ramas tienen puntos */
 /* nivel del héroe que pide cada nodo (I…V): no se sube una rama entera de golpe */
@@ -220,13 +228,14 @@ function ofreceArbol() {
   const pintaDet = () => {
     if (!sel) {detalle.innerHTML = '<p>Toca un nodo que brille.</p>'; return;}
     const [r, i, k] = sel, n = r.def.n[k], disp = k === r.nv && !ramaLibre(rs, i);
-    detalle.innerHTML = '<div class="arbDT"><img src="' + (icoNodo(h.tipo, r.def.id, k) || ico(r.def.icono)) + '" alt=""><div><small>' + r.def.t + ' · nivel ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '.</span><em>' + r.def.contra + '</em></div></div>';
+    detalle.innerHTML = '<div class="arbDT"><img src="' + (icoNodo(h.tipo, r.def.id, k) || ico(r.def.icono)) + '" alt=""><div><small><em class="rolP" style="background:' + ROL[ROL_DE[r.def.id] || 'ataque'].c + '">' + ROL[ROL_DE[r.def.id] || 'ataque'].t + '</em> ' + r.def.t + ' · nivel ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '.</span><em>' + r.def.contra + '</em></div></div>';
     if (disp) {const b = document.createElement('button'); b.className = 'carta arbOk'; b.innerHTML = '<span>Elegir</span>'; b.onclick = () => elegir(r, i); detalle.appendChild(b);}
     else {const p = document.createElement('p'); p.className = 'arbNo'; p.textContent = k < r.nv ? 'Ya lo tienes.' : k > r.nv ? 'Antes tienes que coger el nivel ' + ['I', 'II', 'III', 'IV', 'V'][k - 1] + ' de esta rama' + (J.nivel < NIVEL_NODO[k] ? ', y este pide nivel ' + NIVEL_NODO[k] + '.' : '.') : '🔒 ' + ramaLibre(rs, i) + '.'; detalle.appendChild(p);}
   };
   rs.forEach((r, i) => {
     const bloq = ramaLibre(rs, i), bloqRegla = ramaLibre(rs, i, true), col = document.createElement('div'); col.className = 'arbCol' + (bloqRegla && r.nv < 5 ? ' bloq' : '');
-    col.innerHTML = '<div class="arbCab"><img src="' + ico(r.def.icono) + '" alt=""><b>' + r.def.t + '</b><small>' + r.def.contra + '</small></div>';
+    const rol = ROL[ROL_DE[r.def.id] || 'ataque']; col.style.setProperty('--c', rol.c); col.style.setProperty('--avance', (r.nv / 5 * 100) + '%');
+    col.innerHTML = '<div class="arbCab"><em class="rol">' + rol.t + '</em><img src="' + ico(r.def.icono) + '" alt=""><b>' + r.def.t + '</b><span class="contra">' + rol.contra.map((k) => '<img src="' + ico(k) + '" alt="">').join('') + '</span></div>';
     const nodos = document.createElement('div'); nodos.className = 'arbNodos';
     for (let k = 4; k >= 0; k--) {
       const est = k < r.nv ? 'tengo' : k === r.nv && !bloq ? 'puedo' : 'luego', b = document.createElement('button');

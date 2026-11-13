@@ -315,6 +315,19 @@ body.cine #banOla,body.cine #cuenta{display:none}
 #fichaArma u{text-decoration:none;font-weight:800;color:#ff9c7a}#fichaArma u.si{color:#8fe07a}#fichaArma i{color:#bfe6ff}
 #fichaArma small{display:block;text-align:center;margin-top:8px;color:#bfae8a;font-size:11px}
 .nvReq{font-style:normal;font:700 9px Georgia,serif;color:#ffb38a;background:#2a1408;border:1px solid #7a4a28;border-radius:6px;padding:0 4px;margin-top:1px}
+/* ramas con color por papel: ataque rojo, defensa azul, hordas verde, apoyo morado */
+.arbCol{--c:#c79b4e;border:2px solid var(--c)!important;background:linear-gradient(180deg,color-mix(in srgb,var(--c) 38%,#0d0906) 0,#0d0906e6 34%)!important;box-shadow:0 0 14px color-mix(in srgb,var(--c) 35%,transparent)}
+.arbCol.bloq{box-shadow:none}
+.arbCab .rol{font-style:normal;font:900 10.5px Georgia,serif;letter-spacing:.12em;color:#fff;background:var(--c);border-radius:8px;padding:2px 8px;margin-bottom:3px;box-shadow:0 2px 0 #0008;text-shadow:0 1px 1px #0008}
+.arbCab img{box-shadow:0 0 0 2px var(--c),0 0 10px var(--c)!important}
+.arbCab b{color:#fff!important}
+.contra{display:flex;gap:3px;margin-top:2px}.contra img{width:22px!important;height:22px!important;box-shadow:0 0 0 1px #0008!important;border-radius:50%}
+.arbNodos::before{background:linear-gradient(to top,var(--c) 0,var(--c) var(--avance),#3a2810 var(--avance))!important;width:5px!important;margin-left:-2.5px!important;box-shadow:0 0 8px color-mix(in srgb,var(--c) 60%,transparent)}
+.arbCol .nodo.tengo i{border-color:var(--c)!important;box-shadow:0 0 0 2px var(--c),0 0 12px var(--c)!important}
+.arbCol .nodo.tengo span{color:#fff!important}
+.arbCol .nodo.puedo i{border-color:#fff!important;box-shadow:0 0 0 3px var(--c),0 0 16px var(--c)!important}
+.arbCol .nodo.tengo i u{background:var(--c)!important;color:#fff!important;border-color:#fff8!important}
+.rolP{font-style:normal;font-weight:900;font-size:9.5px;letter-spacing:.1em;color:#fff;border-radius:6px;padding:1px 5px;margin-right:3px}
 /* marcas de amenaza (focus) */
 .mk{position:fixed;transform:translate(-50%,-100%);z-index:8;pointer-events:none;display:flex;flex-direction:column;align-items:center;animation:mkBota .7s ease-in-out infinite}
 .mk b{font:900 12px Georgia,serif;color:#fff;background:linear-gradient(#d8402e,#9a1d12);border:2px solid #ffd27a;border-radius:12px;padding:2px 8px;white-space:nowrap;box-shadow:0 2px 6px #000a}
