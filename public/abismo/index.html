@@ -254,6 +254,24 @@ body.tregua #bocadillo{display:none}
 #cuenta{position:fixed;left:50%;top:44%;z-index:40;pointer-events:none;font:900 96px Georgia,serif;color:#ffd979;text-shadow:0 5px 0 #6a3a08,0 0 30px #000;transform:translate(-50%,-50%);opacity:0}
 #cuenta.sale{animation:cuenta .9s ease-out both}@keyframes cuenta{0%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.8)}}
 body.cine #banOla,body.cine #cuenta{display:none}
+/* marcas de amenaza (focus) */
+.mk{position:fixed;transform:translate(-50%,-100%);z-index:8;pointer-events:none;display:flex;flex-direction:column;align-items:center;animation:mkBota .7s ease-in-out infinite}
+.mk b{font:900 12px Georgia,serif;color:#fff;background:linear-gradient(#d8402e,#9a1d12);border:2px solid #ffd27a;border-radius:12px;padding:2px 8px;white-space:nowrap;box-shadow:0 2px 6px #000a}
+.mk i{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #ffd27a;margin-top:1px}
+.mk.fuera{transform:translate(-50%,-50%)}.mk.fuera i{position:absolute;top:50%;left:50%;margin:0;transform-origin:0 0;border-top-color:#ff6a4a}
+.mk.fuera b{transform:scale(.9)}
+@keyframes mkBota{50%{margin-top:-5px}}
+body.cine #marcas,body.tregua #marcas{display:none}
+/* árbol de evolución */
+#mejora,#fin{z-index:45!important}
+.cartas .carta em .pips i,.cartas .carta-bloq em .pips i{border-color:#fff8}
+.cartas .carta-bloq{position:relative;border:0;padding:0;font:inherit;color:#3a2410;width:100%;aspect-ratio:720/216;background:url(ui/fila_comun.webp) center/100% 100% no-repeat;container-type:inline-size;--k:1;filter:grayscale(1) brightness(.55);flex:none}
+.cartas .carta-bloq img{position:absolute;left:3.9%;top:23.5%;width:19.4%;aspect-ratio:1;border-radius:50%}
+.cartas .carta-bloq div{position:absolute;left:31.8%;right:5.6%;top:33%;bottom:19%;display:flex;flex-direction:column;justify-content:center;text-align:left;overflow:hidden}
+.cartas .carta-bloq b{font-size:calc(4.5cqw * var(--k));color:#3a1e08}.cartas .carta-bloq small{font-size:calc(3.5cqw * var(--k));color:#4a3018}
+.cartas .carta-bloq em{position:absolute;right:5.6%;top:20.5%;width:16.6%;height:14%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:3cqw}
+.pips{display:inline-flex;gap:1.5px;vertical-align:middle}.pips i{width:2.5cqw;height:2.5cqw;border-radius:50%;background:#0003;border:1px solid #6a4a20;display:block}.pips i.si{background:radial-gradient(#ffe58a,#d08a10);border-color:#8a5a08}
+#mejP{max-width:340px}
 /* escena: franjas de cine y fuera el HUD */
 #cineA,#cineB{position:fixed;left:0;right:0;height:0;background:#000;z-index:60;pointer-events:none;transition:height .45s ease}
 #cineA{top:0}#cineB{bottom:0}
@@ -330,6 +348,7 @@ body.cine #cineTxt{opacity:1}
 </div>
 <div id="banOla"><small id="banA"></small><b id="banB"></b><span id="banC"></span></div>
 <div id="cuenta"></div>
+<div id="marcas"></div>
 
 <script type="module" src="./juego.js"></script>
 <script>if (/\/abismo\//.test(location.pathname)) document.getElementById('aLoc').style.display = 'block';</script>

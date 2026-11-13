@@ -58,6 +58,7 @@ const ENEMIGOS = {
   orco_arquero: {vida: 4, vel: 2.9, dano: 9, danoPuerta: 1, radio: .5, xp: 3, pts: 35, modelo: 'q_arquero', distancia: true, tDisparo: 0.45, alcanceDisparo: 13},
   chaman_isengard: {vida: 16, vel: 2.2, dano: 16, danoPuerta: 2, radio: .6, xp: 9, pts: 110, modelo: 'q_brujo', distancia: true, clipDisparo: 'invocar', tDisparo: 0.8, alcanceDisparo: 12},
   ariete: {vida: 300, vel: 1.3, dano: 0, danoPuerta: 70, radio: 2.0, xp: 40, pts: 500, modelo: 'ariete', pesado: true, ariete: true, armadura: 8},
+  tronco: {vida: 40, vel: 5.4, dano: 0, danoPuerta: 70, radio: 1.7, xp: 20, pts: 400, modelo: 'ariete', escala: 0.78, tronco: true, marca: true},
   capitan: {vida: 800, vel: 3.0, dano: 30, danoPuerta: 30, radio: 1.1, xp: 125, pts: 2000, modelo: 'capitan', jefe: true, escala: 1.2},
 };
 /* armas automáticas: 5 niveles y una evolución con su pasiva pareja */
@@ -104,6 +105,115 @@ const TALENTOS = {
   botin: {t: 'Botín de Isengard', icono: 'moneda', d: '<b>+50 % de oro</b> en cada moneda.'},
   ira: {t: 'Ira creciente', icono: 'i_cargado', d: 'Cada 8 bajas sin que te den: <b>+10 % daño</b>. Si te dan, se pierde.'},
 };
+/* ---------- árbol de evolución (cada nivel): 3 ramas por héroe, una puede llegar al 5 y otra al 2 ---------- */
+const tag = (h, t) => {h.tags = (h.tags || '') + ' ' + t;};
+const RAMA_AGUANTE = (t, icono) => ({id: 'aguante', t, icono, contra: 'Te mantiene en pie cuando te rodean', n: [
+  ['Cota de malla', '+25 % de vida máxima', (h) => {h.vidaMax *= 1.25; h.vida = Math.min(h.vidaMax, h.vida * 1.25);}],
+  ['Escudo bien sujeto', 'Recibes un 15 % menos de daño', (h) => {h.armadura = Math.min(0.6, h.armadura + 0.15);}],
+  ['Aliento de Rohan', 'Regeneras 1,5 de vida por segundo', (h) => {h.regen = (h.regen || 0) + 1.5;}],
+  ['Sed de batalla', 'Cada baja te cura 2 de vida', (h) => {h.tal.sangre = true;}],
+  ['Último aliento', 'Con poca vida, 3 s invencible y furia (una vez por oleada) y +25 % de vida', (h) => {h.tal.aliento = true; h.vidaMax *= 1.25;}],
+]});
+const RAMAS = {
+  rohan: [
+    {id: 'lanza', t: 'Lanza de la Marca', icono: 'lanza', contra: 'Contra uruk acorazados y trolls', n: [
+      ['Punta de acero', '+30 % de daño', (h) => {h.dano *= 1.3;}],
+      ['Perforar armaduras', 'Tu lanza atraviesa las corazas de los uruk acorazados', (h) => tag(h, 'perfora')],
+      ['Golpe certero', '+50 % de daño', (h) => {h.dano *= 1.5;}],
+      ['Golpe aturdidor', 'Uno de cada 4 golpes aturde 1 s', (h) => {h.tal.aturde = true;}],
+      ['Lanza de Eorl', 'Daño ×1,6 y aplastas trolls y arietes', (h) => {h.dano *= 1.6; tag(h, 'pesado fuego');}]]},
+    RAMA_AGUANTE('Escudo de Edoras', 'escudo'),
+    {id: 'jinete', t: 'Jinete de la Marca', icono: 'botas', contra: 'Contra hordas y huargos', n: [
+      ['Caballos de Rohan', '+12 % de velocidad', (h) => {h.vel *= 1.12;}],
+      ['Barrido', 'Golpeas en un ángulo mucho más ancho', (h) => {h.arco = Math.min(Math.PI * 2, h.arco * 1.6);}],
+      ['Golpes rápidos', 'Atacas un 20 % más rápido y los huargos ya no te esquivan', (h) => {h.cadencia *= 0.8; tag(h, 'rapido');}],
+      ['Lanza larga', '+25 % de alcance', (h) => {h.alcance *= 1.25;}],
+      ['Carga de los Rohirrim', 'Golpe giratorio que da a todos los que te rodean', (h) => {h.arco = Math.PI * 2; tag(h, 'area');}]]},
+  ],
+  enano: [
+    {id: 'hacha', t: 'Hacha de Erebor', icono: 'hacha', contra: 'Contra trolls, arietes y acorazados', n: [
+      ['Filo enano', '+35 % de daño', (h) => {h.dano *= 1.35;}],
+      ['Golpe aturdidor', 'Uno de cada 4 golpes aturde 1 s', (h) => {h.tal.aturde = true;}],
+      ['Rompecorazas', '+40 % de daño y atraviesas las corazas', (h) => {h.dano *= 1.4; tag(h, 'perfora');}],
+      ['Fuego de la forja', 'Tus golpes queman: el ariete arde', (h) => tag(h, 'fuego')],
+      ['Furia de Durin', 'Daño ×1,6 y cada golpe alcanza a todos los de delante', (h) => {h.dano *= 1.6; h.arco = Math.min(Math.PI * 2, h.arco * 1.5); tag(h, 'area');}]]},
+    RAMA_AGUANTE('Piedra de la Montaña', 'escudo'),
+    {id: 'paso', t: 'Paso enano', icono: 'botas', contra: 'Contra hordas y huargos', n: [
+      ['Botas herradas', '+15 % de velocidad', (h) => {h.vel *= 1.15;}],
+      ['Golpes rápidos', 'Atacas un 20 % más rápido', (h) => {h.cadencia *= 0.8;}],
+      ['Doble tajo', 'Más ángulo y los huargos ya no te esquivan', (h) => {h.arco = Math.min(Math.PI * 2, h.arco * 1.5); tag(h, 'rapido');}],
+      ['Mango largo', '+25 % de alcance', (h) => {h.alcance *= 1.25;}],
+      ['Torbellino de Khazad', 'Giras con el hacha y das a todos', (h) => {h.arco = Math.PI * 2; h.cadencia *= 0.85; tag(h, 'area');}]]},
+  ],
+  elfo: [
+    {id: 'flecha', t: 'Flecha de Lórien', icono: 'arco', contra: 'Contra acorazados, arietes y antorchas', n: [
+      ['Punta élfica', '+30 % de daño', (h) => {h.dano *= 1.3;}],
+      ['Atravesar', 'Cada flecha atraviesa a uno más', (h) => {h.atraviesa++;}],
+      ['Flechas de fuego', 'Arden: el ariete y los trolls sufren el doble', (h) => tag(h, 'fuego')],
+      ['Ojo de Legolas', '+50 % de daño', (h) => {h.dano *= 1.5;}],
+      ['Arco de los Galadrim', 'Daño ×1,5 y atraviesan a dos más', (h) => {h.dano *= 1.5; h.atraviesa += 2;}]]},
+    {id: 'lluvia', t: 'Lluvia de flechas', icono: 'i_abanico', contra: 'Contra hordas y huargos', n: [
+      ['Mano rápida', 'Disparas un 15 % más rápido', (h) => {h.cadencia *= 0.85;}],
+      ['Abanico', 'Dos flechas más en abanico', (h) => {h.multi += 2;}],
+      ['Flechas ligeras', 'Los huargos ya no te esquivan', (h) => tag(h, 'rapido')],
+      ['Ráfaga', 'Disparas un 20 % más rápido', (h) => {h.cadencia *= 0.8;}],
+      ['Cielo de flechas', 'Dos flechas más y golpean en área', (h) => {h.multi += 2; tag(h, 'area');}]]},
+    {id: 'gracia', t: 'Gracia élfica', icono: 'i_esquivar', contra: 'Para sobrevivir y moverte', n: [
+      ['Pies ligeros', '+12 % de velocidad', (h) => {h.vel *= 1.12;}],
+      ['Capa de Lórien', '+25 % de vida máxima', (h) => {h.vidaMax *= 1.25; h.vida = Math.min(h.vidaMax, h.vida * 1.25);}],
+      ['Esquiva de guerrero', 'Al esquivar, una onda aparta y hiere', (h) => {h.tal.esquiva = true;}],
+      ['Vista élfica', '+25 % de alcance', (h) => {h.alcance *= 1.25;}],
+      ['Lembas', 'Regeneras 2 de vida por segundo y último aliento', (h) => {h.regen = (h.regen || 0) + 2; h.tal.aliento = true;}]]},
+  ],
+  hobbit: [
+    {id: 'piedra', t: 'Piedra certera', icono: 'honda', contra: 'Contra acorazados y trolls', n: [
+      ['Piedra de río', '+30 % de daño', (h) => {h.dano *= 1.3;}],
+      ['Pedrusco', 'Piedras pesadas: hacen mella en las corazas', (h) => tag(h, 'pesado')],
+      ['Puntería de la Comarca', '+50 % de daño', (h) => {h.dano *= 1.5;}],
+      ['Golpe aturdidor', 'Uno de cada 4 golpes aturde 1 s', (h) => {h.tal.aturde = true;}],
+      ['Tiro de Bolsón', 'Daño ×1,6 y atraviesa a uno más', (h) => {h.dano *= 1.6; h.atraviesa++;}]]},
+    {id: 'punado', t: 'Puñado de piedras', icono: 'i_piedras', contra: 'Contra hordas y huargos', n: [
+      ['Brazo suelto', 'Lanzas un 15 % más rápido', (h) => {h.cadencia *= 0.85;}],
+      ['Tres a la vez', 'Dos piedras más en abanico', (h) => {h.multi += 2;}],
+      ['Rebote', 'Cada piedra atraviesa a uno más', (h) => {h.atraviesa++;}],
+      ['Bolsillos llenos', 'Lanzas un 20 % más rápido', (h) => {h.cadencia *= 0.8;}],
+      ['Granizada', 'Dos piedras más y golpean en área', (h) => {h.multi += 2; tag(h, 'area');}]]},
+    {id: 'pies', t: 'Pies de hobbit', icono: 'botas', contra: 'Para sobrevivir y coger botín', n: [
+      ['Pies ligeros', '+15 % de velocidad', (h) => {h.vel *= 1.15;}],
+      ['Desapercibido', '+25 % de vida máxima', (h) => {h.vidaMax *= 1.25; h.vida = Math.min(h.vidaMax, h.vida * 1.25);}],
+      ['Esquiva de hobbit', 'Al esquivar, una onda aparta y hiere', (h) => {h.tal.esquiva = true;}],
+      ['Bolsillos de hobbit', '+50 % de oro en cada moneda e imán más grande', (h) => {h.tal.botin = true; h.iman *= 1.5;}],
+      ['Suerte de Bolsón', 'Regeneras 2 de vida por segundo y último aliento', (h) => {h.regen = (h.regen || 0) + 2; h.tal.aliento = true;}]]},
+  ],
+};
+/* regla de los dos caminos: solo una rama pasa del 2, y como mucho dos ramas tienen puntos */
+function ramaLibre(rs, i) {
+  const nv = rs.map((r) => r.nv), n = nv[i];
+  if (n >= 5) return 'Al máximo';
+  const otras = nv.filter((v, k) => k !== i);
+  if (n === 0 && otras.filter((v) => v > 0).length >= 2) return 'Ya llevas dos ramas';
+  if (n >= 2 && otras.some((v) => v > 2)) return 'Otra rama ya pasó del 2';
+  return '';
+}
+function arbolDisponible() {const rs = J.arbol; return rs && rs.some((r, i) => !ramaLibre(rs, i));}
+function ofreceArbol() {
+  J.pausa = true; const h = J.h, rs = J.arbol;
+  $('mejT').textContent = '¡Subes de nivel!'; $('mejP').textContent = 'Elige cómo evoluciona tu héroe. Una rama puede llegar al 5; otra, solo al 2.';
+  const c = $('cartas'); c.innerHTML = '';
+  rs.map((r, i) => [r, i]).sort((a, b) => !!ramaLibre(rs, a[1]) - !!ramaLibre(rs, b[1])).forEach(([r, i]) => {
+    const bloq = ramaLibre(rs, i), sig = r.def.n[r.nv], b = document.createElement('button');
+    b.className = bloq ? 'carta-bloq' : 'carta'; b.dataset.r = r.nv >= 4 ? 'legendaria' : r.nv === 3 ? 'epica' : r.nv === 2 ? 'rara' : 'comun';
+    const pips = '<span class="pips">' + [0, 1, 2, 3, 4].map((k) => '<i class="' + (k < r.nv ? 'si' : '') + '"></i>').join('') + '</span>';
+    b.innerHTML = '<img src="' + ico(r.def.icono) + '" alt=""><div><b>' + r.def.t + '<em>' + (bloq ? '🔒 ' : '') + pips + '</em></b><small>' + (bloq ? bloq + '. <i>' + r.def.contra + '</i>' : '<b>' + (r.nv + 1) + '. ' + sig[0] + ':</b> ' + sig[1] + '. <i>' + r.def.contra + '.</i>') + '</small></div>';
+    if (!bloq) b.onclick = () => {sig[2](h); r.nv++; h.ramas = rs.map((q) => q.nv); suena('nivel'); pintaArmas(); $('mejora').classList.add('hidden'); J.pausa = false; reloj.getDelta(); setTimeout(siguientePendiente, 50);};
+    c.appendChild(b);
+  });
+  $('mejora').classList.remove('hidden'); ajustaCartas(c);
+}
+function ajustaCartas(c) {
+  const f = () => c.querySelectorAll('.carta div, .carta-bloq div').forEach((d) => {let k = 1; d.style.setProperty('--k', 1); while ((d.scrollHeight > d.clientHeight + 1 || d.scrollWidth > d.clientWidth + 1) && k > 0.34) {k -= 0.04; d.style.setProperty('--k', k);}});
+  f(); setTimeout(f, 450); setTimeout(f, 1200); if (document.fonts && document.fonts.ready) document.fonts.ready.then(f);
+}
 const BASE_MEJORAS = [
   {t: 'Filo afilado', d: (h) => `Daño <b>${num(danoH(h))} → ${num(danoH(h) * 1.4)}</b>`, f: (h) => h.dano *= 1.4},
   {t: 'Brazo incansable', d: (h) => `Golpes por segundo <b>${num(1 / (h.cadencia * h.velArmas))} → ${num(1 / (h.cadencia * h.velArmas * 0.8))}</b>`, f: (h) => h.cadencia *= 0.8},
@@ -133,7 +243,7 @@ const TAGS = {lanzas: 'perfora pesado', hachas: 'pesado', abanico: 'perfora rapi
   lanza: 'pesado', hacha: 'pesado', arco: 'perfora', honda: 'pequeno rapido', abrojos: 'pequeno', estacas: 'pequeno', empalizada: 'pequeno', aceite: 'fuego area',
   arquero: 'perfora', torre: 'perfora', escorpion: 'perfora pesado', catapulta: 'pesado area', calderon: 'fuego area', explosion: 'pesado area', cargado: 'pesado area'};
 let FUENTE = null;
-const tiene = (t) => !!FUENTE && (TAGS[FUENTE] || FUENTE).includes(t);
+const tiene = (t) => !!FUENTE && ((TAGS[FUENTE] || FUENTE).includes(t) || (J && FUENTE === J.h.icono && (J.h.tags || '').includes(t)));
 /* amenazas que se anuncian una oleada antes, con sus armas buenas */
 const AMENAZAS = {
   huargos: {t: 'HUARGOS Y JINETES DE HUARGO', d: 'Esquivan los golpes lentos. Les hacen daño las armas rápidas (cuchillos, piedras, abanico), las de área (cuerno, humo, antorchas) y el aceite.', armas: ['cuchillos', 'cuerno', 'antorcha', 'caldero', 'piedras', 'humo', 'abanico'], icono: 'huargo'},
@@ -763,6 +873,7 @@ function nuevaPartida(tipo) {
   J = {h, nubes: [], enemigos: [], gemas: [], escalas, tramos: escalas.map((e) => ({i: e.i - 1, x: (e.x = XT[e.i - 1]), vida: 100, max: 100, nivel: 0, roto: false})), treguaVista: -1, aldeanos: [], barr: {vida: 0, max: 0}, amenaza: null, desagueObj, proy: [], eproy: [], defensas: [], charcos: [], orbitales: [], armas: {}, pasivas: {}, evos: {},
     t: 0, spawnT: 1.5, puerta: 500, puertaMax: 500, nivel: 1, xp: 0, xpSig: 5, bajas: 0, puntos: 0, oro: 15 * (pm.oro || 0) + 10, oroTotal: 0,
     pausa: false, fin: false, temblor: 0, oleada: 60, parada: 0, brecha: 0, desague: false, jefe: null, jefeSale: false, cola: 0};
+  J.arbol = (RAMAS[tipo] || RAMAS.rohan).map((def) => ({def, nv: 0}));
   J.enMuro = true; h.x = rnd(-2, 2); h.z = Z_MURO_ARRIBA + 0.9; h.y = Y_MURO; h.rot = Math.PI; J.ola = 0; J.olaIni = 0; J.porSalir = 0; J.olaTotal = 1; J.tregua = {ini: 0, fin: TREGUA_S + 3, n: 0}; J.dichos = {}; J.retoBajas = {gimli: 0, legolas: 0}; J.fuegoT = 95;
   J.tramos.forEach(ponTramo); montaSitios(); $('etiq').innerHTML = '';
   ponPuerta('puerta_ok'); GR.rompeTramo(-1, false); $('tregua').style.display = 'none'; document.body.classList.remove('tregua');
@@ -843,6 +954,7 @@ function spawns(dt) {
     else aviso('¡Una oleada se acerca!', 1200);
   }}
   if (!J.desague && J.ola >= 3 && J.t >= J.olaIni + 18) {J.desague = true; antorchero(true);}
+  if (J.ola >= 3 && J.desague && !enTregua(J.t) && J.troncoOla !== J.ola && J.t >= J.olaIni + (J.ola === 3 ? 34 : 16) && !J.alba) {J.troncoOla = J.ola; tronco();}
   if (J.brecha > 0) J.brecha -= dt;
   /* fuego de Isengard: Saruman manda sus bombas; marcan el suelo y estallan al segundo y medio */
   if (J.cine) J.fuegoT = Math.max(J.fuegoT, J.t + 4);
@@ -870,6 +982,43 @@ function mueveAriete(e, dt) {
   const tz = PATIO.z1 - 3.0, dz = tz - e.z, dx = -e.x;
   if (Math.abs(dz) > 0.3 || Math.abs(dx) > 0.3) {const d = Math.hypot(dx, dz); e.x += dx / d * e.d.vel * dt; e.z += dz / d * e.d.vel * dt; e.rot = Math.atan2(dx, dz); pon(e.a, 'avanzar'); return;}
   e.rot = 0; e.embiste = 3.0; e.golpeDado = false; pon(e.a, 'embestir', 0.1, true);
+}
+/* «¡Traen un tronco!»: uruks a la carrera con un tronco a por la puerta. Hay que tumbarlos antes (focus) */
+function tronco() {
+  const rotos = J.tramos.filter((t) => t.roto), tr = rotos.length ? azar(rotos) : J.tramos.slice().sort((a, b) => a.vida - b.vida)[0];
+  const e = creaEnemigo('tronco', {brecha: true}); e.x = tr.x + rnd(-1, 1); e.z = Z_MURO_FUERA - 16; e.fase = 'hacia'; e.tramo = tr; e.marcaT = 0;
+  if (M.tronco) e.a.raiz.scale.setScalar(1);
+  cartelOla('¡UN TRONCO!', 'Uruks a la carrera contra la puerta', 'Tumbadlos antes de que lleguen');
+  setTimeout(() => J && habla('gimli', '¡A por los del tronco! ¡Que no lleguen a la puerta!'), 900);
+}
+function mueveTronco(e, dt) {
+  const pc = Math.max(0, e.vida / e.vidaMax), v = e.d.vel * (0.45 + 0.55 * pc) * (e.lento > 0 ? 0.6 : 1);
+  if (e.lento > 0) e.lento -= dt;
+  if (e.aturdido > 0) {e.aturdido -= dt; return;}
+  if (e.embiste > 0) {
+    e.embiste -= dt;
+    if (e.embiste <= 0.75 && !e.golpeDado) {
+      e.golpeDado = true; J.temblor = Math.max(J.temblor, 0.7); J.parada = Math.max(J.parada || 0, 0.08);
+      if (e.fase === 'patio') {golpeaPuerta(e.d.danoPuerta * (0.5 + 0.5 * pc)); efecto('polvo', e.x, 0.3, PATIO.z1, {escala: 2.6, vida: 0.7, crece: 2}); particula('astillas', e.x, 2, PATIO.z1 - 0.5, {n: 10, vel: 5, sube: 4, vida: 0.7, escala: 0.7, grav: 12}); aviso('¡El tronco golpea la puerta!', 1000);}
+      else if (e.tramo && !e.tramo.roto) {dañaTramo(e.tramo, 45); efecto('polvo', e.tramo.x, 1, Z_MURO_FUERA - 0.3, {escala: 2.4, vida: 0.6});}
+    }
+    if (e.embiste <= 0) {e.retro = 0.9;}
+    return;
+  }
+  if (e.retro > 0) {e.retro -= dt; e.z -= dt * 2.4; pon(e.a, 'avanzar'); return;}   /* toma carrerilla */
+  if (e.fase === 'hacia') {
+    if (e.tramo.roto) {
+      const dx = e.tramo.x - e.x, dz = BRECHA.z + 1.5 - e.z, d = Math.hypot(dx, dz);
+      if (d < 0.6) {e.fase = 'patio'; aviso('¡El tronco ha entrado! ¡A por ellos!', 1400); return;}
+      e.x += dx / d * v * dt; e.z += dz / d * v * dt; e.rot = Math.atan2(dx, dz); pon(e.a, 'avanzar'); e.y = 0.15; return;
+    }
+    const tz = Z_MURO_FUERA - 2.8, dx = e.tramo.x - e.x, dz = tz - e.z, d = Math.hypot(dx, dz);
+    if (d > 0.4) {e.x += dx / d * v * dt; e.z += dz / d * v * dt; e.rot = Math.atan2(dx, dz); pon(e.a, 'avanzar'); return;}
+    e.rot = 0; e.embiste = 1.6; e.golpeDado = false; pon(e.a, 'embestir', 0.1, true); return;
+  }
+  const tz = PATIO.z1 - 3.2, dz = tz - e.z, dx = -e.x * 0.9;
+  if (Math.abs(dz) > 0.4 || Math.abs(dx) > 0.6) {const d = Math.hypot(dx, dz); e.x += dx / d * v * dt; e.z += dz / d * v * dt; e.rot = Math.atan2(dx, dz); pon(e.a, 'avanzar'); return;}
+  e.rot = 0; e.embiste = 1.6; e.golpeDado = false; pon(e.a, 'embestir', 0.1, true);
 }
 function ariete() {
   const e = creaEnemigo('ariete'); e.x = rnd(-8, 8); e.z = -46; e.fase = 'hacia';
@@ -930,7 +1079,7 @@ function actualizaElfos(dt) {
     el.a.mixer.update(dt); el.cd -= dt;
     if (el.muro) {
       if (el.cd <= 0) {
-        const ob = J.enemigos.filter((e) => !e.muerto && (e.fase === 'sube' || e.fase === 'hacia') && Math.abs(e.x - el.x) < 9 && e.z > -40).sort((a, b) => (b.d.antorcha ? 99 : 0) - (a.d.antorcha ? 99 : 0) || Math.abs(a.x - el.x) - Math.abs(b.x - el.x))[0];
+        const ob = J.enemigos.filter((e) => !e.muerto && (e.fase === 'sube' || e.fase === 'hacia' || (e.d.marca && e.fase === 'patio')) && Math.abs(e.x - el.x) < (e.d.marca ? 30 : 9) && e.z > -40).sort((a, b) => (b.d.antorcha || b.d.marca ? 99 : 0) - (a.d.antorcha || a.d.marca ? 99 : 0) || Math.abs(a.x - el.x) - Math.abs(b.x - el.x))[0];
         if (ob) {el.cd = el.lento ? rnd(2.6, 3.6) : rnd(1.1, 1.6); pon(el.a, 'atacar', 0.05, true); el.a.raiz.rotation.y = Math.atan2(ob.x - el.x, ob.z - el.z); suena('disparo'); FUENTE = 'arquero'; if (ob.fase === 'sube' && Math.random() < 0.5) mata(ob, true); else hiere(ob, 3, 0, -1, 0.2);}
       }
       continue;
@@ -1162,6 +1311,28 @@ function aldeano(tx, tz) {
 
 /* ---------- construir tocando sobre el mapa (solo en la tregua) ---------- */
 const _pe = new THREE.Vector3();
+/* amenazas que hay que tumbar ya: etiqueta encima y, si están fuera de pantalla, flecha en el borde */
+const _pm = new THREE.Vector3();
+function marcasAmenaza() {
+  const box = $('marcas'); if (!box) return;
+  const lista = J.fin || document.body.classList.contains('cine') ? [] : J.enemigos.filter((e) => !e.muerto && (e.d.marca || e.d.antorcha || e.d.ariete) && !(e.fase === 'hacia' && e.z < -38));
+  while (box.children.length < lista.length) {const d = document.createElement('div'); d.className = 'mk'; d.innerHTML = '<b></b><i></i>'; box.appendChild(d);}
+  [...box.children].forEach((el, k) => {
+    const e = lista[k]; if (!e) {el.style.display = 'none'; return;}
+    el.style.display = 'block';
+    const txt = e.d.tronco ? '¡TRONCO!' : e.d.ariete ? 'ARIETE' : e.desagueHeroe ? '¡AL DESAGÜE!' : '¡ANTORCHA!'; const b = el.firstChild; if (b.textContent !== txt) b.textContent = txt;
+    _pm.set(e.x, e.y + (e.d.ariete || e.d.tronco ? 3.4 : 2.9), e.z).project(camera);
+    const W = innerWidth, H = innerHeight, detras = _pm.z > 1;
+    let x = (_pm.x + 1) / 2 * W, y = (1 - _pm.y) / 2 * H; if (detras) {x = W - x; y = H - 40;}
+    const m = 34, fuera = detras || x < m || x > W - m || y < 90 || y > H - 120;
+    if (fuera) {
+      const cx = W / 2, cy = H / 2, ang = Math.atan2(y - cy, x - cx);
+      x = Math.max(m, Math.min(W - m, x)); y = Math.max(96, Math.min(H - 126, y));
+      el.className = 'mk fuera'; el.lastChild.style.transform = 'rotate(' + (ang * 180 / Math.PI - 90) + 'deg) translate(-8px, 16px)';
+    } else {el.className = 'mk'; el.lastChild.style.transform = '';}
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+  });
+}
 function etiquetas() {
   const box = $('etiq'), on = J && !J.fin && !!enTregua(J.t) && J.zoomT > 0.6;
   box.style.display = on ? 'block' : 'none'; if (!on) {if ($('hoja').style.display !== 'none' && !(J && J.tregua)) cierraHoja(); return;}
@@ -1270,6 +1441,7 @@ function empiezaTregua(tr) {
   J.treguaVista = tr[0];
   const n = J.tregua.n;
   J.amenaza = AMENAZA_DE[n] || null;
+  J.botinPend = true; setTimeout(() => {if (J && J.botinPend && !J.pausa && !J.fin) {J.botinPend = false; ofreceMejoras('botin');}}, 700);
   if (n > 0) {J.oro += 8 + n * 4; aviso('Tregua: el enemigo se reagrupa. Repara y fortifica', 2200);}
   else {J.oro += 70; aviso('Théoden os da 70 de oro: construid antes de que suenen los cuernos', 3200);}
   pestana = n === 0 ? 'def' : 'muro';
@@ -1426,6 +1598,7 @@ function mueveEnemigo(e, dt) {
   if (J.cine && !e.desagueHeroe && !e.muerto) return;
   const h = J.h, s = e.escala, warg = e.tipo === 'warg' || !!e.d.salta, dd = e.d;
   if (dd.ariete) return mueveAriete(e, dt);
+  if (dd.tronco) return mueveTronco(e, dt);
   const fuerza = e.animado ? 1.4 : 1, vel = dd.vel * (e.animado ? 1.3 : 1) * (e.lento > 0 ? 0.5 : 1);
   if (e.lento > 0) e.lento -= dt;
   if (e.golpe > 0) {
@@ -1716,7 +1889,7 @@ function buscaObjetivo(h) {
   let obj = null, mejor = 1e9;
   for (const e of h.cuerpo ? cercanos(h.x, h.z, h.alcance + 1.5) : J.enemigos) {
     if (e.muerto) continue;
-    if (h.cuerpo ? !(e.fase === 'patio' || (J.enMuro && e.fase === 'sube' && e.sube > 0.55)) : (e.fase !== 'patio' && e.fase !== 'sube' && e.fase !== 'adarve' && !((e.d.antorcha || e.d.ariete || J.enMuro) && e.fase === 'hacia' && e.z > -48))) continue;
+    if (h.cuerpo ? !(e.fase === 'patio' || (J.enMuro && e.fase === 'sube' && e.sube > 0.55)) : (e.fase !== 'patio' && e.fase !== 'sube' && e.fase !== 'adarve' && !((e.d.antorcha || e.d.ariete || e.d.tronco || J.enMuro) && e.fase === 'hacia' && e.z > -48))) continue;
     if (h.cuerpo && Math.abs((e.y ?? 0.15) - (h.y ?? 0.15)) > 2.2) continue;
     const dx = e.x - h.x, dz = e.z - h.z, d0 = Math.hypot(dx, dz), d = d0 - e.radio;
     /* prefiere a los que tienes delante según hacia dónde mueves el dedo */
@@ -1869,7 +2042,7 @@ function actualizaProyectiles(dt) {
     let fuera = p.vida <= 0 && !p.arco;
     if (!fuera && p.escalas) for (const s of J.escalas) if (s.estado === 'arriba' && Math.abs(p.x - s.x) < 0.9 && p.z < Z_MURO_ARRIBA + 0.9) {danaEscala(s, p.dano * h.danoEscala); fuera = true; break;}
     if (!fuera && !p.arco) for (const e of J.enemigos) {
-      if (e.muerto || p.tocados.has(e) || (e.fase !== 'patio' && e.fase !== 'sube' && e.fase !== 'adarve' && !((e.d.antorcha || e.d.ariete || J.enMuro) && p.fuera && e.fase === 'hacia'))) continue;
+      if (e.muerto || p.tocados.has(e) || (e.fase !== 'patio' && e.fase !== 'sube' && e.fase !== 'adarve' && !((e.d.antorcha || e.d.ariete || e.d.tronco || J.enMuro) && p.fuera && e.fase === 'hacia'))) continue;
       if (Math.hypot(e.x - p.x, e.z - p.z) < e.radio + 0.3) {
         p.tocados.add(e); FUENTE = p.tag; hiere(e, p.dano * (J.h.emboscada ? 3 : 1), p.vx, p.vz, p.emp); if (J.h.emboscada) finOculto();
         if (p.rebota > 0) {
@@ -1899,7 +2072,7 @@ function resiste(e, n) {
     if (d.ariete && tiene('fuego')) return [n * 2, 'debil'];
     if (tiene('pesado') || tiene('fuego')) return [n * (e.tipo === 'troll_acorazado' ? 1.3 : 1.5), 'debil'];
     if (tiene('perfora') && e.tipo === 'uruk_acorazado') return [n * 1.2, ''];
-    const r = Math.max(n * 0.12, n - d.armadura); return [r, r < n * 0.6 ? 'bloq' : ''];
+    const r = n * 5 / (5 + d.armadura); return [r, r < n * 0.6 ? 'bloq' : ''];
   }
   if (d.antorcha && (tiene('perfora') || tiene('rapido'))) return [n * 2, 'debil'];
   return [n, ''];
@@ -2048,7 +2221,7 @@ function actualizaArmas(dt) {
     }
     if (id === 'flecha') {
       J.cd_flecha = (evo ? 1.0 : 1.8 - (n >= 4) * 0.3) * va;
-      const cuantas = evo ? 5 : 1 + (n >= 3) + (n >= 5), lista = J.enemigos.filter((e) => !e.muerto && (e.fase === 'patio' || ((e.d.antorcha || e.d.ariete) && e.fase === 'hacia')) && Math.hypot(e.x - h.x, e.z - h.z) < 18);
+      const cuantas = evo ? 5 : 1 + (n >= 3) + (n >= 5), lista = J.enemigos.filter((e) => !e.muerto && (e.fase === 'patio' || ((e.d.antorcha || e.d.ariete || e.d.tronco) && e.fase === 'hacia')) && Math.hypot(e.x - h.x, e.z - h.z) < 18);
       for (let i = 0; i < cuantas && lista.length; i++) {const e = azar(lista); lanza({fuera: true, modelo: evo ? 'flecha_fuego_evo' : 'flecha_fuego', x: h.x, z: h.z, ang: Math.atan2(e.x - h.x, e.z - h.z), vel: 22, alcance: 17, dano: evo ? 8 : 3 + (n >= 4) * 2, splash: evo ? 3.2 : 1.6 + (n >= 2) * 0.6, escala: 0.9});}
     }
     if (id === 'martillo') {
@@ -2111,7 +2284,7 @@ function actualizaArmas(dt) {
   }
 }
 function masCercanos(x, z, r, n) {
-  return J.enemigos.filter((e) => !e.muerto && (e.fase === 'patio' || ((e.d.antorcha || e.d.ariete) && e.fase === 'hacia')) && Math.hypot(e.x - x, e.z - z) < r).sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z)).slice(0, n);
+  return J.enemigos.filter((e) => !e.muerto && (e.fase === 'patio' || ((e.d.antorcha || e.d.ariete || e.d.tronco) && e.fase === 'hacia')) && Math.hypot(e.x - x, e.z - z) < r).sort((a, b) => Math.hypot(a.x - x, a.z - z) - Math.hypot(b.x - x, b.z - z)).slice(0, n);
 }
 function ponOrbitales() {
   J.orbitales.forEach((o) => scene.remove(o.o)); J.orbitales = [];
@@ -2188,8 +2361,8 @@ function ofreceMejoras(cofre) {
     for (const o of op) {if (!vale(o)) continue; r -= o.peso; if (r <= 0) {elegidas.push(o); break;}}
     if (elegidas.length === op.length) break;
   }
-  $('mejT').textContent = cofre ? '¡Un cofre de los Rohirrim!' : '¡Subes de nivel!'; if (cofre) suena('cofre');
-  $('mejP').textContent = cofre ? 'Elige tu premio (+15 oro)' : 'Elige una mejora';
+  $('mejT').textContent = cofre === 'botin' ? '¡Botín de la oleada!' : cofre ? '¡Un cofre de los Rohirrim!' : '¡Subes de nivel!'; if (cofre) suena('cofre');
+  $('mejP').textContent = cofre === 'botin' ? 'Armas y mejoras: elige una' : cofre ? 'Elige tu premio (+15 oro)' : 'Elige una mejora';
   const c = $('cartas'); c.innerHTML = '';
   elegidas.forEach((m) => {
     const raro = m.evo ? 'evolucion' : m.raro || (m.nueva ? 'rara' : m.nv >= 5 ? 'legendaria' : 'comun');
@@ -2207,7 +2380,7 @@ function ofreceMejoras(cofre) {
 }
 function siguientePendiente() {
   if (J.fin || J.pausa) return;
-  if (J.subidas > 0) {J.subidas--; ofreceMejoras(false); return;}
+  if (J.subidas > 0) {J.subidas--; if (arbolDisponible()) ofreceArbol(); else ofreceMejoras(false); return;}
   siguienteCofre();
 }
 function pintaArmas() {
@@ -2326,8 +2499,8 @@ function actualizaDefensas(dt) {
     }
     if (d.tipo === 'escorpion' || d.tipo === 'arquero' || d.tipo === 'catapulta') {
       const rango = d.rango || (d.tipo === 'escorpion' ? 16 : d.tipo === 'arquero' ? 12 : 20);
-      const obj = J.enemigos.filter((e) => !e.muerto && (e.fase === 'patio' || (d.tipo !== 'catapulta' && (e.fase === 'sube' || e.fase === 'adarve')) || (d.tipo === 'escorpion' && (e.d.antorcha || e.d.ariete))) && Math.hypot(e.x - d.x, e.z - d.z) < rango && Math.hypot(e.x - d.x, e.z - d.z) > (d.tipo === 'catapulta' ? 4 : 0))
-        .sort((a, b) => Math.hypot(a.x - d.x, a.z - d.z) - Math.hypot(b.x - d.x, b.z - d.z))[0];
+      const obj = J.enemigos.filter((e) => !e.muerto && (e.fase === 'patio' || (d.tipo !== 'catapulta' && (e.fase === 'sube' || e.fase === 'adarve')) || (d.tipo === 'escorpion' && (e.d.antorcha || e.d.ariete || e.d.tronco))) && Math.hypot(e.x - d.x, e.z - d.z) < rango && Math.hypot(e.x - d.x, e.z - d.z) > (d.tipo === 'catapulta' ? 4 : 0))
+        .sort((a, b) => (Math.hypot(a.x - d.x, a.z - d.z) - (a.d.marca ? 30 : 0)) - (Math.hypot(b.x - d.x, b.z - d.z) - (b.d.marca ? 30 : 0)))[0];
       if (obj) {const ang = Math.atan2(obj.x - d.x, obj.z - d.z); d.rot += Math.atan2(Math.sin(ang - d.rot), Math.cos(ang - d.rot)) * Math.min(1, dt * 6); d.o.rotation.y = d.rot;}
       if (obj && d.cd <= 0) {
         const ang = Math.atan2(obj.x - d.x, obj.z - d.z);
@@ -2503,7 +2676,7 @@ function bucle() {
   if (J && !J.pausa && Math.random() < dt * 12) particula('gota', J.h.x + rnd(-9, 9), 0.25, J.h.z + rnd(-13, 6), {vel: 0, sube: 0, vida: 0.3, escala: 0.55, crece: 1.4, disp: 0, giro: 0});
   camara(dt);
   actualizaPool(dt, camMira.x, camMira.z); orientaMatas(); pintaGemas();
-  if (J) etiquetas();
+  if (J) {etiquetas(); marcasAmenaza();}
   GR.render(dt, !!(J && !J.pausa && !J.fin));
 }
 function paso(dt) {
@@ -2650,7 +2823,7 @@ window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
 window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
-window._desague = () => antorchero(true); window._derriba = (i) => danaEscala(J.escalas[i], 999); window._cartel = (a, b, c) => cartelOla(a, b, c);
+window._desague = () => antorchero(true); window._tronco = () => tronco(); window._derriba = (i) => danaEscala(J.escalas[i], 999); window._cartel = (a, b, c) => cartelOla(a, b, c);
 window._monta = (n, x, z) => {const a = montar(n, true); a.raiz.position.set(x, 0.15, z); scene.add(a.raiz); const c = a.clips.quieto || Object.values(a.clips)[0]; if (c) c.play(); window._mezc = (window._mezc || []).concat(a.mixer); return a;};
 window._tramo = (k) => dañaTramo(J.tramos[k], 9999);
 window._mej = () => ofreceMejoras(false);
