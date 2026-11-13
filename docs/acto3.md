@@ -33,3 +33,19 @@ Adjuntar además `tools/fondos/v_colinas.png` y `v_bosque.png` como referencia d
 ### 4. Emblema de Trancos (medallón).
 ### 5. Fondos de minijuego: escenario del Poney (4 carriles), pantano con mosquitos, la hondonada de noche vista desde arriba.
 ### 6. Entreacto II → III (6 imágenes LOC-SCENE) y entreacto III → IV.
+
+## Entreacto II → III (al llegar a Bree, km 210) — pedido 13/11/2026
+Ficha LOC-SCENE v1 (prompts-videos.md) + referencias: a3_poney.png (estilo) y hojas de hobbits (arturo_quieto, edo_quieto, fer_andar).
+1. Llegada al Poney bajo la lluvia (hobbits de espaldas en la puerta).
+2. La sala común: humo, fuego, gente grande en silueta.
+3. La canción: mesa en medio, jarras volando, un anillo de oro brillando en el aire y el sitio vacío.
+4. El desconocido del rincón: silueta alta encapuchada, solo el brillo de la pipa.
+5. El asalto nocturno: habitación vacía, almohadas rajadas, ventana abierta y luna.
+6. Salida al alba gris (cartela): camino del Este, poni flaco cargado, hobbits de espaldas tras una silueta alta, la Cima lejana.
+Narración (resumen propio, ~45 s):
+1. Bree, de noche y bajo la lluvia. Al fin un techo, fuego y cerveza en la posada del Poney Pisador.
+2. Dentro, gente grande, enanos y forasteros; demasiados ojos para quien quiere pasar desapercibido.
+3. Una canción de más sobre una mesa, un resbalón… y Frodo desapareció delante de todos.
+4. En un rincón, un montaraz al que llamaban Trancos lo había visto todo. Y sabía quién era.
+5. Esa noche alguien entró en las habitaciones. Por suerte, nadie dormía en ellas.
+6. Al alba salieron a pie, con un poni flaco y un guía en el que aún no sabían si confiar. Fin del Acto II. Empieza el Acto III: hacia la Cima de los Vientos.
