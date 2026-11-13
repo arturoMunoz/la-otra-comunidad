@@ -615,6 +615,29 @@ function mancha(x, z, s) {
 function actualizaManchas(dt) {
   for (let i = manchas.length - 1; i >= 0; i--) {const m = manchas[i]; m.t += dt; if (m.t > 10) {const op = Math.max(0, 1 - (m.t - 10) / 3); m.o.traverse((k) => {if (k.isMesh) k.material.opacity = op;}); if (m.t > 13) {scene.remove(m.o); manchas.splice(i, 1);}}}
 }
+/* barras de vida de los enemigos: dos mallas instanciadas para todos (2 dibujos por fotograma, no cuesta rendimiento) */
+const BARRAS = (() => {
+  const N = 64, g = new THREE.PlaneGeometry(1, 1); g.translate(0.5, 0, 0);
+  const mk = (color, ord) => {const m = new THREE.InstancedMesh(g, new THREE.MeshBasicMaterial({color, depthTest: false, depthWrite: false, transparent: true, opacity: 0.92, toneMapped: false}), N); m.renderOrder = ord; m.frustumCulled = false; m.count = 0; scene.add(m); return m;};
+  return {N, fondo: mk(0x140c08, 20), vida: mk(0xffffff, 21)};
+})();
+const _bq = new THREE.Quaternion(), _bs = new THREE.Vector3(), _bp = new THREE.Vector3(), _bm = new THREE.Matrix4(), _bd = new THREE.Vector3(), _bc = new THREE.Color();
+function pintaBarras() {
+  const {fondo, vida, N} = BARRAS; let n = 0;
+  _bq.copy(camera.quaternion); _bd.set(1, 0, 0).applyQuaternion(_bq);
+  if (J && !document.body.classList.contains('cine')) for (const e of J.enemigos) {
+    if (n >= N) break;
+    if (e.muerto || e.d.jefe || e.vida <= 0 || e.fase === 'hacia' && e.z < -40) continue;
+    const pc = e.vida / e.vidaMax; if (pc >= 0.999 && !e.d.pesado && !e.elite) continue;
+    const w = e.d.pesado ? 1.9 : e.elite ? 1.35 : 1.1, alto = (e.d.pesado ? 4.5 : 2.55) * (e.elite ? 1.25 : 1);
+    _bp.set(e.x, e.y + alto, e.z).addScaledVector(_bd, -w / 2 - 0.05);
+    _bs.set(w + 0.1, 0.27, 1); fondo.setMatrixAt(n, _bm.compose(_bp, _bq, _bs));
+    _bp.addScaledVector(_bd, 0.05); _bs.set(Math.max(0.001, w * pc), 0.16, 1); vida.setMatrixAt(n, _bm.compose(_bp, _bq, _bs));
+    vida.setColorAt(n, _bc.setHex(e.elite ? 0xffc23a : pc > 0.5 ? 0xe8432c : 0xff7a1a));
+    n++;
+  }
+  fondo.count = vida.count = n; fondo.instanceMatrix.needsUpdate = vida.instanceMatrix.needsUpdate = true; if (vida.instanceColor) vida.instanceColor.needsUpdate = true;
+}
 /* números de daño */
 const nums = [];
 const _p = new THREE.Vector3();
@@ -2365,6 +2388,7 @@ function paso(dt) {
     e.aFr = e.aFr || 0; e.aDt = (e.aDt || 0) + dt; if (!lejos || ++e.aFr % 3 === 0 || e.muerto) {e.a.mixer.update(e.aDt); e.aDt = 0;}
     apagaFlash(e.a, dt);
   }
+  pintaBarras();
   const h = J.h; if (window._aro) {window._aro.position.set(h.x, (h.y ?? 0.15) + 0.03, h.z); window._aro.material.opacity = 0.7 + Math.sin(J.t * 4) * 0.15; window._aro.rotation.y += 0.004;} ritmo(h.a, h, h.vel, dt); h.a.raiz.position.set(h.x, h.y ?? 0.15, h.z); {let d = h.rot - (h.rotV ?? h.rot); d = Math.atan2(Math.sin(d), Math.cos(d)); h.rotV = (h.rotV ?? h.rot) + d * Math.min(1, dt * 18);} h.a.raiz.rotation.y = h.rotV; h.a.mixer.update(dt); apagaFlash(h.a, dt);
   actualizaPuerta();
   pintaDebug();
