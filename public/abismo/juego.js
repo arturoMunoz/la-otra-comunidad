@@ -216,7 +216,7 @@ function ofreceArbol() {
   const pintaDet = () => {
     if (!sel) {detalle.innerHTML = '<p>Toca un nodo que brille.</p>'; return;}
     const [r, i, k] = sel, n = r.def.n[k], disp = k === r.nv && !ramaLibre(rs, i);
-    detalle.innerHTML = '<div class="arbDT"><img src="' + (icoNodo(h.tipo, r.def.id, k) || ico(r.def.icono)) + '" alt=""><div><small>' + r.def.t + ' · ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '</span></div></div>';
+    detalle.innerHTML = '<div class="arbDT"><img src="' + (icoNodo(h.tipo, r.def.id, k) || ico(r.def.icono)) + '" alt=""><div><small>' + r.def.t + ' · nivel ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '.</span><em>' + r.def.contra + '</em></div></div>';
     if (disp) {const b = document.createElement('button'); b.className = 'carta arbOk'; b.innerHTML = '<span>Elegir</span>'; b.onclick = () => elegir(r, i); detalle.appendChild(b);}
     else {const p = document.createElement('p'); p.className = 'arbNo'; p.textContent = k < r.nv ? 'Ya lo tienes.' : ramaLibre(rs, i) ? '🔒 ' + ramaLibre(rs, i) + '.' : 'Antes tienes que coger el nivel anterior de esta rama.'; detalle.appendChild(p);}
   };
@@ -234,7 +234,7 @@ function ofreceArbol() {
     }
     col.appendChild(nodos); arbol.appendChild(col);
   });
-  c.appendChild(arbol); c.appendChild(detalle); pintaDet();
+  c.appendChild(detalle); c.appendChild(arbol); pintaDet();   /* la explicación arriba: en el móvil abajo quedaba fuera de pantalla */
   $('mejora').classList.remove('hidden');
 }
 function ajustaCartas(c) {

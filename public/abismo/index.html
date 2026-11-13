@@ -258,7 +258,7 @@ body.cine #banOla,body.cine #cuenta{display:none}
 .arbol{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%;max-width:440px}
 .arbCol{display:flex;flex-direction:column;align-items:center;gap:6px;background:#0d0906cc;border:1px solid #c79b4e66;border-radius:12px;padding:6px 4px 8px}
 .arbCol.bloq{filter:grayscale(.85) brightness(.7)}
-.arbCab{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px;min-height:92px}
+.arbCab{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px;min-height:70px}.arbCab small{display:none}
 .arbCab img{width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 2px #c79b4e}
 .arbCab b{font:700 12.5px/1.1 Georgia,serif;color:#ffd979}.arbCab small{font:10.5px/1.15 Georgia,serif;color:#d8c39a}
 .arbNodos{position:relative;display:flex;flex-direction:column;align-items:center;gap:9px}
@@ -273,11 +273,11 @@ body.cine #banOla,body.cine #cuenta{display:none}
 .nodo.puedo span{opacity:1;color:#fff}
 .nodo.sel i{outline:3px solid #fff;outline-offset:2px}
 @keyframes nodoLate{50%{box-shadow:0 0 16px #9fff7a,0 2px 0 #000;transform:scale(1.08)}}
-.arbDet{width:100%;max-width:440px;margin-top:8px;background:#0d0906e6;border:1px solid #c79b4e88;border-radius:12px;padding:8px 10px;color:#f3e6c4;font-family:Georgia,serif;display:flex;align-items:center;gap:10px;min-height:76px}
+.arbDet{width:100%;max-width:440px;margin:0 0 8px;background:#0d0906e6;border:1px solid #c79b4e88;border-radius:12px;padding:8px 10px;color:#f3e6c4;font-family:Georgia,serif;display:flex;align-items:center;gap:10px;min-height:76px}
 .arbDet p{margin:0;font-size:13px}.arbDT{flex:1;display:flex;gap:8px;align-items:center;text-align:left}
-.arbDT img{width:44px;height:44px;border-radius:50%}.arbDT small{display:block;color:#d8c39a;font-size:11px}.arbDT b{display:block;font-size:15px;color:#ffd979}.arbDT span{font-size:12.5px;line-height:1.25}
+.arbDT img{width:52px;height:52px;border-radius:50%;flex:none}.arbDT em{display:block;font-size:11px;color:#bfe6ff;margin-top:2px}.arbDT small{display:block;color:#d8c39a;font-size:11px}.arbDT b{display:block;font-size:15px;color:#ffd979}.arbDT span{font-size:12.5px;line-height:1.25}
 .cartas .carta.arbOk{width:auto!important;min-width:92px;white-space:nowrap;text-align:center;container-type:normal!important;aspect-ratio:auto!important;flex:none;background:linear-gradient(#5fbf3f,#2f7a22)!important;border:2px solid #d8ffb8;border-radius:12px;padding:10px 16px;color:#fff;font:900 15px Georgia,serif;box-shadow:0 4px 0 #1a4a12;filter:none}
-.arbNo{font-size:12px!important;color:#d8c39a;max-width:120px}
+.arbNo{font-size:12px!important;color:#ffb38a;flex-basis:100%;margin:2px 0 0!important;text-align:center}.arbDet{flex-wrap:wrap}.arbDT{min-width:0}
 /* mercado de Edoras */
 #mercadoCapa{justify-content:flex-start;padding-top:calc(env(safe-area-inset-top) + 14px);gap:8px;overflow-y:auto}
 .mercCab{width:min(400px,94%);padding-left:56px;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;font-family:Georgia,serif}
