@@ -121,14 +121,14 @@ const RAMAS = {
       ['Perforar armaduras', 'Tu lanza atraviesa las corazas de los uruk acorazados', (h) => tag(h, 'perfora')],
       ['Golpe certero', '+50 % de daño', (h) => {h.dano *= 1.5;}],
       ['Golpe aturdidor', 'Uno de cada 4 golpes aturde 1 s', (h) => {h.tal.aturde = true;}],
-      ['Lanza de Eorl', 'Daño ×1,6 y aplastas trolls y arietes', (h) => {h.dano *= 1.6; tag(h, 'pesado fuego');}]]},
+      ['Lanza de Eorl', 'Estocada en línea: atraviesa a todos los que tienes delante, el doble de lejos. Aplasta trolls y arietes', (h) => {h.dano *= 1.35; tag(h, 'pesado fuego'); (h.esp = h.esp || {}).linea = true;}]]},
     RAMA_AGUANTE('Escudo de Edoras', 'escudo'),
     {id: 'jinete', t: 'Jinete de la Marca', icono: 'botas', contra: 'Contra hordas y huargos', n: [
       ['Caballos de Rohan', '+12 % de velocidad', (h) => {h.vel *= 1.12;}],
       ['Barrido', 'Golpeas en un ángulo mucho más ancho', (h) => {h.arco = Math.min(Math.PI * 2, h.arco * 1.6);}],
       ['Golpes rápidos', 'Atacas un 20 % más rápido y los huargos ya no te esquivan', (h) => {h.cadencia *= 0.8; tag(h, 'rapido');}],
       ['Lanza larga', '+25 % de alcance', (h) => {h.alcance *= 1.25;}],
-      ['Carga de los Rohirrim', 'Golpe giratorio que da a todos los que te rodean', (h) => {h.arco = Math.PI * 2; tag(h, 'area');}]]},
+      ['Carga de los Rohirrim', 'Cada 6 s embistes solo contra el grupo más cercano y arrollas a todos a tu paso', (h) => {tag(h, 'area'); (h.esp = h.esp || {}).carga = true;}]]},
   ],
   enano: [
     {id: 'hacha', t: 'Hacha de Erebor', icono: 'hacha', contra: 'Contra trolls, arietes y acorazados', n: [
@@ -136,14 +136,14 @@ const RAMAS = {
       ['Golpe aturdidor', 'Uno de cada 4 golpes aturde 1 s', (h) => {h.tal.aturde = true;}],
       ['Rompecorazas', '+40 % de daño y atraviesas las corazas', (h) => {h.dano *= 1.4; tag(h, 'perfora');}],
       ['Fuego de la forja', 'Tus golpes queman: el ariete arde', (h) => tag(h, 'fuego')],
-      ['Furia de Durin', 'Daño ×1,6 y cada golpe alcanza a todos los de delante', (h) => {h.dano *= 1.6; h.arco = Math.min(Math.PI * 2, h.arco * 1.5); tag(h, 'area');}]]},
+      ['Furia de Durin', 'Daño ×1,4 y cada cuarto golpe hace temblar el suelo y derriba a todos alrededor', (h) => {h.dano *= 1.4; tag(h, 'area'); (h.esp = h.esp || {}).onda = true;}]]},
     RAMA_AGUANTE('Piedra de la Montaña', 'escudo'),
     {id: 'paso', t: 'Paso enano', icono: 'botas', contra: 'Contra hordas y huargos', n: [
       ['Botas herradas', '+15 % de velocidad', (h) => {h.vel *= 1.15;}],
       ['Golpes rápidos', 'Atacas un 20 % más rápido', (h) => {h.cadencia *= 0.8;}],
       ['Doble tajo', 'Más ángulo y los huargos ya no te esquivan', (h) => {h.arco = Math.min(Math.PI * 2, h.arco * 1.5); tag(h, 'rapido');}],
       ['Mango largo', '+25 % de alcance', (h) => {h.alcance *= 1.25;}],
-      ['Torbellino de Khazad', 'Giras con el hacha y das a todos', (h) => {h.arco = Math.PI * 2; h.cadencia *= 0.85; tag(h, 'area');}]]},
+      ['Torbellino de Khazad', 'Giras con el hacha y das a todos; cada 6 s cargas contra el grupo más cercano', (h) => {h.arco = Math.PI * 2; h.cadencia *= 0.85; tag(h, 'area'); (h.esp = h.esp || {}).carga = true;}]]},
   ],
   elfo: [
     {id: 'flecha', t: 'Flecha de Lórien', icono: 'arco', contra: 'Contra acorazados, arietes y antorchas', n: [
@@ -157,7 +157,7 @@ const RAMAS = {
       ['Abanico', 'Dos flechas más en abanico', (h) => {h.multi += 2;}],
       ['Flechas ligeras', 'Los huargos ya no te esquivan', (h) => tag(h, 'rapido')],
       ['Ráfaga', 'Disparas un 20 % más rápido', (h) => {h.cadencia *= 0.8;}],
-      ['Cielo de flechas', 'Dos flechas más y golpean en área', (h) => {h.multi += 2; tag(h, 'area');}]]},
+      ['Cielo de flechas', 'Cada 5 s cae una lluvia de flechas sobre el grupo más grande', (h) => {h.multi += 1; tag(h, 'area'); (h.esp = h.esp || {}).lluvia = true;}]]},
     {id: 'gracia', t: 'Gracia élfica', icono: 'i_esquivar', contra: 'Para sobrevivir y moverte', n: [
       ['Pies ligeros', '+12 % de velocidad', (h) => {h.vel *= 1.12;}],
       ['Capa de Lórien', '+25 % de vida máxima', (h) => {h.vidaMax *= 1.25; h.vida = Math.min(h.vidaMax, h.vida * 1.25);}],
@@ -177,7 +177,7 @@ const RAMAS = {
       ['Tres a la vez', 'Dos piedras más en abanico', (h) => {h.multi += 2;}],
       ['Rebote', 'Cada piedra atraviesa a uno más', (h) => {h.atraviesa++;}],
       ['Bolsillos llenos', 'Lanzas un 20 % más rápido', (h) => {h.cadencia *= 0.8;}],
-      ['Granizada', 'Dos piedras más y golpean en área', (h) => {h.multi += 2; tag(h, 'area');}]]},
+      ['Granizada', 'Cada 5 s cae una granizada de piedras sobre el grupo más grande', (h) => {h.multi += 1; tag(h, 'area'); (h.esp = h.esp || {}).lluvia = true;}]]},
     {id: 'pies', t: 'Pies de hobbit', icono: 'botas', contra: 'Para sobrevivir y coger botín', n: [
       ['Pies ligeros', '+15 % de velocidad', (h) => {h.vel *= 1.15;}],
       ['Desapercibido', '+25 % de vida máxima', (h) => {h.vidaMax *= 1.25; h.vida = Math.min(h.vidaMax, h.vida * 1.25);}],
@@ -1604,10 +1604,12 @@ function actualizaEscalas(dt) {
 }
 
 /* ---------- comportamiento de los enemigos ---------- */
+/* vibración corta en Android (en iPhone el navegador no deja) */
+const vibra = (ms) => {try {if (navigator.vibrate && !(J && J.pausa)) navigator.vibrate(ms);} catch (e) {}};
 function dañaHeroe(n) {
   const h = J.h; if (h.inv > 0 || J.fin || h.oculto > 0) return;
   suena('daño');
-  const real = n * (1 - h.armadura); h.vida -= real; bota('bVida');
+  const real = n * (1 - h.armadura); h.vida -= real; bota('bVida'); vibra(real > 12 ? 40 : 18);
   if (h.tal.ira && h.racha >= 8) numero(h.x, 2.6, h.z, 'Ira perdida', 'malo'); h.racha = 0;
   if (h.tal.aliento && h.vida > 0 && h.vida < h.vidaMax * 0.3 && h.alientoOla !== J.ola) {h.alientoOla = J.ola; h.inv = 3; J.animo = Math.max(J.animo || 0, 5); aviso('¡Último aliento!', 1400); flip('fx_onda', h.x, (h.y ?? 0.15) + 0.3, h.z, {tam: 6, dur: 0.5}); J.lenta = 0.4;} h.inv = 0.35; J.temblor = Math.max(J.temblor, 0.25); golpeVisual(h.a); GR.golpe();
   efecto('chispa', h.x, 1.2, h.z); numero(h.x, 2.2, h.z, '-' + Math.round(real), 'malo');
@@ -1978,7 +1980,46 @@ function buscaObjetivo(h) {
   return null;
 }
 /* ---------- habilidad propia de cada clase ---------- */
+/* mecánicas de los nodos V: embestida automática y lluvia sobre el grupo más grande */
+function especiales(h, dt) {
+  const es = h.esp; if (!es || J.cine || J.pausa) return;
+  if (h.dash) {
+    const d = h.dash; d.t -= dt; const pa = Math.min(1, dt * 14);
+    h.x = Math.max(LX0(), Math.min(LX1(), h.x + d.vx * dt)); h.z = Math.max(LZ0(), Math.min(LZ1(), h.z + d.vz * dt));
+    for (const e of cercanos(h.x, h.z, 2.4)) if (!e.muerto && e.fase === 'patio' && !d.tocados.has(e) && Math.hypot(e.x - h.x, e.z - h.z) < 1.6 + e.radio) {d.tocados.add(e); FUENTE = h.icono; hiere(e, danoH(h) * 2, e.x - h.x, e.z - h.z, 3.2); J.parada = Math.max(J.parada, 0.03);}
+    if (Math.random() < pa) efecto('polvo', h.x, 0.2, h.z, {escala: 0.8, vida: 0.35});
+    if (d.t <= 0) {h.dash = null; h.inv = Math.max(h.inv, 0.2);}
+  }
+  if (es.carga) {
+    h.cargaT = (h.cargaT ?? 4) - dt;
+    if (h.cargaT <= 0 && !h.dash && !J.enMuro) {
+      const ob = cercanos(h.x, h.z, 9).filter((e) => !e.muerto && e.fase === 'patio').sort((a, b) => Math.hypot(a.x - h.x, a.z - h.z) - Math.hypot(b.x - h.x, b.z - h.z))[0];
+      if (ob) {
+        const dx = ob.x - h.x, dz = ob.z - h.z, d = Math.hypot(dx, dz) || 1, v = 17;
+        h.dash = {vx: dx / d * v, vz: dz / d * v, t: Math.min(0.5, (d + 2.5) / v), tocados: new Set()}; h.rot = Math.atan2(dx, dz); h.inv = Math.max(h.inv, 0.5);
+        h.cargaT = 6; suena('cuerno'); J.temblor = Math.max(J.temblor, 0.25); pon(h.a, h.a.clips.correr ? 'correr' : 'atacar', 0.05, true);
+      } else h.cargaT = 0.5;
+    }
+  }
+  if (es.lluvia) {
+    h.lluviaT = (h.lluviaT ?? 3) - dt;
+    if (h.lluviaT <= 0) {
+      h.lluviaT = 5;
+      let mejor = null, n = 0;
+      for (const e of J.enemigos) {if (e.muerto || e.fase !== 'patio' || Math.hypot(e.x - h.x, e.z - h.z) > 16) continue; const c = cercanos(e.x, e.z, 3.2).filter((o) => !o.muerto && o.fase === 'patio').length; if (c > n) {n = c; mejor = e;}}
+      if (mejor) {
+        const x = mejor.x, z = mejor.z; flip('fx_onda', x, 0.25, z, {tam: 7, dur: 0.6});
+        setTimeout(() => {
+          if (!J || J.fin) return;
+          suena(h.tipo === 'hobbit' ? 'piedra' : 'clavada'); efecto('polvo', x, 0.2, z, {escala: 2.2, vida: 0.5, crece: 1.6}); J.temblor = Math.max(J.temblor, 0.15);
+          FUENTE = h.icono; for (const e of cercanos(x, z, 4)) if (!e.muerto && e.fase === 'patio' && Math.hypot(e.x - x, e.z - z) < 3.3 + e.radio) hiere(e, danoH(h) * 2.5, e.x - x, e.z - z, 1.2);
+        }, 550);
+      }
+    }
+  }
+}
 function habilidades(h, dt, mx, mz) {
+  especiales(h, dt);
   const hb = HABILIDAD[h.tipo]; h.cdHab = Math.max(0, (h.cdHab || 0) - dt);
   $('bHab').style.setProperty('--cd', (h.cdHab / hb.cd * 100).toFixed(0) + '%');
   if (J.pideHab) {
@@ -2046,7 +2087,7 @@ function empiezaAtaque(h) {
   if (h.cargado) efecto('chispa', h.x, 1.4, h.z, {escala: 2, vida: 0.35});
 }
 function golpeCargado(h, pw) {
-  suena('boom');
+  suena('boom'); vibra(30);
   const r = (h.cuerpo ? h.alcance : 3.2) * (pw >= 4 ? 1.9 : 1.55), dano = danoH(h) * (pw >= 4 ? 3 : 2.4);
   flip('fx_onda', h.x, 0.3, h.z, {tam: r * 2.3, dur: 0.4});
   if (pw >= 4) efecto('explosion', h.x, 0.2, h.z, {escala: r / 2.2, vida: 0.5, crece: 1.3});
@@ -2087,6 +2128,17 @@ function impacta(h) {
     if (!giro && Math.abs(da) > h.arco / 2) continue;
     FUENTE = h.icono; hiere(e, danoH(h) * (h.fin ? 1.6 : 1) * (h.emboscada ? 3 : 1), dx, dz, h.fin ? 2.4 : 1.3); tocados++; if (h.tal.aturde && h.alterna % 4 === 0 && !e.d.jefe) e.aturdido = 1;
   }
+  if (h.esp && h.esp.linea) {
+    /* Lanza de Eorl: todo lo que esté en una franja delante, hasta el doble de alcance */
+    const sx = Math.sin(ang), sz = Math.cos(ang), L = h.alcance * 2.1;
+    flip('fx_tajo_oro', h.x + sx * L * 0.5, 0.9, h.z + sz * L * 0.5, {tam: L * 1.4, rot: ang, dur: 0.22});
+    for (const e of cercanos(h.x, h.z, L + 1.5)) {
+      if (e.muerto || e.fase !== 'patio' || Math.abs((e.y ?? 0.15) - (h.y ?? 0.15)) > 2.2) continue;
+      const dx = e.x - h.x, dz = e.z - h.z, fw = dx * sx + dz * sz, lat = Math.abs(dx * sz - dz * sx);
+      if (fw > h.alcance && fw < L + e.radio && lat < 0.9 + e.radio) {FUENTE = h.icono; hiere(e, danoH(h), dx, dz, 1.8); tocados++;}
+    }
+  }
+  if (h.esp && h.esp.onda && tocados && (h.ondaN = (h.ondaN || 0) + 1) % 4 === 0) golpeCargado(h, 3);
   if (tocados) {suena('golpe', h.fin ? 1.3 : 1); J.parada = Math.max(J.parada, h.fin ? 0.07 : 0.04); J.temblor = Math.max(J.temblor, h.fin ? 0.22 : 0.1);}
   if (tocados >= 3) J.parada = Math.max(J.parada, 0.06);
   h.fin = false; if (tocados && h.emboscada) finOculto();
