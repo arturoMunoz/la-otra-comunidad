@@ -299,6 +299,14 @@ body.cine #banOla,body.cine #cuenta{display:none}
 .mItem .equipar{background:linear-gradient(#5fbf3f,#2f7a22);border-color:#d8ffb8;box-shadow:0 3px 0 #1a4a12}
 .mItem .quitar{background:#3a2a1a;border-color:#7a6040;color:#d8c39a}
 #mercVolver{position:fixed!important;left:10px!important;right:auto!important;top:calc(env(safe-area-inset-top) + 8px)!important;bottom:auto!important;transform:none!important;width:46px!important;height:46px!important;margin:0!important}
+.nodo i{position:relative;padding:0}
+.nodo i img{width:100%;height:100%;border-radius:50%;display:block}
+.nodo i u{position:absolute;right:-5px;bottom:-4px;text-decoration:none;font:900 9px Georgia,serif;background:#241a10;color:#e9d7ad;border:1px solid #7a6040;border-radius:8px;padding:0 4px;line-height:14px}
+.nodo.luego i img{filter:grayscale(1) brightness(.55)}
+.nodo.tengo i{padding:0}.nodo.tengo i u{background:#ffd24a;color:#3a1e00;border-color:#fff2b0}
+.nodo.puedo i u{background:#2f7a22;color:#fff;border-color:#d8ffb8}
+.arbCol.bloq .nodo i img{filter:grayscale(1) brightness(.5)}
+.nodo i{width:40px!important;height:40px!important}.nodo.alto i{width:44px!important;height:44px!important}
 /* marcas de amenaza (focus) */
 .mk{position:fixed;transform:translate(-50%,-100%);z-index:8;pointer-events:none;display:flex;flex-direction:column;align-items:center;animation:mkBota .7s ease-in-out infinite}
 .mk b{font:900 12px Georgia,serif;color:#fff;background:linear-gradient(#d8402e,#9a1d12);border:2px solid #ffd27a;border-radius:12px;padding:2px 8px;white-space:nowrap;box-shadow:0 2px 6px #000a}

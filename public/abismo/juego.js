@@ -186,6 +186,14 @@ const RAMAS = {
       ['Suerte de Bolsón', 'Regeneras 2 de vida por segundo y último aliento', (h) => {h.regen = (h.regen || 0) + 2; h.tal.aliento = true;}]]},
   ],
 };
+/* icono de cada nodo (iconos/nd_XX.webp, hoja de ChatGPT) */
+const ND = {
+  rohan: {lanza: [1, 2, 3, 4, 5], aguante: [6, 7, 8, 9, 10], jinete: [11, 12, 13, 14, 15]},
+  enano: {hacha: [16, 4, 2, 18, 17], aguante: [6, 7, 8, 9, 10], paso: [11, 13, 12, 14, 12]},
+  elfo: {flecha: [1, 2, 18, 3, 5], lluvia: [13, 19, 11, 13, 20], gracia: [11, 6, 12, 14, 8]},
+  hobbit: {piedra: [3, 17, 1, 4, 5], punado: [13, 19, 2, 13, 20], pies: [11, 6, 12, 9, 8]},
+};
+const icoNodo = (tipo, rama, k) => {const n = ((ND[tipo] || {})[rama] || [])[k]; return n ? 'iconos/nd_' + String(n).padStart(2, '0') + '.webp' : null;};
 /* regla de los dos caminos: solo una rama pasa del 2, y como mucho dos ramas tienen puntos */
 function ramaLibre(rs, i) {
   const nv = rs.map((r) => r.nv), n = nv[i];
@@ -208,7 +216,7 @@ function ofreceArbol() {
   const pintaDet = () => {
     if (!sel) {detalle.innerHTML = '<p>Toca un nodo que brille.</p>'; return;}
     const [r, i, k] = sel, n = r.def.n[k], disp = k === r.nv && !ramaLibre(rs, i);
-    detalle.innerHTML = '<div class="arbDT"><img src="' + ico(r.def.icono) + '" alt=""><div><small>' + r.def.t + ' · ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '</span></div></div>';
+    detalle.innerHTML = '<div class="arbDT"><img src="' + (icoNodo(h.tipo, r.def.id, k) || ico(r.def.icono)) + '" alt=""><div><small>' + r.def.t + ' · ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '</span></div></div>';
     if (disp) {const b = document.createElement('button'); b.className = 'carta arbOk'; b.innerHTML = '<span>Elegir</span>'; b.onclick = () => elegir(r, i); detalle.appendChild(b);}
     else {const p = document.createElement('p'); p.className = 'arbNo'; p.textContent = k < r.nv ? 'Ya lo tienes.' : ramaLibre(rs, i) ? '🔒 ' + ramaLibre(rs, i) + '.' : 'Antes tienes que coger el nivel anterior de esta rama.'; detalle.appendChild(p);}
   };
@@ -218,7 +226,8 @@ function ofreceArbol() {
     const nodos = document.createElement('div'); nodos.className = 'arbNodos';
     for (let k = 4; k >= 0; k--) {
       const est = k < r.nv ? 'tengo' : k === r.nv && !bloq ? 'puedo' : 'luego', b = document.createElement('button');
-      b.className = 'nodo ' + est + (k >= 2 ? ' alto' : ''); b.innerHTML = '<i>' + ['I', 'II', 'III', 'IV', 'V'][k] + '</i><span>' + r.def.n[k][0] + '</span>';
+      b.className = 'nodo ' + est + (k >= 2 ? ' alto' : ''); const im = icoNodo(h.tipo, r.def.id, k);
+      b.innerHTML = '<i>' + (im ? '<img src="' + im + '" alt=""><u>' + ['I', 'II', 'III', 'IV', 'V'][k] + '</u>' : ['I', 'II', 'III', 'IV', 'V'][k]) + '</i><span>' + r.def.n[k][0] + '</span>';
       b.onclick = () => {sel = [r, i, k]; arbol.querySelectorAll('.nodo').forEach((x) => x.classList.remove('sel')); b.classList.add('sel'); pintaDet(); suena('xp');};
       nodos.appendChild(b);
       if (est === 'puedo' && !sel) {sel = [r, i, k]; b.classList.add('sel');}
