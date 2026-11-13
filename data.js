@@ -62,7 +62,7 @@ const T = [
    who:"Sam", icon:"hoja", say:"«Pobre bicho. Tú y yo, Bill, nos vamos a llevar bien.»", mini:"—"},
   {km:225, name:"Bosque de Chet", title:"Fuera del camino", cap:"Cap. 11",
    text:"En cuanto Bree queda atrás, Trancos los saca del Camino del Este: por ahí los buscarán. Se meten en el Bosque de Chet por senderos que nadie más ve. Avanzan despacio, sin hablar mucho, entre robles y abedules. Merry y Pippin echan de menos la cerveza del Poney; Frodo mira atrás cada poco. Trancos camina siempre delante, atento a cada ruido.",
-   who:"Merry", icon:"hoja", say:"«Si hubiera sabido que el siguiente bar estaba tan lejos, me habría tomado otra.»", mini:"—"},
+   who:"Trancos", icon:"cayado", say:"«Por el camino nos buscarán. Por aquí, no. Pisad donde yo piso.»", mini:"—"},
   {km:250, name:"Pantanos de Moscagua", title:"Barro y mosquitos", cap:"Cap. 11",
    text:"El bosque se acaba en una tierra de charcas, juncos y barro: los Pantanos de Moscagua. Durante días no hay un sitio seco donde sentarse. Por el día les comen los mosquitos; por la noche no deja de sonar un bicho que chirría entre las cañas y no hay quien duerma. Avanzan a trompicones, con los pies empapados y el humor por los suelos.",
    who:"Pippin", icon:"hoja", say:"«¿Y de qué viven estos mosquitos cuando no pasa ningún hobbit?»", mini:"Minijuego: Los mosquitos de Moscagua"},
@@ -71,7 +71,7 @@ const T = [
    who:"Sam", icon:"hoja", say:"«Eso no son relámpagos, señor Frodo. Eso es alguien.»", mini:"—"},
   {km:340, name:"La hondonada", title:"Al pie de la cima", cap:"Cap. 11",
    text:"Llegan al pie de la Cima de los Vientos y acampan en una hondonada resguardada. Trancos sube a mirar y vuelve con malas noticias: arriba hay una piedra recién marcada con una runa que podría ser de Gandalf, y abajo, en el camino, se mueven sombras. Encienden un fuego pequeño. Trancos les cuenta viejas historias para que no piensen en el frío… ni en lo que se acerca.",
-   who:"Merry", icon:"farol", say:"«Que nadie se aleje del fuego. Ni para lo que estás pensando, Pippin.»", mini:"—"},
+   who:"Trancos", icon:"cayado", say:"«Avivad el fuego y no os separéis de él. Ellos temen la llama.»", mini:"—"},
   {km:365, name:"Cima de los Vientos", title:"Cinco sombras", cap:"Cap. 11",
    text:"Las ruinas de la vieja atalaya de Amon Sûl coronan la colina. Ya de noche, cinco sombras suben despacio por la ladera hacia la hondonada. El miedo es tan grande que Frodo no puede resistirse y se pone el Anillo. Entonces los ve como son: reyes pálidos y terribles. Uno se lanza sobre él y le hiere en el hombro con un puñal frío. Frodo grita un nombre élfico y Trancos salta con dos teas encendidas. Las sombras huyen, pero la herida no se cura. Hay que llegar a Rivendel, y deprisa.",
    who:"Sam", icon:"hoja", say:"«¡Señor Frodo! ¡Aguante, que esto lo arregla Trancos!»", mini:"Fin del Acto III"}

@@ -228,7 +228,7 @@ var FACE = {porru:0, adrian:1, carlos:2, fer:3, edo:4, rodri:5, arturo:6, patri:
 var FACEN = M.facesN||7;
 __DATA__
 /* emblema de cada personaje del libro (hoja de ChatGPT, 04/11/2026); si falta, el icono antiguo */
-function embClave(who){ who=String(who||'').toLowerCase(); var L=[['gandalf','gandalf'],['vecino','vecino'],['gildor','gildor'],['pippin','pippin'],['maggot','maggot'],['merry','merry'],['tom','tom'],['mantecona','mantecona'],['sam','sam']];
+function embClave(who){ who=String(who||'').toLowerCase(); var L=[['gandalf','gandalf'],['vecino','vecino'],['gildor','gildor'],['pippin','pippin'],['maggot','maggot'],['merry','merry'],['tom','tom'],['mantecona','mantecona'],['trancos','trancos'],['sam','sam']];
   for(var i=0;i<L.length;i++) if(who.indexOf(L[i][0])>=0) return L[i][1]; return null; }
 function embHtml(who,icon){ var k=embClave(who); if(k&&M.emb&&M.emb[k]) return '<img class="emb" src="'+M.emb[k]+'" alt="">'; return (icon&&ICON[icon])||''; }
 var ends=[5,15,35,55,75,90,110,115,125,140,150,165,175,200,210,218,225,250,300,340,365,370];

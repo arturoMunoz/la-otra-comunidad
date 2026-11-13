@@ -55,7 +55,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Fondos a3_poney, a3_puerta, a3_chet, a3_moscagua, a3_salvaje, a3_hondonada, a3_cima (originales en tools/fondos, cortados con FILA_PIES 1410).
 - Fin del Acto II a los 210 sale ANTES que las llegadas del Acto III (`flushPending` mira solo los pendientes con km<210) y después el vídeo `assets/entreactos/acto2.mp4` (6 imágenes de ChatGPT + voz de ElevenLabs «Gala», montaje en `tools/entreacto2/hace.py`); al acabar, siguen las llegadas. Mientras hay vídeo (`section.pro`) no salen llegadas. Las llegadas aún no alcanzadas ya no se pierden de la cola.
 - `finActo3()` a los 370 → `verEntreacto(3)` (vídeo aún no hecho). Sello del Acto III (`a3_*`) aún no hecho: `selloHtml(3,…)` devuelve vacío.
-- Zurrón: carta, ronzal, hierba, vela, afilar, athelas, runa (sin dibujo: «?»). Trancos sin emblema (sale el icono de reserva).
+- Zurrón: carta, ronzal, hierba, vela, afilar, athelas, runa (sin dibujo: «?»). Emblema de Trancos HECHO (`assets/emb/trancos.webp`, original `tools/ui/emblema_trancos.png`); habla en Bosque de Chet y La hondonada.
 - Minijuegos pendientes: canción del Poney (tramo 15, Guitar Hero con motor común), mosquitos (18, tipo Fruit Ninja), fuego contra las sombras (21, tipo Missile Command).
 
 ## Temporada (05/11/2026) — `supabase/la-otra-comunidad-temporada.sql` POR EJECUTAR (sin él, cada parte falla en silencio)
