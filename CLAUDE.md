@@ -50,6 +50,14 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Menú principal con botones de hierro forjado (`largo_forja`). Pergamino de pasos con los últimos 7 días y la semana de la Comunidad (`loc_semana`).
 - Pasos: iPhone atajo (7 días) y APK Android (30 días) → `loc_pasos_dias` (versión tolerante en `supabase/la-otra-comunidad-dias.sql`).
 
+## Acto III (13/11/2026) — Bree → Cima de los Vientos, km 210-370 (plan en `docs/acto3.md`)
+- 7 tramos nuevos en `T` (índices 15-21): 210 El Poney Pisador (Trancos, carta de Gandalf), 218 la puerta del Este (asalto y poni Bill), 225 Bosque de Chet, 250 Pantanos de Moscagua, 300 Tierras salvajes, 340 La hondonada, 365 Cima de los Vientos (acaba en 370). `TOTAL_KM=370`, `FIN_ACTO2=210`, `FIN_NOMBRE='la Cima de los Vientos'`.
+- Fondos a3_poney, a3_puerta, a3_chet, a3_moscagua, a3_salvaje, a3_hondonada, a3_cima (originales en tools/fondos, cortados con FILA_PIES 1410).
+- Fin del Acto II a los 210 sale ANTES que las llegadas del Acto III (`flushPending` mira solo los pendientes con km<210) y después el vídeo `assets/entreactos/acto2.mp4` (6 imágenes de ChatGPT + voz de ElevenLabs «Gala», montaje en `tools/entreacto2/hace.py`); al acabar, siguen las llegadas. Mientras hay vídeo (`section.pro`) no salen llegadas. Las llegadas aún no alcanzadas ya no se pierden de la cola.
+- `finActo3()` a los 370 → `verEntreacto(3)` (vídeo aún no hecho). Sello del Acto III (`a3_*`) aún no hecho: `selloHtml(3,…)` devuelve vacío.
+- Zurrón: carta, ronzal, hierba, vela, afilar, athelas, runa (sin dibujo: «?»). Trancos sin emblema (sale el icono de reserva).
+- Minijuegos pendientes: canción del Poney (tramo 15, Guitar Hero con motor común), mosquitos (18, tipo Fruit Ninja), fuego contra las sombras (21, tipo Missile Command).
+
 ## Temporada (05/11/2026) — `supabase/la-otra-comunidad-temporada.sql` POR EJECUTAR (sin él, cada parte falla en silencio)
 - Código: bloque «TEMPORADA» al final de minijuegos.js (fuente legible en `tools/temporada.js`; se pegó tal cual).
 - Reto semanal de la Comunidad: 25 km × registrados, lunes a domingo (hora de Madrid); premio para todos: un trofeo que rota entre 8 (`M.trofeos`, `TROFEOS`). Panel en la Comunidad (placa y barra de ChatGPT) y vitrina en el Zurrón.

@@ -445,9 +445,19 @@ function finActo2(){
   openSheet('<span class="eyebrow">Bree · 210 km</span><h2>Fin del Acto II</h2>'+
     selloHtml(2,'plata')+
     '<p>Habéis cruzado el Bosque Viejo, salido vivos de los túmulos y llegado a Bree. Y en la posada, delante de todos, el Anillo ha hecho de las suyas.</p>'+
-    '<p class="note">El Acto III, hacia la Cima de los Vientos, se abrirá pronto.</p>'+
+    '<p class="note">Empieza el Acto III: con un guía nuevo, hacia la Cima de los Vientos.</p>'+
     '<button class="primary" id="shOk" type="button">Seguir</button>');
-  $('shOk').onclick=function(){ closeSheet(); verEntreacto(2); }; return true;
+  $('shOk').onclick=function(){ closeSheet(); verEntreacto(2,function(){ flushPending(); }); }; return true;
+}
+function finActo3(){
+  if(store.get('fin3',false)) return false;
+  store.set('fin3',true);
+  openSheet('<span class="eyebrow">Cima de los Vientos · 370 km</span><h2>Fin del Acto III</h2>'+
+    selloHtml(3,'plata')+
+    '<p>Habéis salido de Bree con un montaraz por guía, cruzado el Bosque de Chet y los pantanos, y subido a la Cima de los Vientos. Allí, de noche, las sombras os encontraron. Frodo está herido.</p>'+
+    '<p class="note">El Acto IV, la carrera hacia Rivendel, se abrirá pronto.</p>'+
+    '<button class="primary" id="shOk" type="button">Seguir</button>');
+  $('shOk').onclick=function(){ closeSheet(); verEntreacto(3); }; return true;
 }
 /* final del acto I al llegar a Cricava */
 function finActo(){
@@ -480,6 +490,7 @@ function verEntreacto(n,alAcabar){
 }
 (function(){ var _lib=TABS.libro; TABS.libro=function(){ var h=_lib(); if(!store.get('fin1',false)) return h;
   return h.replace('<button class="ghost" type="button" id="verPro">','<button class="ghost" type="button" id="verEnt1">Volver a ver: Fin del Acto I</button>'+(store.get('fin2',false)?'<button class="ghost" type="button" id="verEnt2">Volver a ver: Fin del Acto II</button>':'')+'<button class="ghost" type="button" id="verPro">'); }; })();
+(function(){ var _fp=flushPending; flushPending=function(){ if(document.querySelector('section.pro')) return; return _fp(); }; })();
 document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verEnt1'){ closeSheet(); verEntreacto(1); } if(e.target&&e.target.id==='verEnt2'){ closeSheet(); verEntreacto(2); } });
 /* el zurrón muestra lo que llevas y el sello */
 TABS.zurron=function(){ var z=zEstado(), done=store.get('fin1',false), s=done?zSello():null;

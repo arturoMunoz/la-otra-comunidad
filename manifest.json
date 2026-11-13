@@ -239,6 +239,118 @@
 "hd": 3,
 "espejo": true
 }
+],
+[
+{
+"src": "assets/tramos/a3_poney_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a3_poney_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a3_puerta_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a3_puerta_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a3_chet_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a3_chet_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a3_moscagua_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a3_moscagua_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a3_salvaje_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a3_salvaje_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a3_hondonada_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a3_hondonada_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
+],
+[
+{
+"src": "assets/tramos/a3_cima_0.webp",
+"y": -192,
+"v": 0.4,
+"hd": 3,
+"espejo": true
+},
+{
+"src": "assets/tramos/a3_cima_1.webp",
+"y": 210,
+"v": 1.0,
+"hd": 3,
+"espejo": true
+}
 ]
 ],
 "arturo": [
