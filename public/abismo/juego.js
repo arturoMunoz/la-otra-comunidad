@@ -58,7 +58,7 @@ const ENEMIGOS = {
   orco_arquero: {vida: 4, vel: 2.9, dano: 9, danoPuerta: 1, radio: .5, xp: 3, pts: 35, modelo: 'q_arquero', distancia: true, tDisparo: 0.45, alcanceDisparo: 13},
   chaman_isengard: {vida: 16, vel: 2.2, dano: 16, danoPuerta: 2, radio: .6, xp: 9, pts: 110, modelo: 'q_brujo', distancia: true, clipDisparo: 'invocar', tDisparo: 0.8, alcanceDisparo: 12},
   ariete: {vida: 300, vel: 1.3, dano: 0, danoPuerta: 70, radio: 2.0, xp: 40, pts: 500, modelo: 'ariete', pesado: true, ariete: true, armadura: 8},
-  tronco: {vida: 40, vel: 5.4, dano: 0, danoPuerta: 70, radio: 1.7, xp: 20, pts: 400, modelo: 'ariete', escala: 0.78, tronco: true, marca: true},
+  tronco: {vida: 40, vel: 5.4, dano: 0, danoPuerta: 70, radio: 1.8, xp: 20, pts: 400, modelo: 'tronco', tronco: true, marca: true},
   capitan: {vida: 800, vel: 3.0, dano: 30, danoPuerta: 30, radio: 1.1, xp: 125, pts: 2000, modelo: 'capitan', jefe: true, escala: 1.2},
 };
 /* armas automáticas: 5 niveles y una evolución con su pasiva pareja */
@@ -366,7 +366,7 @@ function piezas(gltf) {
   });
   return out;
 }
-const NOMBRES = ['equipo', 'casco_enano', 'escaleras_muro', 'entrada_cuevas', 'q_arquero', 'q_brujo', 'uruk_piquero', 'huargo_alfa', 'patio5', 'muralla_helm', 'cuernavilla_v2', 'muro_tramo', 'desague', 'torre_arqueros', 'barricada_puerta', 'empalizada', 'caldero_aceite', 'sitio_construccion', 'aldeano_rohan', 'puerta', 'atrezo', 'objetos', 'efectos', 'efectos2', 'efectos3', 'proyectiles', 'armas_auto', 'defensas', 'marcador_colocacion', 'botin', 'brillo_elite',
+const NOMBRES = ['tronco', 'equipo', 'casco_enano', 'escaleras_muro', 'entrada_cuevas', 'q_arquero', 'q_brujo', 'uruk_piquero', 'huargo_alfa', 'patio5', 'muralla_helm', 'cuernavilla_v2', 'muro_tramo', 'desague', 'torre_arqueros', 'barricada_puerta', 'empalizada', 'caldero_aceite', 'sitio_construccion', 'aldeano_rohan', 'puerta', 'atrezo', 'objetos', 'efectos', 'efectos2', 'efectos3', 'proyectiles', 'armas_auto', 'defensas', 'marcador_colocacion', 'botin', 'brillo_elite',
   'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'arquero_rohan', 'orco', 'uruk', 'berserker', 'warg', 'troll', 'ballestero', 'portaestandarte', 'troll_acorazado', 'capitan', 'uruk_acorazado', 'antorchero', 'ariete', 'huargo_jinete', 'ballesta_muro', 'catapulta_rohan', 'arquero_muralla', 'jinete_rohan', 'efectos4'];
 async function cargarTodo() {
   const gl = await Promise.all(NOMBRES.map(cargaModelo));
@@ -1029,6 +1029,7 @@ function spawns(dt) {
 }
 /* el ariete: golpea el tramo más débil desde fuera; cuando cae, entra y va a por la puerta */
 function mueveAriete(e, dt) {
+  portadores(e);
   if (e.embiste > 0) {
     e.embiste -= dt;
     if (e.embiste <= 0.7 && !e.golpeDado) {
@@ -1053,11 +1054,17 @@ function mueveAriete(e, dt) {
 function tronco() {
   const rotos = J.tramos.filter((t) => t.roto), tr = rotos.length ? azar(rotos) : J.tramos.slice().sort((a, b) => a.vida - b.vida)[0];
   const e = creaEnemigo('tronco', {brecha: true}); e.x = tr.x + rnd(-1, 1); e.z = Z_MURO_FUERA - 16; e.fase = 'hacia'; e.tramo = tr; e.marcaT = 0;
-  if (M.tronco) e.a.raiz.scale.setScalar(1);
   cartelOla('¡UN TRONCO!', 'Uruks a la carrera contra la puerta', 'Tumbadlos antes de que lleguen');
   setTimeout(() => J && habla('gimli', '¡A por los del tronco! ¡Que no lleguen a la puerta!'), 900);
 }
+function portadores(e) {
+  if (!e.port) {e.port = []; for (let i = 1; i <= 8; i++) {const o = e.a.raiz.getObjectByName('portador_' + i); if (o) e.port.push(o);}}
+  const n = e.port.length; if (!n) return;
+  const quedan = Math.max(1, Math.ceil(n * e.vida / e.vidaMax));
+  e.port.forEach((o, i) => {const ver = i < quedan; if (o.visible && !ver) {efecto('polvo', e.x, 0.4, e.z, {escala: 0.9, vida: 0.4}); if (Math.random() < 0.6) suena('muerte');} o.visible = ver;});
+}
 function mueveTronco(e, dt) {
+  portadores(e);
   const pc = Math.max(0, e.vida / e.vidaMax), v = e.d.vel * (0.45 + 0.55 * pc) * (e.lento > 0 ? 0.6 : 1);
   if (e.lento > 0) e.lento -= dt;
   if (e.aturdido > 0) {e.aturdido -= dt; return;}
