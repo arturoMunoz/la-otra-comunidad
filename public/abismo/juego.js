@@ -1175,6 +1175,7 @@ function celebra(x, y, z, b) {
 let pestana = 'muro';
 function pintaTregua() {
   const tr = enTregua(J.t), q = tr ? Math.ceil(tr[1] - J.t) : 0;
+  if (q >= 1 && q <= 3 && q !== J._cuentaQ) {J._cuentaQ = q; const c = $('cuenta'); c.textContent = q; c.classList.remove('sale'); void c.offsetWidth; c.classList.add('sale'); suena('xp');}
   $('trT').textContent = (J.ola === 0 ? 'Preparad la defensa · ' : 'Tregua · ') + q + ' s';
   $('trTabs').querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.p === pestana));
   $('trAyuda').innerHTML = 'Tienes <b>' + J.oro + ' de oro</b>. Toca un medallón del patio para construir o mejorar.'; pintaMuroBotones();
@@ -1215,7 +1216,7 @@ function acabaTregua() {
   $('tregua').style.display = 'none'; document.body.classList.remove('tregua');
   J.ola++; J.olaIni = J.t; J.porSalir = TAM_OLA[J.ola] || 40; J.olaTotal = J.porSalir;
   const n = J.ola;
-  aviso(n === NOLAS ? '¡Última oleada! ¡Aguantad hasta el alba!' : '¡Suenan los cuernos! Oleada ' + n + ' de ' + NOLAS, 2000);
+  {const am = AMENAZAS[J.amenaza]; cartelOla(n === NOLAS ? 'ÚLTIMA OLEADA' : 'OLEADA ' + n + ' DE ' + NOLAS, am ? am.t.split(/ y /i)[0].toLowerCase().replace(/^./, (c) => c.toUpperCase()) : '¡Suenan los cuernos!', n === NOLAS ? 'Aguantad hasta el alba' : '');}
   J.oleada = J.t + 1;
 }
 $('trB').addEventListener('click', (ev) => {
@@ -2278,11 +2279,57 @@ function terminar(gana) {
   const tesoro = Math.round(J.oroTotal * 0.6) + J.oro + (gana ? 60 : 0) + Math.floor(J.bajas / 10);
   guardado.tesoro += tesoro; const record = J.puntos > guardado.record; if (record) guardado.record = J.puntos; guarda();
   ['bDef', 'dbg'].forEach((k) => $(k).classList.add('hidden')); $('bJefe').style.display = 'none';
-  setTimeout(() => {
-    $('finT').textContent = gana ? '¡Ha llegado el alba!' : (J.puerta <= 0 ? 'La puerta ha caído' : 'Has caído en el Abismo');
-    $('finP').innerHTML = J.puntos + ' puntos' + (record ? ' · ¡récord!' : '') + ' · ' + J.bajas + ' bajas · nivel ' + J.nivel + '<br>' + (gana ? 'Cuernavilla resiste un día más.' : 'Aguantaste ' + Math.floor(J.t / 60) + ' min ' + Math.floor(J.t % 60) + ' s.') + '<br><b style="color:#8a2a10">+' + tesoro + ' de tesoro para la armería</b>';
-    $('fin').classList.remove('hidden'); $('hud').classList.add('hidden');
-  }, gana ? 300 : 1400);
+  const est = !gana ? 0 : 1 + (J.puerta >= J.puertaMax * 0.5 ? 1 : 0) + (J.puerta >= J.puertaMax * 0.9 ? 1 : 0);
+  const res = {puntos: Math.round(J.puntos), bajas: J.bajas, oleada: J.alba ? NOLAS : J.ola, gana, est, heroe: elegido, seg: Math.round(J.t), tesoro, record};
+  guardaPartida(res);
+  setTimeout(() => pintaFin(res), gana ? 300 : 1400);
+}
+function pintaFin(r) {
+  const f = $('fin'); f.classList.toggle('pierde', !r.gana);
+  $('finT').textContent = r.gana ? '¡Ha llegado el alba!' : (J.puerta <= 0 ? 'La puerta ha caído' : 'Has caído en el Abismo');
+  $('finSub').textContent = r.gana ? ['', 'Cuernavilla resiste, por poco.', 'Cuernavilla resiste con la puerta en pie.', '¡Defensa perfecta! La puerta casi intacta.'][r.est] : 'Aguantaste hasta la oleada ' + r.oleada + ' de ' + NOLAS + '.';
+  $('finNota').textContent = r.gana && r.est < 3 ? (r.est === 1 ? '★★ con la puerta por encima de la mitad · ★★★ casi intacta' : '★★★ si la puerta acaba casi intacta') : '';
+  $('fOla').textContent = r.oleada + ' / ' + NOLAS; $('finRec').classList.toggle('si', r.record);
+  [...$('finEst').children].forEach((e) => {e.className = ''; e.style.animationDelay = '';});
+  f.classList.remove('hidden'); $('hud').classList.add('hidden');
+  [...$('finEst').children].forEach((e, k) => {if (k < r.est) setTimeout(() => {e.className = 'si'; suena('nivel'); J && (J.temblor = 0.25);}, 450 + k * 420);});
+  cuentaSube($('fPts'), r.puntos, 1100, ''); cuentaSube($('fBaj'), r.bajas, 900, ''); cuentaSube($('fTes'), r.tesoro, 1300, '+');
+  pintaRanking($('finRank'), 9);
+}
+/* contador que sube como en los juegos de móvil */
+function cuentaSube(el, n, ms, pre) {
+  const t0 = performance.now(); let ult = -1;
+  const f = (t) => {const k = Math.min(1, (t - t0) / ms), v = Math.round(n * (1 - Math.pow(1 - k, 3))); el.textContent = pre + v.toLocaleString('es-ES'); if (v !== ult && k < 1 && Math.random() < 0.25) suena('moneda'); ult = v; if (k < 1) requestAnimationFrame(f);};
+  requestAnimationFrame(f);
+}
+function cartelOla(a, b, c) {
+  const e = $('banOla'); $('banA').textContent = a; $('banB').textContent = b; $('banC').textContent = c;
+  e.classList.remove('sale'); void e.offsetWidth; e.classList.add('sale'); suena('cuerno'); if (J) J.temblor = Math.max(J.temblor, 0.35);
+}
+/* ---------- la Comunidad: partidas y clasificación en Supabase (solo dentro de La Otra Comunidad, con cuenta) ---------- */
+const SB_URL = 'https://egdnytvckttgvybdbvmw.supabase.co', SB_KEY = 'sb_publishable_1-eGqPkYOPKsW-ZEtUBo7A_16RQQGdK';
+function locAuth() {try {return JSON.parse(localStorage.getItem('loc.auth'));} catch (e) {return null;}}
+async function locRpc(fn, body) {
+  let a = locAuth(); if (!a || !a.at) return null;
+  try {
+    if (Date.now() > a.exp - 60000) {
+      const r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', {method: 'POST', headers: {apikey: SB_KEY, 'Content-Type': 'application/json'}, body: JSON.stringify({refresh_token: a.rt})});
+      if (!r.ok) return null; const j = await r.json(); a = {at: j.access_token, rt: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000, em: a.em}; localStorage.setItem('loc.auth', JSON.stringify(a));
+    }
+    const r = await fetch(SB_URL + '/rest/v1/rpc/' + fn, {method: 'POST', headers: {apikey: SB_KEY, Authorization: 'Bearer ' + a.at, 'Content-Type': 'application/json'}, body: JSON.stringify(body || {})});
+    return r.ok ? await r.json() : null;
+  } catch (e) {return null;}
+}
+let rankCache = null;
+async function guardaPartida(r) {
+  await locRpc('loc_abismo_guardar', {p_puntos: r.puntos, p_bajas: r.bajas, p_oleada: r.oleada, p_gana: r.gana, p_estrellas: r.est, p_heroe: r.heroe, p_segundos: r.seg});
+  rankCache = null;
+}
+async function pintaRanking(el, max) {
+  el.innerHTML = '';
+  const filas = rankCache || await locRpc('loc_abismo_ranking'); if (!Array.isArray(filas) || !filas.length) return; rankCache = filas;
+  el.innerHTML = '<h3>Clasificación de la Comunidad</h3>' + filas.slice(0, max).map((f, k) => '<div class="rk' + (f.yo ? ' yo' : '') + '"><i>' + (k + 1) + '</i><span>' + f.nombre + (f.estrellas ? ' <small style="color:#ffd24a">' + '★'.repeat(f.estrellas) + '</small>' : '') + '</span><b>' + f.mejor.toLocaleString('es-ES') + '</b></div>').join('')
+    + (max < 9 && !filas.slice(0, max).some((f) => f.yo) && filas.some((f) => f.yo) ? (() => {const k = filas.findIndex((f) => f.yo), f = filas[k]; return '<div class="rk yo"><i>' + (k + 1) + '</i><span>Tú</span><b>' + f.mejor.toLocaleString('es-ES') + '</b></div>';})() : '');
 }
 function pintaArmeria() {
   const c = $('armeria'), ICON = {vida: 'm_vida', dano: 'm_dano', oro: 'm_oro', vel: 'm_vel'};
@@ -2463,8 +2510,10 @@ pintaHeroes(); pintaArmeria();
 $('bEsq').addEventListener('pointerdown', (e) => {e.stopPropagation(); if (J) J.pideEsq = true;});
 $('bHab').addEventListener('pointerdown', (e) => {e.stopPropagation(); if (J) J.pideHab = true;});
 $('jugar').onclick = () => {$('inicio').classList.add('hidden'); nuevaPartida(elegido); reloj.getDelta();};
-$('otra').onclick = () => {$('fin').classList.add('hidden'); $('inicio').classList.remove('hidden'); pintaArmeria();};
+$('otra').onclick = () => {$('fin').classList.add('hidden'); $('inicio').classList.remove('hidden'); pintaArmeria(); pintaRanking($('rankIni'), 3);};
+$('otraYa').onclick = () => {$('fin').classList.add('hidden'); nuevaPartida(elegido); reloj.getDelta();};
 bucle();
+pintaRanking($('rankIni'), 3);
 cargarTodo().then(() => {$('jugar').disabled = false; $('jugar').firstElementChild.textContent = 'Defender la muralla';}).catch((e) => {console.error(e); $('jugar').firstElementChild.textContent = 'Error al cargar';});
 $('bArm').onclick = () => {pintaArmeria(); $('inicio').classList.add('hidden'); $('armeriaCapa').classList.remove('hidden');};
 $('armVolver').onclick = () => {$('armeriaCapa').classList.add('hidden'); $('inicio').classList.remove('hidden');};
@@ -2475,7 +2524,7 @@ window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
 window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
-window._desague = () => antorchero(true);
+window._desague = () => antorchero(true); window._cartel = (a, b, c) => cartelOla(a, b, c);
 window._monta = (n, x, z) => {const a = montar(n, true); a.raiz.position.set(x, 0.15, z); scene.add(a.raiz); const c = a.clips.quieto || Object.values(a.clips)[0]; if (c) c.play(); window._mezc = (window._mezc || []).concat(a.mixer); return a;};
 window._tramo = (k) => dañaTramo(J.tramos[k], 9999);
 window._mej = () => ofreceMejoras(false);

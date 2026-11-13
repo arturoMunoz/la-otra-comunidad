@@ -77,6 +77,10 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Escena del desagüe (`J.cine`): el mundo se congela salvo el uruk que corre, franjas negras y sin HUD (clase `body.cine`); máx. 9 s.
 - Nadie aparece dentro del muro: por el desagüe reventado y por tramos caídos se entra andando (fases `brecha` y `cruza`, por los huecos reales de `tramo_brecha`, X del tramo ±0,9).
 - Muralla en la tregua: un botón por tramo (`#trTramos`), con vida, ★ de refuerzo y coste; reparar deja el tramo entero.
+- Cartas de mejora en tiras horizontales (marcos de ChatGPT `ui/fila_{comun,rara,epica,legendaria,evolucion}.webp`, original en /home/claude/abz/filas): comun = subir nivel, rara = nueva, epica, legendaria = nivel 5, evolucion.
+- Barras de vida de enemigos: `BARRAS` (dos InstancedMesh), solo heridos, trolls y élite.
+- Fin de partida: estrellas (alba / puerta ≥50 % / ≥90 %), contadores, récord, «Otra vez» y clasificación. Cartel de oleada (`cartelOla`) y cuenta atrás 3-2-1 al final de la tregua.
+- Clasificación de la Comunidad: `supabase/la-otra-comunidad-abismo.sql` (tabla `loc_abismo`, `loc_abismo_guardar`, `loc_abismo_ranking`) POR EJECUTAR; probada en Postgres local. El juego lee la sesión de `localStorage['loc.auth']` (misma web) y llama por REST con la clave pública; sin sesión o sin SQL no sale nada.
 
 ## Pendiente (04/11/2026)
 - Emblemas de los 9 personajes: HECHO 04/11 (`assets/emb/`, `manifest.emb`, `embHtml(who,icon)` en src.html; original en `tools/ui/emblemas.png`). Los SVG de `ICON` quedan solo de reserva si aparece un personaje nuevo sin emblema: pedirle el suyo a ChatGPT con el mismo estilo de medallón.
