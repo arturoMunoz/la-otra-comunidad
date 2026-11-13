@@ -195,14 +195,18 @@ const ND = {
 };
 const icoNodo = (tipo, rama, k) => {const n = ((ND[tipo] || {})[rama] || [])[k]; return n ? 'iconos/nd_' + String(n).padStart(2, '0') + '.webp' : null;};
 /* regla de los dos caminos: solo una rama pasa del 2, y como mucho dos ramas tienen puntos */
-function ramaLibre(rs, i) {
+/* nivel del héroe que pide cada nodo (I…V): no se sube una rama entera de golpe */
+const NIVEL_NODO = [2, 3, 5, 7, 9];
+function ramaLibre(rs, i, sinNivel) {
   const nv = rs.map((r) => r.nv), n = nv[i];
   if (n >= 5) return 'Al máximo';
+  if (!sinNivel && J.nivel < NIVEL_NODO[n]) return 'Necesitas nivel ' + NIVEL_NODO[n] + ' (vas por el ' + J.nivel + ')';
   const otras = nv.filter((v, k) => k !== i);
   if (n === 0 && otras.filter((v) => v > 0).length >= 2) return 'Ya llevas dos ramas';
   if (n >= 2 && otras.some((v) => v > 2)) return 'Otra rama ya pasó del 2';
   return '';
 }
+function proximoNodo() {const rs = J.arbol; if (!rs) return 0; const ns = rs.map((r, i) => !ramaLibre(rs, i, true) ? NIVEL_NODO[r.nv] : 99).filter((n) => n > J.nivel && n < 99); return ns.length ? Math.min(...ns) : 0;}
 function arbolDisponible() {const rs = J.arbol; return rs && rs.some((r, i) => !ramaLibre(rs, i));}
 /* pantalla del árbol: 3 ramas en columnas, 5 nodos cada una (de abajo arriba), el siguiente de cada rama brilla */
 function ofreceArbol() {
@@ -218,16 +222,16 @@ function ofreceArbol() {
     const [r, i, k] = sel, n = r.def.n[k], disp = k === r.nv && !ramaLibre(rs, i);
     detalle.innerHTML = '<div class="arbDT"><img src="' + (icoNodo(h.tipo, r.def.id, k) || ico(r.def.icono)) + '" alt=""><div><small>' + r.def.t + ' · nivel ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '.</span><em>' + r.def.contra + '</em></div></div>';
     if (disp) {const b = document.createElement('button'); b.className = 'carta arbOk'; b.innerHTML = '<span>Elegir</span>'; b.onclick = () => elegir(r, i); detalle.appendChild(b);}
-    else {const p = document.createElement('p'); p.className = 'arbNo'; p.textContent = k < r.nv ? 'Ya lo tienes.' : ramaLibre(rs, i) ? '🔒 ' + ramaLibre(rs, i) + '.' : 'Antes tienes que coger el nivel anterior de esta rama.'; detalle.appendChild(p);}
+    else {const p = document.createElement('p'); p.className = 'arbNo'; p.textContent = k < r.nv ? 'Ya lo tienes.' : k > r.nv ? 'Antes tienes que coger el nivel ' + ['I', 'II', 'III', 'IV', 'V'][k - 1] + ' de esta rama' + (J.nivel < NIVEL_NODO[k] ? ', y este pide nivel ' + NIVEL_NODO[k] + '.' : '.') : '🔒 ' + ramaLibre(rs, i) + '.'; detalle.appendChild(p);}
   };
   rs.forEach((r, i) => {
-    const bloq = ramaLibre(rs, i), col = document.createElement('div'); col.className = 'arbCol' + (bloq && r.nv < 5 ? ' bloq' : '');
+    const bloq = ramaLibre(rs, i), bloqRegla = ramaLibre(rs, i, true), col = document.createElement('div'); col.className = 'arbCol' + (bloqRegla && r.nv < 5 ? ' bloq' : '');
     col.innerHTML = '<div class="arbCab"><img src="' + ico(r.def.icono) + '" alt=""><b>' + r.def.t + '</b><small>' + r.def.contra + '</small></div>';
     const nodos = document.createElement('div'); nodos.className = 'arbNodos';
     for (let k = 4; k >= 0; k--) {
       const est = k < r.nv ? 'tengo' : k === r.nv && !bloq ? 'puedo' : 'luego', b = document.createElement('button');
       b.className = 'nodo ' + est + (k >= 2 ? ' alto' : ''); const im = icoNodo(h.tipo, r.def.id, k);
-      b.innerHTML = '<i>' + (im ? '<img src="' + im + '" alt=""><u>' + ['I', 'II', 'III', 'IV', 'V'][k] + '</u>' : ['I', 'II', 'III', 'IV', 'V'][k]) + '</i><span>' + r.def.n[k][0] + '</span>';
+      b.innerHTML = '<i>' + (im ? '<img src="' + im + '" alt=""><u>' + ['I', 'II', 'III', 'IV', 'V'][k] + '</u>' : ['I', 'II', 'III', 'IV', 'V'][k]) + '</i><span>' + r.def.n[k][0] + '</span>' + (k >= r.nv && J.nivel < NIVEL_NODO[k] ? '<em class="nvReq">Nv ' + NIVEL_NODO[k] + '</em>' : '');
       b.onclick = () => {sel = [r, i, k]; arbol.querySelectorAll('.nodo').forEach((x) => x.classList.remove('sel')); b.classList.add('sel'); pintaDet(); suena('xp');};
       nodos.appendChild(b);
       if (est === 'puedo' && !sel) {sel = [r, i, k]; b.classList.add('sel');}
@@ -2514,7 +2518,7 @@ function ofreceMejoras(cofre) {
 }
 function siguientePendiente() {
   if (J.fin || J.pausa) return;
-  if (J.subidas > 0) {J.subidas--; if (arbolDisponible()) ofreceArbol(); else ofreceMejoras(false); return;}
+  if (J.subidas > 0) {J.subidas--; if (arbolDisponible()) ofreceArbol(); else {ofreceMejoras(false); const prox = proximoNodo(); if (prox) $('mejP').textContent = 'Elige una mejora. El árbol vuelve a nivel ' + prox + '.';} return;}
   siguienteCofre();
 }
 function pintaArmas() {
