@@ -171,10 +171,14 @@ addEventListener('resize', () => {camera.aspect = innerWidth / innerHeight; came
 
 /* ---------- carga de modelos (módulos .js con el glb en base64) ---------- */
 const loader = new GLTFLoader();
+/* modelos en binario (.glb): sin descodificar base64 en el móvil (antes ~47 MB de texto y segundos de CPU) */
+let cargados = 0;
 async function cargaModelo(n) {
-  const m = await import('./modelos/' + n + '.js');
-  const bin = Uint8Array.from(atob(m.default), (c) => c.charCodeAt(0));
-  return new Promise((res, rej) => loader.parse(bin.buffer, '', res, rej));
+  const r = await fetch('modelos/' + n + '.glb'); if (!r.ok) throw new Error('modelo ' + n);
+  const buf = await r.arrayBuffer();
+  const g = await new Promise((res, rej) => loader.parse(buf, '', res, rej));
+  cargados++; const j = $('jugar'); if (j && j.disabled) j.firstElementChild.textContent = 'Cargando… ' + Math.round(cargados / NOMBRES.length * 100) + ' %';
+  return g;
 }
 const M = {}, marcas = {}, antorchas = [], P = {};
 let desagueObj = null;
@@ -217,18 +221,66 @@ async function cargarTodo() {
   for (let i = 1; i <= 8; i++) {
     const p = marcas['antorcha_' + i]; if (!p) continue;
     const a = P.antorcha.clone(); a.position.copy(p); a.position.y -= 0.2;
-    a.rotation.y = p.x < -1 ? Math.PI / 2 : p.x > 1 ? -Math.PI / 2 : (p.z > 0 ? Math.PI : 0); scene.add(a);
+    a.rotation.y = p.x < -1 ? Math.PI / 2 : p.x > 1 ? -Math.PI / 2 : (p.z > 0 ? Math.PI : 0); a.userData.fijo = true; scene.add(a);
     const ll = ponLlama(p.x, p.y + 0.45, p.z, 1.0);
     const l = new THREE.PointLight('#ffb35c', 14, 15, 1.7); l.position.copy(p); l.position.y += 0.6; scene.add(l);
     antorchas.push({l, ll, base: 14, fase: Math.random() * 9});
   }
-  [[-12, 30], [12, 28], [-14, 6], [14, 14]].forEach(([x, z]) => {const b = P.barril.clone(); b.position.set(x, 0.15, z); scene.add(b);});
+  [[-12, 30], [12, 28], [-14, 6], [14, 14]].forEach(([x, z]) => {const b = P.barril.clone(); b.position.set(x, 0.15, z); b.userData.fijo = true; scene.add(b);});
   colocaAtrezo();
   calcos(); matas(); valle();
   preparaLluvia();
   preparaMarcas();
   GR.brasas(antorchas.map((a) => a.l.position));
+  fusionaEstaticos([M.patio5.scene, ...['campo_fuera', 'suelo_lateral_roca', 'antorchas_muro', 'cuernavilla', 'acantilado_izq', 'acantilado_der'].map((n) => scene.getObjectByName(n)), M.escaleras_muro.scene, M.entrada_cuevas.scene, ...scene.children.filter((o) => o.userData.fijo)]);
+  poolLuces(); preparaGemasInst();
   calienta();
+}
+/* ---------- motor: decorado fijo fusionado por material (de ~900 dibujos por fotograma a unos pocos cientos) ---------- */
+function fusionaEstaticos(raices) {
+  const grupos = new Map(); let antes = 0;
+  scene.updateMatrixWorld(true);
+  for (const r of raices) if (r) r.traverse((o) => {
+    if (!o.isMesh || o.isSkinnedMesh || o.isInstancedMesh || !o.visible || Array.isArray(o.material) || o.userData.borde) return;
+    const g = o.geometry; if (!g || Object.keys(g.morphAttributes || {}).length) return;
+    const k = o.material.uuid + '|' + Object.keys(g.attributes).sort().join(',') + '|' + !!g.index + '|' + o.castShadow + o.receiveShadow + '|' + o.renderOrder;
+    if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(o); antes++;
+  });
+  let despues = 0;
+  for (const lista of grupos.values()) {
+    if (lista.length < 2) {despues++; continue;}
+    const geos = lista.map((o) => {const g = o.geometry.clone(); g.applyMatrix4(o.matrixWorld); return g;});
+    let mg = null; try {mg = mergeGeometries(geos, false);} catch (e) {mg = null;}
+    geos.forEach((g) => g.dispose());
+    if (!mg) {despues += lista.length; continue;}
+    const m = new THREE.Mesh(mg, lista[0].material); m.castShadow = lista[0].castShadow; m.receiveShadow = lista[0].receiveShadow; m.renderOrder = lista[0].renderOrder;
+    m.matrixAutoUpdate = false; m.updateMatrix(); scene.add(m);
+    lista.forEach((o) => o.removeFromParent()); despues++;
+  }
+  console.log('decorado fusionado:', antes, '→', despues, 'mallas');
+}
+/* ---------- motor: solo 4 luces de punto encendidas, las de las antorchas más cercanas (antes 10: cada píxel pagaba las 10) ---------- */
+const POOL = [];
+function poolLuces() {
+  const fuentes = []; scene.traverse((o) => {if (o.isPointLight) fuentes.push(o);});
+  fuentes.forEach((l) => l.removeFromParent());
+  for (let i = 0; i < 4; i++) {const l = new THREE.PointLight('#ffb35c', 0, 14, 1.7); scene.add(l); POOL.push({l, f: null});}
+  POOL.fuentes = fuentes; POOL.t = 0;
+}
+function actualizaPool(dt, x, z) {
+  if (!POOL.length) return;
+  POOL.t -= dt;
+  if (POOL.t <= 0) {
+    POOL.t = 0.35;
+    const orden = POOL.fuentes.slice().sort((a, b) => Math.hypot(a.position.x - x, a.position.z - z) - Math.hypot(b.position.x - x, b.position.z - z)).slice(0, POOL.length);
+    /* las que siguen elegidas se quedan en su hueco (sin saltos de luz) */
+    const libres = POOL.filter((p) => !orden.includes(p.f));
+    for (const f of orden) if (!POOL.some((p) => p.f === f)) {const p = libres.shift(); if (p) {p.f = f; p.fade = 0;}}
+  }
+  for (const p of POOL) {
+    if (!p.f) continue; p.fade = Math.min(1, (p.fade ?? 1) + dt * 4);
+    p.l.position.copy(p.f.position); p.l.color.copy(p.f.color); p.l.distance = p.f.distance; p.l.decay = p.f.decay; p.l.intensity = p.f.intensity * p.fade;
+  }
 }
 /* compila de antemano todos los shaders (personajes, piezas, efectos) para que no haya tirones la primera vez que sale algo */
 function calienta() {
@@ -283,15 +335,28 @@ function calcos() {
 
 /* ---------- matas del campo (ChatGPT, 4x2) y el ejército en el valle ---------- */
 function matas() {
+  /* matas y piedras sueltas: 8 mallas instanciadas que miran a la cámara (antes ~90 sprites = 90 dibujos) */
   const tex = new THREE.TextureLoader().load('texturas/matas.webp'); tex.colorSpace = THREE.SRGBColorSpace;
-  const mats = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => {const t = tex.clone(); t.repeat.set(0.25, 0.5); t.offset.set((i % 4) / 4, i < 4 ? 0.5 : 0); t.needsUpdate = true; return new THREE.SpriteMaterial({map: t, color: '#7d8a80', alphaTest: 0.35, fog: true});});
-  const pon = (x, z, k) => {const sp = new THREE.Sprite(mats[k]); const t = [1.5, 1.1, 1.4, 1.5, 1.7, 1.3, 1.4, 1.1][k] * rnd(0.8, 1.2); sp.center.set(0.5, 0.04); sp.scale.set(t, t, 1); sp.position.set(x, 0.12, z); scene.add(sp);};
+  const geo = new THREE.PlaneGeometry(1, 1); geo.translate(0, 0.46, 0);
+  const pos = [[], [], [], [], [], [], [], []];
+  const pon = (x, z, k) => {const t = [1.5, 1.1, 1.4, 1.5, 1.7, 1.3, 1.4, 1.1][k] * rnd(0.8, 1.2); pos[k].push([x, 0.12, z, t]);};
   for (let n = 0; n < 70; n++) {
     const lado = n % 2 ? 1 : -1, x = lado * rnd(12.5, 17.2), z = rnd(PATIO.z0 + 2, PATIO.z1 - 2);
     pon(x, z, [0, 1, 2, 3, 4, 6, 7][n % 7]);
   }
   for (let n = 0; n < 16; n++) pon(rnd(-17, 17), rnd(-15, -13.2), [0, 1, 4, 5][n % 4]);   /* al pie del muro */
   for (let n = 0; n < 6; n++) pon(rnd(-11, 11), rnd(-6, 28), 5);   /* alguna piedra suelta en el campo */
+  pos.forEach((lista, k) => {
+    if (!lista.length) return;
+    const t = tex.clone(); t.repeat.set(0.25, 0.5); t.offset.set((k % 4) / 4, k < 4 ? 0.5 : 0); t.needsUpdate = true;
+    const m = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({map: t, color: '#7d8a80', alphaTest: 0.35, fog: true, side: THREE.DoubleSide}), lista.length);
+    m.userData.mata = lista; m.frustumCulled = false; scene.add(m); MATAS.push(m);
+  });
+}
+const MATAS = [], _mq = new THREE.Quaternion(), _mp = new THREE.Vector3(), _ms = new THREE.Vector3(), _mm = new THREE.Matrix4();
+function orientaMatas() {
+  _mq.copy(camera.quaternion);
+  for (const m of MATAS) {m.userData.mata.forEach(([x, y, z, t], i) => {_mp.set(x, y, z); _ms.set(t, t, 1); m.setMatrixAt(i, _mm.compose(_mp, _mq, _ms));}); m.instanceMatrix.needsUpdate = true;}
 }
 function valle() {
   const t = new THREE.TextureLoader().load('texturas/fondo_valle.webp'); t.colorSpace = THREE.SRGBColorSpace;
@@ -305,7 +370,7 @@ function colocaAtrezo() {
   const pon1 = (n, x, z, ry = 0) => {
     if (!P[n]) return null;
     const o = P[n].clone(true); o.position.set(x, 0.15, z); o.rotation.y = ry;
-    o.traverse((m) => {if (m.isMesh) {m.castShadow = true; m.receiveShadow = true;}}); scene.add(o); return o;
+    o.traverse((m) => {if (m.isMesh) {m.castShadow = true; m.receiveShadow = true;}}); o.userData.fijo = n !== 'hoguera_patio'; scene.add(o); return o;
   };
   pon1('carro', -13.5, 19, 0.4); pon1('pila_lanzas', 15, 22, -Math.PI / 2); pon1('armero', 16, 30, -Math.PI / 2);
   pon1('saco', -15.5, 11); pon1('saco', -14.6, 11.8, 1); pon1('saco', 15.4, 3, 2);
@@ -1863,8 +1928,27 @@ function suelta(modelo, x, z, datos) {
   if (J.gemas.length > 220 && datos.xp) {ganaXp(datos.xp); return;}
   const base = P[modelo]; if (!base) return;
   if (J.enMuro) {x = Math.max(ADARVE.x0, Math.min(ADARVE.x1, x)); z = Math.max(ADARVE.z0, Math.min(ADARVE.z1, z));}
-  const m = base.clone(true); m.position.set(x, 0.3, z); if (modelo === 'cofre' && P.brillo_cofre) m.add(P.brillo_cofre.clone()); scene.add(m);
+  let m;
+  if (GI[modelo]) {m = new THREE.Object3D(); m.position.set(x, 0.3, z);}   /* gemas y monedas: se pintan instanciadas */
+  else {m = base.clone(true); m.position.set(x, 0.3, z); if (modelo === 'cofre' && P.brillo_cofre) m.add(P.brillo_cofre.clone()); scene.add(m);}
   J.gemas.push({m, x, z, v: 0, modelo, ...datos, t: 0});
+}
+/* ---------- motor: gemas y monedas instanciadas (cientos en el suelo = 3-4 dibujos por tipo) ---------- */
+const GI = {}, _gm = new THREE.Matrix4(), _gi = new THREE.Matrix4();
+function preparaGemasInst() {
+  for (const k of ['gema_verde', 'gema_azul', 'gema_roja', 'moneda_oro']) {
+    const base = P[k]; if (!base) continue; base.updateMatrixWorld(true); _gi.copy(base.matrixWorld).invert(); const partes = [];
+    base.traverse((o) => {if (!o.isMesh) return; const im = new THREE.InstancedMesh(o.geometry, o.material, 240); im.count = 0; im.frustumCulled = false; scene.add(im); partes.push({im, local: new THREE.Matrix4().multiplyMatrices(_gi, o.matrixWorld)});});
+    if (partes.length) GI[k] = partes;
+  }
+}
+function pintaGemas() {
+  const n = {}; for (const k in GI) n[k] = 0;
+  if (J) for (const g of J.gemas) {
+    const ps = GI[g.modelo]; if (!ps) continue; const i = n[g.modelo]; if (i >= 240) continue; n[g.modelo]++;
+    g.m.updateMatrix(); for (const p of ps) p.im.setMatrixAt(i, _gm.multiplyMatrices(g.m.matrix, p.local));
+  }
+  for (const k in GI) for (const p of GI[k]) {p.im.count = n[k]; p.im.instanceMatrix.needsUpdate = true;}
 }
 function actualizaGemas(dt) {
   const h = J.h;
@@ -2367,7 +2451,7 @@ let fpsN = 0, fpsT = 0;
 function bucle() {
   requestAnimationFrame(bucle);
   const dt = Math.min(reloj.getDelta(), 0.05);
-  fpsN++; fpsT += dt; if (fpsT > 1) {$('fps').textContent = Math.round(fpsN / fpsT) + ' fps' + (J ? ' · ' + J.enemigos.length + ' enemigos' : ''); fpsN = 0; fpsT = 0;}
+  fpsN++; fpsT += dt; if (fpsT > 1) {$('fps').textContent = Math.round(fpsN / fpsT) + ' fps · ' + (GR.pr || 0).toFixed(2) + 'x · calidad ' + GR.calidad + (J ? ' · ' + J.enemigos.length + ' enemigos' : ''); fpsN = 0; fpsT = 0;}
   antorchas.forEach((a) => {a.fase += dt * 9; const k = 0.85 + Math.sin(a.fase) * 0.08 + Math.sin(a.fase * 2.7) * 0.07; a.l.intensity = a.base * k; });
   if (J && !J.pausa && !J.fin) {if (J.parada > 0) J.parada -= dt; else paso(dt * (J.lenta > 0 ? 0.35 : 1)); if (J.lenta > 0) J.lenta -= dt;}
   else if (J && J.fin) {J.enemigos.forEach((e) => e.a.mixer.update(dt)); J.h.a.mixer.update(dt);}
@@ -2377,6 +2461,7 @@ function bucle() {
   actualizaLluvia(dt, J ? J.h.x : 0, J ? J.h.z : 12);
   if (J && !J.pausa && Math.random() < dt * 12) particula('gota', J.h.x + rnd(-9, 9), 0.25, J.h.z + rnd(-13, 6), {vel: 0, sube: 0, vida: 0.3, escala: 0.55, crece: 1.4, disp: 0, giro: 0});
   camara(dt);
+  actualizaPool(dt, camMira.x, camMira.z); orientaMatas(); pintaGemas();
   if (J) etiquetas();
   GR.render(dt, !!(J && !J.pausa && !J.fin));
 }

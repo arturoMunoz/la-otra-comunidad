@@ -273,11 +273,14 @@ export function creaGraficos({renderer, scene, camera, luna, hemi}) {
   comp.addPass(grado);
   addEventListener('resize', () => {comp.setSize(innerWidth, innerHeight); bloom.resolution.set(innerWidth / 2, innerHeight / 2);});
 
+  /* resolución dinámica (como los juegos de móvil): se ajusta sola para ir fluido, en pasos pequeños */
+  function ponPr(pr) {renderer.setPixelRatio(pr); renderer.setSize(innerWidth, innerHeight); comp.setPixelRatio(pr); comp.setSize(innerWidth, innerHeight);}
+  G.frames = 0; G.tAcum = 0; G.rapido = 0;
   function calidad(n) {
     G.calidad = n;
     bloom.enabled = n >= 2;
-    renderer.setPixelRatio(Math.min(devicePixelRatio, n >= 2 ? 2.25 : n === 1 ? 1.6 : 1.15));
-    renderer.setSize(innerWidth, innerHeight); comp.setPixelRatio(renderer.getPixelRatio()); comp.setSize(innerWidth, innerHeight);
+    G.prMax = Math.min(devicePixelRatio, n >= 2 ? 2.25 : n === 1 ? 1.6 : 1.15);
+    G.pr = Math.min(G.pr || 1.75, G.prMax); ponPr(G.pr);
     const conSombra = n > 0;
     if (renderer.shadowMap.enabled !== conSombra) {renderer.shadowMap.enabled = conSombra; scene.traverse((o) => {if (o.material) [].concat(o.material).forEach((m) => m.needsUpdate = true);});}
     if (G.pb) G.pb.p.visible = n >= 1;
@@ -298,11 +301,21 @@ export function creaGraficos({renderer, scene, camera, luna, hemi}) {
     G.dano = Math.max(0, (G.dano || 0) - dt * 1.8); grado.uniforms.uDano.value = G.dano;
     mueveBrasas(dt);
     cielo.position.copy(camera.position);
-    /* calidad automática: si va lento 4 s seguidos, baja un escalón */
+    /* cada 1,5 s mira la media: si baja de ~50 fps reduce la resolución un poco; si va sobrado, la sube.
+       Solo si ya está al mínimo y sigue lento quita sombras o brillo (un escalón de calidad). */
     if (enJuego && dt > 0) {
-      G.jugado = (G.jugado || 0) + dt;
-      if (G.jugado > 8 && dt > 1 / 28) G.lento += dt; else G.lento = Math.max(0, G.lento - dt * 0.5);
-      if (G.lento > 6 && G.calidad > 0) {calidad(G.calidad - 1); G.lento = 0;}
+      G.jugado = (G.jugado || 0) + dt; G.frames++; G.tAcum += dt;
+      if (G.jugado > 4 && G.tAcum > 1.5) {
+        const media = G.tAcum / G.frames; G.frames = 0; G.tAcum = 0;
+        if (media > 1 / 48) {
+          G.rapido = 0;
+          if (G.pr > 0.9) {G.pr = Math.max(0.9, G.pr - (media > 1 / 35 ? 0.25 : 0.12)); ponPr(G.pr);}
+          else if (G.calidad > 0) {G.lento = (G.lento || 0) + 1; if (G.lento >= 2) {calidad(G.calidad - 1); G.lento = 0;}}
+        } else if (media < 1 / 57) {
+          G.lento = 0; G.rapido++;
+          if (G.rapido >= 3 && G.pr < G.prMax) {G.pr = Math.min(G.prMax, G.pr + 0.1); ponPr(G.pr); G.rapido = 0;}
+        } else G.rapido = 0;
+      }
     }
     comp.render(dt);
   };

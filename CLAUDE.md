@@ -80,6 +80,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Cartas de mejora en tiras horizontales (marcos de ChatGPT `ui/fila_{comun,rara,epica,legendaria,evolucion}.webp`, original en /home/claude/abz/filas): comun = subir nivel, rara = nueva, epica, legendaria = nivel 5, evolucion.
 - Barras de vida de enemigos: `BARRAS` (dos InstancedMesh), solo heridos, trolls y élite.
 - Fin de partida: estrellas (alba / puerta ≥50 % / ≥90 %), contadores, récord, «Otra vez» y clasificación. Cartel de oleada (`cartelOla`) y cuenta atrás 3-2-1 al final de la tregua.
+- Motor (13/11): modelos en .glb por fetch con % de carga; decorado fijo fusionado por material (`fusionaEstaticos`, marca `userData.fijo`); solo 4 luces de punto que siguen a las antorchas más cercanas (`poolLuces`/`actualizaPool`); matas (`MATAS`), gemas y monedas (`GI`) instanciadas; resolución dinámica en grafico.js (`G.pr`, sube y baja cada 1,5 s; el lector de FPS —tres toques en el marcador— la muestra). Medido: ~894 → ~610 dibujos por fotograma y 10 → 4 luces.
 - Clasificación de la Comunidad: `supabase/la-otra-comunidad-abismo.sql` (tabla `loc_abismo`, `loc_abismo_guardar`, `loc_abismo_ranking`) POR EJECUTAR; probada en Postgres local. El juego lee la sesión de `localStorage['loc.auth']` (misma web) y llama por REST con la clave pública; sin sesión o sin SQL no sale nada.
 
 ## Pendiente (04/11/2026)
