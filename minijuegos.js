@@ -479,8 +479,8 @@ function verEntreacto(n,alAcabar){
   var sk=document.createElement('button'); sk.type='button'; sk.className='skip'; sk.textContent='Saltar ›'; sk.onclick=fin; el.appendChild(sk);
 }
 (function(){ var _lib=TABS.libro; TABS.libro=function(){ var h=_lib(); if(!store.get('fin1',false)) return h;
-  return h.replace('<button class="ghost" type="button" id="verPro">','<button class="ghost" type="button" id="verEnt1">Volver a ver: Fin del Acto I</button><button class="ghost" type="button" id="verPro">'); }; })();
-document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verEnt1'){ closeSheet(); verEntreacto(1); } });
+  return h.replace('<button class="ghost" type="button" id="verPro">','<button class="ghost" type="button" id="verEnt1">Volver a ver: Fin del Acto I</button>'+(store.get('fin2',false)?'<button class="ghost" type="button" id="verEnt2">Volver a ver: Fin del Acto II</button>':'')+'<button class="ghost" type="button" id="verPro">'); }; })();
+document.addEventListener('click',function(e){ if(e.target&&e.target.id==='verEnt1'){ closeSheet(); verEntreacto(1); } if(e.target&&e.target.id==='verEnt2'){ closeSheet(); verEntreacto(2); } });
 /* el zurrón muestra lo que llevas y el sello */
 TABS.zurron=function(){ var z=zEstado(), done=store.get('fin1',false), s=done?zSello():null;
   return '<h2>Zurrón</h2>'+(s?selloHtml(1,s.n)+'<p style="text-align:center;margin:0"><b>'+s.t+'</b><br><i>«'+zTitulo()+'»</i></p>':'')+

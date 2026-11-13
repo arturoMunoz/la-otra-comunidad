@@ -1389,6 +1389,10 @@
 "1": {
 "video": "assets/entreactos/acto1.mp4",
 "poster": "assets/entreactos/acto1.webp"
+},
+"2": {
+"video": "assets/entreactos/acto2.mp4",
+"poster": "assets/entreactos/acto2.webp"
 }
 },
 "capas": {
