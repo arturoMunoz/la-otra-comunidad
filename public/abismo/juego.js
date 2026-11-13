@@ -110,7 +110,7 @@ const tag = (h, t) => {h.tags = (h.tags || '') + ' ' + t;};
 const RAMA_AGUANTE = (t, icono) => ({id: 'aguante', t, icono, contra: 'Te mantiene en pie cuando te rodean', n: [
   ['Cota de malla', '+25 % de vida máxima', (h) => {h.vidaMax *= 1.25; h.vida = Math.min(h.vidaMax, h.vida * 1.25);}],
   ['Escudo bien sujeto', 'Recibes un 15 % menos de daño', (h) => {h.armadura = Math.min(0.6, h.armadura + 0.15);}],
-  ['Aliento de Rohan', 'Regeneras 1,5 de vida por segundo', (h) => {h.regen = (h.regen || 0) + 1.5;}],
+  ['Segundo aire', 'Regeneras 1,5 de vida por segundo', (h) => {h.regen = (h.regen || 0) + 1.5;}],
   ['Sed de batalla', 'Cada baja te cura 2 de vida', (h) => {h.tal.sangre = true;}],
   ['Último aliento', 'Con poca vida, 3 s invencible y furia (una vez por oleada) y +25 % de vida', (h) => {h.tal.aliento = true; h.vidaMax *= 1.25;}],
 ]});
@@ -196,19 +196,37 @@ function ramaLibre(rs, i) {
   return '';
 }
 function arbolDisponible() {const rs = J.arbol; return rs && rs.some((r, i) => !ramaLibre(rs, i));}
+/* pantalla del árbol: 3 ramas en columnas, 5 nodos cada una (de abajo arriba), el siguiente de cada rama brilla */
 function ofreceArbol() {
   J.pausa = true; const h = J.h, rs = J.arbol;
-  $('mejT').textContent = '¡Subes de nivel!'; $('mejP').textContent = 'Elige cómo evoluciona tu héroe. Una rama puede llegar al 5; otra, solo al 2.';
+  $('mejT').textContent = '¡Subes de nivel!'; $('mejP').textContent = 'Elige un nodo del árbol. Una rama puede llegar al V; otra, solo al II.';
   const c = $('cartas'); c.innerHTML = '';
-  rs.map((r, i) => [r, i]).sort((a, b) => !!ramaLibre(rs, a[1]) - !!ramaLibre(rs, b[1])).forEach(([r, i]) => {
-    const bloq = ramaLibre(rs, i), sig = r.def.n[r.nv], b = document.createElement('button');
-    b.className = bloq ? 'carta-bloq' : 'carta'; b.dataset.r = r.nv >= 4 ? 'legendaria' : r.nv === 3 ? 'epica' : r.nv === 2 ? 'rara' : 'comun';
-    const pips = '<span class="pips">' + [0, 1, 2, 3, 4].map((k) => '<i class="' + (k < r.nv ? 'si' : '') + '"></i>').join('') + '</span>';
-    b.innerHTML = '<img src="' + ico(r.def.icono) + '" alt=""><div><b>' + r.def.t + '<em>' + (bloq ? '🔒 ' : '') + pips + '</em></b><small>' + (bloq ? bloq + '. <i>' + r.def.contra + '</i>' : '<b>' + (r.nv + 1) + '. ' + sig[0] + ':</b> ' + sig[1] + '. <i>' + r.def.contra + '.</i>') + '</small></div>';
-    if (!bloq) b.onclick = () => {sig[2](h); r.nv++; h.ramas = rs.map((q) => q.nv); suena('nivel'); pintaArmas(); $('mejora').classList.add('hidden'); J.pausa = false; reloj.getDelta(); setTimeout(siguientePendiente, 50);};
-    c.appendChild(b);
+  const arbol = document.createElement('div'); arbol.className = 'arbol';
+  let sel = null;
+  const detalle = document.createElement('div'); detalle.className = 'arbDet';
+  const elegir = (r, i) => {const sig = r.def.n[r.nv]; sig[2](h); r.nv++; h.ramas = rs.map((q) => q.nv); suena('nivel'); pintaArmas(); $('mejora').classList.add('hidden'); J.pausa = false; reloj.getDelta(); setTimeout(siguientePendiente, 50);};
+  const pintaDet = () => {
+    if (!sel) {detalle.innerHTML = '<p>Toca un nodo que brille.</p>'; return;}
+    const [r, i, k] = sel, n = r.def.n[k], disp = k === r.nv && !ramaLibre(rs, i);
+    detalle.innerHTML = '<div class="arbDT"><img src="' + ico(r.def.icono) + '" alt=""><div><small>' + r.def.t + ' · ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '</span></div></div>';
+    if (disp) {const b = document.createElement('button'); b.className = 'carta arbOk'; b.innerHTML = '<span>Elegir</span>'; b.onclick = () => elegir(r, i); detalle.appendChild(b);}
+    else {const p = document.createElement('p'); p.className = 'arbNo'; p.textContent = k < r.nv ? 'Ya lo tienes.' : ramaLibre(rs, i) ? '🔒 ' + ramaLibre(rs, i) + '.' : 'Antes tienes que coger el nivel anterior de esta rama.'; detalle.appendChild(p);}
+  };
+  rs.forEach((r, i) => {
+    const bloq = ramaLibre(rs, i), col = document.createElement('div'); col.className = 'arbCol' + (bloq && r.nv < 5 ? ' bloq' : '');
+    col.innerHTML = '<div class="arbCab"><img src="' + ico(r.def.icono) + '" alt=""><b>' + r.def.t + '</b><small>' + r.def.contra + '</small></div>';
+    const nodos = document.createElement('div'); nodos.className = 'arbNodos';
+    for (let k = 4; k >= 0; k--) {
+      const est = k < r.nv ? 'tengo' : k === r.nv && !bloq ? 'puedo' : 'luego', b = document.createElement('button');
+      b.className = 'nodo ' + est + (k >= 2 ? ' alto' : ''); b.innerHTML = '<i>' + ['I', 'II', 'III', 'IV', 'V'][k] + '</i><span>' + r.def.n[k][0] + '</span>';
+      b.onclick = () => {sel = [r, i, k]; arbol.querySelectorAll('.nodo').forEach((x) => x.classList.remove('sel')); b.classList.add('sel'); pintaDet(); suena('xp');};
+      nodos.appendChild(b);
+      if (est === 'puedo' && !sel) {sel = [r, i, k]; b.classList.add('sel');}
+    }
+    col.appendChild(nodos); arbol.appendChild(col);
   });
-  $('mejora').classList.remove('hidden'); ajustaCartas(c);
+  c.appendChild(arbol); c.appendChild(detalle); pintaDet();
+  $('mejora').classList.remove('hidden');
 }
 function ajustaCartas(c) {
   const f = () => c.querySelectorAll('.carta div, .carta-bloq div').forEach((d) => {let k = 1; d.style.setProperty('--k', 1); while ((d.scrollHeight > d.clientHeight + 1 || d.scrollWidth > d.clientWidth + 1) && k > 0.34) {k -= 0.04; d.style.setProperty('--k', k);}});
@@ -231,6 +249,52 @@ const DEFENSAS = {
   escorpion: {nombre: 'Escorpión', icono: 'escorpion', coste: 55, d: 'Virotes que atraviesan.'},
   catapulta: {nombre: 'Catapulta', icono: 'catapulta', coste: 75, d: 'Piedras en área.'},
 };
+/* ---------- Mercado de Edoras: equipo que se ve en el héroe y da ventajas (se compra con tesoro, se queda para siempre) ---------- */
+const MERCADO = [
+  {id: 'esc_redondo', slot: 'escudo', t: 'Escudo redondo', d: 'Recibes un 8 % menos de daño', coste: 60, pieza: 'shield_round', icono: 'escudo', ef: {armadura: 0.08}},
+  {id: 'esc_marca', slot: 'escudo', t: 'Escudo de la Marca', d: 'Recibes un 14 % menos de daño', coste: 150, pieza: 'shield_badge_color', icono: 'escudo', ef: {armadura: 0.14}},
+  {id: 'esc_puas', slot: 'escudo', t: 'Escudo de púas', d: '−12 % de daño y quien te pega se lleva un tercio', coste: 240, pieza: 'shield_spikes_color', icono: 'escudo', ef: {armadura: 0.12, espinas: 0.35}},
+  {id: 'esc_torre', slot: 'escudo', t: 'Escudo de Cuernavilla', d: 'Recibes un 20 % menos de daño', coste: 320, pieza: 'shield_square_color', icono: 'escudo', ef: {armadura: 0.2}},
+  {id: 'rh_espada', slot: 'arma', heroe: 'rohan', t: 'Espada de Edoras', d: '+12 % de daño', coste: 90, pieza: 'sword_1handed', icono: 'espada', ef: {dano: 0.12}},
+  {id: 'rh_mandoble', slot: 'arma', heroe: 'rohan', t: 'Mandoble de la Marca', d: '+28 % de daño y aplasta corazas', coste: 300, pieza: 'sword_2handed_color', icono: 'espada', ef: {dano: 0.28, tags: 'pesado'}},
+  {id: 'en_hachuela', slot: 'arma', heroe: 'enano', t: 'Hachuela de Erebor', d: 'Golpeas un 15 % más rápido', coste: 90, pieza: 'axe_1handed', icono: 'hacha', ef: {cadencia: 0.85}},
+  {id: 'en_granhacha', slot: 'arma', heroe: 'enano', t: 'Gran hacha de las Colinas de Hierro', d: '+28 % de daño', coste: 300, pieza: 'axe_2handed', icono: 'hacha', ef: {dano: 0.28}},
+  {id: 'en_jarra', slot: 'extra', heroe: 'enano', t: 'Jarra de cerveza', d: 'Regeneras 0,8 de vida por segundo', coste: 140, pieza: 'mug_full', icono: 'lembas', ef: {regen: 0.8}},
+  {id: 'el_ballesta', slot: 'arma', heroe: 'elfo', t: 'Ballesta ligera de Lórien', d: 'Disparas un 15 % más rápido', coste: 110, pieza: 'crossbow_1handed', icono: 'ballesta', ef: {cadencia: 0.85}},
+  {id: 'el_carcaj', slot: 'extra', heroe: 'elfo', t: 'Carcaj de los Galadrim', d: 'Cada flecha atraviesa a uno más', coste: 220, pieza: 'quiver', icono: 'arco', ef: {atraviesa: 1}},
+  {id: 'hb_daga', slot: 'arma', heroe: 'hobbit', t: 'Daga de los Túmulos', d: '+15 % de daño y atraviesa corazas', coste: 180, pieza: 'dagger', icono: 'cuchillos', ef: {dano: 0.15, tags: 'perfora'}},
+  {id: 'hb_piedras', slot: 'extra', heroe: 'hobbit', t: 'Saco de piedras de la Comarca', d: 'Lanzas una piedra más', coste: 200, pieza: 'arrow_bundle', icono: 'i_piedras', ef: {multi: 1}},
+];
+/* dónde va cada pieza en el esqueleto de KayKit y qué pieza de serie esconde */
+const SLOT_HUESO = {arma: 'handslotr', escudo: 'handslotl', extra: 'chest'};   /* GLTFLoader quita los puntos de los nombres */
+const DE_SERIE = {rohan: {arma: ['1H_Sword'], escudo: ['Round_Shield']}, enano: {arma: ['2H_Axe']}, elfo: {arma: ['2H_Crossbow']}, hobbit: {arma: ['Throwable']}};
+function equipoDe(tipo) {const e = guardado.mercado.equipo[tipo] || {}; return Object.values(e).map((id) => MERCADO.find((m) => m.id === id)).filter(Boolean);}
+function aplicaEquipo(h, tipo) {
+  for (const m of equipoDe(tipo)) {
+    const f = m.ef;
+    if (f.armadura) h.armadura = Math.min(0.6, h.armadura + f.armadura);
+    if (f.dano) h.dano *= 1 + f.dano;
+    if (f.cadencia) h.cadencia *= f.cadencia;
+    if (f.regen) h.regen += f.regen;
+    if (f.atraviesa) h.atraviesa += f.atraviesa;
+    if (f.multi) h.multi += f.multi;
+    if (f.espinas) h.espinas = (h.espinas || 0) + f.espinas;
+    if (f.tags) h.tags = (h.tags || '') + ' ' + f.tags;
+  }
+}
+function vistePersonaje(raiz, tipo) {
+  if (!M.equipo) return;
+  raiz.traverse((o) => {if (o.userData.pieza) o.removeFromParent();});
+  const eq = equipoDe(tipo), serie = DE_SERIE[tipo] || {};
+  for (const slot of ['arma', 'escudo']) for (const n of serie[slot] || []) {const o = raiz.getObjectByName(n); if (o) o.visible = !eq.some((m) => m.slot === slot);}
+  for (const m of eq) {
+    const hueso = raiz.getObjectByName(SLOT_HUESO[m.slot]), base = M.equipo.scene.getObjectByName(m.pieza); if (!hueso || !base) continue;
+    const p = base.clone(true); p.position.set(0, 0, 0); p.rotation.set(0, 0, 0); p.userData.pieza = true;
+    if (m.slot === 'extra') {p.position.set(0, 0.05, -0.32); p.rotation.set(0.25, Math.PI, 0); p.scale.setScalar(0.8);}
+    p.traverse((o) => {if (o.isMesh) {o.castShadow = true; o.material = o.material.clone(); o.material.roughness = 0.75;}});
+    hueso.add(p);
+  }
+}
 const PERMANENTES = [
   {id: 'vida', t: 'Cota de malla', d: '+10 % de vida', base: 30},
   {id: 'dano', t: 'Forja de Edoras', d: '+10 % de daño', base: 40},
@@ -256,6 +320,7 @@ const AMENAZA_DE = [null, 'huargos', 'acorazados', 'trolls', 'capitan'];
 /* ---------- guardado (tesoro y mejoras permanentes) ---------- */
 const guardado = (() => {try {return JSON.parse(localStorage.getItem('abismo.guardado')) || {};} catch (e) {return {};}})();
 guardado.tesoro = guardado.tesoro || 0; guardado.perm = guardado.perm || {}; guardado.record = guardado.record || 0;
+guardado.mercado = guardado.mercado || {tiene: {}, equipo: {}};
 const guarda = () => {try {localStorage.setItem('abismo.guardado', JSON.stringify(guardado));} catch (e) {}};
 
 /* ---------- motor 3D ---------- */
@@ -301,7 +366,7 @@ function piezas(gltf) {
   });
   return out;
 }
-const NOMBRES = ['casco_enano', 'escaleras_muro', 'entrada_cuevas', 'q_arquero', 'q_brujo', 'uruk_piquero', 'huargo_alfa', 'patio5', 'muralla_helm', 'cuernavilla_v2', 'muro_tramo', 'desague', 'torre_arqueros', 'barricada_puerta', 'empalizada', 'caldero_aceite', 'sitio_construccion', 'aldeano_rohan', 'puerta', 'atrezo', 'objetos', 'efectos', 'efectos2', 'efectos3', 'proyectiles', 'armas_auto', 'defensas', 'marcador_colocacion', 'botin', 'brillo_elite',
+const NOMBRES = ['equipo', 'casco_enano', 'escaleras_muro', 'entrada_cuevas', 'q_arquero', 'q_brujo', 'uruk_piquero', 'huargo_alfa', 'patio5', 'muralla_helm', 'cuernavilla_v2', 'muro_tramo', 'desague', 'torre_arqueros', 'barricada_puerta', 'empalizada', 'caldero_aceite', 'sitio_construccion', 'aldeano_rohan', 'puerta', 'atrezo', 'objetos', 'efectos', 'efectos2', 'efectos3', 'proyectiles', 'armas_auto', 'defensas', 'marcador_colocacion', 'botin', 'brillo_elite',
   'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'arquero_rohan', 'orco', 'uruk', 'berserker', 'warg', 'troll', 'ballestero', 'portaestandarte', 'troll_acorazado', 'capitan', 'uruk_acorazado', 'antorchero', 'ariete', 'huargo_jinete', 'ballesta_muro', 'catapulta_rohan', 'arquero_muralla', 'jinete_rohan', 'efectos4'];
 async function cargarTodo() {
   const gl = await Promise.all(NOMBRES.map(cargaModelo));
@@ -865,6 +930,7 @@ function nuevaPartida(tipo) {
   const vida = Math.round(b.vida * (1 + 0.1 * (pm.vida || 0)));
   const h = {tal: {}, racha: 0, tipo, ...b, vida, vidaMax: vida, dano: b.dano * (1 + 0.1 * (pm.dano || 0)), vel: b.vel * (1 + 0.05 * (pm.vel || 0)), iman: 2.6, xpMul: 1, regen: 0, armadura: 0, velArmas: 1, danoEscala: 1, multi: b.multi || 1, atraviesa: b.atraviesa || 0,
     x: marcas.jugador_inicio.x, z: marcas.jugador_inicio.z, rot: Math.PI, cd: 0, golpe: 0, objetivo: null, alterna: 0, inv: 0, a: montar(b.modelos ? azar(b.modelos) : b.modelo, true)};
+  aplicaEquipo(h, tipo); vistePersonaje(h.a.raiz, tipo);
   scene.add(h.a.raiz); pon(h.a, 'quieto');
   if (!window._aro) {const g = new THREE.PlaneGeometry(1.9, 1.9); g.rotateX(-Math.PI / 2); const tx = new THREE.TextureLoader().load('ui/aro_heroe.webp'); tx.colorSpace = THREE.SRGBColorSpace; window._aro = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: tx, transparent: true, opacity: 0.8, depthWrite: false})); window._aro.renderOrder = 2;}
   scene.add(window._aro);
@@ -1604,7 +1670,7 @@ function mueveEnemigo(e, dt) {
   if (e.golpe > 0) {
     e.golpe -= dt;
     if (e.golpe <= 0) {
-      if (e.golpeA === 'heroe' && Math.hypot(h.x - e.x, h.z - e.z) < e.radio + 1.25 && Math.abs((e.y ?? 0.15) - (h.y ?? 0.15)) < 2.4) dañaHeroe(dd.dano * fuerza * (e.enMuro ? 0.65 : 1));
+      if (e.golpeA === 'heroe' && Math.hypot(h.x - e.x, h.z - e.z) < e.radio + 1.25 && Math.abs((e.y ?? 0.15) - (h.y ?? 0.15)) < 2.4) {dañaHeroe(dd.dano * fuerza * (e.enMuro ? 0.65 : 1)); if (h.espinas && !h.inv) {FUENTE = 'heroe'; hiere(e, dd.dano * fuerza * h.espinas, 0, 0, 0); efecto('chispa', e.x, 1.2, e.z, {escala: 0.8});}}
       if (e.golpeA === 'area') {J.temblor = 0.5; efecto('polvo', e.gx, 0.15, e.gz, {escala: e.gr / 0.68, vida: 0.5}); if (Math.hypot(h.x - e.gx, h.z - e.gz) < e.gr) dañaHeroe(dd.dano * fuerza); J.defensas.forEach((d) => {if (Math.hypot(d.x - e.gx, d.z - e.gz) < e.gr) dañaDefensa(d, 30);});}
       if (e.golpeA === 'puerta') {golpeaPuerta(dd.danoPuerta * fuerza); if (J.t - (J.avisoPuerta || -99) > 12 && Math.abs(h.z - PATIO.z1) > 14) {J.avisoPuerta = J.t; aviso('¡Atacan la puerta!', 1300);}}
       if (e.golpeA === 'explota') {golpeaPuerta(dd.danoPuerta); J.temblor = 0.6; efecto('explosion', e.x, 0.1, e.z + 0.8, {escala: 2.2, vida: 0.7, crece: 1.4}); aviso('¡La puerta tiembla!', 900); mata(e, false);}
@@ -2813,7 +2879,62 @@ $('otra').onclick = () => {$('fin').classList.add('hidden'); $('inicio').classLi
 $('otraYa').onclick = () => {$('fin').classList.add('hidden'); nuevaPartida(elegido); reloj.getDelta();};
 bucle();
 pintaRanking($('rankIni'), 3);
-cargarTodo().then(() => {$('jugar').disabled = false; $('jugar').firstElementChild.textContent = 'Defender la muralla';}).catch((e) => {console.error(e); $('jugar').firstElementChild.textContent = 'Error al cargar';});
+cargarTodo().then(() => {$('jugar').disabled = false; $('bMerc').disabled = false; $('jugar').firstElementChild.textContent = 'Defender la muralla';}).catch((e) => {console.error(e); $('jugar').firstElementChild.textContent = 'Error al cargar';});
+/* ---------- pantalla del Mercado ---------- */
+let mercHeroe = 'rohan', prev = null;
+function abreMercado() {mercHeroe = elegido || 'rohan'; $('inicio').classList.add('hidden'); $('mercadoCapa').classList.remove('hidden'); pintaMercado(); arrancaPrevia();}
+function pintaMercado() {
+  const g = guardado.mercado, eq = g.equipo[mercHeroe] = g.equipo[mercHeroe] || {};
+  $('mercTes').textContent = guardado.tesoro;
+  $('mercHer').innerHTML = Object.keys(HEROES).map((k) => '<button data-h="' + k + '" class="' + (k === mercHeroe ? 'on' : '') + '"><img src="iconos/h_' + k + '.webp" alt=""></button>').join('');
+  $('mercNom').textContent = HEROES[mercHeroe].nombre;
+  const lista = MERCADO.filter((m) => !m.heroe || m.heroe === mercHeroe), cont = $('mercLista'); cont.innerHTML = '';
+  for (const [slot, tit] of [['arma', 'Armas'], ['escudo', 'Escudos'], ['extra', 'Equipo']]) {
+    const del = lista.filter((m) => m.slot === slot); if (!del.length) continue;
+    const h = document.createElement('h3'); h.textContent = tit; cont.appendChild(h);
+    for (const m of del) {
+      const tiene = g.tiene[m.id], puesto = eq[slot] === m.id, r = document.createElement('div'); r.className = 'mItem' + (puesto ? ' puesto' : '');
+      r.innerHTML = '<img src="' + ico(m.icono) + '" alt=""><div><b>' + m.t + '</b><span>' + m.d + '</span></div>';
+      const b = document.createElement('button');
+      if (!tiene) {b.innerHTML = '<i>' + m.coste + '</i>'; b.className = 'comprar' + (guardado.tesoro < m.coste ? ' no' : ''); b.onclick = () => {if (guardado.tesoro < m.coste) {aviso('Te falta tesoro: juega más partidas', 1200); return;} guardado.tesoro -= m.coste; g.tiene[m.id] = true; eq[slot] = m.id; guarda(); suena('cofre'); pintaMercado(); vistePrevia();};}
+      else if (puesto) {b.textContent = 'Quitar'; b.className = 'quitar'; b.onclick = () => {delete eq[slot]; guarda(); pintaMercado(); vistePrevia();};}
+      else {b.textContent = 'Equipar'; b.className = 'equipar'; b.onclick = () => {eq[slot] = m.id; guarda(); suena('metal'); pintaMercado(); vistePrevia();};}
+      r.appendChild(b); cont.appendChild(r);
+    }
+  }
+  $('mercHer').querySelectorAll('button').forEach((b) => b.onclick = () => {mercHeroe = b.dataset.h; pintaMercado(); vistePrevia(true);});
+}
+/* el héroe girando con su equipo puesto (un renderizador pequeño aparte) */
+function arrancaPrevia() {
+  const cv = $('mercCv');
+  if (!prev) {
+    const r = new THREE.WebGLRenderer({canvas: cv, antialias: true, alpha: true}); r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.35;
+    const sc = new THREE.Scene(); sc.add(new THREE.HemisphereLight('#fff4dc', '#3a2a1a', 2.2)); const d = new THREE.DirectionalLight('#ffe2b0', 2.4); d.position.set(2, 4, 3); sc.add(d);
+    const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 50); cam.position.set(0, 1.35, 3.7); cam.lookAt(0, 0.95, 0);
+    prev = {r, sc, cam, a: null, t: performance.now()};
+  }
+  vistePrevia(true);
+  const bucleP = () => {
+    if ($('mercadoCapa').classList.contains('hidden')) {prev.run = false; return;}
+    const w = cv.clientWidth, h = cv.clientHeight; if (cv.width !== Math.round(w * prev.r.getPixelRatio())) {prev.r.setSize(w, h, false); prev.cam.aspect = w / h; prev.cam.updateProjectionMatrix();}
+    const t = performance.now(), dt = Math.min(0.05, (t - prev.t) / 1000); prev.t = t;
+    if (prev.a) {prev.a.mixer.update(dt); prev.a.raiz.rotation.y += dt * 0.6;}
+    prev.r.render(prev.sc, prev.cam); requestAnimationFrame(bucleP);
+  };
+  if (!prev.run) {prev.run = true; requestAnimationFrame(bucleP);}
+}
+function vistePrevia(nuevo) {
+  if (!prev) return;
+  if (nuevo || !prev.a || prev.tipo !== mercHeroe) {
+    if (prev.a) prev.sc.remove(prev.a.raiz);
+    const b = HEROES[mercHeroe]; prev.a = montar(b.modelos ? b.modelos[0] : b.modelo, false); prev.tipo = mercHeroe; prev.a.raiz.position.set(0, 0, 0); prev.a.raiz.rotation.y = 0.5;
+    prev.a.raiz.traverse((o) => {if (o.userData.borde) o.visible = false;});
+    prev.sc.add(prev.a.raiz); pon(prev.a, 'quieto');
+  }
+  vistePersonaje(prev.a.raiz, mercHeroe);
+}
+$('bMerc').onclick = abreMercado; window._prev = () => prev;
+$('mercVolver').onclick = () => {$('mercadoCapa').classList.add('hidden'); $('inicio').classList.remove('hidden');};
 $('bArm').onclick = () => {pintaArmeria(); $('inicio').classList.add('hidden'); $('armeriaCapa').classList.remove('hidden');};
 $('armVolver').onclick = () => {$('armeriaCapa').classList.add('hidden'); $('inicio').classList.remove('hidden');};
 window.ganaXp = ganaXp; window._J = () => J;

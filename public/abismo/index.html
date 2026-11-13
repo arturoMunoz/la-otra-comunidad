@@ -254,6 +254,51 @@ body.tregua #bocadillo{display:none}
 #cuenta{position:fixed;left:50%;top:44%;z-index:40;pointer-events:none;font:900 96px Georgia,serif;color:#ffd979;text-shadow:0 5px 0 #6a3a08,0 0 30px #000;transform:translate(-50%,-50%);opacity:0}
 #cuenta.sale{animation:cuenta .9s ease-out both}@keyframes cuenta{0%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.8)}}
 body.cine #banOla,body.cine #cuenta{display:none}
+/* árbol de evolución: columnas y nodos */
+.arbol{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%;max-width:440px}
+.arbCol{display:flex;flex-direction:column;align-items:center;gap:6px;background:#0d0906cc;border:1px solid #c79b4e66;border-radius:12px;padding:6px 4px 8px}
+.arbCol.bloq{filter:grayscale(.85) brightness(.7)}
+.arbCab{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px;min-height:92px}
+.arbCab img{width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 2px #c79b4e}
+.arbCab b{font:700 12.5px/1.1 Georgia,serif;color:#ffd979}.arbCab small{font:10.5px/1.15 Georgia,serif;color:#d8c39a}
+.arbNodos{position:relative;display:flex;flex-direction:column;align-items:center;gap:9px}
+.arbNodos::before{content:'';position:absolute;top:18px;bottom:18px;left:50%;width:4px;margin-left:-2px;background:linear-gradient(#6a4a20,#3a2810);border-radius:2px}
+.nodo{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:1px;background:none;border:0;padding:0;color:#e9d7ad;font-family:Georgia,serif;width:100%}
+.nodo i{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;font:900 13px Georgia,serif;font-style:normal;background:radial-gradient(#4a3a28,#241a10);border:2px solid #7a6040;color:#bfa880;box-shadow:0 2px 0 #000}
+.nodo.alto i{width:40px;height:40px}
+.nodo span{font-size:10px;line-height:1.1;max-width:100%;text-align:center;opacity:.8}
+.nodo.tengo i{background:radial-gradient(#ffe58a,#d08a10);border-color:#fff2b0;color:#4a2a00;box-shadow:0 0 10px #ffc23a99,0 2px 0 #000}
+.nodo.tengo span{color:#ffd979;opacity:1}
+.nodo.puedo i{background:radial-gradient(#7fd06a,#2f7a22);border-color:#d8ffb8;color:#fff;animation:nodoLate 1s ease-in-out infinite}
+.nodo.puedo span{opacity:1;color:#fff}
+.nodo.sel i{outline:3px solid #fff;outline-offset:2px}
+@keyframes nodoLate{50%{box-shadow:0 0 16px #9fff7a,0 2px 0 #000;transform:scale(1.08)}}
+.arbDet{width:100%;max-width:440px;margin-top:8px;background:#0d0906e6;border:1px solid #c79b4e88;border-radius:12px;padding:8px 10px;color:#f3e6c4;font-family:Georgia,serif;display:flex;align-items:center;gap:10px;min-height:76px}
+.arbDet p{margin:0;font-size:13px}.arbDT{flex:1;display:flex;gap:8px;align-items:center;text-align:left}
+.arbDT img{width:44px;height:44px;border-radius:50%}.arbDT small{display:block;color:#d8c39a;font-size:11px}.arbDT b{display:block;font-size:15px;color:#ffd979}.arbDT span{font-size:12.5px;line-height:1.25}
+.cartas .carta.arbOk{width:auto!important;min-width:92px;white-space:nowrap;text-align:center;container-type:normal!important;aspect-ratio:auto!important;flex:none;background:linear-gradient(#5fbf3f,#2f7a22)!important;border:2px solid #d8ffb8;border-radius:12px;padding:10px 16px;color:#fff;font:900 15px Georgia,serif;box-shadow:0 4px 0 #1a4a12;filter:none}
+.arbNo{font-size:12px!important;color:#d8c39a;max-width:120px}
+/* mercado de Edoras */
+#mercadoCapa{justify-content:flex-start;padding-top:calc(env(safe-area-inset-top) + 14px);gap:8px;overflow-y:auto}
+.mercCab{width:min(400px,94%);padding-left:56px;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;font-family:Georgia,serif}
+.mercCab b{font:900 19px Georgia,serif;white-space:nowrap;color:#ffd979;text-shadow:0 2px 0 #6a3a08}
+.mercCab span{display:flex;align-items:center;gap:4px;color:#f3e6c4;font-size:13px}.mercCab img{width:22px}.mercCab i{font:900 17px Georgia,serif;color:#ffd24a;font-style:normal}
+#mercHer{display:flex;gap:8px}#mercHer button{width:52px;height:52px;border-radius:50%;padding:0;border:2px solid #7a6040;background:#1a120a;opacity:.6}
+#mercHer button.on{opacity:1;border-color:#ffd24a;box-shadow:0 0 12px #ffc23a88}#mercHer img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.mercPrev{position:relative;width:min(400px,94%);height:230px;border-radius:14px;background:radial-gradient(ellipse at 50% 85%,#5a4126 0,#2a1d10 45%,#120c07 80%);border:1px solid #c79b4e66;flex:none}
+.mercPrev canvas{position:static!important;inset:auto!important;width:100%!important;height:100%!important;display:block;z-index:auto!important}.mercPrev em{position:absolute;left:0;right:0;bottom:8px;text-align:center;font:700 15px Georgia,serif;color:#ffd979;font-style:normal;text-shadow:0 2px 4px #000}
+#mercLista{width:min(400px,94%);display:flex;flex-direction:column;gap:6px;padding-bottom:90px}
+#mercLista h3{margin:6px 0 0;font:700 14px Georgia,serif;color:#e9c77a;letter-spacing:.06em;text-transform:uppercase}
+.mItem{display:flex;align-items:center;gap:10px;background:#0d0906d9;border:1px solid #c79b4e55;border-radius:12px;padding:7px 9px;font-family:Georgia,serif;color:#f3e6c4}
+.mItem.puesto{border-color:#ffd24a;box-shadow:inset 0 0 0 1px #ffd24a66,0 0 10px #ffc23a33}
+.mItem img{width:46px;height:46px;border-radius:50%;flex:none}.mItem div{flex:1;display:flex;flex-direction:column;text-align:left}.mItem b{font-size:14.5px;color:#fff}.mItem span{font-size:12px;color:#d8c39a;line-height:1.25}
+.mItem button{flex:none;min-width:82px;border-radius:10px;padding:8px 10px;font:800 13px Georgia,serif;border:2px solid;color:#fff}
+.mItem .comprar{background:linear-gradient(#ffd25a,#d08a10);border-color:#fff2b0;color:#3a1e00;box-shadow:0 3px 0 #7a4a08}
+.mItem .comprar i{font-style:normal;padding-left:20px;background:url(ui/moneda_hud.webp) left center/17px no-repeat}
+.mItem .comprar.no{filter:grayscale(.8) brightness(.7)}
+.mItem .equipar{background:linear-gradient(#5fbf3f,#2f7a22);border-color:#d8ffb8;box-shadow:0 3px 0 #1a4a12}
+.mItem .quitar{background:#3a2a1a;border-color:#7a6040;color:#d8c39a}
+#mercVolver{position:fixed!important;left:10px!important;right:auto!important;top:calc(env(safe-area-inset-top) + 8px)!important;bottom:auto!important;transform:none!important;width:46px!important;height:46px!important;margin:0!important}
 /* marcas de amenaza (focus) */
 .mk{position:fixed;transform:translate(-50%,-100%);z-index:8;pointer-events:none;display:flex;flex-direction:column;align-items:center;animation:mkBota .7s ease-in-out infinite}
 .mk b{font:900 12px Georgia,serif;color:#fff;background:linear-gradient(#d8402e,#9a1d12);border:2px solid #ffd27a;border-radius:12px;padding:2px 8px;white-space:nowrap;box-shadow:0 2px 6px #000a}
@@ -320,12 +365,20 @@ body.cine #cineTxt{opacity:1}
   <div class="heroes" id="heroes"></div>
   <button class="bMadera" id="jugar" disabled><span>Cargando…</span></button>
   <button class="bMadera peq" id="bArm"><span id="bArmT">Armería de Edoras</span></button>
+  <button class="bMadera peq" id="bMerc" disabled><span>Mercado de Edoras</span></button>
   <div id="rankIni"></div>
   <p class="nota">Arrastra el dedo para moverte. Tus armas atacan solas. Entre oleadas, construye y repara el muro.</p>
 </div>
 <div class="capa hidden" id="armeriaCapa">
   <div class="pergArm"><div id="armeria"></div></div>
   <button class="bVolver" id="armVolver" aria-label="Volver"></button>
+</div>
+<div class="capa hidden" id="mercadoCapa">
+  <div class="mercCab"><b>Mercado de Edoras</b><span><img src="ui/moneda_hud.webp" alt=""><i id="mercTes">0</i> de tesoro</span></div>
+  <div id="mercHer"></div>
+  <div class="mercPrev"><canvas id="mercCv"></canvas><em id="mercNom"></em></div>
+  <div id="mercLista"></div>
+  <button class="bVolver" id="mercVolver" aria-label="Volver"></button>
 </div>
 <div id="bocadillo"><img alt=""><p><b></b><span></span></p></div>
 <div id="hoja"><img id="hojaI" alt=""><div><b id="hojaT"></b><span id="hojaD"></span><button id="hojaB"></button></div><button id="hojaX">✕</button></div>
