@@ -657,7 +657,7 @@ function montar(nombreModelo, sombra) {
 function pon(a, nombre, fundido = 0.15, forzar = false) {
   const nueva = a.clips[nombre]; if (!nueva) return;
   if (a.actual === nueva && !forzar) return;
-  nueva.reset().play();
+  nueva.reset().play(); if (a.desf && nueva.loop === THREE.LoopRepeat && !a.yaDesf) {nueva.time = Math.random() * nueva.getClip().duration; a.yaDesf = true;}
   if (a.actual && a.actual !== nueva) a.actual.crossFadeTo(nueva, fundido, false);
   a.actual = nueva;
 }
@@ -979,7 +979,7 @@ function creaEnemigo(tipo, opc = {}) {
   const esc = J.escalas.slice().sort((a, b) => (a.cola - b.cola) || (Math.abs(a.x - sp.x) - Math.abs(b.x - sp.x)))[0];
   const elite = !d.jefe && !d.pesado && opc.elite;
   const e = {tipo, d, vida: d.vida * DURO * (1 + tE() / 300) * (elite ? 3 : 1), x: sp.x + rnd(-2, 2), z: sp.z + rnd(-2, 2), y: 0.3, fase: 'hacia', escala: esc, sube: 0, cd: rnd(0.3, 0.8), golpe: 0, muerto: 0, aturdido: 0, lento: 0, elite, a: montar(d.modelo, !!d.jefe)};
-  e.vidaMax = e.vida;
+  e.vidaMax = e.vida; e.a.desf = true; e.a.var = rnd(0.88, 1.12); e.giroV = d.pesado || d.jefe ? 5 : 11;
   if (d.tinte) {const c = new THREE.Color(d.tinte); e.a.raiz.traverse((o) => {if (o.isMesh) {o.material.color.multiply(c); o.material.metalness = Math.max(o.material.metalness || 0, 0.45);}});}
   if (d.antorcha) {e.a.emi = [0.9, 0.35, 0.05]; e.a.raiz.traverse((o) => {if (o.isMesh && o.material.emissive) {o.material.emissive.setRGB(...e.a.emi); o.material.emissiveIntensity = 0.7;}});}
   const s = (d.escala || 1) * (elite ? 1.25 : 1); e.a.raiz.scale.setScalar(s); e.radio = d.radio * (elite ? 1.2 : 1);
@@ -2897,10 +2897,10 @@ function paso(dt) {
       const k = 1 - e.golpe / (e.golpeA === 'area' ? 0.7 : 0.35);
       e.a.raiz.traverse((o) => {if (o.isMesh && o.material.emissive && !o.userData.borde) {o.material.emissive.setRGB(0.9, 0.16, 0.03); o.material.emissiveIntensity = 0.06 + 0.32 * k * k;}}); e.a.flash = 0.04;
     }
-    e.a.raiz.position.set(e.x, e.y, e.z); e.a.raiz.rotation.y = e.rot || 0;
+    e.a.raiz.position.set(e.x, e.y, e.z); {const r = e.rot || 0; if (e.rotV === undefined || e.fase === 'sube' || e.fase === 'almena') e.rotV = r; else {let df = r - e.rotV; df = Math.atan2(Math.sin(df), Math.cos(df)); e.rotV += df * Math.min(1, dt * (e.giroV || 10));} e.a.raiz.rotation.y = e.rotV;}
     /* los lejanos se animan a saltos (cada 3 fotogramas): ahorra mucho con 100 orcos en el campo */
     const lejos = Math.abs(e.z - h0.z) > 26 || Math.abs(e.x - h0.x) > 22;
-    e.aFr = e.aFr || 0; e.aDt = (e.aDt || 0) + dt; if (!lejos || ++e.aFr % 3 === 0 || e.muerto) {e.a.mixer.update(e.aDt); e.aDt = 0;}
+    e.aFr = e.aFr || 0; e.aDt = (e.aDt || 0) + dt; if (!lejos || ++e.aFr % 2 === 0 || e.muerto) {e.a.mixer.update(e.aDt); e.aDt = 0;}
     apagaFlash(e.a, dt);
   }
   pintaBarras();
@@ -2917,7 +2917,7 @@ function ritmo(a, o, velRef, dt) {
   const px = o._px ?? o.x, pz = o._pz ?? o.z, v = Math.hypot(o.x - px, o.z - pz) / dt; o._px = o.x; o._pz = o.z;
   o._v = (o._v || 0) + (Math.min(v, velRef * 3) - (o._v || 0)) * Math.min(1, dt * 10);
   const n = a.actual && a.actual.getClip().name;
-  if (n === 'andar' || n === 'correr') a.actual.timeScale = Math.max(0.55, Math.min(1.7, o._v / (velRef * (n === 'andar' ? 0.55 : 1)) || 1));
+  if (n === 'andar' || n === 'correr') a.actual.timeScale = Math.max(0.55, Math.min(1.7, o._v / (velRef * (n === 'andar' ? 0.55 : 1)) || 1)) * (a.var || 1);
   else if (a.actual && a.actual.timeScale !== 1 && !o.lento) a.actual.timeScale = 1;
   a.raiz.rotation.order = 'YXZ';
   const lean = (n === 'correr' || n === 'andar') ? Math.min(0.13, o._v / velRef * 0.09) : 0;
