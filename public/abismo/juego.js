@@ -2066,9 +2066,9 @@ function ofreceMejoras(cofre) {
   $('mejP').textContent = cofre ? 'Elige tu premio (+15 oro)' : 'Elige una mejora';
   const c = $('cartas'); c.innerHTML = '';
   elegidas.forEach((m) => {
-    const raro = m.evo ? 'legendaria' : m.raro || (m.nueva ? 'rara' : 'comun');
+    const raro = m.evo ? 'evolucion' : m.raro || (m.nueva ? 'rara' : m.nv >= 5 ? 'legendaria' : 'comun');
     const b = document.createElement('button'); b.className = 'carta' + (m.evo ? ' evo' : '') + (m.nueva ? ' nueva' : ''); b.dataset.r = raro;
-    b.innerHTML = '<img src="' + ico(m.icono) + '" alt=""><div><b>' + m.t + (m.evo ? '<em>LEGENDARIA</em>' : m.raro === 'epica' ? '<em>ÉPICA</em>' : m.nueva ? '<em>NUEVA</em>' : m.nv ? '<em>Nivel ' + m.nv + '</em>' : m.base ? '<em>Tu arma</em>' : '') + '</b><small>' + m.d + '</small></div>';
+    b.innerHTML = '<img src="' + ico(m.icono) + '" alt=""><div><b>' + m.t + (m.evo ? '<em>EVOLUCIÓN</em>' : m.raro === 'epica' ? '<em>ÉPICA</em>' : m.nueva ? '<em>NUEVA</em>' : m.nv ? '<em>NIVEL ' + m.nv + '</em>' : m.base ? '<em>TU ARMA</em>' : '') + '</b><small>' + m.d + '</small></div>';
     b.onclick = () => {m.f(); pintaArmas(); $('mejora').classList.add('hidden'); J.pausa = false; reloj.getDelta(); setTimeout(siguientePendiente, 50);};
     c.appendChild(b);
   });

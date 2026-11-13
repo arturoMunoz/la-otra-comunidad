@@ -206,6 +206,21 @@ body.tregua #bocadillo{display:none}
 .barra.jefe i{background:linear-gradient(#d08aff,#8a2be2 50%,#4a0f8a)!important}
 .datos{margin:4px 6px 0;font:800 11px system-ui!important;color:#f3e6c4;-webkit-text-stroke:2.5px #1a0f08;paint-order:stroke fill;text-shadow:none!important}.datos #oro::before{display:none}
 #armas{position:static!important;margin:6px 2px 0!important}
+/* cartas de mejora en tiras horizontales: se leen enteras en el móvil */
+.cartas{flex-direction:column!important;flex-wrap:nowrap!important;align-items:center;gap:10px!important;max-width:460px!important;padding:0 8px!important}
+.cartas .carta{flex:none;width:100%;aspect-ratio:720/216;background:url(ui/fila_comun.webp) center/100% 100% no-repeat;filter:drop-shadow(0 5px 8px #000b)}
+.cartas .carta[data-r=rara]{background-image:url(ui/fila_rara.webp);filter:drop-shadow(0 0 8px #3d8cff99) drop-shadow(0 5px 8px #000b)}
+.cartas .carta[data-r=epica]{background-image:url(ui/fila_epica.webp);filter:drop-shadow(0 0 9px #b45cffaa) drop-shadow(0 5px 8px #000b)}
+.cartas .carta[data-r=legendaria]{background-image:url(ui/fila_legendaria.webp);filter:drop-shadow(0 0 11px #ffc23acc) drop-shadow(0 5px 8px #000b)}
+.cartas .carta[data-r=evolucion]{background-image:url(ui/fila_evolucion.webp);filter:drop-shadow(0 0 14px #7fd6ffdd) drop-shadow(0 5px 8px #000b)}
+.cartas .carta img{left:3.9%;top:23.5%;width:19.4%;border-radius:50%}
+.cartas .carta div{left:31.8%;right:5.6%;top:33%;bottom:19%;align-items:flex-start;text-align:left;justify-content:center}
+.cartas .carta b{font-size:calc(4.9cqw * var(--k));margin-bottom:.12em}
+.cartas .carta small{font-size:calc(3.75cqw * var(--k));line-height:1.18}
+.cartas .carta em{position:absolute;right:5.6%;top:20.5%;width:16.6%;height:14%;display:flex;align-items:center;justify-content:center;margin:0;font-size:2.95cqw;font-weight:800;color:#fff!important;text-shadow:0 1px 2px #000,0 0 3px #000;letter-spacing:.03em;white-space:nowrap}
+.cartas .carta:active{transform:scale(.97)}
+.cartas .cambiar{margin-top:2px;flex:none!important}
+.cartas .carta[data-r=epica] div{left:32.8%}.cartas .carta[data-r=legendaria] div{left:34.5%}.cartas .carta[data-r=evolucion] div{left:33%}
 /* escena: franjas de cine y fuera el HUD */
 #cineA,#cineB{position:fixed;left:0;right:0;height:0;background:#000;z-index:60;pointer-events:none;transition:height .45s ease}
 #cineA{top:0}#cineB{bottom:0}
