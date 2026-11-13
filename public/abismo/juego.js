@@ -2519,11 +2519,33 @@ function siguientePendiente() {
 }
 function pintaArmas() {
   const c = $('armas'); c.innerHTML = '';
-  const pon1 = (icono, n, evo) => {const d = document.createElement('div'); d.innerHTML = '<img src="' + ico(icono) + '" alt=""><b class="' + (evo ? 'evo' : '') + '">' + (evo ? '★' : n) + '</b>'; c.appendChild(d);};
-  pon1(J.h.icono, '', false); c.lastChild.querySelector('b').remove();
-  for (const id in J.armas) pon1(ARMAS[id].icono, J.armas[id], J.evos[id]);
-  for (const id in J.pasivas) pon1(PASIVAS[id].icono, J.pasivas[id], false);
+  const pon1 = (icono, n, evo, info) => {const d = document.createElement('div'); d.innerHTML = '<img src="' + ico(icono) + '" alt=""><b class="' + (evo ? 'evo' : '') + '">' + (evo ? '★' : n) + '</b>'; d.onclick = (ev) => {ev.stopPropagation(); fichaArma(info);}; c.appendChild(d);};
+  pon1(J.h.icono, '', false, {heroe: true}); c.lastChild.querySelector('b').remove();
+  for (const id in J.armas) pon1(ARMAS[id].icono, J.armas[id], J.evos[id], {arma: id});
+  for (const id in J.pasivas) pon1(PASIVAS[id].icono, J.pasivas[id], false, {pasiva: id});
 }
+/* ficha al tocar un arma del marcador: qué hace, su nivel y con qué evoluciona (pausa mientras se lee) */
+function fichaArma(o) {
+  if (!J || J.fin) return;
+  const f = $('fichaArma'); let ic, t, txt = '', ev = '';
+  if (o.heroe) {
+    const h = J.h, ramas = (J.arbol || []).filter((r) => r.nv).map((r) => r.def.t + ' ' + ['I', 'II', 'III', 'IV', 'V'][r.nv - 1]);
+    ic = h.icono; t = 'Tu arma: ' + HEROES[h.tipo].nombre; txt = 'Daño ' + h.dano.toFixed(1) + ' · un golpe cada ' + (h.cadencia * h.velArmas).toFixed(2) + ' s · alcance ' + h.alcance.toFixed(1) + ' m.';
+    ev = ramas.length ? 'Árbol: ' + ramas.join(' · ') : 'Mejora en el árbol cada vez que subes de nivel.';
+  } else if (o.arma) {
+    const a = ARMAS[o.arma], n = J.armas[o.arma], p = PASIVAS[a.pareja];
+    ic = a.icono; t = a.nombre + (J.evos[o.arma] ? ' ★' : ' · nivel ' + n + '/5');
+    txt = J.evos[o.arma] ? a.evo : a.d.slice(0, n).join(' ');
+    ev = J.evos[o.arma] ? '¡Ya ha evolucionado!' : '<b>Evoluciona</b> con el arma al nivel 5 <u class="' + (n >= 5 ? 'si' : '') + '">' + (n >= 5 ? '✓' : n + '/5') + '</u> y ' + p.nombre + ' <u class="' + (J.pasivas[a.pareja] ? 'si' : '') + '">' + (J.pasivas[a.pareja] ? '✓' : 'te falta') + '</u> → <i>' + a.evo + '</i>';
+  } else {
+    const p = PASIVAS[o.pasiva], arma = Object.keys(ARMAS).find((k) => ARMAS[k].pareja === o.pasiva);
+    ic = p.icono; t = p.nombre + ' · nivel ' + J.pasivas[o.pasiva]; txt = p.d;
+    ev = arma ? 'Hace evolucionar <b>' + ARMAS[arma].nombre + '</b>' + (J.armas[arma] ? ' (la tienes al nivel ' + J.armas[arma] + '/5)' : ' (aún no la tienes)') + '.' : '';
+  }
+  f.innerHTML = '<div><img src="' + ico(ic) + '" alt=""><b>' + t + '</b></div><p>' + txt + '</p>' + (ev ? '<p class="ev">' + ev + '</p>' : '') + '<small>Toca para seguir</small>';
+  f.classList.remove('hidden'); J.pausaFicha = true; J.pausa = true;
+}
+$('fichaArma').onclick = () => {$('fichaArma').classList.add('hidden'); if (J && J.pausaFicha) {J.pausaFicha = false; J.pausa = false; reloj.getDelta();}};
 
 /* ---------- defensas ---------- */
 const coloca = {activo: false, tipo: null, marca: null, x: 0, z: 0, ok: false};
