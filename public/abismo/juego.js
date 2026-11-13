@@ -684,7 +684,7 @@ function actualizaManchas(dt) {
 const BARRAS = (() => {
   const N = 64, g = new THREE.PlaneGeometry(1, 1); g.translate(0.5, 0, 0);
   const mk = (color, ord) => {const m = new THREE.InstancedMesh(g, new THREE.MeshBasicMaterial({color, depthTest: false, depthWrite: false, transparent: true, opacity: 0.92, toneMapped: false}), N); m.renderOrder = ord; m.frustumCulled = false; m.count = 0; scene.add(m); return m;};
-  return {N, fondo: mk(0x140c08, 20), vida: mk(0xffffff, 21)};
+  const r = {N, fondo: mk(0x0c0806, 20), vida: mk(0xffffff, 21)}; r.fondo.material.opacity = 0.62; return r;
 })();
 const _bq = new THREE.Quaternion(), _bs = new THREE.Vector3(), _bp = new THREE.Vector3(), _bm = new THREE.Matrix4(), _bd = new THREE.Vector3(), _bc = new THREE.Color();
 function pintaBarras() {
@@ -1322,10 +1322,14 @@ function fuegoIsengard() {
   }
 }
 /* ---------- escalas ---------- */
-function ponEscala(s) {
+function objEscala(s) {
   const o = P.escala.clone(true);
-  o.scale.setScalar(1.25); o.rotation.y = Math.PI; o.position.set(s.x, 0.25, Z_MURO_FUERA);
-  scene.add(o);
+  o.scale.setScalar(1.25); o.rotation.order = 'YXZ'; o.rotation.y = Math.PI; o.position.set(s.x, 0.25, Z_MURO_FUERA);
+  scene.add(o); return o;
+}
+function ponEscala(s) {
+  const o = s.obj || objEscala(s); o.rotation.x = 0;
+  efecto('polvo', s.x, Y_MURO, Z_MURO_FUERA - 0.3, {escala: 1.4, vida: 0.5, crece: 1.6}); suena('madera'); J.temblor = Math.max(J.temblor, 0.12);
   const mixer = new THREE.AnimationMixer(o);
   const caer = mixer.clipAction(M.objetos.animations[0]); caer.setLoop(THREE.LoopOnce, 1); caer.clampWhenFinished = true;
   Object.assign(s, {obj: o, mixer, caer, estado: 'arriba', vida: 10 + J.t / 30});
@@ -1335,14 +1339,21 @@ function danaEscala(s, n) {
   s.vida -= n; efecto('chispa', s.x, Y_MURO - 0.5, Z_MURO_ARRIBA + 0.4, {escala: 1.2});
   if (s.vida <= 0) {
     s.estado = 'cayendo'; s.t = 0.9; s.caer.reset().play();
-    J.enemigos.forEach((e) => {if (e.escala === s && e.fase === 'sube' && !e.muerto && !(e.tipo === 'warg' || e.d.salta)) mata(e, true);});
+    J.enemigos.forEach((e) => {if (e.escala === s && e.fase === 'sube' && !e.muerto && !(e.tipo === 'warg' || e.d.salta)) caeDeEscala(e);});
     J.puntos += 50; aviso('¡Escala derribada!', 900);
   }
 }
+const ESC_TUMBADA = -1.32;
 function actualizaEscalas(dt) {
   J.escalas.forEach((s) => {
     if (s.mixer) s.mixer.update(dt);
-    if (s.estado === 'poniendo') {s.t -= dt; if (s.t <= 0) ponEscala(s);}
+    if (s.estado === 'poniendo') {
+      /* la levantan entre varios: sale tumbada del suelo y se apoya contra el muro de golpe */
+      if (!s.obj) {s.obj = objEscala(s); s.T = s.t;}
+      s.t -= dt; const k = 1 - Math.max(0, s.t) / (s.T || 2.2), q = k < 0.25 ? 0 : (k - 0.25) / 0.75, ease = q * q * (3 - 2 * q);
+      s.obj.rotation.x = ESC_TUMBADA * (1 - ease);
+      if (s.t <= 0) ponEscala(s);
+    }
     if (s.estado === 'cayendo') {s.t -= dt; if (s.t <= 0) {scene.remove(s.obj); s.obj = null; s.estado = 'nada';}}
   });
 }
@@ -1464,16 +1475,31 @@ function mueveEnemigo(e, dt) {
     if (tr.roto && dist < 1.2) {cruza(e, s.x + rnd(-0.9, 0.9), 0.5); return;}
     if (dist < 0.6) {
       if (warg) {e.fase = 'sube'; e.sube = 0; pon(e.a, e.a.clips.saltar_muro ? 'saltar_muro' : 'saltar', 0.05, true);}
-      else if (s.estado === 'arriba') {e.fase = 'sube'; e.sube = 0; e.x = s.x; pon(e.a, 'trepar');}
-      else {if (s.estado === 'nada') {s.estado = 'poniendo'; s.t = 2.2;} pon(e.a, 'quieto');}
+      else if (s.estado === 'arriba') {
+        /* de uno en uno: espera a que el de delante haya subido un trecho (no se apelotonan en la escala) */
+        const ocupada_ = J.enemigos.some((o) => o !== e && !o.muerto && o.escala === s && o.fase === 'sube' && o.sube < 0.3);
+        if (ocupada_) {e.rot = 0; pon(e.a, 'quieto');} else {e.fase = 'sube'; e.sube = 0; e.x = s.x; pon(e.a, 'trepar');}
+      }
+      else {if (s.estado === 'nada') {s.estado = 'poniendo'; s.t = 2.2;} e.rot = 0; pon(e.a, s.estado === 'poniendo' && e.a.clips.golpear_puerta ? 'golpear_puerta' : 'quieto');}
     } else {e.x += dx / dist * vel * dt; e.z += dz / dist * vel * dt; e.rot = Math.atan2(dx, dz); pon(e.a, dd.correr ? 'correr' : 'andar');}
   } else if (e.fase === 'sube') {
-    if (!warg && s.estado !== 'arriba') {mata(e, true); return;}
+    if (!warg && s.estado !== 'arriba') {caeDeEscala(e); return;}
     e.sube += dt / (warg ? 1.2 : 2.4);
     const k = Math.min(1, e.sube);
-    e.z = Z_MURO_FUERA - 0.3 + (Z_MURO_ARRIBA - Z_MURO_FUERA + 0.3) * k;
     e.y = 0.3 + (Y_MURO - 0.3) * (warg ? Math.sin(k * Math.PI / 2) : k); e.rot = 0;
-    if (k >= 1) {dañaTramo(J.tramos[s.i - 1], e.d.pesado ? 16 : e.d.jefe ? 30 : 4); e.fase = 'adarve'; e.sube = 0; pon(e.a, e.a.clips.pasar_almena ? 'pasar_almena' : 'saltar', 0.05, true);}
+    /* pegado a la cara del muro (que tiene talud abajo y almenas arriba): nunca dentro de la piedra */
+    e.z = warg ? Z_MURO_FUERA - 0.3 + (Z_MURO_ARRIBA - Z_MURO_FUERA + 0.3) * k : caraMuro(e.y) - 0.55;
+    if (!warg && e.a.clips.trepar && !ocupada(e.a)) pon(e.a, 'trepar');
+    if (k >= 1) {
+      dañaTramo(J.tramos[s.i - 1], e.d.pesado ? 16 : e.d.jefe ? 30 : 4);
+      if (warg) {e.fase = 'adarve'; e.sube = 0; pon(e.a, e.a.clips.saltar ? 'saltar' : 'correr', 0.05, true);}
+      else {e.fase = 'almena'; e.alm = 0; e.z0 = e.z; pon(e.a, e.a.clips.pasar_almena ? 'pasar_almena' : 'saltar', 0.05, true);}
+    }
+  } else if (e.fase === 'almena') {
+    /* salta por encima de la almena y cae en el adarve */
+    e.alm += dt / 0.7; const k = Math.min(1, e.alm);
+    e.z = e.z0 + (ADARVE.z0 + 0.5 - e.z0) * k; e.y = Y_MURO + Math.sin(k * Math.PI) * 1.15; e.rot = 0;
+    if (k >= 1) {e.fase = 'adarve'; e.sube = 0; e.y = Y_MURO; efecto('polvo', e.x, Y_MURO + 0.2, e.z, {escala: 0.7, vida: 0.4});}
   } else if (e.fase === 'adarve') {
     if (J.enMuro && !e.yaMuro) {e.fase = 'patio'; e.enMuro = e.yaMuro = true; e.y = Y_MURO; e.z = rnd(ADARVE.z0, ADARVE.z1); s.cola = Math.max(0, s.cola - 1); return;}
     if (!e.d.salta) {
@@ -1784,7 +1810,7 @@ function golpeCargado(h, pw) {
 }
 function impacta(h) {
   if (J.enMuro) for (const sc of J.escalas) if (sc.estado === 'arriba' && Math.abs(sc.x - h.x) < h.alcance + 1.3 && h.z < -18) {danaEscala(sc, danoH(h) * 1.6); particula('astillas', sc.x, Y_MURO + 0.3, Z_MURO_ARRIBA - 0.4, {n: 3, vel: 2.5, sube: 2, vida: 0.6, escala: 0.5, grav: 10, crece: 1}); suena('madera');}
-  if (J.enMuro) for (const e of cercanos(h.x, h.z, h.alcance + 2)) if (!e.muerto && e.fase === 'sube' && e.sube > 0.55 && Math.hypot(e.x - h.x, e.z - h.z) < h.alcance + 1.4) {FUENTE = 'heroe'; e.vida = 0; e.cae = true; mata(e, true);}
+  if (J.enMuro) for (const e of cercanos(h.x, h.z, h.alcance + 2)) if (!e.muerto && e.fase === 'sube' && e.sube > 0.55 && Math.hypot(e.x - h.x, e.z - h.z) < h.alcance + 1.4) {FUENTE = 'heroe'; e.vida = 0; caeDeEscala(e); efecto('chispa', e.x, e.y + 1, e.z, {escala: 1.2}); J.parada = Math.max(J.parada || 0, 0.04);}
   const ob = h.objetivo; if (!ob) return;
   const pw = poder();
   if (h.cargado) {h.cargado = false; golpeCargado(h, pw); if (h.cuerpo) return;}
@@ -1891,8 +1917,23 @@ function hiere(e, n, dx, dz, emp = 0.8) {
   /* menos números: solo golpes que importan y como mucho uno cada 0,4 s por enemigo */
   if ((n >= 5 || como === 'debil') && !(e.numT > J.t - 0.4)) e.numT = J.t, numero(e.x, e.d.pesado || e.d.jefe ? 4.2 : 2.3, e.z, Math.round(n), como === 'debil' ? 'debil' : n >= 8 ? 'gran' : '');
   if (e.fase === 'patio' && emp && !e.d.ariete) {const l = Math.hypot(dx, dz) || 1, k = e.d.jefe ? 0.05 : e.d.pesado ? 0.15 : 1; e.x += dx / l * emp * k; e.z += dz / l * emp * k; if (!e.d.jefe) e.aturdido = 0.12;}
-  if (e.vida <= 0) {if (e.fase !== 'patio') e.cae = true; mata(e, false);}
+  if (e.vida <= 0) {
+    const enCara = (e.fase === 'sube' || e.fase === 'almena') && !e.d.salta;
+    mata(e, false);
+    /* muere colgado del muro: cae hacia fuera dando vueltas, no se hunde en la piedra */
+    if (enCara) {e.vuela = {vx: (dx || 0) * 0.3 + rnd(-0.8, 0.8), vz: -rnd(2.5, 4), vy: rnd(1, 2.5), giro: rnd(-5, 5)}; e.muerto = 2.6; if (e.a.clips.caer) pon(e.a, 'caer', 0.05, true);}
+  }
   else if (!ocupada(e.a) && e.fase === 'patio' && e.golpe <= 0 && !e.d.jefe) pon(e.a, n >= 5 && e.a.clips.empujado ? 'empujado' : 'recibir_golpe', 0.05, true);
+}
+function caraMuro(y) {
+  const t = y < 3.75 ? -22.26 + 0.7 * y / 3.75 : -21.56, a = -22.06, k = Math.min(1, Math.max(0, (y - 6.3) / 0.9));
+  return t + (a - t) * k;
+}
+function caeDeEscala(e) {
+  if (e.muerto) return;
+  e.vuela = {vx: rnd(-1.2, 1.2), vz: -rnd(2.5, 4.5), vy: rnd(1.5, 3.5), giro: rnd(-5, 5)};
+  if (Math.random() < 0.5) suena('muerte');
+  mata(e, true); e.muerto = 2.6; e.cae = false; if (e.a.clips.caer) pon(e.a, 'caer', 0.05, true);
 }
 function mata(e, caida) {
   if (e.muerto) return;
@@ -2512,7 +2553,7 @@ function paso(dt) {
     if (!e.muerto) ritmo(e.a, e, e.d.vel, dt);
     if (!e.muerto && e.golpe > 0 && (e.golpeA === 'heroe' || e.golpeA === 'area')) {
       const k = 1 - e.golpe / (e.golpeA === 'area' ? 0.7 : 0.35);
-      e.a.raiz.traverse((o) => {if (o.isMesh && o.material.emissive) {o.material.emissive.setRGB(1, 0.12, 0.04); o.material.emissiveIntensity = 0.15 + 0.75 * k;}}); e.a.flash = 0.04;
+      e.a.raiz.traverse((o) => {if (o.isMesh && o.material.emissive && !o.userData.borde) {o.material.emissive.setRGB(0.9, 0.16, 0.03); o.material.emissiveIntensity = 0.06 + 0.32 * k * k;}}); e.a.flash = 0.04;
     }
     e.a.raiz.position.set(e.x, e.y, e.z); e.a.raiz.rotation.y = e.rot || 0;
     /* los lejanos se animan a saltos (cada 3 fotogramas): ahorra mucho con 100 orcos en el campo */
@@ -2609,7 +2650,7 @@ window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
 window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
-window._desague = () => antorchero(true); window._cartel = (a, b, c) => cartelOla(a, b, c);
+window._desague = () => antorchero(true); window._derriba = (i) => danaEscala(J.escalas[i], 999); window._cartel = (a, b, c) => cartelOla(a, b, c);
 window._monta = (n, x, z) => {const a = montar(n, true); a.raiz.position.set(x, 0.15, z); scene.add(a.raiz); const c = a.clips.quieto || Object.values(a.clips)[0]; if (c) c.play(); window._mezc = (window._mezc || []).concat(a.mixer); return a;};
 window._tramo = (k) => dañaTramo(J.tramos[k], 9999);
 window._mej = () => ofreceMejoras(false);
