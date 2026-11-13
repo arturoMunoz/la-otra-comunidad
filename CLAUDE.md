@@ -74,6 +74,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Recursos: modelos de ChatGPT (packs 16-19, muralla, cuevas, escaleras, casco), KayKit y Quaternius (CC0), texturas Poly Haven (CC0), sonido CC0 (créditos en cada carpeta). Personajes del libro solo en bocadillos con emblema (`ui/emb_*.webp`).
 - Aún no guarda partidas ni ranking en Supabase.
 - Enemigos de Isengard rehechos por ChatGPT (packs 20, 21 y 21b, 13/11/2026): mismos huesos y clips que los viejos; se envuelven tal cual en base64 (NO pasar personajes por prep18, quita el skin).
+- Pack 24 (13/11): los 14 enemigos reanimados por ChatGPT (30 fps, ciclos propios por tipo, mismos huesos y clips). Antes de meterlos se quitan las pistas quietas con `tools/abismo_limpia_anim.py SALIDA *.glb` (15 MB → 9,7 MB). Copia de los anteriores en /home/claude/bak_p23 (solo en la sesión). En código: giro suave (`e.rotV`, `e.giroV`), desfase y ritmo propio por enemigo (`a.desf`, `a.var`).
 - Escena del desagüe (`J.cine`): el mundo se congela salvo el uruk que corre, franjas negras y sin HUD (clase `body.cine`); máx. 9 s.
 - Nadie aparece dentro del muro: por el desagüe reventado y por tramos caídos se entra andando (fases `brecha` y `cruza`, por los huecos reales de `tramo_brecha`, X del tramo ±0,9).
 - Muralla en la tregua: un botón por tramo (`#trTramos`), con vida, ★ de refuerzo y coste; reparar deja el tramo entero.
