@@ -1,0 +1,44 @@
+PACK VADO 2 — INTERFAZ PINTADA
+
+32 archivos PNG RGBA, sin texto ni marcas de agua.
+
+minimapa/: 1 imagen de 512x1024. Norte = Isengard, sur = Rohan.
+Camino central, río transversal y cinco huecos por lado en las empalizadas.
+Mapa pintado opaco con margen transparente de 2 px horizontal / 4 px vertical.
+El interior del mapa contiene terreno: no es una capa vacía de marcadores.
+
+indicadores/: 4 imágenes blancas para teñir por código.
+- indicador_flecha.png: 512x128; apunta a la derecha.
+- indicador_cono_90.png: 512x512; vértice (256,418), abre hacia arriba.
+  Ángulo geométrico 90 grados; radio 325,269 px.
+- indicador_circulo_area.png: 512x512; centro (256,256), radio 231 px.
+- indicador_circulo_alcance.png: 512x512; centro (256,256), radio 235 px.
+RGB blanco puro; forma, relleno tenue y brillo suave definidos mediante alfa.
+El brillo añade unos píxeles visuales fuera del borde geométrico.
+En Three.js: material transparente, color = tinte, depthWrite = false.
+Ajustar el desplazamiento vertical para evitar z-fighting con el terreno.
+
+habilidades/: hoja 4x4 de 1024x1024 y 16 PNG de 256x256.
+Cada celda de la hoja mide 256x256. Orden de izquierda a derecha:
+Fila 1 Rohan: estocada de lanza, escudo de Edoras, grito de la Marca,
+               carga de los Rohirrim.
+Fila 2 Enano: hachazo en abanico, piel de piedra, salto con martillo,
+               furia de Durin.
+Fila 3 Elfo: flecha perforante, ráfaga de flechas, paso élfico,
+              lluvia de flechas.
+Fila 4 Hobbit: piedra certera, desaparecer, puñado de piedras,
+                suerte del hobbit (trébol y halo de luz).
+atlas_habilidades.json proporciona las coordenadas de píxel de cada celda,
+con origen en la esquina superior izquierda. Ajustar Y si tu sistema UV
+usa el origen inferior izquierdo. Los archivos individuales evitan sangrado
+entre celdas al usar mipmaps.
+
+bendiciones/: 2 PNG de 128x128, fuerza del troll y aullido del alfa.
+botones/: 4 PNG de 256x256, volver, zoom, armería y ataque básico.
+marcas/: 4 PNG de 64x64, cubiles de huargo/troll y torres Rohan/Isengard.
+
+Producción: ilustraciones generadas para este encargo con el generador de
+imágenes integrado. Indicadores geométricos construidos de forma exacta.
+Exportación, recorte de atlas y reducción a tamaños finales con ImageMagick.
+Estos recursos son imágenes estáticas; no incluyen animaciones ni código
+de interacción. No proceden de los paquetes CC0 del Pack Vado 1.

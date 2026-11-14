@@ -858,16 +858,28 @@ function preparaMandos() {
 }
 let volverBase = 0, volverVida = 0; const VOLVER_T = 4.5;
 let mira = null;
+/* miras en el suelo con los indicadores de ChatGPT (blancos, se tiñen): alcance alrededor del héroe + flecha, cono o círculo */
+const IND = {};
+function indicador(n, color) {
+  if (!IND[n]) {const t = cargaTex('../batalla/ui/' + n + '.webp'); IND[n] = t;}
+  const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2);
+  if (n === 'ind_cono') g.translate(0, 0, -(418 - 256) / 512);
+  const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: IND[n], color, transparent: true, depthWrite: false, opacity: 1, blending: THREE.AdditiveBlending}));
+  m.renderOrder = 4; m.visible = false; scene.add(m); return m;
+}
 function muestraMira(k, dx, dy) {
   const v = VISTA.get(YO); if (!v) return; const H = HEROES[v.tipo].hab[k], s = signo(MI_EQ), l = Math.hypot(dx, dy), wx = s * dx / l, wz = s * dy / l, alc = H.alc || H.dist || H.radio || 4;
-  if (!mira) {mira = {aro: aro('#ffffff', 1), linea: new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({color: '#ffe9a8', transparent: true, opacity: 0.35, depthWrite: false}))}; scene.add(mira.aro, mira.linea);}
+  if (!mira) mira = {alc: indicador('ind_alcance', '#ffffff'), area: indicador('ind_area', '#ffe9a8'), flecha: indicador('ind_flecha', '#ffe9a8'), cono: indicador('ind_cono', '#ffe9a8')};
   const x = v.xi ?? v.x, z = v.zi ?? v.z, k2 = Math.min(1, l / 90);
-  if (H.tipo === 'zona' || H.tipo === 'salto') {mira.linea.visible = false; mira.aro.visible = true; mira.aro.scale.setScalar(H.radio); mira.aro.position.set(x + wx * alc * k2, 0.1, z + wz * alc * k2);}
-  else if (H.tipo === 'area') {mira.linea.visible = false; mira.aro.visible = true; mira.aro.scale.setScalar(H.radio); mira.aro.position.set(x, 0.1, z);}
-  else {mira.aro.visible = false; mira.linea.visible = true; mira.linea.scale.set(H.ancho ? H.ancho * 2 : 1.4, 1, alc); mira.linea.position.set(x + wx * alc / 2, 0.1, z + wz * alc / 2); mira.linea.rotation.y = Math.atan2(wx, wz);}
+  for (const n of ['area', 'flecha', 'cono']) mira[n].visible = false;
+  mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * (H.tipo === 'area' ? H.radio : alc) * 256 / 235);
+  if (H.tipo === 'zona' || H.tipo === 'salto') {const a = mira.area; a.visible = true; a.scale.setScalar(2 * H.radio * 256 / 231); a.position.set(x + wx * alc * k2, 0.11, z + wz * alc * k2);}
+  else if (H.tipo === 'area') {const a = mira.area; a.visible = true; a.scale.setScalar(2 * H.radio * 256 / 231); a.position.set(x, 0.11, z);}
+  else if (H.tipo === 'cono') {const c = mira.cono, tam = H.alc * 512 / 325; c.visible = true; c.scale.set(tam * Math.min(1.2, H.ang / (Math.PI / 2)), 1, tam); c.position.set(x, 0.11, z); c.rotation.y = Math.atan2(-wx, -wz);}
+  else {const f = mira.flecha; f.visible = true; f.scale.set(alc, 1, (H.ancho ? H.ancho * 2 : 1.4) * 2); f.position.set(x + wx * alc / 2, 0.11, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);}
   mira.dir = {wx, wz, px: x + wx * alc * k2, pz: z + wz * alc * k2};
 }
-function ocultaMira() {if (mira) {mira.aro.visible = false; mira.linea.visible = false;}}
+function ocultaMira() {if (mira) for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false;}
 function lanzaMia(k, apunta) {
   const v = VISTA.get(YO); if (!v || v.muerto >= 0) return;
   const i = 'qwer'.indexOf(k); if (v.cds && v.cds[i] > 0) return; if (!(v.rk && v.rk[i] > 0)) {aviso(v.pts > 0 ? 'Pulsa el + de encima para aprender esta habilidad' : k === 'r' ? 'La definitiva se aprende a nivel 4' : 'Aún no la has aprendido: sube de nivel'); return;}
@@ -958,7 +970,8 @@ function objetivoTxt() {
   if (en('t', 2)) return 'Objetivo: la torre de su base';
   return '¡Objetivo: el estandarte enemigo!';
 }
-const MINI_IMG = new Image(); MINI_IMG.src = 'ui/minimapa.webp';
+const MARCAS = {}; for (const n of ['m_huargo', 'm_troll', 'm_torre0', 'm_torre1']) {MARCAS[n] = new Image(); MARCAS[n].src = 'ui/' + n + '.webp';}
+const marca = (g, n, x, z, t) => {const im = MARCAS[n]; if (im.complete && im.naturalWidth) g.drawImage(im, x - t / 2, z - t / 2, t, t); else return false; return true;};
 function minimapa() {
   const c = $('mini'), W = c.width, H = c.height, g = c.getContext('2d'), s = signo(MI_EQ);
   const px = (x) => W / 2 + s * x / 34 * (W / 2), pz = (z) => H / 2 + s * z / 59 * (H / 2);
@@ -967,11 +980,11 @@ function minimapa() {
   g.strokeStyle = '#7a5a36'; g.lineWidth = 6; g.lineCap = g.lineJoin = 'round';
   for (const L of CARRILES) {g.beginPath(); L.forEach((p, i) => i ? g.lineTo(px(p.x), pz(p.z)) : g.moveTo(px(p.x), pz(p.z))); g.stroke();}
   for (const b of BASES) {g.fillStyle = b === BASES[0] ? '#35552a' : '#4a2220'; g.beginPath(); g.arc(px(b.nexo.x), pz(b.nexo.z), 11, 0, 7); g.fill();}
-  CAMPOS.forEach((cp, i) => {const t = EXTRA.cp[i]; g.fillStyle = t === -1 ? (NEUTRO[cp.tipo].jefe ? '#4aa8ff' : NEUTRO[cp.tipo].grande ? '#ffb02e' : '#e8d27a') : '#555'; g.beginPath(); g.arc(px(cp.x), pz(cp.z), NEUTRO[cp.tipo].jefe ? 6 : NEUTRO[cp.tipo].grande ? 4.5 : 3, 0, 7); g.fill(); if (t > 0 && NEUTRO[cp.tipo].grande) {g.fillStyle = '#bbb'; g.font = '8px system-ui'; g.textAlign = 'center'; g.fillText(t, px(cp.x), pz(cp.z) - 6);}});
+  CAMPOS.forEach((cp, i) => {const t = EXTRA.cp[i]; if (t === -1 && !NEUTRO[cp.tipo].jefe && marca(g, NEUTRO[cp.tipo].grande ? 'm_troll' : 'm_huargo', px(cp.x), pz(cp.z), NEUTRO[cp.tipo].grande ? 16 : 12)) return; g.fillStyle = t === -1 ? (NEUTRO[cp.tipo].jefe ? '#4aa8ff' : NEUTRO[cp.tipo].grande ? '#ffb02e' : '#e8d27a') : '#555'; g.beginPath(); g.arc(px(cp.x), pz(cp.z), NEUTRO[cp.tipo].jefe ? 6 : NEUTRO[cp.tipo].grande ? 4.5 : 3, 0, 7); g.fill(); if (t > 0 && NEUTRO[cp.tipo].grande) {g.fillStyle = '#bbb'; g.font = '8px system-ui'; g.textAlign = 'center'; g.fillText(t, px(cp.x), pz(cp.z) - 6);}});
   for (const q of VISTA.values()) {
     if (q.k === 'j') continue;
     const mio = q.eq === MI_EQ, col = mio ? '#5fb6ff' : '#ff5a4a', x = px(q.xi ?? q.x), z = pz(q.zi ?? q.z);
-    if (q.k === 't' || q.k === 'n') {if (q.vida <= 0) continue; g.fillStyle = col; const r = q.k === 'n' ? 5 : 4; g.fillRect(x - r, z - r, r * 2, r * 2); g.strokeStyle = '#000'; g.lineWidth = 1; g.strokeRect(x - r, z - r, r * 2, r * 2);}
+    if (q.k === 't' || q.k === 'n') {if (q.vida <= 0) continue; if (q.k === 't' && marca(g, 'm_torre' + q.eq, x, z, 15)) continue; g.fillStyle = col; const r = q.k === 'n' ? 5 : 4; g.fillRect(x - r, z - r, r * 2, r * 2); g.strokeStyle = '#000'; g.lineWidth = 1; g.strokeRect(x - r, z - r, r * 2, r * 2);}
     else if (q.k === 's') {if (q.muerto === 0) continue; g.fillStyle = col; g.fillRect(x - 1.2, z - 1.2, 2.4, 2.4);}
     else if (q.k === 'h') {if (q.muerto >= 0 || (!mio && q.escondido)) continue; g.fillStyle = q.id === YO ? '#ffd24a' : col; g.beginPath(); g.arc(x, z, q.id === YO ? 5 : 4, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke();}
   }
@@ -980,7 +993,7 @@ function minimapa() {
 }
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
-  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; $('buffs').innerHTML = (bu ? '<span class="azul">🔷 Furia del Uruk ' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/buff_troll.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span>🐺 Alfa ' + v.bAlfa + ' s</span>' : ''); consejos(+($('marcador').dataset.t || 0));}
+  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; $('buffs').innerHTML = (bu ? '<span class="azul">🔷 Furia del Uruk ' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/buff_troll.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/buff_alfa.webp" alt="">' + v.bAlfa + ' s</span>' : ''); consejos(+($('marcador').dataset.t || 0));}
   $('yoNv').textContent = 'Nv ' + v.nivel; $('oro').textContent = '🪙 ' + v.oro;
   $('kda').textContent = (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3];
   ['q', 'w', 'e', 'r'].forEach((k, i) => {const mas = $('m' + k), rk = v.rk ? v.rk[i] : 0, max = rangoMax(v.nivel, k); mas.classList.toggle('hidden', !(v.pts > 0 && rk < max) || v.muerto >= 0 && false); $('p' + k).innerHTML = Array.from({length: k === 'r' ? 2 : 4}, (_, j) => '<i class="' + (j < rk ? 'on' : '') + '"></i>').join(''); $('b' + k.toUpperCase()).classList.toggle('sinAprender', !rk);});
@@ -1000,7 +1013,7 @@ function hud() {
 /* aro de alcance de la torre enemiga cuando te acercas (rojo si te está apuntando) */
 let aroT = null;
 function aroTorre(v) {
-  if (!aroT) {const g = new THREE.RingGeometry(9.3, 9.5, 64); g.rotateX(-Math.PI / 2); aroT = new THREE.Mesh(g, new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: 0.5, depthWrite: false})); aroT.renderOrder = 3; scene.add(aroT);}
+  if (!aroT) {aroT = indicador('ind_alcance', '#ffffff'); aroT.renderOrder = 3; aroT.scale.setScalar(2 * 10 * 256 / 235);}
   let t = null, md = 15; for (const q of VISTA.values()) if (q.k === 't' && q.eq !== MI_EQ && q.vida > 0) {const d = Math.hypot(q.x - (v.xi ?? v.x), q.z - (v.zi ?? v.z)); if (d < md) {md = d; t = q;}}
   aroT.visible = !!t && v.muerto < 0; if (!t) return;
   aroT.position.set(t.x, 0.15, t.z); const mira = t.hc === YO; aroT.material.color.set(mira ? '#ff3a2a' : '#ffffff'); aroT.material.opacity = mira ? 0.85 : 0.35 + 0.3 * Math.max(0, (15 - md) / 6);
@@ -1115,4 +1128,4 @@ function preparaMenu() {
   camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
   bucle();
 })();
-window._vado = {get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
