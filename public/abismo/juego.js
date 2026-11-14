@@ -1145,10 +1145,28 @@ function actualizaJinetes(dt) {
   }
 }
 /* los elfos de Lórien: llegan tras la primera tregua, unos al muro y otros contigo */
+/* el elfo de KayKit es verde; los de Lórien de las pelis llevan capa granate y armadura dorada: se repinta la textura una vez (verde → granate, el resto algo más dorado) */
+const texLorien = new Map();
+function lorien(t) {
+  if (!t || !t.image) return t; if (texLorien.has(t)) return texLorien.get(t);
+  const im = t.image, c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+  const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+  for (let i = 0; i < p.length; i += 4) {
+    const r = p[i] / 255, g = p[i + 1] / 255, b = p[i + 2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, dd = mx - mn;
+    if (dd < 0.08) continue;
+    let h = mx === r ? ((g - b) / dd) % 6 : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4; h *= 60; if (h < 0) h += 360;
+    if (h > 70 && h < 175) {const k = l * 0.62; p[i] = Math.min(255, k * 255 * 1.55); p[i + 1] = k * 255 * 0.32; p[i + 2] = k * 255 * 0.34;}
+    else if (h >= 20 && h <= 70) {p[i] = Math.min(255, p[i] * 1.12); p[i + 1] = Math.min(255, p[i + 1] * 1.02); p[i + 2] = p[i + 2] * 0.8;}
+  }
+  x.putImageData(d, 0, 0);
+  const n = new THREE.CanvasTexture(c); n.flipY = t.flipY; n.colorSpace = t.colorSpace; n.magFilter = t.magFilter; n.minFilter = t.minFilter; n.wrapS = t.wrapS; n.wrapT = t.wrapT;
+  texLorien.set(t, n); return n;
+}
+function vistElfo(a) {a.raiz.traverse((o) => {if (o.isMesh && !o.userData.borde && o.material.map) {o.material.map = lorien(o.material.map); o.material.needsUpdate = true;}}); a.raiz.scale.multiplyScalar(rnd(0.97, 1.05)); return a;}
 function vanguardia() {
   J.elfos = [];
   for (const x of [-11, -2, 7]) {
-    const a = montar('elfo_kk', true); a.raiz.position.set(x, Y_MURO, Z_MURO_ARRIBA + 0.6); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'quieto');
+    const a = vistElfo(montar('elfo_kk', true)); a.raiz.position.set(x, Y_MURO, Z_MURO_ARRIBA + 0.6); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'quieto');
     J.elfos.push({a, muro: true, lento: true, x, z: Z_MURO_ARRIBA + 0.6, cd: rnd(1, 3)});
   }
 }
@@ -1156,12 +1174,12 @@ function llegaElfos() {
   if (J.elfosTodos) return; J.elfosTodos = true; J.elfos = J.elfos || [];
   aviso('¡Llegan los elfos de Lórien! Vienen a luchar a vuestro lado', 3200); suena('cuerno'); habla('haldir');
   for (let i = 0; i < 6; i++) {
-    const a = montar('elfo_kk', true), x = -15 + i * 6 + rnd(-1, 1);
+    const a = vistElfo(montar('elfo_kk', true)), x = -15 + i * 6 + rnd(-1, 1);
     a.raiz.position.set(x, Y_MURO, Z_MURO_ARRIBA + 0.6); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'quieto');
     J.elfos.push({a, muro: true, x, z: Z_MURO_ARRIBA + 0.6, cd: rnd(0.5, 1.5)});
   }
   for (let i = 0; i < 3; i++) {
-    const a = montar('elfo_kk', true); a.raiz.traverse((o) => {if (o.isMesh) o.material.color.multiplyScalar(0.92);});
+    const a = vistElfo(montar('elfo_kk', true));
     const el = {a, muro: false, x: rnd(-3, 3), z: PATIO.z1 - 1, cd: 1, vel: 5.2, ang: i * 2.1};
     scene.add(a.raiz); J.elfos.push(el);
   }
@@ -1173,6 +1191,9 @@ function actualizaElfos(dt) {
   for (const el of J.elfos) {
     el.a.mixer.update(dt); el.cd -= dt;
     if (el.muro) {
+      /* si se cae el tramo donde está, salta al patio y se une a tu escolta */
+      const bajo = J.tramos.reduce((m, t) => Math.abs(t.x - el.x) < Math.abs(m.x - el.x) ? t : m, J.tramos[0]);
+      if (bajo && bajo.roto) {el.muro = false; el.lento = false; el.vel = 5.2; el.ang = rnd(0, 6.28); el.z = BRECHA.z + 3; el.a.raiz.position.set(el.x, 0.15, el.z); efecto('polvo', el.x, 0.2, el.z, {escala: 0.9, vida: 0.4}); continue;}
       if (el.cd <= 0) {
         const ob = J.enemigos.filter((e) => !e.muerto && (e.fase === 'sube' || e.fase === 'hacia' || (e.d.marca && e.fase === 'patio')) && Math.abs(e.x - el.x) < (e.d.marca ? 30 : 9) && e.z > -40).sort((a, b) => (b.d.antorcha || b.d.marca ? 99 : 0) - (a.d.antorcha || a.d.marca ? 99 : 0) || Math.abs(a.x - el.x) - Math.abs(b.x - el.x))[0];
         if (ob) {el.cd = el.lento ? rnd(2.6, 3.6) : rnd(1.1, 1.6); pon(el.a, 'atacar', 0.05, true); el.a.raiz.rotation.y = Math.atan2(ob.x - el.x, ob.z - el.z); suena('disparo'); FUENTE = 'arquero'; if (ob.fase === 'sube' && Math.random() < 0.5) mata(ob, true); else hiere(ob, 3, 0, -1, 0.2);}
@@ -1260,18 +1281,21 @@ function haceTramo(k) {
 function arqueroTramo(t) {
   const quiere = t.nivel > 0 && !t.roto && M.arquero_muralla;
   if (quiere && !t.arq) {const a = montar('arquero_muralla', true); a.raiz.position.set(t.x + rnd(-1.5, 1.5), Y_MURO, Z_MURO_ARRIBA + 0.4); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'apuntar'); t.arq = {a, cd: rnd(0.5, 1.5)};}
-  if (!quiere && t.arq) {const a = t.arq.a; t.arq = null; pon(a, a.clips.morir_caer ? 'morir_caer' : 'morir', 0.05, true); setTimeout(() => scene.remove(a.raiz), 1600); J.cayendo = (J.cayendo || []).concat([a]);}
+  /* si el tramo cae, el arquero no muere: salta al patio y sigue disparando desde abajo; al reparar, vuelve a subir */
+  if (t.arq && t.roto && !t.arq.suelo) {const q = t.arq; q.suelo = true; q.a.raiz.position.set(t.x + rnd(-1.2, 1.2), 0.15, BRECHA.z + rnd(3, 4.5)); efecto('polvo', q.a.raiz.position.x, 0.2, q.a.raiz.position.z, {escala: 1, vida: 0.5}); pon(q.a, 'apuntar', 0.1, true); aviso('El arquero del tramo ' + (J.tramos.indexOf(t) + 1) + ' salta al patio y sigue disparando', 1200);}
+  else if (t.arq && !t.roto && t.arq.suelo) {const q = t.arq; q.suelo = false; q.a.raiz.position.set(t.x + rnd(-1.5, 1.5), Y_MURO, Z_MURO_ARRIBA + 0.4);}
+  else if (!quiere && t.arq && !t.roto) {const a = t.arq.a; t.arq = null; pon(a, a.clips.morir_caer ? 'morir_caer' : 'morir', 0.05, true); setTimeout(() => scene.remove(a.raiz), 1600); J.cayendo = (J.cayendo || []).concat([a]);}
 }
 function actualizaArqueros(dt) {
   for (const t of J.tramos) {
     if (!t.arq) continue;
     const q = t.arq; q.a.mixer.update(dt); q.cd -= dt;
     if (q.cd > 0) continue;
-    const obj = J.enemigos.filter((e) => !e.muerto && (e.fase === 'hacia' || e.fase === 'sube') && Math.abs(e.x - t.x) < 10 && e.z > -40).sort((a, b) => (b.d.antorcha ? 99 : 0) - (a.d.antorcha ? 99 : 0) || Math.abs(a.x - t.x) - Math.abs(b.x - t.x))[0];
+    const obj = J.enemigos.filter((e) => !e.muerto && (q.suelo ? ['brecha', 'cruza', 'patio', 'adarve'].includes(e.fase) && Math.hypot(e.x - q.a.raiz.position.x, e.z - q.a.raiz.position.z) < 14 : (e.fase === 'hacia' || e.fase === 'sube') && Math.abs(e.x - t.x) < 10 && e.z > -40)).sort((a, b) => (b.d.antorcha ? 99 : 0) - (a.d.antorcha ? 99 : 0) || Math.abs(a.x - t.x) - Math.abs(b.x - t.x))[0];
     if (!obj) continue;
     q.cd = 1.8 - 0.25 * t.nivel; pon(q.a, 'disparar_rapido', 0.05, true); setTimeout(() => {if (!J.fin && q.a) pon(q.a, 'apuntar', 0.2);}, 520);
     q.a.raiz.rotation.y = Math.atan2(obj.x - q.a.raiz.position.x, obj.z - q.a.raiz.position.z);
-    if (obj.fase === 'sube' && Math.random() < 0.35 + 0.15 * t.nivel) {FUENTE = 'arquero'; mata(obj, true);}
+    if (!q.suelo && obj.fase === 'sube' && Math.random() < 0.35 + 0.15 * t.nivel) {FUENTE = 'arquero'; mata(obj, true);}
     else {FUENTE = 'arquero'; hiere(obj, 2.2 * t.nivel, 0, -1, 0);}
   }
   (J.cayendo || []).forEach((a) => a.mixer.update(dt));
@@ -3047,6 +3071,8 @@ window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
 window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
+window._elfos = () => llegaElfos();
+window._arqT = (k) => arqueroTramo(J.tramos[k]);
 window._desague = () => antorchero(true); window._tronco = () => tronco(); window._derriba = (i) => danaEscala(J.escalas[i], 999); window._cartel = (a, b, c) => cartelOla(a, b, c);
 window._monta = (n, x, z) => {const a = montar(n, true); a.raiz.position.set(x, 0.15, z); scene.add(a.raiz); const c = a.clips.quieto || Object.values(a.clips)[0]; if (c) c.play(); window._mezc = (window._mezc || []).concat(a.mixer); return a;};
 window._tramo = (k) => dañaTramo(J.tramos[k], 9999);
