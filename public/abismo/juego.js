@@ -1680,7 +1680,7 @@ function empiezaTregua(tr) {
   J.treguaVista = tr[0];
   const n = J.tregua.n;
   J.amenaza = AMENAZA_DE[n] || null;
-  J.botinPend = true; setTimeout(() => {if (J && J.botinPend && !J.pausa && !J.fin) {J.botinPend = false; ofreceMejoras('botin');}}, 700);
+  {const pr = 30 + 15 * J.ola; J.oro += pr; setTimeout(() => {if (J && !J.fin) {pintaHud(); aviso('Oleada resistida: +' + pr + ' de oro. Pasa por la 🛒 Armería', 2600); const b = $('trTienda'); if (b) b.classList.toggle('puede', J.oro >= 25);}}, 900);}
   if (n > 0) {J.oro += 8 + n * 4; aviso('Tregua: el enemigo se reagrupa. Repara y fortifica', 2200);}
   else {J.oro += 70; aviso('Théoden os da 70 de oro: construid antes de que suenen los cuernos', 3200);}
   pestana = n === 0 ? 'def' : 'muro';
@@ -2417,6 +2417,7 @@ function mata(e, caida) {
   if (e.fase !== 'patio' && e.escala) e.escala.cola = Math.max(0, e.escala.cola - 1);
   if (caida) {J.puntos += Math.round(e.d.pts / 2); return;}
   J.bajas++; J.puntos += Math.round(e.d.pts * 2.2) * (e.elite ? 3 : 1);
+  {const o = (Math.ceil(e.d.xp * 1.5) + 1) * (e.elite ? 3 : 1); J.oro += o; J.oroTotal = (J.oroTotal || 0) + o; if (e.d.pesado || e.d.jefe || e.elite) numero(e.x, 3, e.z, '+' + o + ' oro', 'oro');}
   if (e.fase === 'patio') {mancha(e.x, e.z, e.d.pesado || e.d.jefe ? 2 : 1); particula(e.d.ariete ? 'astillas' : 'sangre', e.x, 1, e.z, {n: 2, vel: 2, sube: 1.5, vida: 0.5, escala: 0.7, grav: 8, crece: 1.2});}
   const zx = Math.max(e.z, zSuelo + 0.5);
   sueltaXp(e.x, zx, Math.round(e.d.xp * 2.2 * (e.elite ? 3 : 1)));
@@ -2487,7 +2488,7 @@ function abreCofre(n, x, z) {
   J.cofresPend = (J.cofresPend || 0) + n;
   setTimeout(() => {if (!J.fin && !J.pausa) siguienteCofre();}, 700);
 }
-function siguienteCofre() {if (J.cofresPend > 0) {J.cofresPend--; ofreceMejoras(true);}}
+function siguienteCofre() {if (J.cofresPend > 0) {J.cofresPend--; J.oro += 40; suena('cofre'); pintaHud(); aviso('¡Cofre de los Rohirrim! +40 de oro para la Armería', 1800); setTimeout(siguienteCofre, 300);}}
 function ganaXp(n) {
   J.xp += n; suena('xp');
   if (J.xp >= J.xpSig) {J.xp -= J.xpSig; suena('nivel'); {const hh = J.h; flip('fx_onda', hh.x, (hh.y ?? 0.15) + 0.3, hh.z, {tam: 7, dur: 0.5}); particula('oro', hh.x, (hh.y ?? 0.15) + 1, hh.z, {n: 10, vel: 4, sube: 5, vida: 0.8, escala: 0.5, grav: 9}); J.lenta = Math.max(J.lenta || 0, 0.25); bota('nivel'); bota('hRet');} const pw0 = poder(); J.nivel++; if (poder() > pw0) setTimeout(() => aviso(PODER_TXT[poder()], 2600), 600); J.xpSig = Math.round(J.xpSig * 1.3 + 3); efecto('subir_nivel', J.h.x, 0.15, J.h.z, {vida: 0.9, crece: 1.1}); J.subidas = (J.subidas || 0) + 1;}
@@ -2676,7 +2677,7 @@ function ofreceMejoras(cofre) {
 }
 function siguientePendiente() {
   if (J.fin || J.pausa) return;
-  if (J.subidas > 0) {J.subidas--; if (arbolDisponible()) ofreceArbol(); else {ofreceMejoras(false); const prox = proximoNodo(); if (prox) $('mejP').textContent = 'Elige una mejora. El árbol vuelve a nivel ' + prox + '.';} return;}
+  if (J.subidas > 0) {J.subidas--; if (arbolDisponible()) ofreceArbol(); else {const prox = proximoNodo(), h = J.h; h.dano *= 1.03; h.vidaMax += 5; h.vida = Math.min(h.vidaMax, h.vida + 5); J.oro += 15; pintaHud(); aviso('¡Nivel ' + J.nivel + '! +15 de oro para la Armería' + (prox ? ' · el árbol vuelve a nivel ' + prox : ''), 1800); setTimeout(siguientePendiente, 400);} return;}
   siguienteCofre();
 }
 /* el héroe crece y se ve más poderoso según lo que va reuniendo (nivel, armas, evoluciones y árbol) */
@@ -2720,20 +2721,20 @@ function subePoder() {
 }
 /* ---------- Tienda de la partida (estilo LoL): básicos que se juntan en objetos legendarios; estadísticas reales; 6 huecos ---------- */
 const OBJETOS = {
-  hoja: {t: 'Hoja larga', icono: 'espada', coste: 35, st: {dano: 0.15}},
-  daga: {t: 'Daga de Bree', icono: 'cuchillos', coste: 30, st: {vatq: 0.12}},
-  cota: {t: 'Cota de anillas', icono: 'escudo', coste: 30, st: {vida: 40}},
-  yelmo: {t: 'Yelmo de hierro', icono: 'reforzar', coste: 35, st: {arm: 0.08}},
-  botas: {t: 'Botas de cuero', icono: 'botas', coste: 25, st: {vel: 0.08}},
-  amuleto: {t: 'Amuleto de Lórien', icono: 'gema', coste: 30, st: {regen: 0.8}},
-  herugrim: {t: 'Herugrim', leg: true, icono: 'espada', receta: ['hoja', 'hoja'], coste: 60, st: {dano: 0.4, crit: 0.15}, pas: 'Tajo del rey: un 15 % de golpes hacen el doble de daño.'},
-  guthwine: {t: 'Guthwinë', leg: true, icono: 'i_remate', receta: ['hoja', 'daga'], coste: 55, st: {dano: 0.22, vatq: 0.22}, pas: 'Filo de la Marca: daño y velocidad de ataque a la vez.'},
-  escudo_marca: {t: 'Escudo de la Marca', leg: true, icono: 'escudo', receta: ['cota', 'yelmo'], coste: 60, st: {vida: 90, arm: 0.15, espinas: 0.3}, pas: 'Púas: quien te golpea cuerpo a cuerpo se lleva un 30 % del daño.'},
-  capa_elfica: {t: 'Capa élfica', leg: true, icono: 'i_esquivar', receta: ['botas', 'amuleto'], coste: 50, st: {vel: 0.15, regen: 1.5, esquiva: 0.18}, pas: 'Un 18 % de los golpes enemigos no te tocan.'},
-  hacha_dunharrow: {t: 'Hacha de El Sagrario', leg: true, icono: 'hacha', receta: ['hoja', 'amuleto'], coste: 55, st: {dano: 0.2, robo: 0.08}, pas: 'Robo de vida: cada golpe te cura el 8 % del daño que haces.'},
-  cuerno_helm: {t: 'Cuerno de Helm', leg: true, icono: 'cuerno', receta: ['yelmo', 'daga'], coste: 70, st: {vatq: 0.15, arm: 0.1, grito: 1}, pas: 'Cada 10 s el cuerno suena y aturde 1,2 s a los que te rodean.'},
-  botas_rohirrim: {t: 'Botas de los Rohirrim', leg: true, icono: 'botas', receta: ['botas', 'botas'], coste: 40, st: {vel: 0.2, alcance: 0.15}, pas: 'Más rápido y con más alcance.'},
-  coraza_mithril: {t: 'Cota de mithril', leg: true, icono: 'nd_06', receta: ['cota', 'cota', 'amuleto'], coste: 70, st: {vida: 120, arm: 0.12, regen: 1}, pas: 'Ligera como una pluma y dura como escamas de dragón.'},
+  hoja: {t: 'Hoja larga', icono: 'obj_01', coste: 35, st: {dano: 0.15}},
+  daga: {t: 'Daga de Bree', icono: 'obj_02', coste: 30, st: {vatq: 0.12}},
+  cota: {t: 'Cota de anillas', icono: 'obj_03', coste: 30, st: {vida: 40}},
+  yelmo: {t: 'Yelmo de hierro', icono: 'obj_04', coste: 35, st: {arm: 0.08}},
+  botas: {t: 'Botas de cuero', icono: 'obj_05', coste: 25, st: {vel: 0.08}},
+  amuleto: {t: 'Amuleto de Lórien', icono: 'obj_06', coste: 30, st: {regen: 0.8}},
+  herugrim: {t: 'Herugrim', leg: true, icono: 'obj_07', receta: ['hoja', 'hoja'], coste: 60, st: {dano: 0.4, crit: 0.15}, pas: 'Tajo del rey: un 15 % de golpes hacen el doble de daño.'},
+  guthwine: {t: 'Guthwinë', leg: true, icono: 'obj_08', receta: ['hoja', 'daga'], coste: 55, st: {dano: 0.22, vatq: 0.22}, pas: 'Filo de la Marca: daño y velocidad de ataque a la vez.'},
+  escudo_marca: {t: 'Escudo de la Marca', leg: true, icono: 'obj_09', receta: ['cota', 'yelmo'], coste: 60, st: {vida: 90, arm: 0.15, espinas: 0.3}, pas: 'Púas: quien te golpea cuerpo a cuerpo se lleva un 30 % del daño.'},
+  capa_elfica: {t: 'Capa élfica', leg: true, icono: 'obj_10', receta: ['botas', 'amuleto'], coste: 50, st: {vel: 0.15, regen: 1.5, esquiva: 0.18}, pas: 'Un 18 % de los golpes enemigos no te tocan.'},
+  hacha_dunharrow: {t: 'Hacha de El Sagrario', leg: true, icono: 'obj_11', receta: ['hoja', 'amuleto'], coste: 55, st: {dano: 0.2, robo: 0.08}, pas: 'Robo de vida: cada golpe te cura el 8 % del daño que haces.'},
+  cuerno_helm: {t: 'Cuerno de Erkenbrand', leg: true, icono: 'obj_12', receta: ['yelmo', 'daga'], coste: 70, st: {vatq: 0.15, arm: 0.1, grito: 1}, pas: 'Cada 10 s el cuerno suena y aturde 1,2 s a los que te rodean.'},
+  botas_rohirrim: {t: 'Botas de los Eorlingas', leg: true, icono: 'obj_13', receta: ['botas', 'botas'], coste: 40, st: {vel: 0.2, alcance: 0.15}, pas: 'Más rápido y con más alcance.'},
+  coraza_mithril: {t: 'Cota de mithril', leg: true, icono: 'obj_14', receta: ['cota', 'cota', 'amuleto'], coste: 70, st: {vida: 120, arm: 0.12, regen: 1}, pas: 'Ligera como una pluma y dura como escamas de dragón.'},
 };
 const ST_TXT = {dano: (v) => '+' + Math.round(v * 100) + ' % de daño', vatq: (v) => '+' + Math.round(v * 100) + ' % de velocidad de ataque', vida: (v) => '+' + v + ' de vida', arm: (v) => '−' + Math.round(v * 100) + ' % de daño recibido', vel: (v) => '+' + Math.round(v * 100) + ' % de velocidad', regen: (v) => '+' + String(v).replace('.', ',') + ' de vida por segundo', crit: (v) => Math.round(v * 100) + ' % de golpes críticos', espinas: (v) => 'Devuelve ' + Math.round(v * 100) + ' % del daño', esquiva: (v) => Math.round(v * 100) + ' % de esquiva', robo: (v) => Math.round(v * 100) + ' % de robo de vida', alcance: (v) => '+' + Math.round(v * 100) + ' % de alcance', grito: () => 'Grito que aturde'};
 function aplicaObjeto(h, id, sg) {
@@ -2762,26 +2763,54 @@ function compra(id) {
   return '';
 }
 function vende(i) {const id = J.inv[i], o = OBJETOS[id], v = Math.round((o.leg ? (o.coste + o.receta.reduce((s, r) => s + OBJETOS[r].coste, 0)) : o.coste) * 0.6); aplicaObjeto(J.h, id, -1); J.inv.splice(i, 1); J.oro += v; suena('moneda'); pintaArmas(); pintaHud && pintaHud();}
-let tiendaSel = 'hoja';
+let tiendaSel = 'o:hoja';
+/* todo lo que se compra en la tregua: objetos (básicos y legendarios), armas de la Marca, talismanes, evoluciones y la puerta */
+function catalogo() {
+  const L = [], nA = Object.keys(J.armas).length, nP = Object.keys(J.pasivas).length;
+  for (const id in OBJETOS) {const o = OBJETOS[id], c = costeReal(id); L.push({k: 'o:' + id, g: o.leg ? 'Legendarios' : 'Objetos básicos', icono: o.icono, t: o.t, coste: c.coste, leg: o.leg, obj: id});}
+  for (const id in ARMAS) {
+    const a = ARMAS[id]; if (a.clases && !a.clases.includes(J.h.tipo)) continue; const n = J.armas[id] || 0;
+    if (n >= 5 && !J.evos[id] && J.pasivas[a.pareja]) L.push({k: 'e:' + id, g: 'Armas de la Marca', icono: a.icono, t: '★ ' + a.nombre, coste: 90, leg: true, txt: a.evo, sub: 'EVOLUCIÓN', f: () => {J.evos[id] = true; if (id === 'antorcha') ponOrbitales(); aviso('¡Evolución! ' + a.evo.split(':')[0], 2000);}});
+    else if (n > 0 && n < 5) L.push({k: 'a:' + id, g: 'Armas de la Marca', icono: a.icono, t: a.nombre, coste: 25 + 15 * n, txt: a.d[n], sub: 'NIVEL ' + (n + 1) + '/5', f: () => {J.armas[id]++; if (id === 'antorcha') ponOrbitales();}});
+    else if (n === 0) L.push({k: 'a:' + id, g: 'Armas de la Marca', icono: a.icono, t: a.nombre, coste: 50, txt: a.d[0] + ' Evoluciona con ' + PASIVAS[a.pareja].nombre + ' (arma al 5).', sub: 'NUEVA', no: nA >= 4 ? 'Ya llevas 4 armas' : '', f: () => {J.armas[id] = 1; J['cd_' + id] = 0.3; if (id === 'antorcha') ponOrbitales();}});
+  }
+  for (const id in PASIVAS) {
+    const p = PASIVAS[id], n = J.pasivas[id] || 0; if (n >= 5) continue;
+    L.push({k: 'p:' + id, g: 'Talismanes', icono: p.icono, t: p.nombre, coste: n ? 20 + 12 * n : 40, txt: p.d, sub: n ? 'NIVEL ' + (n + 1) + '/5' : 'NUEVO', no: !n && nP >= 4 ? 'Ya llevas 4 talismanes' : '', f: () => {J.pasivas[id] = n + 1; aplicaPasiva(id);}});
+  }
+  if (J.puerta < J.puertaMax) L.push({k: 'puerta', g: 'La puerta', icono: 'puerta', t: 'Carpinteros de Edoras', coste: 40, txt: 'Reparan 150 de la puerta (tienes ' + Math.round(J.puerta) + ' de ' + J.puertaMax + ').', sub: 'REPARAR', f: () => {J.puerta = Math.min(J.puertaMax, J.puerta + 150);}});
+  return L;
+}
 function abreTienda() {
   if (!J || J.fin) return; J.pausa = true; J.enTienda = true; $('tienda').classList.remove('hidden'); pintaTienda();
 }
-function cierraTienda() {$('tienda').classList.add('hidden'); if (J) {J.enTienda = false; J.pausa = false; reloj.getDelta();}}
+function cierraTienda() {$('tienda').classList.add('hidden'); if (J) {J.enTienda = false; J.pausa = false; reloj.getDelta(); const b = $('trTienda'); if (b) b.classList.toggle('puede', J.oro >= 25);}}
 function pintaTienda() {
-  const t = $('tienda'), o = OBJETOS[tiendaSel], {coste, usa} = costeReal(tiendaSel);
-  const carta = (id) => {const x = OBJETOS[id], c = costeReal(id).coste; return '<button class="tObj' + (x.leg ? ' leg' : '') + (id === tiendaSel ? ' sel' : '') + (J.oro >= c ? '' : ' caro') + '" data-id="' + id + '"><img src="' + ico(x.icono) + '" alt=""><b>' + c + '</b></button>';};
-  const tiene = (() => {const q = [...J.inv]; return (o.receta || []).map((r) => {const k = q.indexOf(r); if (k >= 0) {q.splice(k, 1); return true;} return false;});})();
-  const recetaHtml = o.receta ? '<div class="tRec"><div class="tRecTop"><img src="' + ico(o.icono) + '" alt=""></div><div class="tRecBas">' + o.receta.map((r, i) => '<span class="' + (tiene[i] ? 'ya' : '') + '"><img src="' + ico(OBJETOS[r].icono) + '" alt=""><small>' + OBJETOS[r].t + '</small></span>').join('') + '</div><small class="tMas">+ ' + o.coste + ' de oro para forjarlo</small></div>' : '';
-  const sirve = Object.keys(OBJETOS).filter((k) => (OBJETOS[k].receta || []).includes(tiendaSel));
+  const t = $('tienda'), cat = catalogo(); let e = cat.find((x) => x.k === tiendaSel); if (!e) {e = cat[0]; tiendaSel = e.k;}
+  const carta = (x) => '<button class="tObj' + (x.leg ? ' leg' : '') + (x.k === tiendaSel ? ' sel' : '') + (J.oro >= x.coste && !x.no ? '' : ' caro') + '" data-id="' + x.k + '"><img src="' + ico(x.icono) + '" alt="">' + (x.sub && x.sub !== 'NUEVA' && x.sub !== 'NUEVO' ? '<i>' + (x.sub === 'EVOLUCIÓN' ? '★' : x.sub.replace('NIVEL ', '').replace('/5', '')) + '</i>' : '') + '<b>' + x.coste + '</b></button>';
+  let det = '';
+  if (e.obj) {
+    const o = OBJETOS[e.obj], usa = costeReal(e.obj).usa;
+    const tiene = (() => {const q = [...J.inv]; return (o.receta || []).map((r) => {const k = q.indexOf(r); if (k >= 0) {q.splice(k, 1); return true;} return false;});})();
+    const sirve = Object.keys(OBJETOS).filter((k) => (OBJETOS[k].receta || []).includes(e.obj));
+    det = '<ul>' + Object.keys(o.st).map((k) => '<li>' + ST_TXT[k](o.st[k]) + '</li>').join('') + '</ul>' + (o.pas ? '<p class="tPas">' + o.pas + '</p>' : '') +
+      (o.receta ? '<div class="tRec"><div class="tRecTop"><img src="' + ico(o.icono) + '" alt=""></div><div class="tRecBas">' + o.receta.map((r, i) => '<span class="' + (tiene[i] ? 'ya' : '') + '"><img src="' + ico(OBJETOS[r].icono) + '" alt=""><small>' + OBJETOS[r].t + '</small></span>').join('') + '</div><small class="tMas">+ ' + o.coste + ' de oro para forjarlo' + (usa.length ? ' · usas lo que ya tienes' : '') + '</small></div>' : '') +
+      (sirve.length ? '<div class="tSirve">Sirve para: ' + sirve.map((k) => '<button data-id="o:' + k + '"><img src="' + ico(OBJETOS[k].icono) + '" alt="">' + OBJETOS[k].t + '</button>').join('') + '</div>' : '');
+  } else det = '<p class="tTxt">' + e.txt + '</p>' + (e.no ? '<p class="tMsg">' + e.no + '</p>' : '');
+  const grupos = []; cat.forEach((x) => {if (!grupos.includes(x.g)) grupos.push(x.g);});
   t.innerHTML = '<div class="tCab"><b>Armería de Cuernavilla</b><span class="tOro">' + J.oro + ' oro</span><button class="tX" id="tX">Volver</button></div>' +
     '<div class="tInv">' + Array.from({length: 6}, (_, i) => J.inv[i] ? '<button class="tHueco lleno" data-v="' + i + '"><img src="' + ico(OBJETOS[J.inv[i]].icono) + '" alt=""></button>' : '<span class="tHueco"></span>').join('') + '</div>' +
-    '<div class="tDet"><div class="tDetCab"><img src="' + ico(o.icono) + '" alt=""><div><b>' + o.t + '</b><em>' + (o.leg ? 'LEGENDARIO' : 'BÁSICO') + '</em></div></div><ul>' + Object.keys(o.st).map((k) => '<li>' + ST_TXT[k](o.st[k]) + '</li>').join('') + '</ul>' + (o.pas ? '<p class="tPas">' + o.pas + '</p>' : '') + recetaHtml +
-    (sirve.length ? '<div class="tSirve">Sirve para: ' + sirve.map((k) => '<button data-id="' + k + '"><img src="' + ico(OBJETOS[k].icono) + '" alt="">' + OBJETOS[k].t + '</button>').join('') + '</div>' : '') +
-    '<button class="tComprar" id="tComprar"' + (J.oro >= coste ? '' : ' disabled') + '>Comprar · ' + coste + ' oro</button><p class="tMsg" id="tMsg"></p></div>' +
-    '<div class="tLista"><h4>Básicos</h4><div class="tGrid">' + Object.keys(OBJETOS).filter((k) => !OBJETOS[k].leg).map(carta).join('') + '</div><h4>Legendarios</h4><div class="tGrid">' + Object.keys(OBJETOS).filter((k) => OBJETOS[k].leg).map(carta).join('') + '</div></div>';
+    '<div class="tDet"><div class="tDetCab"><img src="' + ico(e.icono) + '" alt=""><div><b>' + e.t + '</b><em>' + (e.obj ? (e.leg ? 'LEGENDARIO' : 'BÁSICO') : e.sub) + '</em></div></div>' + det +
+    '<button class="tComprar" id="tComprar"' + (J.oro >= e.coste && !e.no ? '' : ' disabled') + '>Comprar · ' + e.coste + ' oro</button><p class="tMsg" id="tMsg"></p></div>' +
+    '<div class="tLista">' + grupos.map((g) => '<h4>' + g + '</h4><div class="tGrid">' + cat.filter((x) => x.g === g).map(carta).join('') + '</div>').join('') + '</div>';
   t.querySelectorAll('[data-id]').forEach((b) => b.onclick = () => {tiendaSel = b.dataset.id; suena('xp'); pintaTienda();});
   t.querySelectorAll('[data-v]').forEach((b) => b.onclick = () => {const i = +b.dataset.v, x = OBJETOS[J.inv[i]]; if (confirmaVenta === i) {vende(i); confirmaVenta = -1; pintaTienda();} else {confirmaVenta = i; $('tMsg').textContent = 'Toca otra vez para vender ' + x.t + ' (te devuelven el 60 %).';}});
-  $('tComprar').onclick = () => {const m = compra(tiendaSel); if (m) $('tMsg').textContent = m; else pintaTienda();};
+  $('tComprar').onclick = () => {
+    let m = '';
+    if (e.obj) m = compra(e.obj);
+    else if (e.no) m = e.no; else if (J.oro < e.coste) m = 'Te falta oro'; else {J.oro -= e.coste; e.f(); suena(e.leg ? 'cofre' : 'moneda'); pintaArmas(); pintaHud();}
+    if (m) $('tMsg').textContent = m; else pintaTienda();
+  };
   $('tX').onclick = cierraTienda;
 }
 let confirmaVenta = -1;
@@ -3333,7 +3362,7 @@ window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
 window._M = M; window._P = P; window._maq = (t, n) => maquina(t, n); window._torre = (n) => torreK(n); window._altoP = (v) => {ALTO_PLATAFORMA = v;}; window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
-window._ofreceArbol = () => ofreceArbol(); window._tienda = () => abreTienda(); window._compra = (id) => compra(id); window._rango = (n) => cargaRangos(J.h.tipo).then(() => ponRango(J.h, n)); window._arbolDisp = () => arbolDisponible();
+window._ofreceArbol = () => ofreceArbol(); window._tienda = () => abreTienda(); window._compra = (id) => compra(id); window._catalogo = () => catalogo().map((x) => x.k + ':' + x.coste); window._rango = (n) => cargaRangos(J.h.tipo).then(() => ponRango(J.h, n)); window._arbolDisp = () => arbolDisponible();
 window._construye = (si) => construye(si);
 window._elfos = () => llegaElfos();
 window._arqT = (k) => arqueroTramo(J.tramos[k]);
