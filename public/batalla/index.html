@@ -52,6 +52,11 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 #bAt{right:0;bottom:0;width:88px;height:88px;border-color:#ffd24a}#bQ{right:96px;bottom:0}#bW{right:84px;bottom:68px}#bE{right:40px;bottom:120px}#bR{right:-4px;bottom:100px;border-color:#ff7a2a}
 #bTienda{position:fixed;left:10px;top:calc(64px + env(safe-area-inset-top));z-index:7;width:52px;height:52px;border-radius:50%;border:2px solid #c99a3a;background:#1d140c url(../abismo/ui/armeria.webp) center/80% no-repeat}
 #bBase{position:fixed;left:10px;top:calc(122px + env(safe-area-inset-top));z-index:7;width:52px;height:52px;border-radius:50%;border:2px solid #8fd0ff;background:#0d1a26;color:#8fd0ff;font:900 22px system-ui}
+#bZoom{position:fixed;left:10px;top:calc(180px + env(safe-area-inset-top));z-index:7;width:52px;height:52px;border-radius:50%;border:2px solid #c99a3a;background:#1d140c;font-size:22px}
+#mini{position:fixed;inset:auto;right:8px;top:calc(58px + env(safe-area-inset-top));z-index:6;width:72px;height:147px;border:2px solid #8a6a3a;border-radius:8px;box-shadow:0 3px 10px #000a;opacity:.92;pointer-events:none}
+#objetivo{position:fixed;left:50%;top:calc(58px + env(safe-area-inset-top));transform:translateX(-50%);z-index:5;font:700 12px Georgia,serif;color:#ffe3a0;background:#0b0805b0;border-radius:8px;padding:3px 8px;pointer-events:none;white-space:nowrap}
+#buffs{position:fixed;left:50%;top:calc(82px + env(safe-area-inset-top));transform:translateX(-50%);z-index:5;display:flex;gap:5px;pointer-events:none}#buffs span{font:800 11px system-ui;background:#3a2a0ccc;border:1px solid #ffd24a;border-radius:7px;padding:1px 6px;color:#ffe3a0}
+.bv.e2 i u{background:#e8b13a}
 #aviso{position:fixed;left:50%;top:26%;transform:translateX(-50%);z-index:9;font:800 22px Georgia,serif;color:#ffd77a;text-shadow:0 3px 0 #000,0 0 14px #000;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;width:90%}
 #muerto{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;background:#000a;font:800 24px Georgia,serif;color:#ff9a8a;pointer-events:none}
 #fin{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#000c}#fin h2{font-size:38px;margin:0;color:#ffd77a}
@@ -98,6 +103,9 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 </div>
 <button id="bTienda" class="hidden" aria-label="Armería"></button>
 <button id="bBase" class="hidden" aria-label="Volver a la base">⌂</button>
+<button id="bZoom" class="hidden" aria-label="Alejar o acercar la cámara">🔍</button>
+<canvas id="mini" class="hidden" width="96" height="196"></canvas>
+<div id="objetivo" class="hidden"></div><div id="buffs"></div>
 <div id="aviso"></div>
 <div id="muerto" class="hidden"></div>
 <div id="tienda" class="hidden"></div>

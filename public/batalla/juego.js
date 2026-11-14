@@ -50,7 +50,17 @@ const OBJ = {
   mithril: {t: 'Cota de mithril', i: 'obj_14', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 500, reduc: 0.12, regen: 4}, p: 'Ligera y casi irrompible.'},
 };
 const PLAN_BOT = {rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo']};
-const MAPA = {ancho: 8.5, fuente: 54, nexo: 46, torre2: 34, torre1: 20};
+const MAPA = {ancho: 26, fuente: 54, nexo: 46, torre2: 34, torre1: 20};
+/* la espesura: empalizada entre el carril y la jungla (x = ±10) con huecos para pasar; río (el vado) en z = 0 */
+const MURO_X = 10, MURO_Z = 44, HUECOS = [-30, -12, 0, 12, 30], HUECO = 2.8;
+const NEUTRO = {
+  warg: {nombre: 'Huargo', vida: 560, dano: 26, alcance: 1.9, vatq: 0.9, vel: 5, oro: 45, xp: 55, modelo: 'warg', alto: 1.5},
+  troll: {nombre: 'Troll de las colinas', vida: 2600, dano: 70, alcance: 2.8, vatq: 0.55, vel: 3.6, oro: 150, xp: 240, modelo: 'troll', alto: 3.8, buff: 'troll', jefe: true},
+  alfa: {nombre: 'Huargo alfa', vida: 2000, dano: 55, alcance: 2.2, vatq: 0.8, vel: 5, oro: 130, xp: 200, modelo: 'huargo_alfa', alto: 2.2, buff: 'alfa', jefe: true},
+};
+const CAMPOS = [{x: 17, z: 20, tipo: 'warg', n: 2}, {x: -17, z: 20, tipo: 'warg', n: 2}, {x: 17, z: -20, tipo: 'warg', n: 2}, {x: -17, z: -20, tipo: 'warg', n: 2},
+  {x: -18.5, z: 0, tipo: 'troll', n: 1}, {x: 18.5, z: 0, tipo: 'alfa', n: 1}];
+const BUFF_TXT = {troll: 'Fuerza del troll: +15 % de daño y vuestros súbditos golpean más fuerte las torres', alfa: 'Aullido del alfa: +15 % de velocidad y te curas más deprisa'};
 const SUBD = {m: {vida: 380, dano: 18, alcance: 1.9, vatq: 0.9, vel: 3.4, oro: 22, xp: 32}, r: {vida: 270, dano: 24, alcance: 6, vatq: 0.8, vel: 3.4, oro: 16, xp: 26}, a: {vida: 1100, dano: 45, alcance: 2.3, vatq: 0.6, vel: 3.1, oro: 60, xp: 70, muros: 3}};
 const MODELO_SUBD = [{m: 'ballestero2', r: 'arquero_rohan2', a: 'ballestero2'}, {m: 'uruk', r: 'q_arquero', a: 'uruk'}];
 const ALTO_SUBD = {m: 1.7, r: 1.6, a: 2.6};
@@ -62,15 +72,15 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWid
 renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.prepend(renderer.domElement);
-const scene = new THREE.Scene(); scene.background = new THREE.Color('#1b2230'); scene.fog = new THREE.Fog('#1b2230', 30, 70);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#1b2230'); scene.fog = new THREE.Fog('#1b2230', 45, 110);
 const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.5, 200);
 addEventListener('resize', () => {renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();});
 scene.add(new THREE.HemisphereLight('#c9d6ff', '#3a2a1a', 1.5));
 const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30, 10); sol.castShadow = true;
-sol.shadow.mapSize.set(1024, 1024); Object.assign(sol.shadow.camera, {left: -18, right: 18, top: 18, bottom: -18, near: 1, far: 70}); scene.add(sol, sol.target);
+sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const NOMBRES = ['rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles', 'torre_k', 'estandarte_muro', 'estandarte_patio', 'brasero', 'tienda', 'empalizada', 'barril_1', 'barril_2', 'caja_1', 'heno', 'sacos_terreros', 'antorcha_pie'];
+const NOMBRES = ['warg', 'huargo_alfa', 'troll', 'carro_k', 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles', 'torre_k', 'estandarte_muro', 'estandarte_patio', 'brasero', 'tienda', 'empalizada', 'barril_1', 'barril_2', 'caja_1', 'heno', 'sacos_terreros', 'antorcha_pie'];
 async function cargaModelo(n) {
   const r = await fetch('../abismo/modelos/' + n + '.glb'); if (!r.ok) throw new Error(n);
   return new Promise(async (res, rej) => loader.parse(await r.arrayBuffer(), '', res, rej));
@@ -96,13 +106,14 @@ function otraVez(a, k) {const n = a.clips[k]; if (!n) return; n.reset().play(); 
 /* ---------- el mapa ---------- */
 function construyeMapa() {
   const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('texturas/barro.webp', true);
-  const g = new THREE.PlaneGeometry(44, 132, 1, 1); g.rotateX(-Math.PI / 2);
+  const g = new THREE.PlaneGeometry(80, 132, 1, 1); g.rotateX(-Math.PI / 2);
   const m = new THREE.MeshStandardMaterial({color: '#ffffff', roughness: 0.95});
   m.onBeforeCompile = (sh) => {
     sh.uniforms.tH = {value: tH}; sh.uniforms.tB = {value: tB};
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.)).xyz;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
       varying vec3 vWP; uniform sampler2D tH,tB;
+      #define S_T 0.
       float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
       float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.03;a*=.5;}return s;}`)
@@ -113,14 +124,33 @@ function construyeMapa() {
       float carril=1.-smoothstep(4.5,7.5,abs(w.x)+fbm(w*.3)*1.5);
       float mb=max(carril*.85,smoothstep(.55,.75,fbm(w*.05+1.3)));
       vec3 col=mix(hi,ba,mb);
-      float borde=smoothstep(9.,13.,abs(w.x)); col*=1.-borde*.55;
+      /* la espesura: hierba más oscura y húmeda, con claros de barro donde están las bestias */
+      float jungla=smoothstep(9.5,11.,abs(w.x));
+      vec3 musgo=hi*vec3(.62,.78,.55)*(.75+.5*fbm(w*.2+9.));
+      col=mix(col,musgo,jungla*(1.-smoothstep(.62,.8,fbm(w*.09+4.))*.5));
+      /* el vado: agua poco honda cruzando de lado a lado */
+      float rio=1.-smoothstep(2.2,3.6,abs(w.y+sin(w.x*.25)*.8)+fbm(w*.4)*.8);
+      vec3 agua=mix(vec3(.004,.016,.026),vec3(.012,.04,.05),fbm(w*.5+vec2(S_T)));
+      col=mix(col,agua,rio*.9);
+      float borde=smoothstep(25.,28.,abs(w.x)); col*=1.-borde*.7;
       diffuseColor.rgb*=col;`);
   };
   const suelo = new THREE.Mesh(g, m); suelo.receiveShadow = true; scene.add(suelo);
   const pon2 = (n, x, z, ry = 0, e = 1) => {if (!M[n]) return null; const o = M[n].scene.clone(true); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.setScalar(e); o.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); scene.add(o); return o;};
-  /* empalizadas a los lados del vado */
-  for (let z = -60; z <= 60; z += 4.2) for (const x of [-10.5, 10.5]) {const o = pon2('empalizada', x + rnd(-0.3, 0.3), z, Math.PI / 2 + rnd(-0.06, 0.06), 1.05); if (o) o.traverse((q) => {if (/^nivel_\d$/.test(q.name)) q.visible = q.name === 'nivel_1';});}
-  for (let i = 0; i < 26; i++) {const z = rnd(-48, 48), x = (Math.random() < 0.5 ? -1 : 1) * rnd(8.6, 9.6); pon2(['barril_1', 'barril_2', 'caja_1', 'heno', 'sacos_terreros'][i % 5], x, z, rnd(0, 6.28), 1);}
+  const valla = (x, z) => {const o = pon2('empalizada', x + rnd(-0.2, 0.2), z, Math.PI / 2 + rnd(-0.05, 0.05), 1.05); if (o) o.traverse((q) => {if (/^nivel_\d$/.test(q.name)) q.visible = q.name === 'nivel_1';});};
+  /* empalizada entre el carril y la espesura, con huecos para pasar */
+  for (let z = -MURO_Z + 2; z <= MURO_Z - 2; z += 4.2) if (!enHueco(z) && !enHueco(z - 1.6) && !enHueco(z + 1.6)) for (const x of [-MURO_X, MURO_X]) valla(x, z);
+  /* borde exterior */
+  for (let z = -60; z <= 60; z += 4.2) for (const x of [-27.5, 27.5]) valla(x, z);
+  for (let i = 0; i < 22; i++) {const z = rnd(-44, 44), x = (Math.random() < 0.5 ? -1 : 1) * rnd(8.2, 9.2); if (!enHueco(z)) pon2(['barril_1', 'barril_2', 'caja_1', 'heno', 'sacos_terreros'][i % 5], x, z, rnd(0, 6.28), 1);}
+  /* la espesura: restos de campamentos, carros volcados y braseros junto a cada cubil */
+  for (const c of CAMPOS) {
+    const sx = Math.sign(c.x), jefe = NEUTRO[c.tipo].jefe;
+    pon2('brasero', c.x + sx * 3.2, c.z + 2.6, 0, jefe ? 1.8 : 1.3); luzFuego(c.x + sx * 3.2, c.z + 2.6);
+    pon2(jefe ? 'carro_k' : 'barril_2', c.x + sx * 3.5, c.z - 3, rnd(0, 6.28), jefe ? 1.3 : 1);
+    pon2('sacos_terreros', c.x + sx * 2.5, c.z - 5, rnd(0, 6.28), 1);
+  }
+  for (let i = 0; i < 30; i++) {const x = (Math.random() < 0.5 ? -1 : 1) * rnd(12, 25), z = rnd(-46, 46); if (CAMPOS.some((c) => Math.hypot(c.x - x, c.z - z) < 5) || Math.abs(z) < 4) continue; pon2(['barril_2', 'caja_1', 'sacos_terreros', 'barril_1'][i % 4], x, z, rnd(0, 6.28), rnd(0.9, 1.3));}
   for (const eq of [0, 1]) {
     const s = signo(eq), fz = s * MAPA.fuente;
     pon2('tienda', 5.5, fz + s * 2, eq ? 0 : Math.PI, 1.6);
@@ -141,7 +171,7 @@ let ESTADO = 'menu';   /* menu, sala, juego, fin */
 let idSig = 1;
 
 function nuevaPartida(jugadores, modo) {
-  S = {t: 0, u: [], proy: [], zonas: [], dif: [], ev: [], ola: 5, oleadaN: 0, muertes: [0, 0], fin: -1};
+  S = {t: 0, u: [], proy: [], zonas: [], dif: [], bufEq: [{}, {}], campos: CAMPOS.map((c) => ({...c, resp: NEUTRO[c.tipo].jefe ? 90 : 30, vivos: 0})), ev: [], ola: 5, oleadaN: 0, muertes: [0, 0], fin: -1};
   idSig = 1;
   const plazas = modo === '2v2' ? 4 : 2;
   for (let slot = 0; slot < plazas; slot++) {
@@ -164,6 +194,9 @@ function stats(h) {
   const b = HEROES[h.tipo], n = h.nivel - 1, st = {vida: b.vida + b.crecV * n, dano: b.dano + b.crecD * n, vatq: b.vatq, alcance: b.alcance, vel: b.vel, reduc: 0, regen: 1.5, crit: 0, robo: 0, espinas: 0, esquiva: 0};
   let va = 0, ve = 0;
   for (const id of h.inv) {const o = OBJ[id].st; st.vida += o.vida || 0; st.dano += o.dano || 0; va += o.vatq || 0; ve += o.vel || 0; st.reduc += o.reduc || 0; st.regen += o.regen || 0; st.crit += o.crit || 0; st.robo += o.robo || 0; st.espinas += o.espinas || 0; st.esquiva += o.esquiva || 0;}
+  const be = S && S.bufEq[h.eq] || {};
+  if (be.troll > S.t) st.dano *= 1.15;
+  if (be.alfa > S.t) {ve += 0.15; st.regen += 6;}
   if (h.buf.rafaga > 0) va += 0.6;
   if (h.buf.suerte > 0) {ve += 0.5; st.dano *= 1.35;}
   if (h.buf.invis > 0) ve += 0.35;
@@ -181,7 +214,7 @@ function ganaXp(h, n) {
 function ev(e) {S.ev.push(e); efectoLocal(e);}
 
 /* ---------- simulación (anfitrión) ---------- */
-function enemigosDe(eq) {return S.u.filter((u) => u.eq !== eq && !u.muerto && u.vida > 0 && !(u.k === 'h' && u.buf.invis > 0));}
+function enemigosDe(eq) {return S.u.filter((u) => u.eq !== eq && !u.muerto && u.vida > 0 && !(u.k === 'h' && u.buf.invis > 0) && !(eq === 2 && u.k !== 'h'));}
 function atacable(u) {
   if (u.k === 't' && u.n === 2) return !S.u.some((q) => q.k === 't' && q.eq === u.eq && q.n === 1 && q.vida > 0);
   if (u.k === 'n') return !S.u.some((q) => q.k === 't' && q.eq === u.eq && q.vida > 0);
@@ -198,6 +231,7 @@ function dana(o, d, n, tipo) {
     if (o && o.k === 'h') {d.agresor = o.id; d.agresorT = S.t + 3; o.atacoHeroeT = S.t + 2.5;}
     if (st.espinas && o && o.k !== 't' && tipo !== 'hab' && dist(o, d) < 3) dana(null, o, n * st.espinas, 'hab');
   }
+  if (d.k === 'j' && o && o.k === 'h') {d.agro = o.id; d.agroT = S.t + 6;}
   d.vida -= n; ev(['num', d.x, d.z, Math.round(n), tipo === 'crit' ? 'c' : '']);
   if (o && o.k === 'h' && o.vida > 0) {const r = stats(o).robo; if (r) o.vida = Math.min(stats(o).vida, o.vida + n * r);}
   if (d.vida <= 0) muere(d, o);
@@ -209,6 +243,14 @@ function muere(d, o) {
     const sd = SUBD[d.tipo];
     if (o && o.k === 'h') {o.oro += sd.oro; ev(['num', d.x, d.z, '+' + sd.oro, 'o', o.id]);}
     for (const h of heroes()) if (h.eq !== d.eq && !h.muerto && dist(h, d) < 12) ganaXp(h, sd.xp);
+  }
+  if (d.k === 'j') {
+    d.muerto = true; d.quitar = S.t + 2; ev(['muere', d.id]);
+    const nd = NEUTRO[d.tipo], c = S.campos[d.campo]; c.vivos--; if (c.vivos <= 0) c.resp = S.t + (nd.jefe ? 150 : 60);
+    const eq = o && o.k === 'h' ? o.eq : null;
+    if (o && o.k === 'h') {o.oro += nd.oro; ev(['num', d.x, d.z, '+' + nd.oro, 'o', o.id]);}
+    if (eq !== null) for (const h of heroes()) if (h.eq === eq && !h.muerto && (h === o || dist(h, d) < 14)) ganaXp(h, nd.xp);
+    if (nd.buff && eq !== null) {S.bufEq[eq][nd.buff] = S.t + 90; ev(['fx', 'onda', d.x, d.z, 6]); ev(['aviso', 0, (eq === 0 ? 'Rohan' : 'Isengard') + ' vence al ' + nd.nombre + ' · ' + BUFF_TXT[nd.buff]]);}
   }
   if (d.k === 'h') {
     d.muerto = true; d.resp = S.t + 6 + d.nivel * 2; d.buf = {}; ev(['muere', d.id]); S.muertes[1 - d.eq]++;
@@ -228,7 +270,8 @@ function golpea(o, d) {
     else luego(0.18, () => {if (d.vida > 0 && !o.muerto) {dana(o, d, n, crit ? 'crit' : 'at'); ev(['fx', 'impacto', d.x, d.z, 1.4]);}});
     return;
   }
-  if (o.k === 's') {o.ac++; const sd = SUBD[o.tipo]; if (o.tipo === 'r') lanzaProy(o, d, o.eq ? 'flecha_orca' : 'flecha_elfica', sd.dano, 'at'); else luego(0.2, () => {if (d.vida > 0 && o.vida > 0) dana(o, d, sd.dano * ((d.k === 't' || d.k === 'n') ? (sd.muros || 1.5) : 1), 'at');}); return;}
+  if (o.k === 's') {o.ac++; const sd = SUBD[o.tipo]; if (o.tipo === 'r') lanzaProy(o, d, o.eq ? 'flecha_orca' : 'flecha_elfica', sd.dano, 'at'); else luego(0.2, () => {if (d.vida > 0 && o.vida > 0) dana(o, d, sd.dano * ((d.k === 't' || d.k === 'n') ? (sd.muros || 1.5) * (S.bufEq[o.eq].troll > S.t ? 1.6 : 1) : 1), 'at');}); return;}
+  if (o.k === 'j') {o.ac++; const nd = NEUTRO[o.tipo]; luego(0.3, () => {if (d.vida > 0 && o.vida > 0) {dana(o, d, nd.dano * (1 + S.t / 900), 'at'); if (nd.jefe) ev(['fx', 'impacto', d.x, d.z, 2]);}}); return;}
   if (o.k === 't') {o.ac++; const n = d.k === 'h' ? 120 + 12 * Math.floor(S.t / 60) : 90; lanzaProy(o, d, 'piedra', n, 'at', 1.8, 4);}
 }
 function lanzaProy(o, d, modelo, n, tipo, esc = 1, y = 1.2) {
@@ -239,7 +282,27 @@ function mueveHacia(u, tx, tz, vel, dt) {
   const dx = tx - u.x, dz = tz - u.z, l = Math.hypot(dx, dz); if (l < 0.05) return false;
   const p = Math.min(l, vel * dt); u.x += dx / l * p; u.z += dz / l * p; u.rot = Math.atan2(dx, dz); limita(u); return true;
 }
-function limita(u) {u.x = Math.max(-MAPA.ancho, Math.min(MAPA.ancho, u.x)); u.z = Math.max(-MAPA.fuente - 3, Math.min(MAPA.fuente + 3, u.z));}
+function limita(u) {u.x = Math.max(-MAPA.ancho, Math.min(MAPA.ancho, u.x)); u.z = Math.max(-MAPA.fuente - 3, Math.min(MAPA.fuente + 3, u.z)); choca(u);}
+function enHueco(z) {return HUECOS.some((g) => Math.abs(z - g) < HUECO);}
+function choca(u) {
+  const ax = Math.abs(u.x);
+  if (ax > MURO_X - 0.7 && ax < MURO_X + 0.7 && Math.abs(u.z) < MURO_Z && !enHueco(u.z)) {
+    const lado = u.px !== undefined ? Math.abs(u.px) < MURO_X : ax < MURO_X;
+    u.x = Math.sign(u.x || 1) * (lado ? MURO_X - 0.7 : MURO_X + 0.7);
+  }
+  u.px = u.x;
+}
+/* camino con los huecos: si el destino está al otro lado de la empalizada, primero al hueco más cercano */
+function rumbo(u, tx, tz) {
+  const dentro = Math.abs(u.x) < MURO_X, dentroT = Math.abs(tx) < MURO_X;
+  if (dentro !== dentroT && Math.abs(u.z) < MURO_Z + 1 && Math.abs(tz) < MURO_Z + 1 && !(enHueco(u.z) && Math.abs(Math.abs(u.x) - MURO_X) < 1.2)) {
+    const g = HUECOS.reduce((m, q) => Math.abs(q - (u.z + tz) / 2) + Math.abs(q - u.z) * 0.5 < Math.abs(m - (u.z + tz) / 2) + Math.abs(m - u.z) * 0.5 ? q : m);
+    const lx = Math.sign(dentroT ? u.x : tx) * MURO_X;
+    return [lx * (dentro ? 0.9 : 1.1) - u.x, g - u.z];
+  }
+  return [tx - u.x, tz - u.z];
+}
+function ve(h, tx, tz) {const [x, z] = rumbo(h, tx, tz); h.mx = x; h.mz = z;}
 function masCercano(u, lista, r) {let m = null, md = r; for (const q of lista) {const d0 = dist(u, q) - radio(q); if (d0 < md) {md = d0; m = q;}} return m;}
 
 function oleada() {
@@ -278,7 +341,7 @@ function paso(dt) {
     if (h.ataca && !h.dash && !(h.aturd > S.t) && h.cd.a <= 0) {
       const en = enemigosDe(h.eq).filter(atacable), r = st.alcance + 0.6;
       let obj = null; const hh = en.filter((e) => e.k === 'h' && dist(h, e) - radio(e) < r);
-      obj = hh.length && (h.prioHeroe !== false) ? hh.sort((a, b) => a.vida - b.vida)[0] : masCercano(h, en, r);
+      obj = hh.length && (h.prioHeroe !== false) ? hh.sort((a, b) => a.vida - b.vida)[0] : masCercano(h, en.filter((e) => e.k !== 'j' || e.agro === h.id || !h.bot || h.ataca), r);
       if (obj) {h.cd.a = 1 / st.vatq; h.rot = Math.atan2(obj.x - h.x, obj.z - h.z); if (h.buf.invis) h.buf.invis = 0; golpea(h, obj);}
     }
   }
@@ -287,7 +350,7 @@ function paso(dt) {
     if (u.k !== 's' || u.muerto) continue;
     const sd = SUBD[u.tipo], s = signo(u.eq); u.cd = Math.max(0, u.cd - dt);
     if (u.aturd > S.t) continue;
-    const en = enemigosDe(u.eq).filter(atacable), obj = masCercano(u, en, u.tipo === 'r' ? 7 : 6);
+    const en = enemigosDe(u.eq).filter((e) => e.eq !== 2 && atacable(e)), obj = masCercano(u, en, u.tipo === 'r' ? 7 : 6);
     const vel = sd.vel * (u.lento > S.t ? 0.6 : 1);
     if (obj) {
       const d0 = dist(u, obj) - radio(obj);
@@ -295,13 +358,36 @@ function paso(dt) {
       else {u.mueve = false; u.rot = Math.atan2(obj.x - u.x, obj.z - u.z); if (u.cd <= 0) {u.cd = 1 / sd.vatq; golpea(u, obj);}}
     } else {u.mueve = mueveHacia(u, u.x * 0.98, -s * (MAPA.nexo + 2), vel, dt);}
   }
+  /* la espesura: campamentos que reaparecen y bestias que vuelven a su sitio si te alejas */
+  S.campos.forEach((c, ci) => {
+    if (c.vivos > 0 || S.t < c.resp) return;
+    const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;
+    for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, x: c.x + (i - (c.n - 1) / 2) * 1.6, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.6, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: c.x > 0 ? -Math.PI / 2 : Math.PI / 2, rad: nd.jefe ? 1.1 : 0.6});
+    if (nd.jefe) ev(['aviso', 0, 'El ' + nd.nombre + ' ha despertado en la espesura']);
+  });
+  for (const u of S.u) {
+    if (u.k !== 'j' || u.muerto) continue;
+    const nd = NEUTRO[u.tipo]; u.cd = Math.max(0, u.cd - dt);
+    if (u.aturd > S.t) continue;
+    let obj = u.agro && S.t < u.agroT + 4 ? S.u.find((q) => q.id === u.agro && !q.muerto && q.vida > 0) : null;
+    const lejos = Math.hypot(u.x - u.cx, u.z - u.cz) > 11;
+    if (obj && (lejos || dist(obj, {x: u.cx, z: u.cz}) > 13)) obj = null;
+    if (obj) {
+      const d0 = dist(u, obj) - radio(obj);
+      if (d0 > nd.alcance) {u.mueve = mueveHacia(u, obj.x, obj.z, nd.vel * (u.lento > S.t ? 0.6 : 1), dt);}
+      else {u.mueve = false; u.rot = Math.atan2(obj.x - u.x, obj.z - u.z); if (u.cd <= 0) {u.cd = 1 / nd.vatq; golpea(u, obj);}}
+    } else {
+      u.agro = null; u.mueve = mueveHacia(u, u.cx, u.cz, nd.vel * 1.3, dt);
+      if (!u.mueve || lejos) u.vida = Math.min(u.max, u.vida + u.max * 0.25 * dt);
+    }
+  }
   /* separación entre súbditos para que no se monten */
   const ss = S.u.filter((u) => (u.k === 's' || u.k === 'h') && !u.muerto);
   for (let i = 0; i < ss.length; i++) for (let j = i + 1; j < ss.length; j++) {const a = ss[i], b = ss[j], dx = a.x - b.x, dz = a.z - b.z, d0 = Math.hypot(dx, dz), m = 0.9; if (d0 < m && d0 > 0.001) {const p = (m - d0) / 2; if (a.k === 's') {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's') {b.x -= dx / d0 * p; b.z -= dz / d0 * p;}}}
   /* torres */
   for (const t of S.u) {
     if (t.k !== 't' || t.vida <= 0) continue; t.cd = Math.max(0, t.cd - dt);
-    const en = enemigosDe(t.eq).filter((e) => e.k !== 't' && e.k !== 'n' && dist(t, e) < 9.5);
+    const en = enemigosDe(t.eq).filter((e) => e.eq !== 2 && e.k !== 't' && e.k !== 'n' && dist(t, e) < 9.5);
     let obj = en.find((e) => e.k === 'h' && e.atacoHeroeT > S.t && hs.some((a) => a.eq === t.eq && !a.muerto && dist(a, t) < 11));
     if (!obj) obj = masCercano(t, en.filter((e) => e.k === 's'), 9.5) || masCercano(t, en, 9.5);
     if (obj && t.cd <= 0) {t.cd = 1.1; golpea(t, obj);}
@@ -320,7 +406,7 @@ function paso(dt) {
     if (z.tick <= 0) {z.tick = 0.5; for (const e of enemigosDe(z.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, z) < z.r + radio(e)) {dana(z.o, e, z.dps * 0.5, 'hab'); if (e.buf) {e.buf.lento = 0.8; e.buf.lentoV = z.l;} else e.lento = S.t + 0.8;}}
     if (z.t <= 0) S.zonas.splice(i, 1);
   }
-  S.u = S.u.filter((u) => !(u.k === 's' && u.muerto && S.t > u.quitar));
+  S.u = S.u.filter((u) => !((u.k === 's' || u.k === 'j') && u.muerto && S.t > u.quitar));
 }
 
 /* habilidades: las resuelve quien simula. dx,dz: dirección; px,pz: punto */
@@ -350,13 +436,27 @@ function usaHab(h, k, dx, dz, px, pz) {
 }
 
 /* ---------- bots ---------- */
+function heroeEn0(h, en) {return en.filter((e) => e.k === 'h').sort((a, b) => dist(h, a) - dist(h, b))[0];}
 function ia(h, dt, st) {
   const s = signo(h.eq), en = enemigosDe(h.eq), fz = s * MAPA.fuente;
   h.iaT = (h.iaT || 0) - dt; h.mx = 0; h.mz = 0; h.ataca = false;
   /* compra en la fuente */
   if (Math.abs(h.z - fz) < 7) {const plan = PLAN_BOT[h.tipo] || []; const id = plan[h.plan]; if (id && compra(h, id) === '') h.plan++;}
   const pv = h.vida / st.vida;
-  if (pv < 0.28 || h.vuelve) {h.vuelve = pv < 0.92; h.mx = -h.x * 0.3; h.mz = fz - h.z; return;}
+  if (pv < 0.28 || h.vuelve) {h.vuelve = pv < 0.92; ve(h, 0, fz); return;}
+  /* el segundo de cada equipo (y cualquiera desde nivel 6 en el 1 contra 1) caza en la espesura */
+  /* si un compañero está peleando con un jefe de la espesura, se va a ayudarle */
+  const jefeAliado = S.u.find((u) => u.k === 'j' && !u.muerto && NEUTRO[u.tipo].jefe && S.u.some((q) => q.k === 'h' && q.eq === h.eq && q !== h && q.id === u.agro));
+  if (jefeAliado && pv > 0.6) {if (dist(h, jefeAliado) - radio(jefeAliado) > st.alcance) ve(h, jefeAliado.x, jefeAliado.z); else h.ataca = true; return;}
+  const cazador = h.slot >= 2 || (S.u.filter((q) => q.k === 'h').length === 2 && h.nivel >= 6 && Math.floor(S.t / 90) % 2 === 1);
+  if (cazador && pv > 0.5) {
+    const bestias = S.u.filter((u) => u.k === 'j' && !u.muerto && (NEUTRO[u.tipo].jefe ? h.nivel >= 5 && pv > 0.75 : u.cz * s > 0) && !en.some((e) => e.k === 'h' && dist(e, u) < 12));
+    const b = bestias.sort((a, c) => dist(h, a) - dist(h, c))[0];
+    if (b && !(heroeEn0(h, en) && dist(h, heroeEn0(h, en)) < 6)) {
+      if (dist(h, b) - radio(b) > st.alcance) ve(h, b.x, b.z); else {h.ataca = true; h.mx = 0; h.mz = 0;}
+      return;
+    }
+  }
   /* frente: el súbdito aliado más adelantado; no pasar de él salvo contra un héroe débil */
   const aliados = S.u.filter((u) => u.eq === h.eq && u.k === 's' && !u.muerto);
   const frente = aliados.length ? aliados.reduce((m, u) => (-s * u.z > -s * m.z ? u : m)) : null;
@@ -380,10 +480,10 @@ function ia(h, dt, st) {
   }
   if (objetivo) {
     const d0 = dist(h, objetivo) - radio(objetivo);
-    if (d0 > st.alcance) {h.mx = objetivo.x - h.x; h.mz = objetivo.z - h.z;} else h.ataca = true;
+    if (d0 > st.alcance) ve(h, objetivo.x, objetivo.z); else h.ataca = true;
   } else {
     const tz = frente ? frente.z + s * 3 : s * (MAPA.torre1 - 2);
-    if (Math.abs(h.z - tz) > 1) {h.mx = (frente ? frente.x * 0.5 : 0) - h.x * 0.2; h.mz = tz - h.z;}
+    if (Math.abs(h.z - tz) > 1 || Math.abs(h.x) > 7) ve(h, frente ? frente.x * 0.5 : 0, tz);
   }
 }
 
@@ -407,7 +507,9 @@ function foto() {
   const u = S.u.map((q) => q.k === 'h'
     ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2)]
     : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, 0, '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
-  return {t: +S.t.toFixed(2), u, m: S.muertes, ev: S.ev.splice(0)};
+  const be = S.bufEq.map((b) => [Math.max(0, Math.round((b.troll || 0) - S.t)), Math.max(0, Math.round((b.alfa || 0) - S.t))]);
+  const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
+  return {t: +S.t.toFixed(2), u, m: S.muertes, be, cp, ev: S.ev.splice(0)};
 }
 function aplicaFila(f, t) {
   const [id, k, eq, x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo] = f;
@@ -421,7 +523,7 @@ function recibeFoto(o) {
   for (const v of VISTA.values()) v.visto = false;
   for (const f of o.u) aplicaFila(f, o.t);
   for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);}
-  marcador(o.m, o.t);
+  marcador(o.m, o.t); EXTRA.be = o.be; EXTRA.cp = o.cp;
   for (const e of o.ev || []) efectoLocal(e);
 }
 
@@ -435,6 +537,7 @@ function creaVis(v) {
   let o = {};
   if (v.k === 'h') {o = montar(HEROES[v.tipo].modelo, 2.05); o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95); if (v.id === YO) o.aro.material.color.set('#ffd24a'); scene.add(o.aro);}
   else if (v.k === 's') o = montar(MODELO_SUBD[v.eq][v.tipo], ALTO_SUBD[v.tipo]);
+  else if (v.k === 'j') o = montar(NEUTRO[v.tipo].modelo, NEUTRO[v.tipo].alto);
   else if (v.k === 't') {
     const g = new THREE.Group(), t = M.torre_k.scene.clone(true); t.scale.setScalar(0.62); g.add(t);
     const b = M.estandarte_patio.scene.clone(true); b.position.set(0, 3.4, 0); b.scale.setScalar(0.8); g.add(b);
@@ -480,10 +583,10 @@ function dibuja(dt) {
     if (o.aro) {o.aro.position.set(x, 0.05, z); o.aro.visible = o.raiz.visible && !muerto; o.aro.rotation.y += dt * 0.6;}
     /* barra de vida */
     let b = BARRAS.get(v.id);
-    if (!b) {b = document.createElement('div'); b.className = 'bv ' + {h: 'h', s: 'm', t: 't', n: 't'}[v.k] + ' e' + (v.eq === MI_EQ ? 0 : 1); b.innerHTML = (v.k === 'h' ? '<b></b>' : '') + '<i><u></u></i>'; $('barras').appendChild(b); BARRAS.set(v.id, b);}
-    const altoB = v.k === 'h' ? 2.6 : v.k === 's' ? 2 : v.k === 't' ? 5.2 : 6.5;
+    if (!b) {b = document.createElement('div'); b.className = 'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].jefe ? 't' : 'm'}[v.k] + ' e' + (v.eq === 2 ? 2 : v.eq === MI_EQ ? 0 : 1); b.innerHTML = (v.k === 'h' ? '<b></b>' : '') + '<i><u></u></i>'; $('barras').appendChild(b); BARRAS.set(v.id, b);}
+    const altoB = v.k === 'h' ? 2.6 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 : v.k === 't' ? 5.2 : 6.5;
     _p.set(x, altoB, z).project(camera);
-    const vis = o.raiz.visible && !muerto && v.vida > 0 && _p.z < 1 && Math.abs(_p.x) < 1.2 && Math.abs(_p.y) < 1.2 && (v.k !== 's' || v.vida < v.max);
+    const vis = o.raiz.visible && !muerto && v.vida > 0 && _p.z < 1 && Math.abs(_p.x) < 1.2 && Math.abs(_p.y) < 1.2 && (v.k !== 's' || v.vida < v.max) && (v.k !== 'j' || v.vida < v.max || NEUTRO[v.tipo].jefe);
     b.style.display = vis ? 'flex' : 'none';
     if (vis) {b.style.left = ((_p.x + 1) / 2 * innerWidth) + 'px'; b.style.top = ((1 - _p.y) / 2 * innerHeight) + 'px'; b.querySelector('u').style.width = Math.max(0, v.vida / v.max * 100) + '%'; if (v.k === 'h') b.querySelector('b').innerHTML = '<em>' + v.nivel + '</em>' + (v.nombre || '');}
   }
@@ -541,12 +644,13 @@ function aviso(txt) {const a = $('aviso'); a.textContent = txt; a.style.opacity 
 
 /* ---------- cámara ---------- */
 const camM = new THREE.Vector3();
+const ZOOMS = [[24, 14], [31, 18], [40, 23]]; let zoomI = +(localStorage.getItem('vado.zoom') ?? 1);
 function camara(dt) {
   const v = VISTA.get(YO); if (!v) return;
   const s = signo(MI_EQ), x = v.xi ?? v.x, z = v.zi ?? v.z;
   camM.x += (x - camM.x) * Math.min(1, dt * 6); camM.z += (z - s * 3 - camM.z) * Math.min(1, dt * 6);
-  camera.position.set(camM.x, 23, camM.z + s * 14); camera.lookAt(camM.x, 0, camM.z);
-  sol.position.set(camM.x + 10, 30, camM.z + 8); sol.target.position.set(camM.x, 0, camM.z);
+  const zz = ZOOMS[zoomI]; camera.position.set(camM.x, zz[0], camM.z + s * zz[1]); camera.lookAt(camM.x, 0, camM.z);
+  sol.position.set(camM.x + 10, 40, camM.z + 8); sol.target.position.set(camM.x, 0, camM.z);
 }
 
 /* ---------- mandos ---------- */
@@ -572,6 +676,7 @@ function preparaMandos() {
     b.addEventListener('pointercancel', () => {p0 = null; apunta = null; ocultaMira();});
   }
   $('bTienda').onclick = abreTienda;
+  $('bZoom').onclick = () => {zoomI = (zoomI + 1) % ZOOMS.length; localStorage.setItem('vado.zoom', zoomI);};
   $('bBase').onclick = () => {const v = VISTA.get(YO); if (!v || v.muerto >= 0) return; volverBase = 3; aviso('Volviendo a la fuente… (no te muevas 3 s)');};
 }
 let volverBase = 0;
@@ -592,7 +697,7 @@ function lanzaMia(k, apunta) {
   const H = HEROES[v.tipo].hab[k], x = v.xi ?? v.x, z = v.zi ?? v.z; let dx, dz, px, pz;
   if (apunta && mira && mira.dir) {dx = mira.dir.wx; dz = mira.dir.wz; px = mira.dir.px; pz = mira.dir.pz;}
   else {/* toque: apunta solo al héroe enemigo más cercano (o a lo que tengas delante) */
-    let mejor = null, md = (H.alc || H.dist || 6) + 4; for (const q of VISTA.values()) if (q.eq !== MI_EQ && (q.k === 'h' ? q.muerto < 0 && !(q.flags & 1) : q.k === 's' && q.muerto !== 0)) {const d0 = Math.hypot(q.x - x, q.z - z) - (q.k === 'h' ? 0 : 3); if (d0 < md) {md = d0; mejor = q;}}
+    let mejor = null, md = (H.alc || H.dist || 6) + 4; for (const q of VISTA.values()) if (q.eq !== MI_EQ && (q.k === 'h' ? q.muerto < 0 && !(q.flags & 1) : (q.k === 's' || q.k === 'j') && q.muerto !== 0)) {const d0 = Math.hypot(q.x - x, q.z - z) - (q.k === 'h' ? 0 : 3); if (d0 < md) {md = d0; mejor = q;}}
     if (mejor) {dx = mejor.x - x; dz = mejor.z - z; px = mejor.x; pz = mejor.z;} else {const r = v.rot || 0; dx = Math.sin(r); dz = Math.cos(r); px = x + dx * 5; pz = z + dz * 5;}
   }
   suena(['dash', 'salto'].includes(H.tipo) ? 'viento' : 'espada', 0.5);
@@ -611,7 +716,7 @@ function mueveMio(dt) {
   const st = {vel: HEROES[v.tipo].vel * (v.inv.includes('botas') ? 1.12 : 1) * (v.inv.includes('capa') ? 1.18 : 1)};
   if (MIO.dash) {MIO.x += MIO.dash.vx * dt; MIO.z += MIO.dash.vz * dt; MIO.dash.t -= dt; if (MIO.dash.t <= 0) MIO.dash = null;}
   else if (!(v.flags & 2) && (MANDO.mx || MANDO.mz)) {const l = Math.hypot(MANDO.mx, MANDO.mz); MIO.x += MANDO.mx / l * st.vel * Math.min(1, l) * dt; MIO.z += MANDO.mz / l * st.vel * Math.min(1, l) * dt; MIO.rot = Math.atan2(MANDO.mx, MANDO.mz);}
-  MIO.x = Math.max(-MAPA.ancho, Math.min(MAPA.ancho, MIO.x)); MIO.z = Math.max(-MAPA.fuente - 3, Math.min(MAPA.fuente + 3, MIO.z));
+  limita(MIO);
   /* si el anfitrión me ve muy lejos (me han empujado, he reaparecido), manda él */
   if (Math.hypot(v.x - MIO.x, v.z - MIO.z) > 6 && !MIO.dash) {MIO.x = v.x; MIO.z = v.z;}
   v.xi = MIO.x; v.zi = MIO.z; v.x = MIO.x; v.z = MIO.z; v.rot = MANDO.mx || MANDO.mz ? MIO.rot : v.rot; v.mueve = !!(MANDO.mx || MANDO.mz || MIO.dash);
@@ -652,7 +757,7 @@ function recibe(o) {
 /* ---------- partida ---------- */
 let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 function empieza(jugadores, modo, simulo) {
-  ESTADO = 'juego'; $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase'].forEach((i) => $(i).classList.remove('hidden'));
+  ESTADO = 'juego'; $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; recibeFoto(foto());}
@@ -663,9 +768,38 @@ function empieza(jugadores, modo, simulo) {
   aviso('¡Al vado! Derriba las torres y el estandarte enemigo'); suena('cuerno', 0.7);
 }
 function iconosHab(tipo) {for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = ICO(HEROES[tipo].hab[k].icono); b.title = HEROES[tipo].hab[k].n;}}
-function marcador(m, t) {$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span> · <span class="b">' + m[1 - MI_EQ] + '</span><div style="font-size:11px;color:#d9c49a">' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</div>';}
+function marcador(m, t) {$('marcador').dataset.t = t;$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span> · <span class="b">' + m[1 - MI_EQ] + '</span><div style="font-size:11px;color:#d9c49a">' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</div>';}
+let miniT = 0, consejoI = 0;
+const CONSEJOS = ['Mueve con el joystick y mantén ⚔ para atacar: primero a lo que tengas más cerca', 'Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos', 'En la espesura (a los lados, cruzando los huecos de la empalizada) hay huargos: dan oro y experiencia', 'El troll (oeste) y el huargo alfa (este) dan una bendición a todo tu equipo durante 90 s', 'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en la armería'];
+function consejos(t) {if (localStorage.getItem('vado.consejos') === '3') return; const i = Math.floor((t - 2) / 14); if (i >= 0 && i < CONSEJOS.length && i >= consejoI) {consejoI = i + 1; aviso('💡 ' + CONSEJOS[i]); if (i === CONSEJOS.length - 1) localStorage.setItem('vado.consejos', String(+(localStorage.getItem('vado.consejos') || 0) + 1));}}
+function objetivoTxt() {
+  const en = (k, n) => [...VISTA.values()].find((q) => q.k === k && q.eq === 1 - MI_EQ && (n === undefined || q.tipo === n) && q.vida > 0);
+  if (en('t', 1)) return 'Objetivo: la torre exterior enemiga';
+  if (en('t', 2)) return 'Objetivo: la torre interior enemiga';
+  return '¡Objetivo: el estandarte enemigo!';
+}
+function minimapa() {
+  const c = $('mini'), W = c.width, H = c.height, g = c.getContext('2d'), s = signo(MI_EQ);
+  const px = (x) => W / 2 + s * x / 28 * (W / 2), pz = (z) => H / 2 + s * z / 57 * (H / 2);
+  g.clearRect(0, 0, W, H); g.fillStyle = '#1d2a18'; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#5a4630'; g.fillRect(px(-6) < px(6) ? px(-6) : px(6), 0, Math.abs(px(6) - px(-6)), H);
+  g.fillStyle = '#29495a'; g.fillRect(0, pz(-2.5) < pz(2.5) ? pz(-2.5) : pz(2.5), W, Math.abs(pz(2.5) - pz(-2.5)));
+  g.strokeStyle = '#8a6a3a'; g.lineWidth = 2;
+  for (const x of [-MURO_X, MURO_X]) {let z0 = -MURO_Z; for (const h of [...HUECOS, MURO_Z + HUECO]) {g.beginPath(); g.moveTo(px(x), pz(z0)); g.lineTo(px(x), pz(h - HUECO)); g.stroke(); z0 = h + HUECO;}}
+  CAMPOS.forEach((cp, i) => {const t = EXTRA.cp[i]; g.fillStyle = t === -1 ? (NEUTRO[cp.tipo].jefe ? '#ffb02e' : '#e8d27a') : '#555'; g.beginPath(); g.arc(px(cp.x), pz(cp.z), NEUTRO[cp.tipo].jefe ? 5 : 3.5, 0, 7); g.fill(); if (t > 0) {g.fillStyle = '#bbb'; g.font = '8px system-ui'; g.textAlign = 'center'; g.fillText(t, px(cp.x), pz(cp.z) - 6);}});
+  for (const q of VISTA.values()) {
+    if (q.k === 'j') continue;
+    const mio = q.eq === MI_EQ, col = mio ? '#5fb6ff' : '#ff5a4a', x = px(q.xi ?? q.x), z = pz(q.zi ?? q.z);
+    if (q.k === 't' || q.k === 'n') {if (q.vida <= 0) continue; g.fillStyle = col; const r = q.k === 'n' ? 5 : 4; g.fillRect(x - r, z - r, r * 2, r * 2); g.strokeStyle = '#000'; g.lineWidth = 1; g.strokeRect(x - r, z - r, r * 2, r * 2);}
+    else if (q.k === 's') {if (q.muerto === 0) continue; g.fillStyle = col; g.fillRect(x - 1.2, z - 1.2, 2.4, 2.4);}
+    else if (q.k === 'h') {if (q.muerto >= 0 || (!mio && q.flags & 1)) continue; g.fillStyle = q.id === YO ? '#ffd24a' : col; g.beginPath(); g.arc(x, z, q.id === YO ? 5 : 4, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke();}
+  }
+  /* lo que ve la cámara */
+  const vz = ZOOMS[zoomI][0] * 0.45; g.strokeStyle = '#ffffff88'; g.lineWidth = 1; g.strokeRect(px(camM.x) - vz * 1.6, pz(camM.z) - vz * 2.2, vz * 3.2, vz * 3.4);
+}
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
+  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const b = EXTRA.be[MI_EQ] || [0, 0]; $('buffs').innerHTML = (b[0] ? '<span>💪 Troll ' + b[0] + ' s</span>' : '') + (b[1] ? '<span>🐺 Alfa ' + b[1] + ' s</span>' : ''); consejos(+($('marcador').dataset.t || 0));}
   $('yoNv').textContent = 'Nv ' + v.nivel; $('oro').textContent = '🪙 ' + v.oro;
   ['q', 'w', 'e', 'r'].forEach((k, i) => {const b = $('b' + k.toUpperCase()), c = b.querySelector('.cd'), cd = v.cds ? v.cds[i] : 0; c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; b.classList.toggle('bloq', k === 'r' && v.nivel < NIVEL_R);});
   const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); m.textContent = 'Vuelves en ' + v.muerto + ' s · puedes comprar';} else m.classList.add('hidden');
@@ -708,7 +842,8 @@ function bucle() {
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];
-function recibeFotoLocal(f) {ENVIAR.push(...f.ev); f.ev = []; for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} for (const v of VISTA.values()) {v.x0 = v.x; v.z0 = v.z; v.r0 = v.rot;} marcador(f.m, f.t);}
+function recibeFotoLocal(f) {ENVIAR.push(...f.ev); f.ev = []; for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} for (const v of VISTA.values()) {v.x0 = v.x; v.z0 = v.z; v.r0 = v.rot;} marcador(f.m, f.t); EXTRA.be = f.be; EXTRA.cp = f.cp;}
+const EXTRA = {be: [[0, 0], [0, 0]], cp: []};
 
 /* ---------- tienda (en la fuente) ---------- */
 let tSel = 'hoja';
