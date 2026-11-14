@@ -186,6 +186,36 @@ const RAMAS = {
       ['Suerte de Bolsón', 'Regeneras 2 de vida por segundo y último aliento', (h) => {h.regen = (h.regen || 0) + 2; h.tal.aliento = true;}]]},
   ],
 };
+/* combinaciones entre ramas: se activan cuando una rama llega al IV y otra al II (estadísticas reales) */
+const COMBOS = {
+  'aguante|ataque': {t: 'Firmeza', d: '+15 % de daño y −10 % de daño recibido', f: (h) => {h.dano *= 1.15; h.armadura = Math.min(0.6, h.armadura + 0.1);}},
+  'ataque|hordas': {t: 'Furia', d: '+15 % de velocidad de ataque y +10 % de alcance', f: (h) => {h.cadencia *= 0.87; h.alcance *= 1.1;}},
+  'aguante|hordas': {t: 'Avalancha', d: '+20 % de vida máxima y +10 % de velocidad', f: (h) => {h.vidaMax *= 1.2; h.vida = Math.min(h.vidaMax, h.vida * 1.2); h.vel *= 1.1;}},
+  'apoyo|ataque': {t: 'Precisión', d: '+20 % de daño y +10 % de alcance', f: (h) => {h.dano *= 1.2; h.alcance *= 1.1;}},
+  'apoyo|hordas': {t: 'Danza', d: '+15 % de velocidad de ataque y regeneras 1 de vida por segundo', f: (h) => {h.cadencia *= 0.87; h.regen = (h.regen || 0) + 1;}},
+  'aguante|apoyo': {t: 'Resistencia', d: '+25 % de vida máxima y regeneras 1 de vida por segundo', f: (h) => {h.vidaMax *= 1.25; h.vida = Math.min(h.vidaMax, h.vida * 1.25); h.regen = (h.regen || 0) + 1;}},
+};
+function combosDe(rs) {
+  const out = [];
+  for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) {
+    const a = ROL_DE[rs[i].def.id] || 'ataque', b = ROL_DE[rs[j].def.id] || 'ataque', k = [a, b].sort().join('|'), c = COMBOS[k]; if (!c) continue;
+    const hay = (rs[i].nv >= 4 && rs[j].nv >= 2) || (rs[j].nv >= 4 && rs[i].nv >= 2);
+    out.push({k: i + '-' + j, c, hay, ramas: [rs[i].def.t, rs[j].def.t]});
+  }
+  return out;
+}
+function aplicaCombos(h, rs) {
+  h.combos = h.combos || {};
+  for (const o of combosDe(rs)) if (o.hay && !h.combos[o.k]) {h.combos[o.k] = true; o.c.f(h); aviso('¡Combinación: ' + o.c.t + '! ' + o.c.d, 2600); suena('cofre');}
+}
+/* lo que cambia de verdad al coger un nodo: se prueba sobre una copia del héroe */
+function statsDe(h) {return {'Daño': h.dano * (h.danoEscala || 1), 'Golpes/s': 1 / (h.cadencia * (h.velArmas || 1)), 'Alcance': h.alcance, 'Vida': h.vidaMax, 'Velocidad': h.vel, 'Defensa %': h.armadura * 100, 'Regenera/s': h.regen || 0, 'Proyectiles': h.multi || 1, 'Atraviesa': h.atraviesa || 0};}
+function cambiosNodo(h, fn) {
+  const c = {...h, tal: {...h.tal}, esp: {...(h.esp || {})}}; try {fn(c);} catch (e) {return '';}
+  const a = statsDe(h), b = statsDe(c), f = (v) => v >= 10 ? Math.round(v) : (Math.round(v * 10) / 10).toString().replace('.', ',');
+  const l = []; for (const k in a) if (Math.abs(b[k] - a[k]) > 0.005 * Math.max(1, Math.abs(a[k]))) l.push('<i>' + k + ' ' + f(a[k]) + ' → <b>' + f(b[k]) + '</b></i>');
+  return l.length ? '<div class="arbStats">' + l.join('') + '</div>' : '';
+}
 /* icono de cada nodo (iconos/nd_XX.webp, hoja de ChatGPT) */
 const ND = {
   rohan: {lanza: [1, 2, 3, 4, 5], aguante: [6, 7, 8, 9, 10], jinete: [11, 12, 13, 14, 15]},
@@ -224,11 +254,11 @@ function ofreceArbol() {
   const arbol = document.createElement('div'); arbol.className = 'arbol';
   let sel = null;
   const detalle = document.createElement('div'); detalle.className = 'arbDet';
-  const elegir = (r, i) => {const sig = r.def.n[r.nv]; sig[2](h); r.nv++; h.ramas = rs.map((q) => q.nv); suena('nivel'); pintaArmas(); $('mejora').classList.add('hidden'); J.pausa = false; reloj.getDelta(); setTimeout(siguientePendiente, 50);};
+  const elegir = (r, i) => {const sig = r.def.n[r.nv]; sig[2](h); r.nv++; h.ramas = rs.map((q) => q.nv); aplicaCombos(h, rs); suena('nivel'); pintaArmas(); $('mejora').classList.add('hidden'); J.pausa = false; reloj.getDelta(); setTimeout(siguientePendiente, 50);};
   const pintaDet = () => {
     if (!sel) {detalle.innerHTML = '<p>Toca un nodo que brille.</p>'; return;}
     const [r, i, k] = sel, n = r.def.n[k], disp = k === r.nv && !ramaLibre(rs, i);
-    detalle.innerHTML = '<div class="arbDT"><img src="' + (icoNodo(h.tipo, r.def.id, k) || ico(r.def.icono)) + '" alt=""><div><small><em class="rolP" style="background:' + ROL[ROL_DE[r.def.id] || 'ataque'].c + '">' + ROL[ROL_DE[r.def.id] || 'ataque'].t + '</em> ' + r.def.t + ' · nivel ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '.</span><em>' + r.def.contra + '</em></div></div>';
+    detalle.innerHTML = '<div class="arbDT"><img src="' + (icoNodo(h.tipo, r.def.id, k) || ico(r.def.icono)) + '" alt=""><div><small><em class="rolP" style="background:' + ROL[ROL_DE[r.def.id] || 'ataque'].c + '">' + ROL[ROL_DE[r.def.id] || 'ataque'].t + '</em> ' + r.def.t + ' · nivel ' + ['I', 'II', 'III', 'IV', 'V'][k] + '</small><b>' + n[0] + '</b><span>' + n[1] + '.</span>' + (k === r.nv ? cambiosNodo(h, n[2]) : '') + '<em>' + r.def.contra + '</em></div></div>';
     if (disp) {const b = document.createElement('button'); b.className = 'carta arbOk'; b.innerHTML = '<span>Elegir</span>'; b.onclick = () => elegir(r, i); detalle.appendChild(b);}
     else {const p = document.createElement('p'); p.className = 'arbNo'; p.textContent = k < r.nv ? 'Ya lo tienes.' : k > r.nv ? 'Antes tienes que coger el nivel ' + ['I', 'II', 'III', 'IV', 'V'][k - 1] + ' de esta rama' + (J.nivel < NIVEL_NODO[k] ? ', y este pide nivel ' + NIVEL_NODO[k] + '.' : '.') : '🔒 ' + ramaLibre(rs, i) + '.'; detalle.appendChild(p);}
   };
@@ -247,7 +277,9 @@ function ofreceArbol() {
     }
     col.appendChild(nodos); arbol.appendChild(col);
   });
-  c.appendChild(detalle); c.appendChild(arbol); pintaDet();   /* la explicación arriba: en el móvil abajo quedaba fuera de pantalla */
+  const combo = document.createElement('div'); combo.className = 'arbCombos';
+  combo.innerHTML = combosDe(rs).map((o) => '<span class="' + (o.hay ? 'si' : '') + '"><b>' + (o.hay ? '✦ ' : '🔒 ') + o.c.t + '</b><small>' + o.c.d + '</small><u>' + o.ramas[0] + ' IV + ' + o.ramas[1] + ' II (o al revés)</u></span>').join('');
+  c.appendChild(detalle); c.appendChild(arbol); c.appendChild(combo); pintaDet();   /* la explicación arriba: en el móvil abajo quedaba fuera de pantalla */
   $('mejora').classList.remove('hidden');
 }
 function ajustaCartas(c) {
@@ -723,7 +755,7 @@ function apagaFlash(a, dt) {
   if (a.base === undefined) a.base = a.raiz.scale.x;
   if (a.sq > 0) {a.sq = Math.max(0, a.sq - dt); const k = Math.sin(a.sq / 0.16 * Math.PI) * 0.16; a.raiz.scale.set(a.base * (1 + k), a.base * (1 - k), a.base * (1 + k));} else if (a.sq === 0) {a.raiz.scale.setScalar(a.base); a.sq = -1;}
   if (!a.flash) return; a.flash -= dt;
-  if (a.flash <= 0) {a.flash = 0; const em = a.emi || [0, 0, 0]; a.raiz.traverse((o) => {if (o.isMesh && o.material.emissive) {o.material.emissive.setRGB(...em); if (a.emi) o.material.emissiveIntensity = 0.7;}});}
+  if (a.flash <= 0) {a.flash = 0; const em = a.emi || [0, 0, 0]; a.raiz.traverse((o) => {if (o.isMesh && o.material.emissive) {if (o.userData.brillo) {o.material.emissive.setRGB(...o.userData.brillo); o.material.emissiveIntensity = 1;} else {o.material.emissive.setRGB(...em); if (a.emi) o.material.emissiveIntensity = 0.7;}}});}
 }
 
 /* ---------- efectos ---------- */
@@ -1011,7 +1043,7 @@ function nuevaPartida(tipo) {
   aplicaEquipo(h, tipo); vistePersonaje(h.a.raiz, tipo);
   scene.add(h.a.raiz); pon(h.a, 'quieto');
   if (!window._aro) {const g = new THREE.PlaneGeometry(1.9, 1.9); g.rotateX(-Math.PI / 2); const tx = new THREE.TextureLoader().load('ui/aro_heroe.webp'); tx.colorSpace = THREE.SRGBColorSpace; window._aro = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: tx, transparent: true, opacity: 0.8, depthWrite: false})); window._aro.renderOrder = 2;}
-  scene.add(window._aro);
+  scene.add(window._aro); window._aro.material.color.set('#ffffff'); window._aro.scale.setScalar(1);
   const escalas = [];
   for (let i = 1; i <= 6; i++) {const p = marcas['escala_' + i]; escalas.push({i, x: p.x, estado: 'nada', t: 0, vida: 0, obj: null, cola: 0});}
   J = {h, nubes: [], enemigos: [], gemas: [], escalas, tramos: escalas.map((e) => ({i: e.i - 1, x: (e.x = XT[e.i - 1]), vida: 100, max: 100, nivel: 0, roto: false})), treguaVista: -1, aldeanos: [], barr: {vida: 0, max: 0}, amenaza: null, desagueObj, proy: [], eproy: [], defensas: [], charcos: [], orbitales: [], armas: {}, pasivas: {}, evos: {},
@@ -2639,12 +2671,30 @@ function siguientePendiente() {
   if (J.subidas > 0) {J.subidas--; if (arbolDisponible()) ofreceArbol(); else {ofreceMejoras(false); const prox = proximoNodo(); if (prox) $('mejP').textContent = 'Elige una mejora. El árbol vuelve a nivel ' + prox + '.';} return;}
   siguienteCofre();
 }
+/* el héroe crece y se ve más poderoso según lo que va reuniendo (nivel, armas, evoluciones y árbol) */
+const PODER = [{n: 0, t: ''}, {n: 7, t: 'Veterano', c: '#c8894a'}, {n: 14, t: 'Campeón', c: '#d8e6ff'}, {n: 22, t: 'Héroe de la Marca', c: '#ffd34d'}, {n: 32, t: 'Leyenda de Cuernavilla', c: '#ff7a2a'}];
+function poderActual() {
+  const evos = Object.values(J.evos || {}).filter(Boolean).length, ramas = (J.arbol || []).reduce((s, r) => s + r.nv, 0);
+  return J.nivel + 2 * Object.keys(J.armas || {}).length + Object.keys(J.pasivas || {}).length + 4 * evos + ramas;
+}
+function subePoder() {
+  if (!J || !J.h) return; const h = J.h, p = poderActual(); let t = 0; PODER.forEach((x, i) => {if (p >= x.n) t = i;});
+  if (h.esc0 === undefined) h.esc0 = h.a.raiz.scale.x;
+  if (t <= (J.poderT || 0)) return; J.poderT = t; const P = PODER[t];
+  h.a.base = h.esc0 * (1 + 0.055 * t); h.a.sq = 0.16;   /* crece con un pequeño bote */
+  if (window._aro) {window._aro.material.color.set(P.c); window._aro.scale.setScalar(1 + 0.12 * t);}
+  /* el arma brilla del color del rango */
+  const col = new THREE.Color(P.c); h.a.raiz.traverse((o) => {if (o.isMesh && !o.isSkinnedMesh && !o.userData.borde && o.material && o.material.emissive) {o.userData.brillo = [col.r * 0.5 * t / 4, col.g * 0.5 * t / 4, col.b * 0.5 * t / 4]; o.material.emissive.setRGB(...o.userData.brillo); o.material.emissiveIntensity = 1;}});
+  flip('fx_onda', h.x, 0.25, h.z, {tam: 6, dur: 0.6}); efecto('polvo', h.x, 0.15, h.z, {escala: 1.4, vida: 0.5}); particula('chispa', h.x, 1.2, h.z, {n: 10, vel: 5, sube: 5, vida: 0.7, escala: 0.5, grav: 8});
+  suena('nivel'); J.temblor = Math.max(J.temblor, 0.25); aviso('¡' + P.t + '! Te haces más fuerte', 2000);
+}
 function pintaArmas() {
   const c = $('armas'); c.innerHTML = '';
   const pon1 = (icono, n, evo, info) => {const d = document.createElement('div'); d.innerHTML = '<img src="' + ico(icono) + '" alt=""><b class="' + (evo ? 'evo' : '') + '">' + (evo ? '★' : n) + '</b>'; d.onclick = (ev) => {ev.stopPropagation(); fichaArma(info);}; c.appendChild(d);};
   pon1(J.h.icono, '', false, {heroe: true}); c.lastChild.querySelector('b').remove();
   for (const id in J.armas) pon1(ARMAS[id].icono, J.armas[id], J.evos[id], {arma: id});
   for (const id in J.pasivas) pon1(PASIVAS[id].icono, J.pasivas[id], false, {pasiva: id});
+  subePoder();
 }
 /* ficha al tocar un arma del marcador: qué hace, su nivel y con qué evoluciona (pausa mientras se lee) */
 function fichaArma(o) {
@@ -2946,8 +2996,14 @@ function bucle() {
   const dt = Math.min(reloj.getDelta(), 0.05);
   fpsN++; fpsT += dt; if (fpsT > 1) {$('fps').textContent = Math.round(fpsN / fpsT) + ' fps · ' + (GR.pr || 0).toFixed(2) + 'x · calidad ' + GR.calidad + (J ? ' · ' + J.enemigos.length + ' enemigos' : ''); fpsN = 0; fpsT = 0;}
   antorchas.forEach((a) => {a.fase += dt * 9; const k = 0.85 + Math.sin(a.fase) * 0.08 + Math.sin(a.fase * 2.7) * 0.07; a.l.intensity = a.base * k; });
-  if (J && !J.pausa && !J.fin) {if (J.parada > 0) J.parada -= dt; else paso(dt * (J.lenta > 0 ? 0.35 : 1)); if (J.lenta > 0) J.lenta -= dt;}
+  /* si la partida se queda en pausa sin ninguna ventana a la vista (se ha visto «calado»), se reanuda sola y se apunta */
+  if (J && J.pausa && !J.fin) {
+    const abierto = !$('mejora').classList.contains('hidden') || !$('fichaArma').classList.contains('hidden') || $('bandeja').style.display === 'block' || document.querySelector('#mercadoCapa:not(.hidden)') || (typeof coloca !== 'undefined' && coloca.activo);
+    if (abierto) J.pausaSola = 0; else if ((J.pausaSola = (J.pausaSola || 0) + dt) > 1.5) {J.pausa = false; J.pausaFicha = false; J.pausaSola = 0; reportaError('pausa sin ventana', new Error('se reanuda sola'));}
+  }
+  if (J && !J.pausa && !J.fin) {if (J.parada > 0) J.parada -= dt; else seguro('paso', () => paso(dt * (J.lenta > 0 ? 0.35 : 1))); if (J.lenta > 0) J.lenta -= dt; if (J.parada > 0.3) J.parada = 0.3;}
   else if (J && J.fin) {J.enemigos.forEach((e) => e.a.mixer.update(dt)); J.h.a.mixer.update(dt);}
+  try {
   actualizaEfectos(dt);
   actualizaNumeros(dt);
   mezcladores.forEach((m) => m.update(dt)); ondeaTelas(dt);
@@ -2957,7 +3013,18 @@ function bucle() {
   actualizaPool(dt, camMira.x, camMira.z); orientaMatas(); pintaGemas();
   if (J) {etiquetas(); marcasAmenaza();}
   GR.render(dt, !!(J && !J.pausa && !J.fin));
+  } catch (err) {reportaError('dibujo', err); try {GR.render(0, false);} catch (e2) {}}
 }
+/* red de seguridad: un fallo en una parte no congela la partida; se apunta para poder arreglarlo */
+const ERRORES = [];
+function reportaError(donde, err) {
+  const msg = donde + ': ' + (err && err.message || err); console.error('[abismo]', msg, err);
+  if (ERRORES.some((e) => e.msg === msg)) return;
+  ERRORES.push({msg, pila: String(err && err.stack || '').split('\n').slice(0, 4).join(' | '), ola: J && J.ola, t: J && Math.round(J.t), cuando: new Date().toISOString()});
+  try {localStorage.setItem('abismo.errores', JSON.stringify(ERRORES.slice(-8)));} catch (e) {}
+  const el = $('errAviso'); if (el) {el.textContent = '⚠ Fallo apuntado (' + ERRORES.length + '): ' + msg.slice(0, 80); el.style.display = 'block'; clearTimeout(el._t); el._t = setTimeout(() => {el.style.display = 'none';}, 6000);}
+}
+function seguro(donde, fn) {try {fn();} catch (err) {reportaError(donde, err);}}
 function paso(dt) {
   /* durante la escena del desagüe el mundo se congela: solo se mueve el que carga contra el muro */
   if (J.cine) {J.cine.t = (J.cine.t || 0) + dt; if (J.cine.t > 9) J.cine = null;}
@@ -2966,27 +3033,27 @@ function paso(dt) {
   if (!cine) {
     J.t += dt;
     if (AC && AC.state === 'running' && !J.fin) ponMusica(enTregua(J.t) ? 'tregua_tensa' : J.alba ? 'alba_triunfal' : 'batalla_epica');
-    actualizaDichos(dt);
+    seguro('Dichos', () => actualizaDichos(dt));
     spawns(dt);
   }
   llenaRejilla();
-  mueveHeroe(dt);
-  const h0 = J.h; for (const e of J.enemigos) if (!e.muerto) {const g = e.golpe; mueveEnemigo(e, dt); if (e.d.jefe && g > 0 && e.golpe <= 0) finGolpeJefe(e);}
+  seguro('heroe', () => mueveHeroe(dt));
+  const h0 = J.h; for (const e of J.enemigos) if (!e.muerto) {try {const g = e.golpe; mueveEnemigo(e, dt); if (e.d.jefe && g > 0 && e.golpe <= 0) finGolpeJefe(e);} catch (err) {reportaError('enemigo ' + (e.tipo || '') + ' fase ' + e.fase, err); e.muerto = 0.01; e.vuela = null;}}
   if (!cine) {
     separa();
-    actualizaArmas(dt);
-    actualizaProyectiles(dt);
-    actualizaEproy(dt);
-    actualizaCharcos(dt);
-    actualizaDefensas(dt);
-    actualizaFortaleza(dt);
-    actualizaArqueros(dt);
-    actualizaSubidas(dt);
-    actualizaJinetes(dt);
-    actualizaElfos(dt);
-    actualizaEscalas(dt);
-    actualizaGemas(dt);
-    actualizaManchas(dt);
+    seguro('Armas', () => actualizaArmas(dt));
+    seguro('Proyectiles', () => actualizaProyectiles(dt));
+    seguro('Eproy', () => actualizaEproy(dt));
+    seguro('Charcos', () => actualizaCharcos(dt));
+    seguro('Defensas', () => actualizaDefensas(dt));
+    seguro('Fortaleza', () => actualizaFortaleza(dt));
+    seguro('Arqueros', () => actualizaArqueros(dt));
+    seguro('Subidas', () => actualizaSubidas(dt));
+    seguro('Jinetes', () => actualizaJinetes(dt));
+    seguro('Elfos', () => actualizaElfos(dt));
+    seguro('Escalas', () => actualizaEscalas(dt));
+    seguro('Gemas', () => actualizaGemas(dt));
+    seguro('Manchas', () => actualizaManchas(dt));
   }
   for (let i = J.enemigos.length - 1; i >= 0; i--) {
     const e = J.enemigos[i];
@@ -3014,7 +3081,8 @@ function paso(dt) {
     apagaFlash(e.a, dt);
   }
   pintaBarras();
-  const h = J.h; if (window._aro) {window._aro.position.set(h.x, (h.y ?? 0.15) + 0.03, h.z); window._aro.material.opacity = 0.7 + Math.sin(J.t * 4) * 0.15; window._aro.rotation.y += 0.004;} ritmo(h.a, h, h.vel, dt); h.a.raiz.position.set(h.x, h.y ?? 0.15, h.z); {let d = h.rot - (h.rotV ?? h.rot); d = Math.atan2(Math.sin(d), Math.cos(d)); h.rotV = (h.rotV ?? h.rot) + d * Math.min(1, dt * 18);} h.a.raiz.rotation.y = h.rotV; h.a.mixer.update(dt); apagaFlash(h.a, dt);
+  const h = J.h; if ((J.poderT || 0) >= 3 && Math.random() < dt * (J.poderT === 4 ? 10 : 4)) particula('chispa', h.x + rnd(-0.5, 0.5), rnd(0.4, 1.8), h.z + rnd(-0.5, 0.5), {n: 1, vel: 0.6, sube: 1.6, vida: 0.6, escala: 0.35, grav: -1});
+  if (window._aro) {window._aro.position.set(h.x, (h.y ?? 0.15) + 0.03, h.z); window._aro.material.opacity = 0.7 + Math.sin(J.t * 4) * 0.15; window._aro.rotation.y += 0.004;} ritmo(h.a, h, h.vel, dt); h.a.raiz.position.set(h.x, h.y ?? 0.15, h.z); {let d = h.rot - (h.rotV ?? h.rot); d = Math.atan2(Math.sin(d), Math.cos(d)); h.rotV = (h.rotV ?? h.rot) + d * Math.min(1, dt * 18);} h.a.raiz.rotation.y = h.rotV; h.a.mixer.update(dt); apagaFlash(h.a, dt);
   actualizaPuerta();
   pintaDebug();
   pintaHud();
@@ -3157,6 +3225,7 @@ window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
 window._M = M; window._P = P; window._maq = (t, n) => maquina(t, n); window._torre = (n) => torreK(n); window._altoP = (v) => {ALTO_PLATAFORMA = v;}; window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
+window._ofreceArbol = () => ofreceArbol(); window._arbolDisp = () => arbolDisponible();
 window._construye = (si) => construye(si);
 window._elfos = () => llegaElfos();
 window._arqT = (k) => arqueroTramo(J.tramos[k]);

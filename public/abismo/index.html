@@ -355,10 +355,14 @@ body.cine #bocadillo,body.cine #txt,body.cine #tregua,body.cine #hud,body.cine #
 #cineTxt{position:fixed;left:0;right:0;bottom:calc(12vh + 14px);text-align:center;z-index:61;font:700 19px/1.25 Georgia,serif;color:#f3dfae;text-shadow:0 2px 6px #000;opacity:0;transition:opacity .4s;pointer-events:none;padding:0 18px}
 body.cine #cineTxt{opacity:1}
 #dolor{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:0;transition:opacity .35s ease-out;background:radial-gradient(ellipse at center,transparent 55%,rgba(200,20,10,.55) 100%)}
+.arbStats{display:flex;flex-wrap:wrap;gap:3px 8px;margin:4px 0 2px}.arbStats i{font-style:normal;font-size:11.5px;color:#d9c9a4;background:#0006;border-radius:6px;padding:1px 6px}.arbStats b{color:#8dff7a}
+.arbCombos{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}.arbCombos span{flex:1 1 30%;min-width:100px;background:#1a120bcc;border:1.5px solid #5a4630;border-radius:10px;padding:5px 6px;color:#a8977a}.arbCombos span.si{border-color:#ffd24a;color:#fff3c8;box-shadow:0 0 10px #ffd24a66}
+.arbCombos b{display:block;font:800 12px Georgia,serif}.arbCombos small{display:block;font-size:10.5px;line-height:1.2}.arbCombos u{display:block;text-decoration:none;font-size:9.5px;opacity:.7;margin-top:2px}
 </style>
 <script type="importmap">{"imports":{"three":"./three/three.module.js","three/addons/":"./three/addons/"}}</script>
 </head><body>
 <div id="dolor"></div>
+<div id="errAviso" style="display:none;position:fixed;left:8px;right:8px;bottom:8px;z-index:60;background:#3a0d08ee;color:#ffd9cf;font:600 12px system-ui;padding:6px 8px;border-radius:8px;pointer-events:none"></div>
 <div class="hud hidden" id="hud">
   <div class="hTop">
     <div class="hRet"><img id="hRet" alt=""><span id="nivel">1</span></div>
