@@ -79,6 +79,10 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 .tbFila>img{grid-area:i;width:36px;height:36px;border-radius:50%}.tbFila .n{grid-area:n;font:700 13px Georgia,serif}.tbFila .n small{display:block;font-size:10px}.tbFila .k{grid-area:k;font:800 13px system-ui}.tbFila .c{grid-area:c;font:700 12px system-ui}.tbFila .o{grid-area:o;display:flex;gap:2px}.tbFila .o img{width:22px;height:22px}
 .bv.h i::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,#0000 0 calc(var(--seg,100%) - 1px),#000d calc(var(--seg,100%) - 1px) var(--seg,100%))}
 .num.cur{color:#7dff6a}
+#bBase span{position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);font:900 10px system-ui;color:#ffe3a0;text-shadow:0 1px 2px #000;letter-spacing:.06em}
+#canal{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:8;background:#0b1520e0;border:2px solid #5fb6ff;border-radius:12px;padding:6px 16px 10px;font:800 15px Georgia,serif;color:#cfe8ff;pointer-events:none;overflow:hidden;min-width:220px;text-align:center}
+#canal b{color:#fff;font-size:18px}#canal i{position:absolute;left:0;bottom:0;height:4px;background:#5fb6ff}
+#dolor{position:fixed;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 60px 18px #c0101099;opacity:0;transition:opacity .12s}
 #aviso{position:fixed;left:50%;top:26%;transform:translateX(-50%);z-index:9;font:800 22px Georgia,serif;color:#ffd77a;text-shadow:0 3px 0 #000,0 0 14px #000;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;width:90%}
 #muerto{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;background:#000a;font:800 24px Georgia,serif;color:#ff9a8a;pointer-events:none}
 #fin{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#000c}#fin h2{font-size:38px;margin:0;color:#ffd77a}
@@ -110,7 +114,11 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
   #objetivo{top:calc(54px + env(safe-area-inset-top))}
   #buffs{top:calc(76px + env(safe-area-inset-top))}
   #anuncio{top:calc(70px + env(safe-area-inset-top))}
-  #aviso{top:18%;font-size:19px;width:60%}
+  #bBase span{position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);font:900 10px system-ui;color:#ffe3a0;text-shadow:0 1px 2px #000;letter-spacing:.06em}
+#canal{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:8;background:#0b1520e0;border:2px solid #5fb6ff;border-radius:12px;padding:6px 16px 10px;font:800 15px Georgia,serif;color:#cfe8ff;pointer-events:none;overflow:hidden;min-width:220px;text-align:center}
+#canal b{color:#fff;font-size:18px}#canal i{position:absolute;left:0;bottom:0;height:4px;background:#5fb6ff}
+#dolor{position:fixed;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 60px 18px #c0101099;opacity:0;transition:opacity .12s}
+#aviso{top:18%;font-size:19px;width:60%}
   #menu{display:grid;grid-template-columns:1fr 1fr;align-content:center;justify-items:center;column-gap:16px;padding-left:calc(16px + env(safe-area-inset-left));padding-right:calc(16px + env(safe-area-inset-right))}
   #menu h1,#menu .sub{grid-column:1/-1}#menu h1{font-size:26px;margin:0}
   #menu .bt{min-width:200px;padding:9px 14px}
@@ -142,6 +150,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
   <div class="caja" id="ping" style="font-size:11px">—</div>
 </div>
 <div id="barras"></div>
+<div id="dolor"></div>
 <div id="joy" class="hidden"><b><i></i></b></div>
 <div id="mandos" class="hidden">
   <button class="hb" id="bAt"><img src="ui/b_ataque.webp" alt=""></button>
@@ -154,7 +163,8 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
   <button class="hb hs" id="bF" aria-label="Curar"><img src="../abismo/iconos/corazon.webp" alt=""><span class="cd hidden"></span></button>
 </div>
 <button id="bTienda" class="hidden" aria-label="Armería"></button>
-<button id="bBase" class="hidden" aria-label="Volver a la base">⌂</button>
+<button id="bBase" class="hidden" aria-label="Volver a la base"><span>BASE</span></button>
+<div id="canal" class="hidden"></div>
 <button id="bZoom" class="hidden" aria-label="Alejar o acercar la cámara">🔍</button>
 <canvas id="mini" class="hidden" width="96" height="196"></canvas>
 <div id="objetivo" class="hidden"></div><div id="buffs"></div>
