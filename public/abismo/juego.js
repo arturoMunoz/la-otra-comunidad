@@ -388,11 +388,16 @@ function piezas(gltf) {
   });
   return out;
 }
-const NOMBRES = ['tronco', 'equipo', 'casco_enano', 'escaleras_muro', 'entrada_cuevas', 'q_arquero', 'q_brujo', 'uruk_piquero', 'huargo_alfa', 'patio5', 'muralla_helm', 'cuernavilla_v2', 'muro_tramo', 'desague', 'torre_arqueros', 'barricada_puerta', 'empalizada', 'caldero_aceite', 'sitio_construccion', 'aldeano_rohan', 'puerta', 'atrezo', 'objetos', 'efectos', 'efectos2', 'efectos3', 'proyectiles', 'armas_auto', 'defensas', 'marcador_colocacion', 'botin', 'brillo_elite',
+const NOMBRES = ['elfo_lorien', 'arquero_rohan2', 'ballestero2', 'balista', 'catapulta2', 'torre_k', 'barril_1', 'barril_2', 'barril_3', 'caja_1', 'caja_2', 'sacos', 'heno', 'brasero', 'sacos_terreros', 'tienda', 'carro_k', 'armero_k', 'antorcha_pie', 'tronco', 'equipo', 'casco_enano', 'escaleras_muro', 'entrada_cuevas', 'q_arquero', 'q_brujo', 'uruk_piquero', 'huargo_alfa', 'patio5', 'muralla_helm', 'cuernavilla_v2', 'muro_tramo', 'desague', 'torre_arqueros', 'barricada_puerta', 'empalizada', 'caldero_aceite', 'sitio_construccion', 'aldeano_rohan', 'puerta', 'atrezo', 'objetos', 'efectos', 'efectos2', 'efectos3', 'proyectiles', 'armas_auto', 'defensas', 'marcador_colocacion', 'botin', 'brillo_elite',
   'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'arquero_rohan', 'orco', 'uruk', 'berserker', 'warg', 'troll', 'ballestero', 'portaestandarte', 'troll_acorazado', 'capitan', 'uruk_acorazado', 'antorchero', 'ariete', 'huargo_jinete', 'ballesta_muro', 'catapulta_rohan', 'arquero_muralla', 'jinete_rohan', 'efectos4'];
 async function cargarTodo() {
   const gl = await Promise.all(NOMBRES.map(cargaModelo));
   NOMBRES.forEach((n, i) => M[n] = gl[i]);
+  /* el atrezo de Kenney/KayKit viene en colores de juguete: se baja a la noche (más oscuro y algo menos saturado), una vez por modelo */
+  ['balista', 'catapulta2', 'torre_k', 'barril_1', 'barril_2', 'barril_3', 'caja_1', 'caja_2', 'sacos', 'heno', 'brasero', 'sacos_terreros', 'tienda', 'carro_k', 'armero_k', 'antorcha_pie'].forEach((n) => {
+    if (!M[n]) return; const vistos = new Set();
+    M[n].scene.traverse((o) => {if (!o.isMesh) return; (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => {if (vistos.has(m)) return; vistos.add(m); if (m.color) {const h = {}; m.color.getHSL(h); m.color.setHSL(h.h, h.s * 0.72, h.l * 0.7);} if ('roughness' in m) m.roughness = Math.max(m.roughness, 0.85); if ('metalness' in m) m.metalness = Math.min(m.metalness, 0.2);});});
+  });
   M.patio5.scene.traverse((o) => {if (o.isMesh) o.receiveShadow = true; if (o.name) marcas[o.name] = o.position.clone();});
   GR.mejoraPatio4(M.patio5.scene);
   scene.add(M.patio5.scene);
@@ -423,7 +428,7 @@ async function cargarTodo() {
     const l = new THREE.PointLight('#ffb35c', 14, 15, 1.7); l.position.copy(p); l.position.y += 0.6; scene.add(l);
     antorchas.push({l, ll, base: 14, fase: Math.random() * 9});
   }
-  [[-12, 30], [12, 28], [-14, 6], [14, 14]].forEach(([x, z]) => {const b = P.barril.clone(); b.position.set(x, 0.15, z); b.userData.fijo = true; scene.add(b);});
+  [[-12, 30], [12, 28], [-14, 6], [14, 14], [-12.8, 30.9], [13.1, 13.2]].forEach(([x, z], i) => {const nb = 'barril_' + (1 + i % 3), b = M[nb] ? M[nb].scene.clone(true) : P.barril.clone(); if (M[nb]) {b.scale.setScalar(1.15); b.rotation.y = i * 1.7; b.traverse((m) => {if (m.isMesh) {m.castShadow = true; m.receiveShadow = true;}});} b.position.set(x, 0.15, z); b.userData.fijo = true; scene.add(b);});
   colocaAtrezo();
   calcos(); matas(); valle();
   preparaLluvia();
@@ -569,9 +574,24 @@ function colocaAtrezo() {
     const o = P[n].clone(true); o.position.set(x, 0.15, z); o.rotation.y = ry;
     o.traverse((m) => {if (m.isMesh) {m.castShadow = true; m.receiveShadow = true;}}); o.userData.fijo = n !== 'hoguera_patio'; scene.add(o); return o;
   };
+  /* Pack 25 (Kenney/KayKit, CC0): si está cargado, sustituye al atrezo hecho de cajas */
+  const pon2 = (n, x, z, ry = 0, e = 1) => {
+    if (!M[n]) return null; const o = M[n].scene.clone(true); o.position.set(x, 0.15, z); o.rotation.y = ry; o.scale.setScalar(e);
+    o.traverse((m) => {if (m.isMesh) {m.castShadow = true; m.receiveShadow = true;}}); o.userData.fijo = true; scene.add(o); return o;
+  };
+  if (M.carro_k) {
+    pon2('carro_k', -13.5, 19, 0.4, 1.5); pon2('heno', -15.2, 21.4, 0.8, 1.2); pon2('heno', -12.6, 16.6, 2.1, 1.0);
+    pon1('pila_lanzas', 15, 22, -Math.PI / 2); pon2('armero_k', 16, 30, -Math.PI / 2, 1.15); pon2('armero_k', 16, 27.6, -Math.PI / 2, 1.15);
+    pon2('sacos', -15.3, 11.2, 0.3, 1.1); pon2('sacos', 15.2, 3, 2, 1.0);
+    pon2('caja_1', -15, -6, 0.2, 1.3); pon2('caja_2', -14, -4.7, 0.6, 1.3); pon2('caja_1', -15.4, -4.4, 1.1, 1.0); pon2('caja_2', 14.8, -9, 0.3, 1.3);
+    pon2('tienda', 14.6, 9.5, 0.2, 1.3); pon2('caja_1', 13.4, 11.2, 0.4, 1.0);
+    pon1('cadena', -16.5, 33, Math.PI / 2);
+    [[-4, 17.5], [4, 17.5]].forEach(([x, z]) => {if (pon2('brasero', x, z, 0, 1.25)) {const l = new THREE.PointLight('#ff8a3c', 10, 10, 1.7); l.position.set(x, 1.6, z); scene.add(l); antorchas.push({l, ll: ponLlama(x, 1.2, z, 0.9), base: 10, fase: Math.random() * 9});}});
+  } else {
   pon1('carro', -13.5, 19, 0.4); pon1('pila_lanzas', 15, 22, -Math.PI / 2); pon1('armero', 16, 30, -Math.PI / 2);
   pon1('saco', -15.5, 11); pon1('saco', -14.6, 11.8, 1); pon1('saco', 15.4, 3, 2);
   pon1('caja', -15, -6); pon1('caja', -14.2, -4.9, 0.5); pon1('caja', 14.8, -9, 0.3); pon1('cadena', -16.5, 33, Math.PI / 2);
+  }
   if (pon1('hoguera_patio', -10, 29)) {const l = new THREE.PointLight('#ff9a3c', 18, 13, 1.7); l.position.set(-10, 1.4, 29); scene.add(l); antorchas.push({l, ll: null, base: 18, fase: 2});}
   const est = M.atrezo.scene.getObjectByName('estandarte_rohan_2'), clip = M.atrezo.animations.find((a) => a.name === 'ondear');
   [[-5, 34.6], [5, 34.6]].forEach(([x, z], i) => {
@@ -644,13 +664,16 @@ function montar(nombreModelo, sombra) {
   raiz.traverse((o) => {if (o.isMesh && o.userData.borde) {o.castShadow = false; o.visible = GR.calidad > 0; if (o.isSkinnedMesh) {if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); const b = o.geometry.boundingSphere.clone(); b.radius = b.radius * 1.8 + 0.5; o.boundingSphere = b;} return;}
     if (o.isMesh) {o.castShadow = !!sombra; o.material = o.material.clone();
     if (o.isSkinnedMesh) {if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); const b = o.geometry.boundingSphere.clone(); b.radius = b.radius * 1.8 + 0.5; o.boundingSphere = b;}}});
-  const ESC_KK = {rohan_kk: 0.86, enano_kk: 0.76, elfo_kk: 0.88, hobbit_kk: 0.66}; if (ESC_KK[nombreModelo]) raiz.scale.setScalar(ESC_KK[nombreModelo]);
+  const ESC_KK = {rohan_kk: 0.86, enano_kk: 0.76, elfo_kk: 0.88, hobbit_kk: 0.66, elfo_lorien: 1.1, arquero_rohan2: 1.12, ballestero2: 1.1}; if (ESC_KK[nombreModelo]) raiz.scale.setScalar(ESC_KK[nombreModelo]);
   const mixer = new THREE.AnimationMixer(raiz);
   const clips = {};
   g.animations.forEach((c) => clips[c.name] = mixer.clipAction(c));
   /* modelos de Quaternius: sus clips se llaman distinto; se apuntan a los nombres que usa el juego */
   const alias = {recibir_golpe: 'recibir', trepar: 'andar', caer: 'saltar', saltar_muro: 'saltar', golpear_puerta: 'atacar', disparar: 'atacar'};
   for (const k in alias) if (!clips[k] && clips[alias[k]]) clips[k] = clips[alias[k]];
+  /* Pack 25 (KayKit): sus clips de arquero se llaman apuntar/disparar/morir */
+  const alias2 = {atacar: 'disparar', disparar_rapido: 'disparar', morir_caer: 'morir', recibir: 'recibir_golpe'};
+  for (const k in alias2) if (!clips[k] && clips[alias2[k]]) clips[k] = clips[alias2[k]];
   UNA_VEZ.forEach((k) => {if (clips[k]) {clips[k].setLoop(THREE.LoopOnce, 1); clips[k].clampWhenFinished = true;}});
   return {raiz, mixer, clips, actual: null};
 }
@@ -1166,7 +1189,7 @@ function vistElfo(a) {a.raiz.traverse((o) => {if (o.isMesh && !o.userData.borde 
 function vanguardia() {
   J.elfos = [];
   for (const x of [-11, -2, 7]) {
-    const a = vistElfo(montar('elfo_kk', true)); a.raiz.position.set(x, Y_MURO, Z_MURO_ARRIBA + 0.6); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'quieto');
+    const a = (M.elfo_lorien ? montar('elfo_lorien', true) : vistElfo(montar('elfo_kk', true))); a.raiz.position.set(x, Y_MURO, Z_MURO_ARRIBA + 0.6); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'quieto');
     J.elfos.push({a, muro: true, lento: true, x, z: Z_MURO_ARRIBA + 0.6, cd: rnd(1, 3)});
   }
 }
@@ -1174,12 +1197,12 @@ function llegaElfos() {
   if (J.elfosTodos) return; J.elfosTodos = true; J.elfos = J.elfos || [];
   aviso('¡Llegan los elfos de Lórien! Vienen a luchar a vuestro lado', 3200); suena('cuerno'); habla('haldir');
   for (let i = 0; i < 6; i++) {
-    const a = vistElfo(montar('elfo_kk', true)), x = -15 + i * 6 + rnd(-1, 1);
+    const a = (M.elfo_lorien ? montar('elfo_lorien', true) : vistElfo(montar('elfo_kk', true))), x = -15 + i * 6 + rnd(-1, 1);
     a.raiz.position.set(x, Y_MURO, Z_MURO_ARRIBA + 0.6); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'quieto');
     J.elfos.push({a, muro: true, x, z: Z_MURO_ARRIBA + 0.6, cd: rnd(0.5, 1.5)});
   }
   for (let i = 0; i < 3; i++) {
-    const a = vistElfo(montar('elfo_kk', true));
+    const a = (M.elfo_lorien ? montar('elfo_lorien', true) : vistElfo(montar('elfo_kk', true)));
     const el = {a, muro: false, x: rnd(-3, 3), z: PATIO.z1 - 1, cd: 1, vel: 5.2, ang: i * 2.1};
     scene.add(a.raiz); J.elfos.push(el);
   }
@@ -1279,8 +1302,8 @@ function haceTramo(k) {
   ponTramo(t); arqueroTramo(t); pintaHud(); pintaMuro();
 }
 function arqueroTramo(t) {
-  const quiere = t.nivel > 0 && !t.roto && M.arquero_muralla;
-  if (quiere && !t.arq) {const a = montar('arquero_muralla', true); a.raiz.position.set(t.x + rnd(-1.5, 1.5), Y_MURO, Z_MURO_ARRIBA + 0.4); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'apuntar'); t.arq = {a, cd: rnd(0.5, 1.5)};}
+  const quiere = t.nivel > 0 && !t.roto && (M.arquero_rohan2 || M.arquero_muralla);
+  if (quiere && !t.arq) {const a = montar(M.arquero_rohan2 ? 'arquero_rohan2' : 'arquero_muralla', true); a.raiz.position.set(t.x + rnd(-1.5, 1.5), Y_MURO, Z_MURO_ARRIBA + 0.4); a.raiz.rotation.y = Math.PI; scene.add(a.raiz); pon(a, 'apuntar'); t.arq = {a, cd: rnd(0.5, 1.5)};}
   /* si el tramo cae, el arquero no muere: salta al patio y sigue disparando desde abajo; al reparar, vuelve a subir */
   if (t.arq && t.roto && !t.arq.suelo) {const q = t.arq; q.suelo = true; q.a.raiz.position.set(t.x + rnd(-1.2, 1.2), 0.15, BRECHA.z + rnd(3, 4.5)); efecto('polvo', q.a.raiz.position.x, 0.2, q.a.raiz.position.z, {escala: 1, vida: 0.5}); pon(q.a, 'apuntar', 0.1, true); aviso('El arquero del tramo ' + (J.tramos.indexOf(t) + 1) + ' salta al patio y sigue disparando', 1200);}
   else if (t.arq && !t.roto && t.arq.suelo) {const q = t.arq; q.suelo = false; q.a.raiz.position.set(t.x + rnd(-1.5, 1.5), Y_MURO, Z_MURO_ARRIBA + 0.4);}
@@ -1344,6 +1367,32 @@ function quitaSitio(si) {
 const subiendo = [];
 function sube(o) {o.scale.y = 0.05; subiendo.push({o, t: 0});}
 function actualizaSubidas(dt) {for (let i = subiendo.length - 1; i >= 0; i--) {const s = subiendo[i]; s.t += dt / 0.55; const k = Math.min(1, s.t); s.o.scale.y = k < 1 ? 0.05 + 1.12 * Math.sin(k * Math.PI / 2) - 0.12 * k * k : 1; if (k >= 1) subiendo.splice(i, 1);}}
+/* Pack 25: balista y catapulta de Kenney (CC0) con su operario de KayKit; se animan por código (no traen clips) */
+function maquina(tipo, n) {
+  const nom = tipo === 'ballesta' ? 'balista' : 'catapulta2'; if (!M[nom]) return null;
+  const g = new THREE.Group(), m = M[nom].scene.clone(true); m.scale.setScalar([1.1, 1.25, 1.4][n - 1]);
+  m.traverse((o) => {if (o.isMesh) {o.castShadow = true; o.receiveShadow = true;}}); g.add(m);
+  if (n >= 2 && M.sacos_terreros) {const sa = M.sacos_terreros.scene.clone(true); sa.position.set(0, 0, 2.1); sa.traverse((o) => {if (o.isMesh) o.receiveShadow = true;}); g.add(sa);}
+  if (n >= 3 && M.brasero) {const b = M.brasero.scene.clone(true); b.position.set(1.7, 0, -0.6); g.add(b);}
+  let op = null; if (M.ballestero2) {op = montar('ballestero2', true); op.raiz.position.set(-1.25, 0, -1.3); g.add(op.raiz); pon(op, 'quieto');}
+  return {g, m, op, flecha: m.getObjectByName('arrow'), brazo: m.getObjectByName('catapult')};
+}
+function torreK(n) {
+  const g = new THREE.Group(), t = M.torre_k.scene.clone(true), e = [0.56, 0.62, 0.68][n - 1]; t.scale.setScalar(e);
+  t.traverse((o) => {if (o.isMesh) {o.castShadow = true; o.receiveShadow = true;}}); g.add(t);
+  if (n >= 2 && M.sacos_terreros) {const sa = M.sacos_terreros.scene.clone(true); sa.position.set(0, 0, 2.2); g.add(sa);}
+  if (n >= 3 && M.antorcha_pie) {[-1.9, 1.9].forEach((x) => {const a = M.antorcha_pie.scene.clone(true); a.position.set(x, 0, 1.2); g.add(a);});}
+  g.userData.alto = 6.5 * e * ALTO_PLATAFORMA; return g;
+}
+let ALTO_PLATAFORMA = 0.78;
+function animaMaquina(d, dt) {
+  if (!d.maq) return; const q = d.maq; q.t = (q.t || 9) + dt;
+  const k = q.t < 0.12 ? q.t / 0.12 : Math.max(0, 1 - (q.t - 0.12) / 0.5);
+  q.m.position.z = -0.35 * (q.t < 0.6 ? Math.sin(Math.min(1, q.t / 0.6) * Math.PI) : 0);
+  if (q.flecha) q.flecha.visible = q.t > 0.9;
+  if (q.brazo) {if (q.r0 === undefined) q.r0 = q.brazo.rotation.x; q.brazo.rotation.x = q.r0 - 1.25 * k;}
+  if (q.op) {q.op.mixer.update(dt); if (q.t > 0.9 && q.op.actual === q.op.clips.disparar) pon(q.op, 'quieto', 0.25);}
+}
 function construye(si) {
   if (si.nivel >= 3) return;
   const c = si.coste[si.nivel]; if (J.oro < c) return;
@@ -1351,20 +1400,20 @@ function construye(si) {
   J.oro -= c; const n = ++si.nivel, mult = 1 + 0.6 * (n - 1);
   if (si.obj) scene.remove(si.obj); si.obj = null;
   const nm = MODELO_SITIO[si.tipo];
-  if (nm) {si.obj = modeloNivel(nm, n); si.obj.position.set(si.x, si.y ? si.y : 0.15, si.z); scene.add(si.obj); sube(si.obj);}
+  if (nm) {si.obj = si.tipo === 'torre' && M.torre_k ? torreK(n) : modeloNivel(nm, n); si.obj.position.set(si.x, si.y ? si.y : 0.15, si.z); scene.add(si.obj); sube(si.obj);}
   if (si.tipo === 'caldero') {const cl = M.caldero_aceite.animations; si.cmix = new THREE.AnimationMixer(si.obj); si.cq = cl.find((a) => a.name === 'quieto'); si.cv = cl.find((a) => a.name === 'volcar'); if (si.cq) si.cmix.clipAction(si.cq).play();}
   if (si.tipo === 'torre') {
-    if (!si.def) {creaDefensa('arquero', si.x, si.z); si.def = J.defensas[J.defensas.length - 1]; const pa = M.torre_arqueros.scene.getObjectByName('punto_arquero'); si.def.o.position.y = 0.15 + (pa ? pa.position.y : 3.4);}
+    if (!si.def) {creaDefensa('arquero', si.x, si.z); si.def = J.defensas[J.defensas.length - 1]; const pa = M.torre_arqueros.scene.getObjectByName('punto_arquero'); si.def.o.position.y = 0.15 + (M.torre_k ? si.obj.userData.alto : pa ? pa.position.y : 3.4);}
     Object.assign(si.def, {mult, rango: 15 + n * 2, flechas: n >= 3 ? 2 : 1});
   }
   if (si.tipo === 'ballesta' || si.tipo === 'catapulta') {
     const nm2 = si.tipo === 'ballesta' ? 'ballesta_muro' : 'catapulta_rohan', tp = si.tipo === 'ballesta' ? 'escorpion' : 'catapulta';
-    const o = modeloNivel(nm2, n); o.position.set(si.x, 0.15, si.z); sube(o);
+    const mq = maquina(si.tipo, n), o = mq ? mq.g : modeloNivel(nm2, n); o.position.set(si.x, 0.15, si.z); sube(o);
     if (si.def) {scene.remove(si.def.o); const k = J.defensas.indexOf(si.def); if (k >= 0) J.defensas.splice(k, 1);}
     scene.add(o);
-    const mixer = new THREE.AnimationMixer(o), cl = M[nm2].animations.find((a) => a.name === 'disparar'), clips = {};
+    const mixer = new THREE.AnimationMixer(o), cl = mq ? null : M[nm2].animations.find((a) => a.name === 'disparar'), clips = {};
     if (cl) {const ac = mixer.clipAction(cl); ac.setLoop(THREE.LoopOnce, 1); clips['disparar_' + tp] = ac;}
-    si.def = {tipo: tp, x: si.x, z: si.z, o, mixer, clips, mult, rango: si.tipo === 'ballesta' ? 20 + n * 2 : 20, cd: 0.5, estado: 'listo', t: 0, rot: Math.PI, vida: 60};
+    si.def = {tipo: tp, x: si.x, z: si.z, o, mixer, clips, maq: mq, mult, rango: si.tipo === 'ballesta' ? 20 + n * 2 : 20, cd: 0.5, estado: 'listo', t: 0, rot: Math.PI, vida: 60};
     J.defensas.push(si.def);
   }
   if (si.tipo === 'empalizada') {
@@ -2637,7 +2686,7 @@ function colocaToque(e) {
 function creaDefensa(tipo, x, z) {
   const nodo = {abrojos: 'abrojos', estacas: 'estacas', aceite: 'pozo_aceite', escorpion: 'escorpion', catapulta: 'catapulta_pequena', estandarte: 'estandarte_aliento'}[tipo];
   let o, mixer = null, clips = {}, arquero = null;
-  if (tipo === 'arquero') {arquero = montar('arquero_rohan', true); o = arquero.raiz; pon(arquero, 'quieto');}
+  if (tipo === 'arquero') {arquero = montar(M.arquero_rohan2 ? 'arquero_rohan2' : 'arquero_rohan', true); o = arquero.raiz; pon(arquero, 'quieto');}
   else {
     o = M.defensas.scene.getObjectByName(nodo).clone(true); o.position.set(0, 0, 0);
     o.traverse((m) => {if (m.isMesh) {m.castShadow = true; m.receiveShadow = true;}});
@@ -2674,7 +2723,7 @@ function empujaCaja(o, d, r) {
 function actualizaDefensas(dt) {
   for (const d of J.defensas) {
     FUENTE = d.tipo;
-    if (d.mixer) d.mixer.update(dt); if (d.arquero) d.arquero.mixer.update(dt);
+    if (d.mixer) d.mixer.update(dt); if (d.arquero) d.arquero.mixer.update(dt); animaMaquina(d, dt);
     if (d.roto) continue;
     d.cd -= dt;
     if (d.tipo === 'abrojos' || d.tipo === 'estacas') {
@@ -2697,6 +2746,7 @@ function actualizaDefensas(dt) {
       if (obj) {const ang = Math.atan2(obj.x - d.x, obj.z - d.z); d.rot += Math.atan2(Math.sin(ang - d.rot), Math.cos(ang - d.rot)) * Math.min(1, dt * 6); d.o.rotation.y = d.rot;}
       if (obj && d.cd <= 0) {
         const ang = Math.atan2(obj.x - d.x, obj.z - d.z);
+        if (d.maq) {d.maq.t = 0; if (d.maq.op) pon(d.maq.op, 'disparar', 0.05, true);}
         if (d.tipo === 'escorpion') {d.cd = 1.6 / Math.sqrt(d.mult); if (d.clips.disparar_escorpion) d.clips.disparar_escorpion.reset().play(); lanza({fuera: true, modelo: 'virote', x: d.x, z: d.z, y: 1.3, ang, vel: 30, alcance: d.rango || 18, dano: 5 * d.mult, atraviesa: 4, escala: 1.2, emp: 1.2, escalas: true});}
         if (d.tipo === 'arquero') {d.cd = 1.2 / Math.sqrt(d.mult); pon(d.arquero, 'disparar', 0.05, true); const yy = d.o.position.y + 1.6, fu = d.tipo; setTimeout(() => {if (!J.fin) {FUENTE = fu; for (let k = 0; k < (d.flechas || 1); k++) lanza({modelo: 'flecha_elfica', x: d.x, z: d.z, y: yy, ang: ang + (k - ((d.flechas || 1) - 1) / 2) * 0.12, vel: 26, alcance: d.rango || 14, dano: 2.2 * d.mult, atraviesa: 0, escala: 1.2, escalas: true});}}, 300); setTimeout(() => pon(d.arquero, d.arquero.clips.apuntar ? 'apuntar' : 'quieto', 0.2), 950);}
         if (d.tipo === 'catapulta') {
@@ -3069,8 +3119,9 @@ window._elige = (k) => {elegido = k; pintaHeroes();};
 window._def = (tipo, x, z) => {creaDefensa(tipo, x, z);};
 window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(); pintaArmas();};
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
-window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
+window._M = M; window._P = P; window._maq = (t, n) => maquina(t, n); window._torre = (n) => torreK(n); window._altoP = (v) => {ALTO_PLATAFORMA = v;}; window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
+window._construye = (si) => construye(si);
 window._elfos = () => llegaElfos();
 window._arqT = (k) => arqueroTramo(J.tramos[k]);
 window._desague = () => antorchero(true); window._tronco = () => tronco(); window._derriba = (i) => danaEscala(J.escalas[i], 999); window._cartel = (a, b, c) => cartelOla(a, b, c);

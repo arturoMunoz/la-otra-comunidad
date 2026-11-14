@@ -1,0 +1,227 @@
+PACK 25 — LICENCIAS Y PROCEDENCIA
+
+Todos los componentes enumerados: Creative Commons CC0 1.0 Universal (dominio público).
+Texto de la licencia: https://creativecommons.org/publicdomain/zero/1.0/
+Selección y adaptación para el proyecto: 14 noviembre 2026.
+
+Los nombres Rohan y Lórien describen la adaptación cromática; los modelos descargados son personajes y objetos originales genéricos de sus autores.
+
+
+antorcha_pared.glb
+  Componente: torch_mounted
+  Pack: KayKit Dungeon Remastered 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+antorcha_pie.glb
+  Componente: torch_lit
+  Pack: KayKit Dungeon Remastered 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0
+  Licencia: CC0 1.0 Universal
+  Componente: bucket_empty: base
+  Pack: KayKit Medieval Hexagon Pack 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+armero.glb
+  Componente: weaponrack
+  Pack: KayKit Medieval Hexagon Pack 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Licencia: CC0 1.0 Universal
+  Componente: dos instancias de Spear
+  Pack: Medieval Weapons Pack (Sept 2018)
+  Autor: Quaternius
+  URL: https://quaternius.com/packs/medievalweapons.html
+  Licencia: CC0 1.0 Universal
+  Componente: shield_round
+  Pack: KayKit Character Pack: Adventurers 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+arquero_rohan2.glb
+  Componente: Knight: personaje, casco, capa, rig y clips
+  Pack: KayKit Character Pack: Adventurers 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0
+  Licencia: CC0 1.0 Universal
+  Componente: Ranger_Bow: arco
+  Pack: RPG Characters (Nov 2020)
+  Autor: Quaternius
+  URL: https://quaternius.com/packs/rpgcharacters.html
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+balista.glb
+  Componente: siege-ballista
+  Pack: Castle Kit
+  Autor: Kenney
+  URL: https://opengameart.org/content/castle-kit
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+ballestero2.glb
+  Componente: Knight: personaje, casco, capa, rig y clips
+  Pack: KayKit Character Pack: Adventurers 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+barril_1.glb
+  Componente: barrel_large
+  Pack: KayKit Dungeon Remastered 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+barril_2.glb
+  Componente: barrel_large_decorated
+  Pack: KayKit Dungeon Remastered 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+barril_3.glb
+  Componente: barrel_small
+  Pack: KayKit Dungeon Remastered 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+brasero.glb
+  Componente: torch_lit: copa con llama, escalada
+  Pack: KayKit Dungeon Remastered 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0
+  Licencia: CC0 1.0 Universal
+  Componente: bucket_empty: base
+  Pack: KayKit Medieval Hexagon Pack 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+caja_1.glb
+  Componente: crate_A_big
+  Pack: KayKit Medieval Hexagon Pack 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+caja_2.glb
+  Componente: crate_open
+  Pack: KayKit Medieval Hexagon Pack 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+carro.glb
+  Componente: Cart: carro cubierto
+  Pack: Medieval Village Pack (Dec 2020)
+  Autor: Quaternius
+  URL: https://opengameart.org/content/lowpoly-medieval-village-pack
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+catapulta2.glb
+  Componente: siege-catapult
+  Pack: Castle Kit
+  Autor: Kenney
+  URL: https://opengameart.org/content/castle-kit
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+elfo_lorien.glb
+  Componente: Knight: cuerpo, capa, rig y clips
+  Pack: KayKit Character Pack: Adventurers 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0
+  Licencia: CC0 1.0 Universal
+  Componente: Ranger_Bow: arco
+  Pack: RPG Characters (Nov 2020)
+  Autor: Quaternius
+  URL: https://quaternius.com/packs/rpgcharacters.html
+  Licencia: CC0 1.0 Universal
+  Componente: Casual_Female: pieza Hair separada por su material original
+  Pack: Ultimate Animated Character Pack (Nov 2019)
+  Autor: Quaternius
+  URL: https://quaternius.com/packs/ultimatedanimatedcharacter
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+empalizada.glb
+  Componente: fence-fortified
+  Pack: Survival Kit
+  Autor: Kenney
+  URL: https://opengameart.org/content/survival-kit
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+estandarte_rohan.glb
+  Componente: flag_green
+  Pack: KayKit Medieval Hexagon Pack 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+heno.glb
+  Componente: Hay: tres instancias colocadas como montón
+  Pack: Medieval Village Pack (Dec 2020)
+  Autor: Quaternius
+  URL: https://opengameart.org/content/lowpoly-medieval-village-pack
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+saco.glb
+  Componente: sack
+  Pack: KayKit Medieval Hexagon Pack 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+sacos.glb
+  Componente: Bags
+  Pack: Medieval Village Pack (Dec 2020)
+  Autor: Quaternius
+  URL: https://opengameart.org/content/lowpoly-medieval-village-pack
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+sacos_terreros.glb
+  Componente: cinco instancias de sack, escaladas y colocadas
+  Pack: KayKit Medieval Hexagon Pack 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+tienda.glb
+  Componente: tent
+  Pack: KayKit Medieval Hexagon Pack 1.0
+  Autor: Kay Lousberg
+  URL: https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
+
+torre_arqueros.glb
+  Componente: siege-tower
+  Pack: Castle Kit
+  Autor: Kenney
+  URL: https://opengameart.org/content/castle-kit
+  Licencia: CC0 1.0 Universal
+  Adaptación: conversión GLB, escala/colocación por transformaciones; recolor o ensamblaje cuando procede. Sin remallado ni reducción de polígonos.
