@@ -388,13 +388,13 @@ function piezas(gltf) {
   });
   return out;
 }
-const NOMBRES = ['elfo_lorien', 'arquero_rohan2', 'ballestero2', 'balista', 'catapulta2', 'torre_k', 'barril_1', 'barril_2', 'barril_3', 'caja_1', 'caja_2', 'sacos', 'heno', 'brasero', 'sacos_terreros', 'tienda', 'carro_k', 'armero_k', 'antorcha_pie', 'tronco', 'equipo', 'casco_enano', 'escaleras_muro', 'entrada_cuevas', 'q_arquero', 'q_brujo', 'uruk_piquero', 'huargo_alfa', 'patio5', 'muralla_helm', 'cuernavilla_v2', 'muro_tramo', 'desague', 'torre_arqueros', 'barricada_puerta', 'empalizada', 'caldero_aceite', 'sitio_construccion', 'aldeano_rohan', 'puerta', 'atrezo', 'objetos', 'efectos', 'efectos2', 'efectos3', 'proyectiles', 'armas_auto', 'defensas', 'marcador_colocacion', 'botin', 'brillo_elite',
+const NOMBRES = ['estandarte_muro', 'estandarte_patio', 'banderin', 'elfo_lorien', 'arquero_rohan2', 'ballestero2', 'balista', 'catapulta2', 'torre_k', 'barril_1', 'barril_2', 'barril_3', 'caja_1', 'caja_2', 'sacos', 'heno', 'brasero', 'sacos_terreros', 'tienda', 'carro_k', 'armero_k', 'antorcha_pie', 'tronco', 'equipo', 'casco_enano', 'escaleras_muro', 'entrada_cuevas', 'q_arquero', 'q_brujo', 'uruk_piquero', 'huargo_alfa', 'patio5', 'muralla_helm', 'cuernavilla_v2', 'muro_tramo', 'desague', 'torre_arqueros', 'barricada_puerta', 'empalizada', 'caldero_aceite', 'sitio_construccion', 'aldeano_rohan', 'puerta', 'atrezo', 'objetos', 'efectos', 'efectos2', 'efectos3', 'proyectiles', 'armas_auto', 'defensas', 'marcador_colocacion', 'botin', 'brillo_elite',
   'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'arquero_rohan', 'orco', 'uruk', 'berserker', 'warg', 'troll', 'ballestero', 'portaestandarte', 'troll_acorazado', 'capitan', 'uruk_acorazado', 'antorchero', 'ariete', 'huargo_jinete', 'ballesta_muro', 'catapulta_rohan', 'arquero_muralla', 'jinete_rohan', 'efectos4'];
 async function cargarTodo() {
   const gl = await Promise.all(NOMBRES.map(cargaModelo));
   NOMBRES.forEach((n, i) => M[n] = gl[i]);
   /* el atrezo de Kenney/KayKit viene en colores de juguete: se baja a la noche (más oscuro y algo menos saturado), una vez por modelo */
-  ['balista', 'catapulta2', 'torre_k', 'barril_1', 'barril_2', 'barril_3', 'caja_1', 'caja_2', 'sacos', 'heno', 'brasero', 'sacos_terreros', 'tienda', 'carro_k', 'armero_k', 'antorcha_pie'].forEach((n) => {
+  ['estandarte_muro', 'estandarte_patio', 'banderin', 'balista', 'catapulta2', 'torre_k', 'barril_1', 'barril_2', 'barril_3', 'caja_1', 'caja_2', 'sacos', 'heno', 'brasero', 'sacos_terreros', 'tienda', 'carro_k', 'armero_k', 'antorcha_pie'].forEach((n) => {
     if (!M[n]) return; const vistos = new Set();
     M[n].scene.traverse((o) => {if (!o.isMesh) return; (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => {if (vistos.has(m)) return; vistos.add(m); if (m.color) {const h = {}; m.color.getHSL(h); m.color.setHSL(h.h, h.s * 0.72, h.l * 0.7);} if ('roughness' in m) m.roughness = Math.max(m.roughness, 0.85); if ('metalness' in m) m.metalness = Math.min(m.metalness, 0.2);});});
   });
@@ -566,6 +566,33 @@ function valle() {
   m.position.set(0, 14, -95); scene.add(m);
 }
 
+/* ---------- estandartes que ondean (tela deformada en la CPU, como el ejemplo del Pack 26) ---------- */
+const TELAS = [];
+function ponEstandarte(n, x, y, z, e) {
+  const o = M[n].scene.clone(true); o.position.set(x, y, z); o.scale.setScalar(e);
+  o.traverse((m) => {if (m.isMesh) {m.castShadow = true; m.receiveShadow = true;}}); scene.add(o);
+  const tela = o.getObjectByName('tela'); if (!tela || !tela.isMesh) return o;
+  const g = tela.geometry = tela.geometry.clone(), p = g.attributes.position, uv = g.attributes.uv, reposo = new Float32Array(p.array);
+  g.computeBoundingBox(); const amp = (g.boundingBox.max.y - g.boundingBox.min.y) * 0.06;
+  g.boundingBox.expandByScalar(amp * 1.5); g.computeBoundingSphere(); g.boundingSphere.radius += amp * 1.5;
+  TELAS.push({g, p, uv, reposo, amp, fase: Math.random() * 9, tick: TELAS.length % 2}); return o;
+}
+let telaT = 0, telaN = 0;
+function ondeaTelas(dt) {
+  telaT += dt; telaN++; const racha = 0.75 + 0.25 * Math.sin(telaT * 0.7) * Math.sin(telaT * 0.31 + 1);
+  for (const t of TELAS) {
+    if ((telaN + t.tick) % 2) continue;
+    const s = telaT + t.fase;
+    for (let i = 0; i < t.p.count; i++) {
+      const u = t.uv.getX(i), v = t.uv.getY(i), peso = v * v;
+      const onda = Math.sin(s * 3.1 - v * 5.5 + u * 4.5) + 0.25 * Math.sin(s * 4.6 - v * 9 + u * 8);
+      t.p.setZ(i, t.reposo[i * 3 + 2] + t.amp * racha * peso * (onda + 1.22) * 0.5);
+      t.p.setX(i, t.reposo[i * 3] + t.amp * 0.25 * racha * peso * Math.sin(s * 2.3 - v * 4));
+    }
+    t.p.needsUpdate = true; t.g.computeVertexNormals();
+  }
+}
+
 /* ---------- atrezo ---------- */
 const mezcladores = [];
 function colocaAtrezo() {
@@ -593,6 +620,12 @@ function colocaAtrezo() {
   pon1('caja', -15, -6); pon1('caja', -14.2, -4.9, 0.5); pon1('caja', 14.8, -9, 0.3); pon1('cadena', -16.5, 33, Math.PI / 2);
   }
   if (pon1('hoguera_patio', -10, 29)) {const l = new THREE.PointLight('#ff9a3c', 18, 13, 1.7); l.position.set(-10, 1.4, 29); scene.add(l); antorchas.push({l, ll: null, base: 18, fase: 2});}
+  /* Pack 26: estandartes de Rohan con la tela que ondea por código (si no están, los viejos) */
+  if (M.estandarte_patio) {
+    [[-5, 34.6, 'estandarte_patio', 1.25], [5, 34.6, 'estandarte_patio', 1.25], [-4.6, 17.2, 'banderin', 1.3], [4.6, 17.2, 'banderin', 1.3], [16.1, 11.4, 'banderin', 1.2], [-15.6, 22.6, 'banderin', 1.2]].forEach(([x, z, n, e]) => ponEstandarte(n, x, 0.15, z, e));
+    [-11.47, -5.73, 0, 5.73, 11.47].forEach((x) => ponEstandarte('estandarte_muro', x, Y_MURO, Z_MURO_ARRIBA + 1.0, 0.75));
+    return;
+  }
   const est = M.atrezo.scene.getObjectByName('estandarte_rohan_2'), clip = M.atrezo.animations.find((a) => a.name === 'ondear');
   [[-5, 34.6], [5, 34.6]].forEach(([x, z], i) => {
     if (!est) return;
@@ -1705,6 +1738,7 @@ function dañaHeroe(n) {
   const h = J.h; if (h.inv > 0 || J.fin || h.oculto > 0) return;
   suena('daño');
   const real = n * (1 - h.armadura); h.vida -= real; bota('bVida'); vibra(real > 12 ? 40 : 18);
+  {const d = $('dolor'); if (d) {d.style.opacity = Math.min(0.9, 0.35 + real / 30); clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 120);}}
   if (h.tal.ira && h.racha >= 8) numero(h.x, 2.6, h.z, 'Ira perdida', 'malo'); h.racha = 0;
   if (h.tal.aliento && h.vida > 0 && h.vida < h.vidaMax * 0.3 && h.alientoOla !== J.ola) {h.alientoOla = J.ola; h.inv = 3; J.animo = Math.max(J.animo || 0, 5); aviso('¡Último aliento!', 1400); flip('fx_onda', h.x, (h.y ?? 0.15) + 0.3, h.z, {tam: 6, dur: 0.5}); J.lenta = 0.4;} h.inv = 0.35; J.temblor = Math.max(J.temblor, 0.25); golpeVisual(h.a); GR.golpe();
   efecto('chispa', h.x, 1.2, h.z); numero(h.x, 2.2, h.z, '-' + Math.round(real), 'malo');
@@ -2306,7 +2340,7 @@ function hiere(e, n, dx, dz, emp = 0.8) {
   if (como === 'bloq') {suena('metal'); if (!(J.txtT > J.t - 0.9)) {J.txtT = J.t; numero(e.x, 2.6, e.z, '¡clang!', 'bloq');}}
   if (como === 'debil' && n2 >= 3) emp *= 1.3;
   n = n2;
-  e.vida -= n; e.gdx = dx; e.gdz = dz; e.gn = n; golpeVisual(e.a); flip('fx_impacto', e.x + rnd(-0.2, 0.2), 1.2, e.z + rnd(-0.2, 0.2), {tam: n >= 6 ? 2.4 : 1.6, dur: 0.18, suelo: false}); if (n >= 3) particula('chispa', e.x, 1.1, e.z, {n: 2, vel: 3, sube: 2, vida: 0.3, escala: 0.4, grav: 9});
+  e.vida -= n; e.gdx = dx; e.gdz = dz; e.gn = n; golpeVisual(e.a); if (n >= 8 && FUENTE !== 'arquero') J.temblor = Math.max(J.temblor, 0.1); flip('fx_impacto', e.x + rnd(-0.2, 0.2), 1.2, e.z + rnd(-0.2, 0.2), {tam: n >= 6 ? 2.4 : 1.6, dur: 0.18, suelo: false}); if (n >= 3) particula('chispa', e.x, 1.1, e.z, {n: 2, vel: 3, sube: 2, vida: 0.3, escala: 0.4, grav: 9});
   /* menos números: solo golpes que importan y como mucho uno cada 0,4 s por enemigo */
   if ((n >= 5 || como === 'debil') && !(e.numT > J.t - 0.4)) e.numT = J.t, numero(e.x, e.d.pesado || e.d.jefe ? 4.2 : 2.3, e.z, Math.round(n), como === 'debil' ? 'debil' : n >= 8 ? 'gran' : '');
   if (e.fase === 'patio' && emp && !e.d.ariete) {const l = Math.hypot(dx, dz) || 1, k = e.d.jefe ? 0.05 : e.d.pesado ? 0.15 : 1; e.x += dx / l * emp * k; e.z += dz / l * emp * k; if (!e.d.jefe) e.aturdido = 0.12;}
@@ -2335,9 +2369,11 @@ function mata(e, caida) {
   {const h = J.h; h.racha = (h.racha || 0) + 1; if (h.tal.sangre) h.vida = Math.min(h.vidaMax, h.vida + 2); if (h.tal.ira && h.racha % 8 === 0 && h.racha <= 40) {numero(h.x, 2.6, h.z, '¡Ira +' + (h.racha / 8 * 10) + ' %!', 'gran'); bota('bVida');}}
   e.muerto = e.d.jefe ? 2.6 : 1.3; e.golpe = 0; e.cargando = 0; pon(e.a, e.d.jefe ? 'morir_jefe' : e.a.clips.romperse ? 'romperse' : azar(['morir', 'morir_2', 'morir_3'].filter((k) => e.a.clips[k])), 0.05, true);
   if (e.d.ariete) {e.muerto = 2.2; J.temblor = 0.6; efecto('explosion_muro', e.x, 0.1, e.z, {escala: 1, vida: 1}); aviso('¡El ariete se rompe!', 1500);}
-  if (e.fase === 'patio' && !e.d.pesado && !e.d.jefe && (e.gdx || e.gdz) && Math.random() < (e.gn >= 6 ? 0.8 : 0.35)) {
+  if (e.fase === 'patio' && !e.d.pesado && !e.d.jefe && (e.gdx || e.gdz) && Math.random() < (e.gn >= 6 ? 1 : 0.7)) {
     const l = Math.hypot(e.gdx, e.gdz) || 1, f = rnd(3, 5.5); e.vuela = {vx: e.gdx / l * f, vz: e.gdz / l * f, vy: rnd(3.5, 6), giro: rnd(-6, 6)}; e.muerto = 1.8; if (e.a.clips.caer) pon(e.a, 'caer', 0.05, true);
   }
+  if (!caida && (e.d.pesado || e.d.jefe || e.elite || e.gn >= 8) && !(J.hsT > J.t - 0.25)) {J.hsT = J.t; J.parada = Math.max(J.parada || 0, e.d.pesado || e.d.jefe ? 0.07 : 0.035); J.temblor = Math.max(J.temblor, e.d.pesado || e.d.jefe ? 0.35 : 0.12);}
+  if (e.d.pesado && e.fase === 'patio') setTimeout(() => {if (J && !J.fin) {efecto('polvo', e.x, 0.15, e.z, {escala: 2.4, vida: 0.7, crece: 1.8}); J.temblor = Math.max(J.temblor, 0.3);}}, 450);
   if (e.fase !== 'patio' && e.escala) e.escala.cola = Math.max(0, e.escala.cola - 1);
   if (caida) {J.puntos += Math.round(e.d.pts / 2); return;}
   J.bajas++; J.puntos += Math.round(e.d.pts * 2.2) * (e.elite ? 3 : 1);
@@ -2914,7 +2950,7 @@ function bucle() {
   else if (J && J.fin) {J.enemigos.forEach((e) => e.a.mixer.update(dt)); J.h.a.mixer.update(dt);}
   actualizaEfectos(dt);
   actualizaNumeros(dt);
-  mezcladores.forEach((m) => m.update(dt));
+  mezcladores.forEach((m) => m.update(dt)); ondeaTelas(dt);
   actualizaLluvia(dt, J ? J.h.x : 0, J ? J.h.z : 12);
   if (J && !J.pausa && Math.random() < dt * 12) particula('gota', J.h.x + rnd(-9, 9), 0.25, J.h.z + rnd(-13, 6), {vel: 0, sube: 0, vida: 0.3, escala: 0.55, crece: 1.4, disp: 0, giro: 0});
   camara(dt);

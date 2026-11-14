@@ -59,8 +59,8 @@ body.tregua #txt{top:auto;bottom:16%;font-size:1.05rem}
 .def{flex:none;width:78px;border:1px solid #c9a75c88;background:#1a140bdd;border-radius:10px;padding:6px 4px;color:#f1e6c8;font:11px system-ui;text-align:center}
 .def img{width:46px;height:46px;display:block;margin:0 auto 2px}.def b{display:block;font:700 11px Georgia,serif;color:#f2cf7c}.def.sel{border-color:#8fe07a;box-shadow:0 0 0 2px #8fe07a66}.def:disabled{opacity:.45}
 #ayuda{font:12px system-ui;color:#d9ccaa;margin-top:6px;text-align:center}
-.num{position:fixed;z-index:4;pointer-events:none;font:900 17px system-ui,sans-serif;color:#fff;-webkit-text-stroke:4px #1a0f08;paint-order:stroke fill;text-shadow:0 3px 0 #1a0f08;transform:translate(-50%,-50%);white-space:nowrap;letter-spacing:.5px}
-.num.gran{font-size:23px;color:#ffe066}.num.malo{color:#ff6a5a}.num.oro{color:#ffd36a;font-size:12px}
+.num{position:fixed;z-index:4;pointer-events:none;font:900 19px system-ui,sans-serif;color:#fff;-webkit-text-stroke:4px #1a0f08;paint-order:stroke fill;text-shadow:0 3px 0 #1a0f08;transform:translate(-50%,-50%);white-space:nowrap;letter-spacing:.5px}
+.num.gran{font-size:27px;color:#ffe066}.num.malo{color:#ff6a5a}.num.oro{color:#ffd36a;font-size:12px}
 #armeria{width:min(360px,100%);border:1px solid #c9a75c55;border-radius:12px;padding:10px;background:#0006}
 #armeria h3{margin:0 0 6px;color:#e8c77a;font-size:1rem}
 .mej{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:5px 0;font-size:.85rem;text-align:left}
@@ -354,9 +354,11 @@ body.cine #cineA,body.cine #cineB{height:12vh}
 body.cine #bocadillo,body.cine #txt,body.cine #tregua,body.cine #hud,body.cine #bEsq,body.cine #bHab,body.cine #joy,body.cine #nums,body.cine #etiq{opacity:0;pointer-events:none}
 #cineTxt{position:fixed;left:0;right:0;bottom:calc(12vh + 14px);text-align:center;z-index:61;font:700 19px/1.25 Georgia,serif;color:#f3dfae;text-shadow:0 2px 6px #000;opacity:0;transition:opacity .4s;pointer-events:none;padding:0 18px}
 body.cine #cineTxt{opacity:1}
+#dolor{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:0;transition:opacity .35s ease-out;background:radial-gradient(ellipse at center,transparent 55%,rgba(200,20,10,.55) 100%)}
 </style>
 <script type="importmap">{"imports":{"three":"./three/three.module.js","three/addons/":"./three/addons/"}}</script>
 </head><body>
+<div id="dolor"></div>
 <div class="hud hidden" id="hud">
   <div class="hTop">
     <div class="hRet"><img id="hRet" alt=""><span id="nivel">1</span></div>

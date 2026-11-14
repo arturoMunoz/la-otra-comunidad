@@ -1,0 +1,27 @@
+PACK 26 — ESTANDARTES DE ROHAN
+
+Archivos: estandarte_muro.glb, estandarte_patio.glb, banderin.glb
+Base artística de la tela: banner_green.gltf.glb
+Pack: KayKit — Dungeon Remastered 1.0
+Autor: Kay Lousberg (KayKit)
+Licencia de la base: Creative Commons CC0 1.0 Universal
+Página del autor: https://kaylousberg.itch.io/kaykit-dungeon-pack
+Repositorio: https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0
+Archivo descargado:
+https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0/main/addons/kaykit_dungeon_remastered/Assets/gltf/banner_green.gltf.glb
+Licencia original:
+https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0/blob/main/LICENSE.txt
+Texto CC0: https://creativecommons.org/publicdomain/zero/1.0/
+
+Adaptaciones para este encargo:
+- Tela reconstruida como cuadrícula 16 × 24 mediante muestreo de la superficie
+  y el bajo irregular del original. Pliegues adicionales suaves.
+- Mástil, travesaño, remate de hierro y herrajes añadidos para este encargo.
+- Emblema vectorial original de caballo al galope, ribete y costuras;
+  no se ha descargado ni utilizado una imagen de las películas como textura.
+- Escalas de 4 m, 2,5 m y 1,2 m; exportación GLB con textura incrustada.
+Las aportaciones originales de este encargo se ofrecen también bajo CC0.
+El nombre Rohan describe la ambientación solicitada por el usuario.
+
+Archivos auxiliares originales: caballo_rohan.svg, tela_rohan.png, ondear.js.
+Condiciones: CC0 1.0 Universal. Se incluye la licencia original de KayKit.
