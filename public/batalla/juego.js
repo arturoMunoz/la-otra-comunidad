@@ -726,7 +726,7 @@ function dibuja(dt) {
     } else if (v.k === 't') {
       const n = v.vida <= 0 ? 2 : v.vida < v.max * 0.5 ? 1 : 0; o.est.forEach((p, i) => {p.visible = i === n;});
       /* si tu héroe queda detrás de la torre, la torre se vuelve medio transparente (como en el Wild Rift) */
-      const yo = VISTA.get(YO), tapa = yo && Math.abs((yo.xi ?? yo.x) - x) < 3.2 && -signo(MI_EQ) * ((yo.zi ?? yo.z) - z) > -1 && -signo(MI_EQ) * ((yo.zi ?? yo.z) - z) < 6.5;
+      const yo = VISTA.get(YO), ej = ejes(), hx = (yo ? (yo.xi ?? yo.x) : 0) - x, hz = (yo ? (yo.zi ?? yo.z) : 0) - z, delante = hx * ej.F.x + hz * ej.F.z, tapa = yo && Math.abs(hx * ej.R.x + hz * ej.R.z) < 3.2 && delante > -1 && delante < 6.5;
       const op = tapa ? 0.35 : 1; if (o.op !== op) {o.op = op; for (const m of o.mats) {m.opacity = op; m.depthWrite = op === 1;}}
     }
     else if (v.k === 'n') o.raiz.visible = v.vida > 0;
@@ -829,12 +829,17 @@ function aviso(txt) {const a = $('aviso'); a.textContent = txt; a.style.opacity 
 
 /* ---------- cámara ---------- */
 const camM = new THREE.Vector3();
+/* se juega en horizontal: «adelante» (hacia el enemigo) es la derecha de la pantalla. En vertical, hacia arriba.
+   F = hacia dónde mira la cámara (arriba en pantalla), R = la derecha de la pantalla, en coordenadas del mundo. */
+let APAI = innerWidth > innerHeight;
+addEventListener('resize', () => {APAI = innerWidth > innerHeight;});
+function ejes() {const s = signo(MI_EQ); return APAI ? {F: {x: -s, z: 0}, R: {x: 0, z: -s}} : {F: {x: 0, z: -s}, R: {x: s, z: 0}};}
 const ZOOMS = [[24, 14], [31, 18], [40, 23]]; let zoomI = +(localStorage.getItem('vado.zoom') ?? 1);
 function camara(dt) {
   const v = VISTA.get(YO); if (!v) return;
-  const s = signo(MI_EQ), x = v.xi ?? v.x, z = v.zi ?? v.z;
-  camM.x += (x - camM.x) * Math.min(1, dt * 6); camM.z += (z - s * 3 - camM.z) * Math.min(1, dt * 6);
-  const zz = ZOOMS[zoomI]; camera.position.set(camM.x, zz[0], camM.z + s * zz[1]); camera.lookAt(camM.x, 0, camM.z);
+  const {F} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, ade = APAI ? 5 : 3;
+  camM.x += (x + F.x * ade - camM.x) * Math.min(1, dt * 6); camM.z += (z + F.z * ade - camM.z) * Math.min(1, dt * 6);
+  const zz = ZOOMS[zoomI]; camera.position.set(camM.x - F.x * zz[1], zz[0], camM.z - F.z * zz[1]); camera.lookAt(camM.x, 0, camM.z);
   luces(); sol.position.set(camM.x + 10, 40, camM.z + 8); sol.target.position.set(camM.x, 0, camM.z);
 }
 
@@ -846,7 +851,7 @@ function preparaMandos() {
   J.addEventListener('pointerdown', (e) => {joy.id = e.pointerId; joy.x0 = e.clientX; joy.y0 = e.clientY; bola.style.display = 'block'; bola.style.left = e.clientX + 'px'; bola.style.top = (e.clientY - J.getBoundingClientRect().top) + 'px'; J.setPointerCapture(e.pointerId);});
   J.addEventListener('pointermove', (e) => {
     if (e.pointerId !== joy.id) return; let dx = (e.clientX - joy.x0) / 50, dy = (e.clientY - joy.y0) / 50; const l = Math.hypot(dx, dy); if (l > 1) {dx /= l; dy /= l;}
-    dedo.style.transform = 'translate(' + dx * 35 + 'px,' + dy * 35 + 'px)'; const s = signo(MI_EQ); MANDO.mx = s * dx; MANDO.mz = s * dy;
+    dedo.style.transform = 'translate(' + dx * 35 + 'px,' + dy * 35 + 'px)'; const {F, R} = ejes(); MANDO.mx = dx * R.x - dy * F.x; MANDO.mz = dx * R.z - dy * F.z;
   });
   const suelta = (e) => {if (e.pointerId !== joy.id) return; joy.id = null; bola.style.display = 'none'; dedo.style.transform = ''; MANDO.mx = 0; MANDO.mz = 0;};
   J.addEventListener('pointerup', suelta); J.addEventListener('pointercancel', suelta);
@@ -886,7 +891,7 @@ function indicador(n, color) {
   m.renderOrder = 4; m.visible = false; scene.add(m); return m;
 }
 function muestraMira(k, dx, dy) {
-  const v = VISTA.get(YO); if (!v) return; const H = HEROES[v.tipo].hab[k], s = signo(MI_EQ), l = Math.hypot(dx, dy), wx = s * dx / l, wz = s * dy / l, alc = H.alc || H.dist || H.radio || 4;
+  const v = VISTA.get(YO); if (!v) return; const H = HEROES[v.tipo].hab[k], {F, R} = ejes(), l = Math.hypot(dx, dy), wx = (dx * R.x - dy * F.x) / l, wz = (dx * R.z - dy * F.z) / l, alc = H.alc || H.dist || H.radio || 4;
   if (!mira) mira = {alc: indicador('ind_alcance', '#ffffff'), area: indicador('ind_area', '#ffe9a8'), flecha: indicador('ind_flecha', '#ffe9a8'), cono: indicador('ind_cono', '#ffe9a8')};
   const x = v.xi ?? v.x, z = v.zi ?? v.z, k2 = Math.min(1, l / 90);
   for (const n of ['area', 'flecha', 'cono']) mira[n].visible = false;
@@ -966,7 +971,7 @@ function recibe(o) {
 /* ---------- partida ---------- */
 let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 function empieza(jugadores, modo, simulo) {
-  precargaVoces(); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
+  precargaVoces(); document.body.classList.add('jugando'); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; recibeFoto(foto());}
@@ -991,7 +996,9 @@ function objetivoTxt() {
 const MARCAS = {}; for (const n of ['m_huargo', 'm_troll', 'm_torre0', 'm_torre1']) {MARCAS[n] = new Image(); MARCAS[n].src = 'ui/' + n + '.webp';}
 const marca = (g, n, x, z, t) => {const im = MARCAS[n]; if (im.complete && im.naturalWidth) g.drawImage(im, x - t / 2, z - t / 2, t, t); else return false; return true;};
 function minimapa() {
-  const c = $('mini'), W = c.width, H = c.height, g = c.getContext('2d'), s = signo(MI_EQ);
+  const c = $('mini'); if (APAI !== (c.width > c.height)) {c.width = APAI ? 196 : 96; c.height = APAI ? 96 : 196;}
+  const W = 96, H = 196, g = c.getContext('2d'), s = signo(MI_EQ);
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); if (APAI) g.setTransform(0, 1, -1, 0, 196, 0);
   const px = (x) => W / 2 + s * x / 34 * (W / 2), pz = (z) => H / 2 + s * z / 59 * (H / 2);
   g.clearRect(0, 0, W, H); g.fillStyle = '#16210f'; g.fillRect(0, 0, W, H);
   g.strokeStyle = '#2b4a5a'; g.lineWidth = 5; g.beginPath(); g.moveTo(px(-40 * 0.906), pz(-40 * 0.423)); g.lineTo(px(40 * 0.906), pz(40 * 0.423)); g.stroke();
@@ -1007,6 +1014,7 @@ function minimapa() {
     else if (q.k === 'h') {if (q.muerto >= 0 || (!mio && q.escondido)) continue; g.fillStyle = q.id === YO ? '#ffd24a' : col; g.beginPath(); g.arc(x, z, q.id === YO ? 5 : 4, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke();}
   }
   /* lo que ve la cámara */
+  g.setTransform(1, 0, 0, 1, 0, 0); return;
   const vw = ZOOMS[zoomI][0] * 0.5, vh = ZOOMS[zoomI][0] * 0.85; g.strokeStyle = '#ffffffaa'; g.lineWidth = 1; g.strokeRect(Math.min(px(camM.x - vw), px(camM.x + vw)), Math.min(pz(camM.z - vh), pz(camM.z + vh * 0.5)), Math.abs(px(camM.x + vw) - px(camM.x - vw)), Math.abs(pz(camM.z + vh * 0.5) - pz(camM.z - vh)));
 }
 function hud() {
@@ -1045,6 +1053,7 @@ function acaba(ganador) {
   const f = $('fin'); f.classList.remove('hidden');
   f.innerHTML = '<h2>' + (ganador === MI_EQ ? '¡Victoria!' : ganador === -1 ? 'Partida terminada' : 'Derrota') + '</h2><p>' + (ganador === MI_EQ ? 'El estandarte enemigo ha caído.' : ganador === -1 ? '' : 'Han derribado vuestro estandarte.') + '</p><button class="bt" id="bOtra">Volver al menú</button>';
   $('bOtra').onclick = () => location.reload();
+  document.body.classList.remove('jugando');
   suena('cuerno', 0.8);
 }
 
@@ -1112,6 +1121,13 @@ function pintaTienda() {
   $('tComprar').onclick = () => {compraMia(tSel); setTimeout(pintaTienda, 150);};
 }
 
+/* ---------- horizontal ---------- */
+async function apaisa() {
+  try {const d = document.documentElement; if (!document.fullscreenElement && d.requestFullscreen) await d.requestFullscreen({navigationUI: 'hide'});} catch (e) {}
+  try {if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape');} catch (e) {}
+}
+function sueltaApaisado() {try {if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();} catch (e) {} try {if (document.fullscreenElement) document.exitFullscreen();} catch (e) {}}
+
 /* ---------- menú y sala ---------- */
 let heroeElegido = localStorage.getItem('vado.heroe') || 'rohan', modoElegido = '1v1';
 function msg(t) {$('msg').textContent = t || '';}
@@ -1131,10 +1147,11 @@ function pintaSala() {
 function nombreJugador() {let n = localStorage.getItem('vado.nombre'); if (!n) {try {const a = JSON.parse(localStorage.getItem('loc.yo') || 'null'); n = a && a.nombre;} catch (e) {} } return n || 'Hobbit' + Math.floor(Math.random() * 90 + 10);}
 function preparaMenu() {
   pintaMenu();
-  $('bBots').onclick = () => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido}]; empieza(js, modoElegido, true);};
-  $('bCrear').onclick = () => {const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);};
-  $('bUnir').onclick = () => {const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} conecta(c, modoElegido, nombreJugador(), heroeElegido);};
-  $('bSalir').onclick = () => {location.href = '../';};
+  $('bGirar').onclick = apaisa;
+  $('bBots').onclick = () => {apaisa(); NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido}]; empieza(js, modoElegido, true);};
+  $('bCrear').onclick = () => {apaisa(); const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);};
+  $('bUnir').onclick = () => {apaisa(); const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} conecta(c, modoElegido, nombreJugador(), heroeElegido);};
+  $('bSalir').onclick = () => {sueltaApaisado(); location.href = '../';};
 }
 
 /* ---------- arranque ---------- */
