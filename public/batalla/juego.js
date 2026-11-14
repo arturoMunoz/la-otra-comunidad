@@ -673,7 +673,7 @@ function compra(h, id) {
 const AN = {quieto: 0, correr: 1};
 function foto() {
   const u = S.u.map((q) => q.k === 'h'
-    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.alfa || 0)]
+    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.alfa || 0), q.atacaT > S.t ? q.atacaA : 0]
     : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
   const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t)));
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
@@ -686,7 +686,7 @@ function aplicaFila(f, t) {
   else if (S) {v.x0 = v.x; v.z0 = v.z; v.r0 = v.rot;}   /* anfitrión: de un paso de la simulación al siguiente */
   else {v.x0 = v.xi ?? v.x; v.z0 = v.zi ?? v.z; v.r0 = v.ri ?? v.rot; v.t0 = performance.now();}
   Object.assign(v, {x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo, visto: true, llega: performance.now()});
-  if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29]});
+  if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30]});
 }
 function recibeFoto(o) {
   for (const v of VISTA.values()) v.visto = false;
@@ -857,6 +857,7 @@ function efectoLocal(e) {
   if (t === 'muere') suena('muerte', 0.35);
   if (t === 'son') suena(e[1], 0.5);
   if (t === 'g') golpeVisual(e[1], e[2], e[3]);
+  if (t === 'ping' && e[1] === MI_EQ) {const q = VISTA.get(e[2]), txt = {ataca: '⚔ ¡Atacad!', retira: '🛡 ¡Retirada!', voy: '🏃 ¡Voy!', cuidado: '⚠ ¡Cuidado!'}[e[3]]; aviso((q && q.id !== YO ? q.nombre + ': ' : '') + txt); PINGS.push({x: e[4], z: e[5], t: performance.now(), k: e[3]}); flip('onda', e[4], e[5], 4, true); suena('cuerno', 0.25);}
   if (t === 'voz') voz(e[1]);
   if (t === 'tp' && e[1] === YO && !S) {MIO.x = e[2]; MIO.z = e[3]; MIO.dash = null;}
   if (t === 'baja') anuncio(e[1], e[2], e[3]);
@@ -867,7 +868,9 @@ let avisoT = 0;
 /* cartel de baja al estilo Wild Rift: retrato del que derriba ⚔ retrato del derribado, y el grito si lo hay */
 let anuncioT = 0;
 function retratoDe(id) {const q = VISTA.get(id); if (!q) return ''; if (q.k === 'h') return '../abismo/ui/' + HEROES[q.tipo].retrato + '.webp'; return q.eq === 0 ? 'ui/b_armeria.webp' : 'ui/buff_troll.webp';}
+let ULTIMA_BAJA = 0;
 function anuncio(a, d, txt) {
+  if (d === YO) ULTIMA_BAJA = a || 0;
   const el = $('anuncio'), va = VISTA.get(a), vd = VISTA.get(d); if (!vd) return;
   const mio = (q) => q && q.eq === MI_EQ;
   if (vd.k === 't') {el.innerHTML = '<div class="anT ' + (mio(vd) ? 'malo' : 'bueno') + '">' + txt + '</div>';}
@@ -925,6 +928,8 @@ function preparaMandos() {
     if (S) usaHechizo(S.u.find((q) => q.id === YO), k, dx, dz);
     else {NET.manda({t: 'hech', k, dx, dz, x: MIO.x, z: MIO.z}); if (k === 'd') {const l = Math.hypot(dx, dz) || 1; MIO.x += dx / l * 4.5; MIO.z += dz / l * 4.5; MIO.px = undefined; limita(MIO);}}
   };
+  for (const b of document.querySelectorAll('#pings button[data-p]')) b.onclick = () => {$('pings').classList.remove('abierto'); const v = VISTA.get(YO); if (!v) return; const k = b.dataset.p; if (S) {S.ev.push(['ping', MI_EQ, YO, k, v.x, v.z]); efectoLocal(['ping', MI_EQ, YO, k, v.x, v.z]);} else NET.manda({t: 'ping', k, x: v.x, z: v.z});};
+  $('bPing').onclick = () => $('pings').classList.toggle('abierto');
   $('compraRapida').onclick = () => {const id = $('compraRapida').dataset.id; if (id) compraMia(id);};
   $('marcador').onclick = () => {$('tabla').classList.toggle('hidden'); pintaTabla();};
   $('tabla').onclick = () => $('tabla').classList.add('hidden');
@@ -1027,6 +1032,7 @@ function recibe(o) {
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; usaHab(h, o.k, o.dx, o.dz, o.px, o.pz);}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
+    if (o.t === 'ping') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; S.ev.push(e); efectoLocal(e);}
     if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
     if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined;}}
   }
@@ -1049,9 +1055,21 @@ function empieza(jugadores, modo, simulo) {
   if (simulo) iconosHab(yo.heroe);
   $('yoImg').src = '../abismo/ui/' + HEROES[yo.heroe].retrato + '.webp';
   camM.set(BASES[MI_EQ].fuente.x, 0, BASES[MI_EQ].fuente.z); reloj0 = performance.now();
+  pantallaVS(jugadores, modo);
+  $('pings').classList.toggle('hidden', !(NET.online && modo === '2v2'));
   aviso('¡Al vado! Derriba las torres y el estandarte enemigo'); suena('cuerno', 0.7);
 }
+function pantallaVS(jugadores, modo) {
+  const plazas = modo === '2v2' ? 4 : 2, el = $('vs'), lado = (eq) => {let h = ''; for (let s = eq; s < plazas; s += 2) {const j = jugadores.find((q) => q.slot === s), tipo = j ? j.heroe : Object.keys(HEROES)[(s * 3 + 1) % 4]; h += '<div class="vsH"><img src="../abismo/ui/' + HEROES[tipo].retrato + '.webp" alt=""><b>' + (j ? j.nombre : 'Máquina') + '</b><span>' + HEROES[tipo].nombre + '</span></div>';} return h;};
+  el.innerHTML = '<div class="vsLado az"><i>Rohan</i>' + lado(0) + '</div><div class="vsX">VS</div><div class="vsLado ro"><i>Isengard</i>' + lado(1) + '</div>';
+  el.classList.remove('hidden'); setTimeout(() => el.classList.add('fuera'), 2300); setTimeout(() => {el.classList.add('hidden'); el.classList.remove('fuera');}, 2900);
+}
 function iconosHab(tipo) {for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = 'ui/h_' + tipo + '_' + k + '.webp'; b.title = HEROES[tipo].hab[k].n;}}
+function subeNivelFx(v) {
+  flip('onda', v.xi ?? v.x, v.zi ?? v.z, 5, true); flip('explosion', v.xi ?? v.x, v.zi ?? v.z, 2.2); suena('nivel', 0.6);
+  const n = document.createElement('div'); n.className = 'nivelSube'; n.textContent = '¡Nivel ' + v.nivel + '!'; document.body.appendChild(n); setTimeout(() => n.remove(), 1400);
+  $('yo').classList.remove('brilla'); void $('yo').offsetWidth; $('yo').classList.add('brilla');
+}
 function marcador(m, t) {$('marcador').dataset.t = t;$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span> · <span class="b">' + m[1 - MI_EQ] + '</span><div style="font-size:11px;color:#d9c49a">' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</div>';}
 let miniT = 0, consejoI = 0;
 const CONSEJOS = ['Pulsa el + verde encima de una habilidad para aprenderla: cada nivel te da un punto', 'Mueve con el joystick y mantén ⚔ para atacar. Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Dentro de la hierba alta los enemigos no te ven (salvo que estén a tu lado)', 'Los botones pequeños son Destello (un salto corto) y Curar (a ti y a tu compañero)', 'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos', 'En la espesura (a los lados, cruzando los huecos de la empalizada) hay huargos: dan oro y experiencia', 'El troll (oeste) y el huargo alfa (este) dan una bendición a todo tu equipo durante 90 s', 'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en la armería'];
@@ -1063,6 +1081,7 @@ function objetivoTxt() {
   if (en('t', 2)) return 'Objetivo: la torre de su base';
   return '¡Objetivo: el estandarte enemigo!';
 }
+const PINGS = [];
 const MARCAS = {}; for (const n of ['m_huargo', 'm_troll', 'm_torre0', 'm_torre1']) {MARCAS[n] = new Image(); MARCAS[n].src = 'ui/' + n + '.webp';}
 const marca = (g, n, x, z, t) => {const im = MARCAS[n]; if (im.complete && im.naturalWidth) g.drawImage(im, x - t / 2, z - t / 2, t, t); else return false; return true;};
 function minimapa() {
@@ -1084,16 +1103,18 @@ function minimapa() {
     else if (q.k === 'h') {if (q.muerto >= 0 || (!mio && q.escondido)) continue; g.fillStyle = q.id === YO ? '#ffd24a' : col; g.beginPath(); g.arc(x, z, q.id === YO ? 5 : 4, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke();}
   }
   /* lo que ve la cámara */
+  const ahoraP = performance.now(); for (let i = PINGS.length - 1; i >= 0; i--) {const p = PINGS[i], k = (ahoraP - p.t) / 3000; if (k > 1) {PINGS.splice(i, 1); continue;} g.strokeStyle = p.k === 'retira' || p.k === 'cuidado' ? '#ffcf3a' : '#ff5a3a'; g.lineWidth = 2; g.beginPath(); g.arc(px(p.x), pz(p.z), 4 + 10 * ((k * 3) % 1), 0, 7); g.stroke();}
   g.setTransform(1, 0, 0, 1, 0, 0); return;
   const vw = ZOOMS[zoomI][0] * 0.5, vh = ZOOMS[zoomI][0] * 0.85; g.strokeStyle = '#ffffffaa'; g.lineWidth = 1; g.strokeRect(Math.min(px(camM.x - vw), px(camM.x + vw)), Math.min(pz(camM.z - vh), pz(camM.z + vh * 0.5)), Math.abs(px(camM.x + vw) - px(camM.x - vw)), Math.abs(pz(camM.z + vh * 0.5) - pz(camM.z - vh)));
 }
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
   miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; $('buffs').innerHTML = (bu ? '<span class="azul">🔷 Furia del Uruk ' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/buff_troll.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/buff_alfa.webp" alt="">' + v.bAlfa + ' s</span>' : ''); consejos(+($('marcador').dataset.t || 0));}
-  $('yoNv').textContent = 'Nv ' + v.nivel; $('oro').textContent = '🪙 ' + v.oro;
+  $('yoNv').textContent = 'Nv ' + v.nivel; $('oro').textContent = '🪙 ' + v.oro; $('xpBar').style.width = (v.nivel >= NIVEL_MAX ? 100 : (v.xpP || 0) * 100) + '%';
+  if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel;
   $('kda').textContent = (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3];
   ['q', 'w', 'e', 'r'].forEach((k, i) => {const mas = $('m' + k), rk = v.rk ? v.rk[i] : 0, max = rangoMax(v.nivel, k); mas.classList.toggle('hidden', !(v.pts > 0 && rk < max) || v.muerto >= 0 && false); $('p' + k).innerHTML = Array.from({length: k === 'r' ? 2 : 4}, (_, j) => '<i class="' + (j < rk ? 'on' : '') + '"></i>').join(''); $('b' + k.toUpperCase()).classList.toggle('sinAprender', !rk);});
-  for (const [k, cd] of [['d', v.cdD], ['f', v.cdF]]) {const c = $('b' + k.toUpperCase()).querySelector('.cd'); c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : '';}
+  for (const [k, cd] of [['d', v.cdD], ['f', v.cdF]]) {const c = $('b' + k.toUpperCase()).querySelector('.cd'); c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / HECHIZOS[k].cd * 100) + '%' : '0%');}
   /* volver a la fuente: el botón se va llenando */
   $('bBase').style.setProperty('--p', volverBase > 0 ? (1 - volverBase / VOLVER_T) * 100 + '%' : '0%'); $('bBase').classList.toggle('cargando', volverBase > 0);
   const cn = $('canal'); cn.classList.toggle('hidden', !(volverBase > 0)); if (volverBase > 0) cn.innerHTML = 'Volviendo a la base… <b>' + Math.ceil(volverBase) + '</b><i style="width:' + (1 - volverBase / VOLVER_T) * 100 + '%"></i>';
@@ -1104,14 +1125,21 @@ function hud() {
   if (sug && enF) {const o = OBJ[sug], fl = falta({inv: v.inv}, sug); cr.classList.remove('hidden'); if (cr.dataset.id !== sug || cr.dataset.oro !== String(v.oro >= o.c && !fl.length)) {cr.dataset.id = sug; cr.dataset.oro = String(v.oro >= o.c && !fl.length); cr.innerHTML = '<img src="' + ICO(o.i) + '" alt=""><span>' + o.t + '</span><b>' + o.c + '</b>'; cr.classList.toggle('caro', !(v.oro >= o.c && !fl.length));}} else cr.classList.add('hidden');
   renderer.domElement.style.filter = v.muerto >= 0 ? 'grayscale(.85) brightness(.8)' : '';
   aroTorre(v);
-  ['q', 'w', 'e', 'r'].forEach((k, i) => {const b = $('b' + k.toUpperCase()), c = b.querySelector('.cd'), cd = v.cds ? v.cds[i] : 0; c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; b.classList.toggle('bloq', false);});
-  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); m.textContent = 'Vuelves en ' + v.muerto + ' s · puedes comprar';} else m.classList.add('hidden');
+  if (!marcaObj) {marcaObj = indicador('ind_alcance', '#ff4a3a'); marcaObj.renderOrder = 5;}
+  const ob = v.objAt && VISTA.get(v.objAt); marcaObj.visible = !!ob && v.muerto < 0 && ob.vida > 0 && !ob.escondido;
+  if (marcaObj.visible) {const r = ob.k === 't' ? 2.2 : ob.k === 'n' ? 2.6 : ob.k === 'j' && NEUTRO[ob.tipo].grande ? 1.8 : 1; marcaObj.position.set(ob.xi ?? ob.x, 0.16, ob.zi ?? ob.z); marcaObj.scale.setScalar(2 * r * 256 / 235 * (1 + 0.06 * Math.sin(performance.now() / 90)));}
+  ['q', 'w', 'e', 'r'].forEach((k, i) => {
+    const b = $('b' + k.toUpperCase()), c = b.querySelector('.cd'), cd = v.cds ? v.cds[i] : 0, rk = v.rk ? v.rk[i] : 1, tot = HEROES[v.tipo].hab[k].cd * (1 - 0.08 * Math.max(0, rk - 1));
+    c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? (cd < 1 ? cd.toFixed(1) : Math.ceil(cd)) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / tot * 100) + '%' : '0%');
+    if (b._cd > 0 && !(cd > 0)) {b.classList.remove('lista'); void b.offsetWidth; b.classList.add('lista');} b._cd = cd;
+  });;
+  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); m.innerHTML = (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en la armería</small>';} else m.classList.add('hidden');
   const enFuente = enF;
   $('bTienda').style.opacity = enFuente ? 1 : 0.45;
 }
 /* aro de alcance de la torre enemiga cuando te acercas (rojo si te está apuntando) */
 /* alcance de las torres enemigas: zona roja suave en el suelo + borde; si te apunta, se enciende y sale un rayo hacia ti */
-const AROS = new Map();
+const AROS = new Map(); let marcaObj = null;
 function aroTorre(v) {
   const hx = v.xi ?? v.x, hz = v.zi ?? v.z;
   for (const q of VISTA.values()) {
@@ -1135,7 +1163,8 @@ function pintaTabla() {
 function acaba(ganador) {
   if (ESTADO === 'fin') return; ESTADO = 'fin'; if (ganador >= 0) voz(ganador === MI_EQ ? 'victoria' : 'derrota');
   const f = $('fin'); f.classList.remove('hidden');
-  f.innerHTML = '<h2>' + (ganador === MI_EQ ? '¡Victoria!' : ganador === -1 ? 'Partida terminada' : 'Derrota') + '</h2><p>' + (ganador === MI_EQ ? 'El estandarte enemigo ha caído.' : ganador === -1 ? '' : 'Han derribado vuestro estandarte.') + '</p><button class="bt" id="bOtra">Volver al menú</button>';
+  pintaTabla(); const resumen = $('tabla').innerHTML.replace('<small>Toca para cerrar</small>', '');
+  f.innerHTML = '<h2>' + (ganador === MI_EQ ? '¡Victoria!' : ganador === -1 ? 'Partida terminada' : 'Derrota') + '</h2><p>' + (ganador === MI_EQ ? 'El estandarte enemigo ha caído.' : ganador === -1 ? '' : 'Han derribado vuestro estandarte.') + '</p>' + resumen + '<button class="bt" id="bOtra">Volver al menú</button>';
   $('bOtra').onclick = () => location.reload();
   document.body.classList.remove('jugando');
   suena('cuerno', 0.8);
