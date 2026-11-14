@@ -421,7 +421,7 @@ function ve(h, tx, tz) {const [x, z] = rumbo(h, tx, tz); h.mx = x; h.mz = z;}
 function masCercano(u, lista, r) {let m = null, md = r; for (const q of lista) {const d0 = dist(u, q) - radio(q); if (d0 < md) {md = d0; m = q;}} return m;}
 
 function oleada() {
-  S.oleadaN++;
+  S.oleadaN++; if (S.oleadaN === 1) ev(['voz', 'hordas']);
   for (const eq of [0, 1]) for (const l of [0, 1]) {
     const L = CARRILES[l], ini = eq ? L[L.length - 1] : L[0], sig = eq ? L[L.length - 2] : L[1], dl = Math.hypot(sig.x - ini.x, sig.z - ini.z), ux = (sig.x - ini.x) / dl, uz = (sig.z - ini.z) / dl;
     /* las hordas: cuerpo a cuerpo delante, arqueros detrás; desde el minuto 4 un ariete cada tercera oleada */
@@ -488,7 +488,7 @@ function paso(dt) {
     if (c.vivos > 0 || S.t < c.resp) return;
     const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;
     for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.jefe ? 1.5 : nd.grande ? 1.1 : 0.6});
-    if (nd.jefe) ev(['aviso', 0, '¡El Uruk Azul ha despertado en el centro de la espesura!']);
+    if (nd.jefe) {ev(['aviso', 0, '¡El Uruk Azul ha despertado en el centro de la espesura!']); ev(['voz', 'uruk_despierta']);}
   });
   for (const u of S.u) {
     if (u.k !== 'j' || u.muerto) continue;
@@ -767,6 +767,23 @@ function flip(nombre, x, z, tam, suelo) {
 }
 /* sonido con WebAudio: cada archivo se descodifica una vez y se reproduce sin crear reproductores nuevos */
 let AC = null; const SON = {}, SON_T = {};
+/* el anunciador (voz «Gala» de ElevenLabs, cortada en voces/): las frases se ponen en cola para no pisarse */
+const VOCES = ['primera', 'doble', 'triple', 'racha', 'imparable', 'leyenda', 'cortada', 'aniquilacion', 'torre_enemiga', 'torre_nuestra', 'uruk_despierta', 'uruk_muerto', 'hordas', 'victoria', 'derrota'];
+let vozLibre = 0;
+function precargaVoces() {try {if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); for (const n of VOCES) {const f = 'voces/' + n + '.mp3'; if (!SON[f]) {SON[f] = 'cargando'; fetch(f).then((r) => r.arrayBuffer()).then((b) => AC.decodeAudioData(b)).then((buf) => {SON[f] = buf;}).catch(() => {SON[f] = null;});}}} catch (e) {}}
+function voz(n) {
+  try {
+    const buf = SON['voces/' + n + '.mp3']; if (!AC || !(buf instanceof AudioBuffer)) return;
+    if (AC.state === 'suspended') AC.resume();
+    const t = Math.max(AC.currentTime, vozLibre); if (t - AC.currentTime > 3) return;
+    const src = AC.createBufferSource(), g = AC.createGain(); g.gain.value = 0.95; src.buffer = buf; src.connect(g).connect(AC.destination); src.start(t); vozLibre = t + buf.duration + 0.15;
+  } catch (e) {}
+}
+function vozDeTexto(txt, mio) {
+  if (!txt) return;
+  const t = {'¡Primera sangre!': 'primera', '¡Doble derribo!': 'doble', '¡Triple derribo!': 'triple', '¡Cuádruple derribo!': 'triple', '¡En racha!': 'racha', '¡Imparable!': 'imparable', '¡Leyenda de la Marca!': 'leyenda', '¡Racha cortada!': 'cortada', '¡Aniquilación!': 'aniquilacion'}[txt];
+  if (t) voz(t); else if (/Torre de/.test(txt)) voz(mio ? 'torre_nuestra' : 'torre_enemiga'); else if (/Uruk Azul/.test(txt)) voz('uruk_muerto');
+}
 function suena(n, vol = 0.5) {
   const lista = {golpe: 'golpe_carne', espada: 'espada_corte', arco: 'disparo_arco', clavada: 'flecha_clavada', muerte: 'muerte_orco', nivel: 'subir_nivel', moneda: 'recoger_moneda', cuerno: 'cuerno_lejano', explosion: 'explosion_piedras', viento: 'rafaga_viento', magia: 'rayo_magico'}[n]; if (!lista) return;
   const ahora = performance.now(); if (ahora - (SON_T[n] || 0) < 70) return; SON_T[n] = ahora;
@@ -789,6 +806,7 @@ function efectoLocal(e) {
   if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}
   if (t === 'muere') suena('muerte', 0.35);
   if (t === 'son') suena(e[1], 0.5);
+  if (t === 'voz') voz(e[1]);
   if (t === 'tp' && e[1] === YO && !S) {MIO.x = e[2]; MIO.z = e[3]; MIO.dash = null;}
   if (t === 'baja') anuncio(e[1], e[2], e[3]);
   if (t === 'aviso' && (e[1] === 0 || e[1] === YO)) aviso(e[2]);
@@ -805,7 +823,7 @@ function anuncio(a, d, txt) {
   else el.innerHTML = '<div class="anF"><img class="' + (mio(va) ? 'az' : 'ro') + '" src="' + (va ? retratoDe(a) : '../abismo/iconos/torre.webp') + '" alt=""><b>⚔</b><img class="' + (mio(vd) ? 'az' : 'ro') + ' muerto" src="' + retratoDe(d) + '" alt=""></div>' + (txt ? '<div class="anT ' + (mio(va) ? 'bueno' : 'malo') + '">' + txt + '</div>' : '');
   el.classList.remove('hidden'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
   clearTimeout(anuncioT); anuncioT = setTimeout(() => el.classList.add('hidden'), 2600);
-  if (txt) suena('cuerno', 0.45);
+  if (txt) {suena('cuerno', 0.3); vozDeTexto(txt, vd.k === 't' && mio(vd));}
 }
 function aviso(txt) {const a = $('aviso'); a.textContent = txt; a.style.opacity = 1; clearTimeout(avisoT); avisoT = setTimeout(() => {a.style.opacity = 0;}, 2200);}
 
@@ -948,7 +966,7 @@ function recibe(o) {
 /* ---------- partida ---------- */
 let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 function empieza(jugadores, modo, simulo) {
-  ESTADO = 'juego'; $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
+  precargaVoces(); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; recibeFoto(foto());}
@@ -1023,7 +1041,7 @@ function pintaTabla() {
   $('tabla').innerHTML = '<div class="tbCaja"><b>Marcador</b>' + fil.map((q) => {const [k, d, a, cs] = (q.kda || '0/0/0/0').split('/'); return '<div class="tbFila ' + (q.eq === MI_EQ ? 'az' : 'ro') + '"><img src="../abismo/ui/' + HEROES[q.tipo].retrato + '.webp" alt=""><span class="n">' + q.nombre + '<small>Nv ' + q.nivel + '</small></span><span class="k">' + k + '/' + d + '/' + a + '</span><span class="c">🗡 ' + cs + '</span><span class="o">' + q.inv.map((i) => '<img src="' + ICO(OBJ[i].i) + '" alt="">').join('') + '</span></div>';}).join('') + '<small>Toca para cerrar</small></div>';
 }
 function acaba(ganador) {
-  if (ESTADO === 'fin') return; ESTADO = 'fin';
+  if (ESTADO === 'fin') return; ESTADO = 'fin'; if (ganador >= 0) voz(ganador === MI_EQ ? 'victoria' : 'derrota');
   const f = $('fin'); f.classList.remove('hidden');
   f.innerHTML = '<h2>' + (ganador === MI_EQ ? '¡Victoria!' : ganador === -1 ? 'Partida terminada' : 'Derrota') + '</h2><p>' + (ganador === MI_EQ ? 'El estandarte enemigo ha caído.' : ganador === -1 ? '' : 'Han derribado vuestro estandarte.') + '</p><button class="bt" id="bOtra">Volver al menú</button>';
   $('bOtra').onclick = () => location.reload();
