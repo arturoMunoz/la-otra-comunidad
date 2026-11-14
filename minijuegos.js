@@ -3741,6 +3741,10 @@ function verCarta(c){ var d=document.createElement('div'); d.className='carta'; 
     var abh=document.createElement('button'); abh.type='button'; abh.className='sec'; abh.id='mAbismo';
     abh.innerHTML='<img src="abismo/ui/emblema.webp" alt="" style="width:30px;height:30px;vertical-align:-9px;margin-right:6px">El Abismo de Helm';
     abh.onclick=function(){ location.href='abismo/'; }; var rr=document.querySelector('.m2red'); (rr||mj).after(abh);
+    /* El Vado del Isen: duelo de héroes 1v1/2v2 en línea (public/batalla); se pasa el nombre del jugador */
+    var vdb=document.createElement('button'); vdb.type='button'; vdb.className='sec'; vdb.id='mVado';
+    vdb.innerHTML='<img src="abismo/ui/r_rohan.webp" alt="" style="width:30px;height:30px;border-radius:50%;vertical-align:-9px;margin-right:6px">El Vado del Isen · duelos';
+    vdb.onclick=function(){ try{ if(typeof me!=='undefined' && me) localStorage.setItem('vado.nombre', String(me.nombre||me).slice(0,16)); }catch(e){} location.href='batalla/'; }; abh.after(vdb);
     if(esMaster()){ var mb=document.createElement('button'); mb.type='button'; mb.className='sec'; mb.id='mMaster'; mb.innerHTML='<img src="'+M.master.emblema+'" alt="" style="width:26px;height:26px;vertical-align:-7px;margin-right:6px">Máster del Maia'; (ca||mj).before(mb); mb.onclick=masterPanel; var ab=document.createElement('button'); ab.type='button'; ab.className='sec'; ab.id='mActivMenu'; ab.textContent='Quién usa la app'; mb.after(ab); ab.onclick=actividadPanel; }
     B.querySelectorAll('[data-m2]').forEach(function(b){ var on=U[b.dataset.m2+'_on'];
       b.onpointerdown=function(){ if(on) b.firstChild.src=on; }; b.onpointerup=b.onpointerleave=function(){ b.firstChild.src=U[b.dataset.m2]; };

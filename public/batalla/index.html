@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#120c07">
+<title>El Vado del Isen</title>
+<script type="importmap">{"imports":{"three":"../abismo/three/three.module.js","three/addons/":"../abismo/three/addons/"}}</script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#0c0806;color:#f2e3c0;font-family:Georgia,'Times New Roman',serif;touch-action:none}
+canvas{position:fixed;inset:0;display:block}
+.hidden{display:none!important}
+button{font-family:inherit;cursor:pointer}
+/* menú */
+#menu{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;gap:12px;padding:calc(18px + env(safe-area-inset-top)) 16px 18px;overflow:auto;background:linear-gradient(#0c0806cc,#0c0806f2),url(../abismo/ui/fondo_menu.webp) center/cover}
+#menu h1{margin:4px 0 0;font-size:30px;color:#ffd77a;text-shadow:0 3px 0 #000,0 0 18px #c9852a88;text-align:center}
+#menu .sub{margin:0;color:#d9c49a;font-size:14px;text-align:center;max-width:340px}
+.fila{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.heroe{width:78px;background:#0009;border:2px solid #6b5236;border-radius:12px;padding:5px 3px;color:#f2e3c0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.heroe img{width:60px;height:60px;border-radius:50%}.heroe span{font:700 11px Georgia,serif}.heroe.on{border-color:#ffd24a;box-shadow:0 0 14px #ffd24a88}
+.bt{background:linear-gradient(#e2b04a,#a8761c);color:#2a1a06;border:2px solid #ffe08a;border-radius:12px;font:800 17px Georgia,serif;padding:11px 18px;box-shadow:0 4px 0 #5a3a0a;min-width:220px}
+.bt.v{background:linear-gradient(#4fbf3f,#2a7a1f);color:#fff;border-color:#b6ff9a;box-shadow:0 4px 0 #14400d}
+.bt.s{background:#2a1c10;color:#ffd77a;border-color:#8a6a3a;box-shadow:none;font-size:15px}
+.modos{display:flex;gap:8px}.modos button{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#f2e3c0;font:800 16px Georgia,serif;padding:8px 20px}.modos button.on{border-color:#ffd24a;color:#ffd24a}
+input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;font:700 18px system-ui;padding:9px 10px;text-align:center;text-transform:uppercase;width:150px}
+#sala{display:flex;flex-direction:column;align-items:center;gap:8px;background:#1d140ccc;border:2px solid #8a6a3a;border-radius:14px;padding:12px;min-width:280px}
+#sala .cod{font:900 34px system-ui;letter-spacing:.2em;color:#ffd24a}
+#sala .jug{display:flex;gap:6px;align-items:center;font-size:15px}.jug img{width:30px;height:30px;border-radius:50%}
+.eq0{color:#8fd0ff}.eq1{color:#ff9a8a}
+#msg{color:#ffb38a;font-size:13px;min-height:16px;text-align:center}
+/* marcador */
+#hud{position:fixed;left:0;right:0;top:0;z-index:5;pointer-events:none;padding:calc(6px + env(safe-area-inset-top)) 8px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.caja{background:#0b0805c4;border:1.5px solid #6b5236;border-radius:10px;padding:4px 8px;font:700 13px system-ui}
+#marcador{font:900 18px system-ui;text-align:center}#marcador .a{color:#8fd0ff}#marcador .b{color:#ff9a8a}
+#yo{display:flex;align-items:center;gap:6px}#yo img{width:40px;height:40px;border-radius:50%;border:2px solid #ffd24a}
+#oro{color:#ffd24a}
+#barras{position:fixed;inset:0;pointer-events:none;z-index:3}
+.bv{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center}
+.bv i{display:block;height:6px;background:#200;border:1px solid #000;border-radius:3px;overflow:hidden;position:relative}.bv i u{display:block;height:100%;background:#4fd13f}.bv i s{position:absolute;inset:0;background:#fff8;width:0}
+.bv.e1 i u{background:#e5483a}.bv.h i{height:8px;width:62px}.bv.m i{width:30px;height:4px}.bv.t i{width:80px;height:8px}
+.bv b{font:800 10px system-ui;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap}.bv b em{font-style:normal;background:#ffd24a;color:#000;border-radius:4px;padding:0 3px;margin-right:2px}
+.num{position:absolute;transform:translate(-50%,-50%);font:900 16px system-ui;color:#fff;-webkit-text-stroke:3px #1a0f08;paint-order:stroke fill;pointer-events:none}.num.c{color:#ffd24a;font-size:20px}.num.o{color:#ffd24a;font-size:13px}.num.r{color:#ff6a5a}
+/* mandos */
+#joy{position:fixed;left:0;bottom:0;width:55%;height:46%;z-index:6}
+#joy b{position:absolute;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:2px solid #fff4;background:#0003;display:none}
+#joy b i{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:#ffffff55}
+#mandos{position:fixed;right:10px;bottom:calc(14px + env(safe-area-inset-bottom));width:210px;height:210px;z-index:7}
+.hb{position:absolute;width:62px;height:62px;border-radius:50%;border:3px solid #c99a3a;background:#1d140c center/cover;padding:0;overflow:hidden;box-shadow:0 3px 8px #000a}
+.hb img{width:100%;height:100%;display:block}.hb .cd{position:absolute;inset:0;background:#000b;color:#fff;font:900 20px system-ui;display:flex;align-items:center;justify-content:center}
+.hb .k{position:absolute;bottom:0;left:0;right:0;font:900 10px system-ui;background:#000a;color:#ffd24a;text-align:center}.hb.bloq{filter:grayscale(1) brightness(.5)}
+#bAt{right:0;bottom:0;width:88px;height:88px;border-color:#ffd24a}#bQ{right:96px;bottom:0}#bW{right:84px;bottom:68px}#bE{right:40px;bottom:120px}#bR{right:-4px;bottom:100px;border-color:#ff7a2a}
+#bTienda{position:fixed;left:10px;top:calc(64px + env(safe-area-inset-top));z-index:7;width:52px;height:52px;border-radius:50%;border:2px solid #c99a3a;background:#1d140c url(../abismo/ui/armeria.webp) center/80% no-repeat}
+#bBase{position:fixed;left:10px;top:calc(122px + env(safe-area-inset-top));z-index:7;width:52px;height:52px;border-radius:50%;border:2px solid #8fd0ff;background:#0d1a26;color:#8fd0ff;font:900 22px system-ui}
+#aviso{position:fixed;left:50%;top:26%;transform:translateX(-50%);z-index:9;font:800 22px Georgia,serif;color:#ffd77a;text-shadow:0 3px 0 #000,0 0 14px #000;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;width:90%}
+#muerto{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;background:#000a;font:800 24px Georgia,serif;color:#ff9a8a;pointer-events:none}
+#fin{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#000c}#fin h2{font-size:38px;margin:0;color:#ffd77a}
+/* tienda */
+#tienda{position:fixed;inset:0;z-index:20;background:radial-gradient(ellipse at top,#2a1c10,#0d0805);display:flex;flex-direction:column;gap:6px;padding:calc(8px + env(safe-area-inset-top)) 8px 0}
+.tCab{display:flex;align-items:center;gap:8px}.tCab b{font-size:20px;flex:1;color:#ffd77a}.tOro{background:#0008;border:1.5px solid #c99a3a;border-radius:10px;padding:3px 10px;font-weight:800;color:#ffd24a}
+.tX{width:40px;height:40px;border-radius:50%;background:#3a2410;color:#ffd77a;border:2px solid #c99a3a;font:900 20px system-ui;padding:0}
+.tInv{display:flex;gap:6px;justify-content:center}.tHueco{width:42px;height:42px;border-radius:9px;border:2px dashed #6b5236;background:#0006;display:flex;align-items:center;justify-content:center;padding:0}.tHueco.lleno{border:2px solid #c99a3a}.tHueco img{width:34px;height:34px}
+.tLista{flex:1;overflow-y:auto;min-height:0}.tLista h4{margin:6px 2px 4px;color:#ffd77a;font-size:13px}.tGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tObj{position:relative;background:#0009;border:2px solid #6b5236;border-radius:11px;padding:5px 2px 3px;display:flex;flex-direction:column;align-items:center;color:#e8d6ae}.tObj img{width:44px;height:44px}.tObj span{font:600 10.5px Georgia,serif;text-align:center;min-height:23px}.tObj b{font:800 13px system-ui;color:#ffd24a}
+.tObj i{position:absolute;top:2px;left:3px;font:800 10px system-ui;font-style:normal;color:#fff;background:#5a2a1a;border-radius:6px;padding:0 4px}
+.tObj.leg{border-color:#a07a3a}.tObj.forja{border-color:#7dff6a;box-shadow:0 0 12px #7dff6a88}.tObj.bloq img,.tObj.caro img{filter:grayscale(.75) brightness(.6)}.tObj.caro b{color:#c88}.tObj.sel{outline:3px solid #fff}
+.tDet{background:#1d140cf2;border-top:2px solid #c99a3a;border-radius:14px 14px 0 0;margin:0 -8px;padding:9px 12px calc(10px + env(safe-area-inset-bottom));max-height:44vh;overflow:auto}
+.tDet b.n{font-size:17px;color:#fff1c9}.tDet ul{margin:5px 0;padding-left:18px;color:#9dff8a;font-size:13.5px}.tDet p{margin:4px 0;font-size:12.5px;color:#ffd9a0}
+.tComprar{width:100%;margin-top:6px;background:linear-gradient(#4fbf3f,#2a7a1f);color:#fff;border:2px solid #b6ff9a;border-radius:11px;font:800 16px Georgia,serif;padding:10px}.tComprar:disabled{background:#3a3028;border-color:#6b5236;color:#b9a888}
+</style>
+</head>
+<body>
+<div id="menu">
+  <h1>El Vado del Isen</h1>
+  <p class="sub">Duelo de héroes: derriba las torres y el estandarte del otro bando. Súbditos de Rohan contra los de Isengard.</p>
+  <div class="fila" id="heroes"></div>
+  <div class="modos"><button data-m="1v1" class="on">1 contra 1</button><button data-m="2v2">2 contra 2</button></div>
+  <button class="bt" id="bBots">⚔ Contra la máquina</button>
+  <button class="bt v" id="bCrear">Crear sala con amigos</button>
+  <div class="fila"><input id="codigo" maxlength="6" placeholder="CÓDIGO"><button class="bt s" id="bUnir" style="min-width:0">Unirse</button></div>
+  <div id="sala" class="hidden"></div>
+  <div id="msg"></div>
+  <button class="bt s" id="bSalir">← Volver a La Otra Comunidad</button>
+</div>
+<div id="hud" class="hidden">
+  <div class="caja" id="yo"><img id="yoImg" alt=""><div><div id="yoNv">Nv 1</div><div id="oro">🪙 0</div></div></div>
+  <div class="caja" id="marcador"><span class="a">0</span> · <span class="b">0</span><div id="reloj" style="font-size:11px;color:#d9c49a">0:00</div></div>
+  <div class="caja" id="ping" style="font-size:11px">—</div>
+</div>
+<div id="barras"></div>
+<div id="joy" class="hidden"><b><i></i></b></div>
+<div id="mandos" class="hidden">
+  <button class="hb" id="bAt"><img src="../abismo/iconos/espada.webp" alt=""></button>
+  <button class="hb" id="bQ" data-k="q"><img alt=""><span class="k">Q</span><span class="cd hidden"></span></button>
+  <button class="hb" id="bW" data-k="w"><img alt=""><span class="k">W</span><span class="cd hidden"></span></button>
+  <button class="hb" id="bE" data-k="e"><img alt=""><span class="k">E</span><span class="cd hidden"></span></button>
+  <button class="hb" id="bR" data-k="r"><img alt=""><span class="k">R</span><span class="cd hidden"></span></button>
+</div>
+<button id="bTienda" class="hidden" aria-label="Armería"></button>
+<button id="bBase" class="hidden" aria-label="Volver a la base">⌂</button>
+<div id="aviso"></div>
+<div id="muerto" class="hidden"></div>
+<div id="tienda" class="hidden"></div>
+<div id="fin" class="hidden"></div>
+<script type="module" src="juego.js"></script>
+</body>
+</html>

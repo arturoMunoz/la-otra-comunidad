@@ -89,9 +89,65 @@ async function reparte(env) {
   return { enviados: ok, fallidos: mal };
 }
 
+/* ---------- El Vado del Isen (1v1 / 2v2): una sala por código, en un Durable Object ----------
+   El primero que entra es el anfitrión: su móvil simula la partida (súbditos, torres, daño, bots).
+   La sala solo reparte mensajes: lo de los demás va al anfitrión y lo del anfitrión, a todos. */
+export class Sala {
+  constructor(ctx, env) { this.ctx = ctx; }
+  socks() { return this.ctx.getWebSockets().filter((ws) => ws.readyState === 1); }
+  /* modo y estado se guardan en el almacén: el objeto puede dormirse entre mensajes */
+  async est() { return (await this.ctx.storage.get('est')) || { modo: null, empezada: false }; }
+  async ponEst(e) { await this.ctx.storage.put('est', e); }
+  info(ws) { try { return ws.deserializeAttachment() || {}; } catch (e) { return {}; } }
+  lista() { return this.socks().map((ws) => this.info(ws)).filter((i) => i.slot !== undefined).sort((a, b) => a.slot - b.slot); }
+  anfitrion() { const l = this.lista(); return l.length ? l[0].slot : -1; }
+  manda(ws, o) { try { ws.send(typeof o === 'string' ? o : JSON.stringify(o)); } catch (e) {} }
+  todos(o, salvo) { const s = typeof o === 'string' ? o : JSON.stringify(o); for (const ws of this.socks()) if (ws !== salvo) this.manda(ws, s); }
+  async avisaLista() { const l = this.lista(), e = await this.est(); this.todos({ t: 'sala', jugadores: l, anfitrion: this.anfitrion(), modo: e.modo || '1v1', empezada: !!e.empezada }); }
+  async fetch(req) {
+    if (req.headers.get('Upgrade') !== 'websocket') return new Response('solo websocket', { status: 426 });
+    const u = new URL(req.url), modo = u.searchParams.get('modo') === '2v2' ? '2v2' : '1v1';
+    const l = this.lista(); let e = await this.est();
+    if (!l.length) { e = { modo, empezada: false }; await this.ponEst(e); }
+    const max = e.modo === '2v2' ? 4 : 2;
+    const par = new WebSocketPair(), [cli, srv] = Object.values(par);
+    this.ctx.acceptWebSocket(srv);
+    if (l.length >= max || e.empezada) { this.manda(srv, { t: 'error', txt: e.empezada ? 'La partida ya ha empezado' : 'La sala está llena' }); srv.close(1000, 'llena'); return new Response(null, { status: 101, webSocket: cli }); }
+    const usados = new Set(l.map((i) => i.slot)); let slot = 0; while (usados.has(slot)) slot++;
+    const nombre = (u.searchParams.get('nombre') || 'Jugador').slice(0, 16), heroe = (u.searchParams.get('heroe') || 'rohan').slice(0, 10);
+    srv.serializeAttachment({ slot, nombre, heroe });
+    this.manda(srv, { t: 'hola', slot });
+    await this.avisaLista();
+    return new Response(null, { status: 101, webSocket: cli });
+  }
+  async webSocketMessage(ws, msg) {
+    let o; try { o = JSON.parse(msg); } catch (e) { return; }
+    const yo = this.info(ws), anf = this.anfitrion();
+    if (o.t === 'heroe') { yo.heroe = String(o.heroe).slice(0, 10); ws.serializeAttachment(yo); await this.avisaLista(); return; }
+    if (o.t === 'empezar') { if (yo.slot === anf) { const e = await this.est(); e.empezada = true; await this.ponEst(e); this.todos({ t: 'empieza', jugadores: this.lista(), modo: e.modo, semilla: Date.now() % 100000 }); } return; }
+    if (o.t === 'ping') { this.manda(ws, { t: 'pong', c: o.c }); return; }
+    o.de = yo.slot; const s = JSON.stringify(o);
+    if (yo.slot === anf) this.todos(s, ws);            /* foto de la partida y avisos del anfitrión: a todos */
+    else for (const w of this.socks()) if (this.info(w).slot === anf) this.manda(w, s);   /* mandos: solo al anfitrión */
+  }
+  async webSocketClose(ws) {
+    const yo = this.info(ws); try { ws.close(1000, 'adios'); } catch (e) {}
+    const e = await this.est();
+    if (e.empezada) this.todos({ t: 'se_fue', slot: yo.slot, nombre: yo.nombre });
+    if (!this.lista().length) await this.ponEst({ modo: null, empezada: false });
+    else await this.avisaLista();
+  }
+  async webSocketError(ws) { await this.webSocketClose(ws); }
+}
+
 export default {
   async fetch(req, env) {
     const u = new URL(req.url);
+    const m = u.pathname.match(/^\/api\/sala\/([A-Z0-9]{3,8})$/);
+    if (m) {
+      if (!env.SALAS) return new Response('falta el Durable Object SALAS en wrangler.toml', { status: 500 });
+      return env.SALAS.get(env.SALAS.idFromName(m[1])).fetch(req);
+    }
     if (u.pathname === '/api/avisos') {
       if (req.method !== 'POST') return new Response('usa POST', { status: 405 });
       try { return Response.json(await reparte(env)); } catch (e) { return Response.json({ error: String(e.message || e) }, { status: 500 }); }
