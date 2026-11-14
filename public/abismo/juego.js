@@ -1049,7 +1049,7 @@ function nuevaPartida(tipo) {
   J = {h, nubes: [], enemigos: [], gemas: [], escalas, tramos: escalas.map((e) => ({i: e.i - 1, x: (e.x = XT[e.i - 1]), vida: 100, max: 100, nivel: 0, roto: false})), treguaVista: -1, aldeanos: [], barr: {vida: 0, max: 0}, amenaza: null, desagueObj, proy: [], eproy: [], defensas: [], charcos: [], orbitales: [], armas: {}, pasivas: {}, evos: {},
     t: 0, spawnT: 1.5, puerta: 500, puertaMax: 500, nivel: 1, xp: 0, xpSig: 5, bajas: 0, puntos: 0, oro: 15 * (pm.oro || 0) + 10, oroTotal: 0,
     pausa: false, fin: false, temblor: 0, oleada: 60, parada: 0, brecha: 0, desague: false, jefe: null, jefeSale: false, cola: 0};
-  J.arbol = (RAMAS[tipo] || RAMAS.rohan).map((def) => ({def, nv: 0}));
+  J.arbol = (RAMAS[tipo] || RAMAS.rohan).map((def) => ({def, nv: 0})); J.inv = [];
   J.enMuro = true; h.x = rnd(-2, 2); h.z = Z_MURO_ARRIBA + 0.9; h.y = Y_MURO; h.rot = Math.PI; J.ola = 0; J.olaIni = 0; J.porSalir = 0; J.olaTotal = 1; J.tregua = {ini: 0, fin: TREGUA_S + 3, n: 0}; J.dichos = {}; J.retoBajas = {gimli: 0, legolas: 0}; J.fuegoT = 95;
   J.tramos.forEach(ponTramo); montaSitios(); $('etiq').innerHTML = '';
   ponPuerta('puerta_ok'); GR.rompeTramo(-1, false); $('tregua').style.display = 'none'; document.body.classList.remove('tregua');
@@ -1676,6 +1676,7 @@ function pintaTregua() {
   }
 }
 function empiezaTregua(tr) {
+  setTimeout(() => {const b = $('trTienda'); if (b && J) b.classList.toggle('puede', J.oro >= 25);}, 50);
   J.treguaVista = tr[0];
   const n = J.tregua.n;
   J.amenaza = AMENAZA_DE[n] || null;
@@ -1700,6 +1701,7 @@ $('trB').addEventListener('click', (ev) => {
 });
 $('trTabs').addEventListener('click', (ev) => {const b = ev.target.closest('button'); if (b && J) {pestana = b.dataset.p; pintaTregua();}});
 $('trYa').addEventListener('click', () => {if (J && J.tregua) J.tregua.fin = J.t;});
+$('trTienda').addEventListener('click', abreTienda);
 
 function explotaDesague() {
   J.desague = true; J.brecha = 50; dañaTramo(J.tramos[2], 999); dañaTramo(J.tramos[3], 999); J.temblor = 1.2; J.parada = 0.12;
@@ -1774,7 +1776,8 @@ const vibra = (ms) => {try {if (navigator.vibrate && !(J && J.pausa)) navigator.
 function dañaHeroe(n) {
   const h = J.h; if (h.inv > 0 || J.fin || h.oculto > 0) return;
   suena('daño');
-  const real = n * (1 - h.armadura); h.vida -= real; bota('bVida'); vibra(real > 12 ? 40 : 18);
+  if (h.esquiva && Math.random() < h.esquiva) {if (!(J.txtT > J.t - 0.6)) {J.txtT = J.t; numero(h.x, 2.4, h.z, '¡esquiva!', 'bloq');} return;}
+  const real = n * (1 - Math.min(0.7, h.armadura)); h.vida -= real; bota('bVida'); vibra(real > 12 ? 40 : 18);
   {const d = $('dolor'); if (d) {d.style.opacity = Math.min(0.9, 0.35 + real / 30); clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 120);}}
   if (h.tal.ira && h.racha >= 8) numero(h.x, 2.6, h.z, 'Ira perdida', 'malo'); h.racha = 0;
   if (h.tal.aliento && h.vida > 0 && h.vida < h.vidaMax * 0.3 && h.alientoOla !== J.ola) {h.alientoOla = J.ola; h.inv = 3; J.animo = Math.max(J.animo || 0, 5); aviso('¡Último aliento!', 1400); flip('fx_onda', h.x, (h.y ?? 0.15) + 0.3, h.z, {tam: 6, dur: 0.5}); J.lenta = 0.4;} h.inv = 0.35; J.temblor = Math.max(J.temblor, 0.25); golpeVisual(h.a); GR.golpe();
@@ -2125,7 +2128,7 @@ function mueveHeroe(dt) {
   if (h.golpe > 0) {h.golpe -= dt; if (h.golpe <= 0) impacta(h);}
   else if (h.cd <= 0) empiezaAtaque(h);
 }
-const danoH = (h) => h.dano * (h.aura ? 1.3 : 1) * (J.animo > 0 ? 1.25 : 1) * (h.tal && h.tal.ira ? 1 + Math.min(0.5, Math.floor((h.racha || 0) / 8) * 0.1) : 1);
+const danoH = (h) => (h.crit && Math.random() < h.crit ? 2 : 1) * h.dano * (h.aura ? 1.3 : 1) * (J.animo > 0 ? 1.25 : 1) * (h.tal && h.tal.ira ? 1 + Math.min(0.5, Math.floor((h.racha || 0) / 8) * 0.1) : 1);
 function buscaObjetivo(h) {
   let obj = null, mejor = 1e9;
   for (const e of h.cuerpo ? cercanos(h.x, h.z, h.alcance + 1.5) : J.enemigos) {
@@ -2185,7 +2188,7 @@ function especiales(h, dt) {
   }
 }
 function habilidades(h, dt, mx, mz) {
-  especiales(h, dt);
+  especiales(h, dt); pasivasObjetos(h, dt);
   const hb = HABILIDAD[h.tipo]; h.cdHab = Math.max(0, (h.cdHab || 0) - dt);
   $('bHab').style.setProperty('--cd', (h.cdHab / hb.cd * 100).toFixed(0) + '%');
   if (J.pideHab) {
@@ -2377,7 +2380,7 @@ function hiere(e, n, dx, dz, emp = 0.8) {
   if (como === 'bloq') {suena('metal'); if (!(J.txtT > J.t - 0.9)) {J.txtT = J.t; numero(e.x, 2.6, e.z, '¡clang!', 'bloq');}}
   if (como === 'debil' && n2 >= 3) emp *= 1.3;
   n = n2;
-  e.vida -= n; e.gdx = dx; e.gdz = dz; e.gn = n; golpeVisual(e.a); if (n >= 8 && FUENTE !== 'arquero') J.temblor = Math.max(J.temblor, 0.1); flip('fx_impacto', e.x + rnd(-0.2, 0.2), 1.2, e.z + rnd(-0.2, 0.2), {tam: n >= 6 ? 2.4 : 1.6, dur: 0.18, suelo: false}); if (n >= 3) particula('chispa', e.x, 1.1, e.z, {n: 2, vel: 3, sube: 2, vida: 0.3, escala: 0.4, grav: 9});
+  e.vida -= n; e.gdx = dx; e.gdz = dz; e.gn = n; golpeVisual(e.a); if (J.h.robo && FUENTE === J.h.icono) J.h.vida = Math.min(J.h.vidaMax, J.h.vida + n * J.h.robo); if (n >= 8 && FUENTE !== 'arquero') J.temblor = Math.max(J.temblor, 0.1); flip('fx_impacto', e.x + rnd(-0.2, 0.2), 1.2, e.z + rnd(-0.2, 0.2), {tam: n >= 6 ? 2.4 : 1.6, dur: 0.18, suelo: false}); if (n >= 3) particula('chispa', e.x, 1.1, e.z, {n: 2, vel: 3, sube: 2, vida: 0.3, escala: 0.4, grav: 9});
   /* menos números: solo golpes que importan y como mucho uno cada 0,4 s por enemigo */
   if ((n >= 5 || como === 'debil') && !(e.numT > J.t - 0.4)) e.numT = J.t, numero(e.x, e.d.pesado || e.d.jefe ? 4.2 : 2.3, e.z, Math.round(n), como === 'debil' ? 'debil' : n >= 8 ? 'gran' : '');
   if (e.fase === 'patio' && emp && !e.d.ariete) {const l = Math.hypot(dx, dz) || 1, k = e.d.jefe ? 0.05 : e.d.pesado ? 0.15 : 1; e.x += dx / l * emp * k; e.z += dz / l * emp * k; if (!e.d.jefe) e.aturdido = 0.12;}
@@ -2680,7 +2683,7 @@ function siguientePendiente() {
 const PODER = [{n: 0, t: ''}, {n: 7, t: 'Veterano', c: '#c8894a'}, {n: 14, t: 'Campeón', c: '#d8e6ff'}, {n: 22, t: 'Héroe de la Marca', c: '#ffd34d'}, {n: 32, t: 'Leyenda de Cuernavilla', c: '#ff7a2a'}];
 function poderActual() {
   const evos = Object.values(J.evos || {}).filter(Boolean).length, ramas = (J.arbol || []).reduce((s, r) => s + r.nv, 0);
-  return J.nivel + 2 * Object.keys(J.armas || {}).length + Object.keys(J.pasivas || {}).length + 4 * evos + ramas;
+  return J.nivel + (J.inv || []).reduce((s, id) => s + (OBJETOS[id].leg ? 3 : 1), 0) + 2 * Object.keys(J.armas || {}).length + Object.keys(J.pasivas || {}).length + 4 * evos + ramas;
 }
 /* Pack 27: armaduras por rango (bronce, plata, oro) que se enganchan a los huesos head/chest del héroe */
 const RANGO_PIEZAS = {rohan: {casco: 'head', hombreras: 'chest', capa: 'chest'}, enano: {casco: 'head', hombreras: 'chest', cinto: 'chest'}, elfo: {diadema: 'head', hombreras: 'chest', capa: 'chest'}, hobbit: {capa: 'chest', cinto: 'chest', cota: 'chest'}};
@@ -2715,12 +2718,88 @@ function subePoder() {
   flip('fx_onda', h.x, 0.25, h.z, {tam: 6, dur: 0.6}); efecto('polvo', h.x, 0.15, h.z, {escala: 1.4, vida: 0.5}); particula('chispa', h.x, 1.2, h.z, {n: 10, vel: 5, sube: 5, vida: 0.7, escala: 0.5, grav: 8});
   suena('nivel'); J.temblor = Math.max(J.temblor, 0.25); aviso('¡' + P.t + '! Te haces más fuerte', 2000);
 }
+/* ---------- Tienda de la partida (estilo LoL): básicos que se juntan en objetos legendarios; estadísticas reales; 6 huecos ---------- */
+const OBJETOS = {
+  hoja: {t: 'Hoja larga', icono: 'espada', coste: 35, st: {dano: 0.15}},
+  daga: {t: 'Daga de Bree', icono: 'cuchillos', coste: 30, st: {vatq: 0.12}},
+  cota: {t: 'Cota de anillas', icono: 'escudo', coste: 30, st: {vida: 40}},
+  yelmo: {t: 'Yelmo de hierro', icono: 'reforzar', coste: 35, st: {arm: 0.08}},
+  botas: {t: 'Botas de cuero', icono: 'botas', coste: 25, st: {vel: 0.08}},
+  amuleto: {t: 'Amuleto de Lórien', icono: 'gema', coste: 30, st: {regen: 0.8}},
+  herugrim: {t: 'Herugrim', leg: true, icono: 'espada', receta: ['hoja', 'hoja'], coste: 60, st: {dano: 0.4, crit: 0.15}, pas: 'Tajo del rey: un 15 % de golpes hacen el doble de daño.'},
+  guthwine: {t: 'Guthwinë', leg: true, icono: 'i_remate', receta: ['hoja', 'daga'], coste: 55, st: {dano: 0.22, vatq: 0.22}, pas: 'Filo de la Marca: daño y velocidad de ataque a la vez.'},
+  escudo_marca: {t: 'Escudo de la Marca', leg: true, icono: 'escudo', receta: ['cota', 'yelmo'], coste: 60, st: {vida: 90, arm: 0.15, espinas: 0.3}, pas: 'Púas: quien te golpea cuerpo a cuerpo se lleva un 30 % del daño.'},
+  capa_elfica: {t: 'Capa élfica', leg: true, icono: 'i_esquivar', receta: ['botas', 'amuleto'], coste: 50, st: {vel: 0.15, regen: 1.5, esquiva: 0.18}, pas: 'Un 18 % de los golpes enemigos no te tocan.'},
+  hacha_dunharrow: {t: 'Hacha de El Sagrario', leg: true, icono: 'hacha', receta: ['hoja', 'amuleto'], coste: 55, st: {dano: 0.2, robo: 0.08}, pas: 'Robo de vida: cada golpe te cura el 8 % del daño que haces.'},
+  cuerno_helm: {t: 'Cuerno de Helm', leg: true, icono: 'cuerno', receta: ['yelmo', 'daga'], coste: 70, st: {vatq: 0.15, arm: 0.1, grito: 1}, pas: 'Cada 10 s el cuerno suena y aturde 1,2 s a los que te rodean.'},
+  botas_rohirrim: {t: 'Botas de los Rohirrim', leg: true, icono: 'botas', receta: ['botas', 'botas'], coste: 40, st: {vel: 0.2, alcance: 0.15}, pas: 'Más rápido y con más alcance.'},
+  coraza_mithril: {t: 'Cota de mithril', leg: true, icono: 'nd_06', receta: ['cota', 'cota', 'amuleto'], coste: 70, st: {vida: 120, arm: 0.12, regen: 1}, pas: 'Ligera como una pluma y dura como escamas de dragón.'},
+};
+const ST_TXT = {dano: (v) => '+' + Math.round(v * 100) + ' % de daño', vatq: (v) => '+' + Math.round(v * 100) + ' % de velocidad de ataque', vida: (v) => '+' + v + ' de vida', arm: (v) => '−' + Math.round(v * 100) + ' % de daño recibido', vel: (v) => '+' + Math.round(v * 100) + ' % de velocidad', regen: (v) => '+' + String(v).replace('.', ',') + ' de vida por segundo', crit: (v) => Math.round(v * 100) + ' % de golpes críticos', espinas: (v) => 'Devuelve ' + Math.round(v * 100) + ' % del daño', esquiva: (v) => Math.round(v * 100) + ' % de esquiva', robo: (v) => Math.round(v * 100) + ' % de robo de vida', alcance: (v) => '+' + Math.round(v * 100) + ' % de alcance', grito: () => 'Grito que aturde'};
+function aplicaObjeto(h, id, sg) {
+  const s = OBJETOS[id].st;
+  if (s.dano) h.dano *= Math.pow(1 + s.dano, sg);
+  if (s.vatq) h.cadencia /= Math.pow(1 + s.vatq, sg);
+  if (s.vida) {h.vidaMax += sg * s.vida; h.vida = Math.max(1, Math.min(h.vidaMax, h.vida + (sg > 0 ? s.vida : 0)));}
+  if (s.arm) h.armadura += sg * s.arm;
+  if (s.vel) h.vel *= Math.pow(1 + s.vel, sg);
+  if (s.regen) h.regen = (h.regen || 0) + sg * s.regen;
+  if (s.alcance) h.alcance *= Math.pow(1 + s.alcance, sg);
+  for (const k of ['crit', 'espinas', 'esquiva', 'robo', 'grito']) if (s[k]) h[k] = (h[k] || 0) + sg * s[k];
+}
+function costeReal(id) {
+  const o = OBJETOS[id]; if (!o.receta) return {coste: o.coste, usa: []};
+  const quedan = [...J.inv], usa = []; let c = o.coste;
+  for (const r of o.receta) {const k = quedan.indexOf(r); if (k >= 0) {usa.push(r); quedan.splice(k, 1);} else c += OBJETOS[r].coste;}
+  return {coste: c, usa};
+}
+function compra(id) {
+  const h = J.h, {coste, usa} = costeReal(id);
+  if (J.oro < coste) return 'Te falta oro';
+  if (J.inv.length - usa.length >= 6) return 'No te caben más objetos (6 huecos)';
+  J.oro -= coste; for (const u of usa) {J.inv.splice(J.inv.indexOf(u), 1); aplicaObjeto(h, u, -1);}
+  J.inv.push(id); aplicaObjeto(h, id, 1); suena(OBJETOS[id].leg ? 'cofre' : 'moneda'); pintaArmas(); pintaHud && pintaHud();
+  return '';
+}
+function vende(i) {const id = J.inv[i], o = OBJETOS[id], v = Math.round((o.leg ? (o.coste + o.receta.reduce((s, r) => s + OBJETOS[r].coste, 0)) : o.coste) * 0.6); aplicaObjeto(J.h, id, -1); J.inv.splice(i, 1); J.oro += v; suena('moneda'); pintaArmas(); pintaHud && pintaHud();}
+let tiendaSel = 'hoja';
+function abreTienda() {
+  if (!J || J.fin) return; J.pausa = true; J.enTienda = true; $('tienda').classList.remove('hidden'); pintaTienda();
+}
+function cierraTienda() {$('tienda').classList.add('hidden'); if (J) {J.enTienda = false; J.pausa = false; reloj.getDelta();}}
+function pintaTienda() {
+  const t = $('tienda'), o = OBJETOS[tiendaSel], {coste, usa} = costeReal(tiendaSel);
+  const carta = (id) => {const x = OBJETOS[id], c = costeReal(id).coste; return '<button class="tObj' + (x.leg ? ' leg' : '') + (id === tiendaSel ? ' sel' : '') + (J.oro >= c ? '' : ' caro') + '" data-id="' + id + '"><img src="' + ico(x.icono) + '" alt=""><b>' + c + '</b></button>';};
+  const tiene = (() => {const q = [...J.inv]; return (o.receta || []).map((r) => {const k = q.indexOf(r); if (k >= 0) {q.splice(k, 1); return true;} return false;});})();
+  const recetaHtml = o.receta ? '<div class="tRec"><div class="tRecTop"><img src="' + ico(o.icono) + '" alt=""></div><div class="tRecBas">' + o.receta.map((r, i) => '<span class="' + (tiene[i] ? 'ya' : '') + '"><img src="' + ico(OBJETOS[r].icono) + '" alt=""><small>' + OBJETOS[r].t + '</small></span>').join('') + '</div><small class="tMas">+ ' + o.coste + ' de oro para forjarlo</small></div>' : '';
+  const sirve = Object.keys(OBJETOS).filter((k) => (OBJETOS[k].receta || []).includes(tiendaSel));
+  t.innerHTML = '<div class="tCab"><b>Armería de Cuernavilla</b><span class="tOro">' + J.oro + ' oro</span><button class="tX" id="tX">Volver</button></div>' +
+    '<div class="tInv">' + Array.from({length: 6}, (_, i) => J.inv[i] ? '<button class="tHueco lleno" data-v="' + i + '"><img src="' + ico(OBJETOS[J.inv[i]].icono) + '" alt=""></button>' : '<span class="tHueco"></span>').join('') + '</div>' +
+    '<div class="tDet"><div class="tDetCab"><img src="' + ico(o.icono) + '" alt=""><div><b>' + o.t + '</b><em>' + (o.leg ? 'LEGENDARIO' : 'BÁSICO') + '</em></div></div><ul>' + Object.keys(o.st).map((k) => '<li>' + ST_TXT[k](o.st[k]) + '</li>').join('') + '</ul>' + (o.pas ? '<p class="tPas">' + o.pas + '</p>' : '') + recetaHtml +
+    (sirve.length ? '<div class="tSirve">Sirve para: ' + sirve.map((k) => '<button data-id="' + k + '"><img src="' + ico(OBJETOS[k].icono) + '" alt="">' + OBJETOS[k].t + '</button>').join('') + '</div>' : '') +
+    '<button class="tComprar" id="tComprar"' + (J.oro >= coste ? '' : ' disabled') + '>Comprar · ' + coste + ' oro</button><p class="tMsg" id="tMsg"></p></div>' +
+    '<div class="tLista"><h4>Básicos</h4><div class="tGrid">' + Object.keys(OBJETOS).filter((k) => !OBJETOS[k].leg).map(carta).join('') + '</div><h4>Legendarios</h4><div class="tGrid">' + Object.keys(OBJETOS).filter((k) => OBJETOS[k].leg).map(carta).join('') + '</div></div>';
+  t.querySelectorAll('[data-id]').forEach((b) => b.onclick = () => {tiendaSel = b.dataset.id; suena('xp'); pintaTienda();});
+  t.querySelectorAll('[data-v]').forEach((b) => b.onclick = () => {const i = +b.dataset.v, x = OBJETOS[J.inv[i]]; if (confirmaVenta === i) {vende(i); confirmaVenta = -1; pintaTienda();} else {confirmaVenta = i; $('tMsg').textContent = 'Toca otra vez para vender ' + x.t + ' (te devuelven el 60 %).';}});
+  $('tComprar').onclick = () => {const m = compra(tiendaSel); if (m) $('tMsg').textContent = m; else pintaTienda();};
+  $('tX').onclick = cierraTienda;
+}
+let confirmaVenta = -1;
+function pasivasObjetos(h, dt) {
+  if (!h.grito) return; h.gritoT = (h.gritoT ?? 10) - dt;
+  if (h.gritoT <= 0) {
+    const cerca = cercanos(h.x, h.z, 4.5).filter((e) => !e.muerto && e.fase === 'patio' && Math.hypot(e.x - h.x, e.z - h.z) < 4.2); if (!cerca.length) {h.gritoT = 1; return;}
+    h.gritoT = 10; suena('cuerno'); flip('fx_onda', h.x, 0.25, h.z, {tam: 8, dur: 0.6}); J.temblor = Math.max(J.temblor, 0.2);
+    for (const e of cerca) if (!e.d.jefe) e.aturdido = Math.max(e.aturdido || 0, 1.2);
+  }
+}
 function pintaArmas() {
   const c = $('armas'); c.innerHTML = '';
   const pon1 = (icono, n, evo, info) => {const d = document.createElement('div'); d.innerHTML = '<img src="' + ico(icono) + '" alt=""><b class="' + (evo ? 'evo' : '') + '">' + (evo ? '★' : n) + '</b>'; d.onclick = (ev) => {ev.stopPropagation(); fichaArma(info);}; c.appendChild(d);};
   pon1(J.h.icono, '', false, {heroe: true}); c.lastChild.querySelector('b').remove();
   for (const id in J.armas) pon1(ARMAS[id].icono, J.armas[id], J.evos[id], {arma: id});
   for (const id in J.pasivas) pon1(PASIVAS[id].icono, J.pasivas[id], false, {pasiva: id});
+  for (const id of J.inv || []) {pon1(OBJETOS[id].icono, '', false, {objeto: id}); c.lastChild.classList.add(OBJETOS[id].leg ? 'objLeg' : 'objBas'); const bb = c.lastChild.querySelector('b'); if (bb) bb.remove();}
   subePoder();
 }
 /* ficha al tocar un arma del marcador: qué hace, su nivel y con qué evoluciona (pausa mientras se lee) */
@@ -2736,6 +2815,8 @@ function fichaArma(o) {
     ic = a.icono; t = a.nombre + (J.evos[o.arma] ? ' ★' : ' · nivel ' + n + '/5');
     txt = J.evos[o.arma] ? a.evo : a.d.slice(0, n).join(' ');
     ev = J.evos[o.arma] ? '¡Ya ha evolucionado!' : '<b>Evoluciona</b> con el arma al nivel 5 <u class="' + (n >= 5 ? 'si' : '') + '">' + (n >= 5 ? '✓' : n + '/5') + '</u> y ' + p.nombre + ' <u class="' + (J.pasivas[a.pareja] ? 'si' : '') + '">' + (J.pasivas[a.pareja] ? '✓' : 'te falta') + '</u> → <i>' + a.evo + '</i>';
+  } else if (o.objeto) {
+    const x = OBJETOS[o.objeto]; ic = x.icono; t = x.t + (x.leg ? ' ★' : ''); txt = Object.keys(x.st).map((k) => ST_TXT[k](x.st[k])).join(' · ') + '.'; ev = x.pas || 'Objeto básico: se junta con otros en la Armería para forjar uno legendario.';
   } else {
     const p = PASIVAS[o.pasiva], arma = Object.keys(ARMAS).find((k) => ARMAS[k].pareja === o.pasiva);
     ic = p.icono; t = p.nombre + ' · nivel ' + J.pasivas[o.pasiva]; txt = p.d;
@@ -3025,7 +3106,7 @@ function bucle() {
   antorchas.forEach((a) => {a.fase += dt * 9; const k = 0.85 + Math.sin(a.fase) * 0.08 + Math.sin(a.fase * 2.7) * 0.07; a.l.intensity = a.base * k; });
   /* si la partida se queda en pausa sin ninguna ventana a la vista (se ha visto «calado»), se reanuda sola y se apunta */
   if (J && J.pausa && !J.fin) {
-    const abierto = !$('mejora').classList.contains('hidden') || !$('fichaArma').classList.contains('hidden') || $('bandeja').style.display === 'block' || document.querySelector('#mercadoCapa:not(.hidden)') || (typeof coloca !== 'undefined' && coloca.activo);
+    const abierto = !$('mejora').classList.contains('hidden') || !$('fichaArma').classList.contains('hidden') || $('bandeja').style.display === 'block' || document.querySelector('#mercadoCapa:not(.hidden)') || !$('tienda').classList.contains('hidden') || (typeof coloca !== 'undefined' && coloca.activo);
     if (abierto) J.pausaSola = 0; else if ((J.pausaSola = (J.pausaSola || 0) + dt) > 1.5) {J.pausa = false; J.pausaFicha = false; J.pausaSola = 0; reportaError('pausa sin ventana', new Error('se reanuda sola'));}
   }
   if (J && !J.pausa && !J.fin) {if (J.parada > 0) J.parada -= dt; else seguro('paso', () => paso(dt * (J.lenta > 0 ? 0.35 : 1))); if (J.lenta > 0) J.lenta -= dt; if (J.parada > 0.3) J.parada = 0.3;}
@@ -3252,7 +3333,7 @@ window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
 window._M = M; window._P = P; window._maq = (t, n) => maquina(t, n); window._torre = (n) => torreK(n); window._altoP = (v) => {ALTO_PLATAFORMA = v;}; window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
-window._ofreceArbol = () => ofreceArbol(); window._rango = (n) => cargaRangos(J.h.tipo).then(() => ponRango(J.h, n)); window._arbolDisp = () => arbolDisponible();
+window._ofreceArbol = () => ofreceArbol(); window._tienda = () => abreTienda(); window._compra = (id) => compra(id); window._rango = (n) => cargaRangos(J.h.tipo).then(() => ponRango(J.h, n)); window._arbolDisp = () => arbolDisponible();
 window._construye = (si) => construye(si);
 window._elfos = () => llegaElfos();
 window._arqT = (k) => arqueroTramo(J.tramos[k]);

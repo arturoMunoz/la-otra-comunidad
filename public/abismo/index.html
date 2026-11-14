@@ -358,6 +358,21 @@ body.cine #cineTxt{opacity:1}
 .arbStats{display:flex;flex-wrap:wrap;gap:3px 8px;margin:4px 0 2px}.arbStats i{font-style:normal;font-size:11.5px;color:#d9c9a4;background:#0006;border-radius:6px;padding:1px 6px}.arbStats b{color:#8dff7a}
 .arbCombos{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}.arbCombos span{flex:1 1 30%;min-width:100px;background:#1a120bcc;border:1.5px solid #5a4630;border-radius:10px;padding:5px 6px;color:#a8977a}.arbCombos span.si{border-color:#ffd24a;color:#fff3c8;box-shadow:0 0 10px #ffd24a66}
 .arbCombos b{display:block;font:800 12px Georgia,serif}.arbCombos small{display:block;font-size:10.5px;line-height:1.2}.arbCombos u{display:block;text-decoration:none;font-size:9.5px;opacity:.7;margin-top:2px}
+@keyframes latido{0%,100%{transform:scale(1)}50%{transform:scale(1.08);box-shadow:0 0 14px #ffd24a}}#trTienda.puede{animation:latido 1s infinite}
+#trTienda{background:linear-gradient(#e2b04a,#a8761c);color:#2a1a06;border:2px solid #ffe08a;border-radius:10px;font:800 14px Georgia,serif;padding:6px 10px;margin-right:6px;box-shadow:0 3px 0 #5a3a0a}
+#tienda{position:fixed;inset:0;z-index:46;background:radial-gradient(ellipse at top,#2a1c10,#0d0805);color:#f2e3c0;font-family:Georgia,serif;overflow:auto;padding:10px 10px 20px;display:flex;flex-direction:column;gap:8px}
+#tienda.hidden{display:none}
+.tCab{display:flex;align-items:center;gap:8px}.tCab b{font-size:19px;flex:1;color:#ffd77a;text-shadow:0 2px 0 #000}.tOro{background:#0008;border:1.5px solid #c99a3a;border-radius:10px;padding:3px 9px;font-weight:800;color:#ffd24a}.tX{background:#5a2a12;color:#fff;border:2px solid #c97a3a;border-radius:9px;padding:5px 10px;font:700 13px Georgia,serif}
+.tInv{display:flex;gap:6px;justify-content:center}.tHueco{width:44px;height:44px;border-radius:9px;border:2px dashed #6b5236;background:#0006;display:flex;align-items:center;justify-content:center;padding:0}.tHueco.lleno{border:2px solid #c99a3a}.tHueco img{width:36px;height:36px}
+.tDet{background:#1d140cdd;border:2px solid #8a6a3a;border-radius:12px;padding:9px}.tDetCab{display:flex;gap:9px;align-items:center}.tDetCab img{width:52px;height:52px;border-radius:10px;border:2px solid #c99a3a;background:#0008}.tDetCab b{display:block;font-size:17px;color:#fff1c9}.tDetCab em{font:800 10px system-ui;letter-spacing:.12em;color:#ffcc55}
+.tDet ul{margin:6px 0 2px 18px;padding:0;font-size:13.5px;color:#9dff8a}.tPas{margin:4px 0;font-size:12.5px;color:#ffd9a0;font-style:italic}
+.tRec{margin:8px 0 4px;text-align:center}.tRecTop img{width:40px;height:40px;border:2px solid #ffd24a;border-radius:9px;background:#0008}.tRecBas{display:flex;justify-content:center;gap:10px;margin-top:4px;position:relative}.tRecBas:before{content:'';position:absolute;top:-6px;left:22%;right:22%;height:2px;background:#8a6a3a}
+.tRecBas span{display:flex;flex-direction:column;align-items:center;opacity:.65}.tRecBas span.ya{opacity:1}.tRecBas span.ya img{border-color:#7dff6a}.tRecBas img{width:34px;height:34px;border:2px solid #6b5236;border-radius:8px;background:#0008}.tRecBas small{font-size:10px;max-width:70px}.tMas{display:block;font-size:11px;color:#c9b080;margin-top:3px}
+.tSirve{font-size:11.5px;margin:6px 0;color:#c9b080}.tSirve button{display:inline-flex;align-items:center;gap:3px;margin:2px;background:#0006;border:1px solid #6b5236;border-radius:7px;color:#f2e3c0;font:600 11px Georgia,serif;padding:2px 5px}.tSirve img{width:18px;height:18px}
+.tComprar{width:100%;margin-top:6px;background:linear-gradient(#4fbf3f,#2a7a1f);color:#fff;border:2px solid #b6ff9a;border-radius:11px;font:800 16px Georgia,serif;padding:9px;box-shadow:0 4px 0 #14400d}.tComprar:disabled{filter:grayscale(1) brightness(.7)}.tMsg{margin:4px 0 0;font-size:12px;color:#ffb38a;min-height:14px}
+.tLista h4{margin:6px 2px 4px;font-size:13px;color:#ffd77a;letter-spacing:.06em}.tGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px}
+.tObj{position:relative;background:#0008;border:2px solid #6b5236;border-radius:10px;padding:4px 2px 2px;display:flex;flex-direction:column;align-items:center}.tObj img{width:38px;height:38px}.tObj b{font:800 12px system-ui;color:#ffd24a}.tObj.leg{border-color:#c99a3a;box-shadow:inset 0 0 10px #c99a3a55}.tObj.sel{outline:3px solid #fff;outline-offset:1px}.tObj.caro b{color:#a88}.tObj.caro img{filter:grayscale(.6) brightness(.7)}
+#armas .objLeg{outline:2px solid #ffd24a;border-radius:50%}#armas .objBas{outline:1.5px solid #9a7a4a;border-radius:50%}
 </style>
 <script type="importmap">{"imports":{"three":"./three/three.module.js","three/addons/":"./three/addons/"}}</script>
 </head><body>
@@ -381,7 +396,7 @@ body.cine #cineTxt{opacity:1}
   <div id="armas"></div>
 </div>
 <div id="etiq"></div>
-<div id="tregua"><div class="trCab"><b id="trT">Tregua</b><button id="trYa">¡Que vengan!</button></div><div id="trAyuda"></div><div id="trAm"></div><div id="trMuro"><div class="trMT"><b>La muralla</b><button id="trRep"></button></div><div id="trTramos"></div><div class="trML">🔨 repara · 🧱 levanta lo caído · ⬆ refuerza: +50 de aguante y −12 % de daño (★ hasta 3)</div></div><div id="trTabs"><button data-p="muro">Reparar muro</button><button data-p="def">Construir</button></div><div id="trB"></div></div>
+<div id="tregua"><div class="trCab"><b id="trT">Tregua</b><button id="trTienda">🛒 Armería</button><button id="trYa">¡Que vengan!</button></div><div id="trAyuda"></div><div id="trAm"></div><div id="trMuro"><div class="trMT"><b>La muralla</b><button id="trRep"></button></div><div id="trTramos"></div><div class="trML">🔨 repara · 🧱 levanta lo caído · ⬆ refuerza: +50 de aguante y −12 % de daño (★ hasta 3)</div></div><div id="trTabs"><button data-p="muro">Reparar muro</button><button data-p="def">Construir</button></div><div id="trB"></div></div>
 <div id="joy"><b></b></div>
 <div id="cineA"></div><div id="cineB"></div><div id="cineTxt"></div>
 <div id="txt"></div>
@@ -408,6 +423,7 @@ body.cine #cineTxt{opacity:1}
   <div class="pergArm"><div id="armeria"></div></div>
   <button class="bVolver" id="armVolver" aria-label="Volver"></button>
 </div>
+<div class="hidden" id="tienda"></div>
 <div class="capa hidden" id="mercadoCapa">
   <div class="mercCab"><b>Mercado de Edoras</b><span><img src="ui/moneda_hud.webp" alt=""><i id="mercTes">0</i> de tesoro</span></div>
   <div id="mercHer"></div>
