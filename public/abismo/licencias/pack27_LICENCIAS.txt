@@ -1,0 +1,262 @@
+PACK 27 — LICENCIAS Y PROCEDENCIA
+
+Base descargada: KayKit Adventurers Character Pack 2.0 — FREE.
+Autor: Kay Lousberg (KayKit).
+Página oficial y descarga gratuita: https://kaylousberg.itch.io/kaykit-adventurers
+Archivo de origen: Free 2.0 / KayKit_Adventurers_2.0_FREE.
+Fecha de obtención: 14 noviembre 2026.
+Licencia: Creative Commons Zero (CC0) 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+La licencia original del archivo descargado se incluye como LICENCIA_KAYKIT.txt.
+
+Se han reutilizado y adaptado las mallas originales de cascos, capas, armadura
+superior, torso y daga. No se encontraron las piezas exactas de Rohan/Erebor:
+las crines, cuernos, diademas, cintos, runas, hojas y cimera se han construido
+como adaptaciones y adornos para este encargo. No son piezas oficiales del pack
+KayKit ni reproducciones extraídas de las películas. Atlas y adornos nuevos:
+aportaciones originales de este encargo, ofrecidas bajo CC0.
+
+Los personajes de las imágenes de prueba son los modelos originales KayKit
+Knight, Barbarian, Ranger y Rogue, también bajo CC0. Se conservan sus colores
+originales para mostrar el equipo añadido. Las imágenes no son modelos
+completos incluidos como GLB: el ZIP entrega únicamente piezas de equipo.
+
+PROCEDENCIA POR ARCHIVO
+
+rohan_casco_1.glb
+  Base/ajuste: Knight — Knight_Helmet; crin y cimera adaptadas
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+enano_casco_1.glb
+  Base/ajuste: Barbarian — Knight_Helmet; cuernos y nasal adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+elfo_diadema_1.glb
+  Base/ajuste: Ranger — Adaptación al contorno de Knight_Helmet
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+rohan_hombreras_1.glb
+  Base/ajuste: Knight — Superficie de Knight_ArmLeft adaptada y reflejada; ornamentos
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+enano_hombreras_1.glb
+  Base/ajuste: Barbarian — Superficie de Knight_ArmLeft adaptada y reflejada; ornamentos
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+elfo_hombreras_1.glb
+  Base/ajuste: Ranger — Superficie de Knight_ArmLeft adaptada y reflejada; ornamentos
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+rohan_capa_1.glb
+  Base/ajuste: Knight — Knight_Cape; longitud, color y ribete adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+elfo_capa_1.glb
+  Base/ajuste: Ranger — Ranger_Cape; longitud, color y ribete adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+hobbit_capa_1.glb
+  Base/ajuste: Rogue — Rogue_Cape; longitud, color y ribete adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+enano_cinto_1.glb
+  Base/ajuste: Barbarian — Banda adaptada al cinturón del cuerpo KayKit; dagger en hobbit
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+hobbit_cinto_1.glb
+  Base/ajuste: Rogue — Banda adaptada al cinturón del cuerpo KayKit; dagger en hobbit
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+rohan_casco_2.glb
+  Base/ajuste: Knight — Knight_Helmet; crin y cimera adaptadas
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+enano_casco_2.glb
+  Base/ajuste: Barbarian — Knight_Helmet; cuernos y nasal adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+elfo_diadema_2.glb
+  Base/ajuste: Ranger — Adaptación al contorno de Knight_Helmet
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+rohan_hombreras_2.glb
+  Base/ajuste: Knight — Superficie de Knight_ArmLeft adaptada y reflejada; ornamentos
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+enano_hombreras_2.glb
+  Base/ajuste: Barbarian — Superficie de Knight_ArmLeft adaptada y reflejada; ornamentos
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+elfo_hombreras_2.glb
+  Base/ajuste: Ranger — Superficie de Knight_ArmLeft adaptada y reflejada; ornamentos
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+rohan_capa_2.glb
+  Base/ajuste: Knight — Knight_Cape; longitud, color y ribete adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+elfo_capa_2.glb
+  Base/ajuste: Ranger — Ranger_Cape; longitud, color y ribete adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+hobbit_capa_2.glb
+  Base/ajuste: Rogue — Rogue_Cape; longitud, color y ribete adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+enano_cinto_2.glb
+  Base/ajuste: Barbarian — Banda adaptada al cinturón del cuerpo KayKit; dagger en hobbit
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+hobbit_cinto_2.glb
+  Base/ajuste: Rogue — Banda adaptada al cinturón del cuerpo KayKit; dagger en hobbit
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+rohan_casco_3.glb
+  Base/ajuste: Knight — Knight_Helmet; crin y cimera adaptadas
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+enano_casco_3.glb
+  Base/ajuste: Barbarian — Knight_Helmet; cuernos y nasal adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+elfo_diadema_3.glb
+  Base/ajuste: Ranger — Adaptación al contorno de Knight_Helmet
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+rohan_hombreras_3.glb
+  Base/ajuste: Knight — Superficie de Knight_ArmLeft adaptada y reflejada; ornamentos
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+enano_hombreras_3.glb
+  Base/ajuste: Barbarian — Superficie de Knight_ArmLeft adaptada y reflejada; ornamentos
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+elfo_hombreras_3.glb
+  Base/ajuste: Ranger — Superficie de Knight_ArmLeft adaptada y reflejada; ornamentos
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+rohan_capa_3.glb
+  Base/ajuste: Knight — Knight_Cape; longitud, color y ribete adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+elfo_capa_3.glb
+  Base/ajuste: Ranger — Ranger_Cape; longitud, color y ribete adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+hobbit_capa_3.glb
+  Base/ajuste: Rogue — Rogue_Cape; longitud, color y ribete adaptados
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+enano_cinto_3.glb
+  Base/ajuste: Barbarian — Banda adaptada al cinturón del cuerpo KayKit; dagger en hobbit
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+hobbit_cinto_3.glb
+  Base/ajuste: Rogue — Banda adaptada al cinturón del cuerpo KayKit; dagger en hobbit
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.
+
+hobbit_cota_3.glb
+  Base/ajuste: Rogue — Rogue_Body: torso exterior adaptado, patrón mithril
+  Pack: KayKit Adventurers 2.0 FREE
+  Autor de la base: Kay Lousberg
+  URL: https://kaylousberg.itch.io/kaykit-adventurers
+  Licencia: CC0 1.0 Universal; adaptación para este encargo.

@@ -462,7 +462,7 @@ async function cargarTodo() {
   }
   [[-12, 30], [12, 28], [-14, 6], [14, 14], [-12.8, 30.9], [13.1, 13.2]].forEach(([x, z], i) => {const nb = 'barril_' + (1 + i % 3), b = M[nb] ? M[nb].scene.clone(true) : P.barril.clone(); if (M[nb]) {b.scale.setScalar(1.15); b.rotation.y = i * 1.7; b.traverse((m) => {if (m.isMesh) {m.castShadow = true; m.receiveShadow = true;}});} b.position.set(x, 0.15, z); b.userData.fijo = true; scene.add(b);});
   colocaAtrezo();
-  calcos(); matas(); valle();
+  /* calcos(): pegatinas de charcos, huellas y paja quitadas (se notaba que eran PNG); el suelo lo hace ahora el sombreador */ matas(); valle();
   preparaLluvia();
   preparaMarcas();
   GR.brasas(antorchas.map((a) => a.l.position));
@@ -1040,7 +1040,7 @@ function nuevaPartida(tipo) {
   const vida = Math.round(b.vida * (1 + 0.1 * (pm.vida || 0)));
   const h = {tal: {}, racha: 0, tipo, ...b, vida, vidaMax: vida, dano: b.dano * (1 + 0.1 * (pm.dano || 0)), vel: b.vel * (1 + 0.05 * (pm.vel || 0)), iman: 2.6, xpMul: 1, regen: 0, armadura: 0, velArmas: 1, danoEscala: 1, multi: b.multi || 1, atraviesa: b.atraviesa || 0,
     x: marcas.jugador_inicio.x, z: marcas.jugador_inicio.z, rot: Math.PI, cd: 0, golpe: 0, objetivo: null, alterna: 0, inv: 0, a: montar(b.modelos ? azar(b.modelos) : b.modelo, true)};
-  aplicaEquipo(h, tipo); vistePersonaje(h.a.raiz, tipo);
+  aplicaEquipo(h, tipo); vistePersonaje(h.a.raiz, tipo); cargaRangos(tipo);
   scene.add(h.a.raiz); pon(h.a, 'quieto');
   if (!window._aro) {const g = new THREE.PlaneGeometry(1.9, 1.9); g.rotateX(-Math.PI / 2); const tx = new THREE.TextureLoader().load('ui/aro_heroe.webp'); tx.colorSpace = THREE.SRGBColorSpace; window._aro = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: tx, transparent: true, opacity: 0.8, depthWrite: false})); window._aro.renderOrder = 2;}
   scene.add(window._aro); window._aro.material.color.set('#ffffff'); window._aro.scale.setScalar(1);
@@ -1290,11 +1290,16 @@ function actualizaElfos(dt) {
     }
     /* los de tierra te escoltan y disparan */
     const ob = masCercanos(el.x, el.z, 11, 1)[0];
-    const tx = h.x + Math.cos(J.t * 0.3 + el.ang) * 2.6, tz = h.z + Math.sin(J.t * 0.3 + el.ang) * 2.6, dx = tx - el.x, dz = tz - el.z, d = Math.hypot(dx, dz);
-    if (d > 0.6) {const v = Math.min(el.vel * 1.15, d * 3); el.x += dx / d * v * dt; el.z += dz / d * v * dt; if (!ocupada(el.a)) {el.rot = Math.atan2(dx, dz); pon(el.a, d > 3 ? 'correr' : 'andar');}}
+    /* formación: cada elfo tiene su sitio alrededor del héroe (izquierda, derecha, detrás) y se separan entre sí para verse los tres */
+    const slot = J.elfos.filter((q) => !q.muro).indexOf(el), SL = [[-2.1, 0.9], [2.1, 0.9], [0, 2.4], [-1.2, -1.6], [1.2, -1.6]][slot % 5];
+    let tx = h.x + SL[0] + Math.sin(J.t * 0.7 + slot) * 0.3, tz = h.z + SL[1] + Math.cos(J.t * 0.6 + slot) * 0.3;
+    for (const q of J.elfos) if (q !== el && !q.muro) {const sx = el.x - q.x, sz = el.z - q.z, sd = Math.hypot(sx, sz); if (sd < 1.3 && sd > 0.01) {tx += sx / sd * (1.3 - sd) * 2; tz += sz / sd * (1.3 - sd) * 2;}}
+    const dx = tx - el.x, dz = tz - el.z, d = Math.hypot(dx, dz);
+    if (d > 0.45) {const v = Math.min(el.vel * 1.1, d * 2.6); el.x += dx / d * v * dt; el.z += dz / d * v * dt; if (!ocupada(el.a)) {el.rot = Math.atan2(dx, dz); pon(el.a, v > 3.4 ? 'correr' : 'andar', 0.2);}}
     else if (!ocupada(el.a)) pon(el.a, 'quieto');
     if (ob && el.cd <= 0) {el.cd = rnd(0.9, 1.3); el.rot = Math.atan2(ob.x - el.x, ob.z - el.z); pon(el.a, 'atacar', 0.05, true); FUENTE = 'arquero'; lanza({fuera: true, modelo: 'flecha_elfica', x: el.x, z: el.z, ang: el.rot, vel: 26, alcance: 13, dano: 2.5 + J.nivel * 0.25, atraviesa: 1, escala: 1.1, emp: 0.4, tag: 'arquero'});}
-    ritmo(el.a, el, el.vel, dt); el.a.raiz.position.set(el.x, 0.15, el.z); el.a.raiz.rotation.y = el.rot || 0;
+    el.a.maxTS = 2.4; ritmo(el.a, el, 3.0, dt); el.a.raiz.position.set(el.x, 0.15, el.z);
+    {const rr = el.rot || 0; if (el.rotV === undefined) el.rotV = rr; let df = rr - el.rotV; df = Math.atan2(Math.sin(df), Math.cos(df)); el.rotV += df * Math.min(1, dt * 10); el.a.raiz.rotation.y = el.rotV;}
   }
 }
 /* el portador de la antorcha: corre desde lejos hacia un tramo (o al desagüe) y lo vuela */
@@ -2677,11 +2682,33 @@ function poderActual() {
   const evos = Object.values(J.evos || {}).filter(Boolean).length, ramas = (J.arbol || []).reduce((s, r) => s + r.nv, 0);
   return J.nivel + 2 * Object.keys(J.armas || {}).length + Object.keys(J.pasivas || {}).length + 4 * evos + ramas;
 }
+/* Pack 27: armaduras por rango (bronce, plata, oro) que se enganchan a los huesos head/chest del héroe */
+const RANGO_PIEZAS = {rohan: {casco: 'head', hombreras: 'chest', capa: 'chest'}, enano: {casco: 'head', hombreras: 'chest', cinto: 'chest'}, elfo: {diadema: 'head', hombreras: 'chest', capa: 'chest'}, hobbit: {capa: 'chest', cinto: 'chest', cota: 'chest'}};
+const RANGO_OCULTA = {rohan: {casco: ['Knight_Helmet', 'Knight_HelmetVisor'], capa: ['Knight_Cape']}, elfo: {capa: ['Rogue_Cape']}, hobbit: {capa: ['Rogue_Cape']}};
+const rangoCarga = {};
+function cargaRangos(tipo) {
+  if (rangoCarga[tipo]) return rangoCarga[tipo];
+  const nombres = []; for (const cat in RANGO_PIEZAS[tipo] || {}) for (let n = 1; n <= 3; n++) nombres.push(tipo + '_' + cat + '_' + n);
+  rangoCarga[tipo] = Promise.all(nombres.map((n) => M[n] ? M[n] : fetch('modelos/' + n + '.glb').then((r) => r.ok ? r.arrayBuffer() : null).then((b) => b && new Promise((res) => loader.parse(b, '', res, () => res(null)))).then((g) => {if (g) M[n] = g;}).catch(() => null)));
+  return rangoCarga[tipo];
+}
+function ponRango(h, rango) {
+  const tipo = h.tipo, piezas = RANGO_PIEZAS[tipo]; if (!piezas || !rango) return;
+  h.a.raiz.traverse((o) => {if (o.userData.rango) o.userData.quita = true;}); const fuera = []; h.a.raiz.traverse((o) => {if (o.userData.quita) fuera.push(o);}); fuera.forEach((o) => o.removeFromParent());
+  for (const cat in piezas) {
+    const g = M[tipo + '_' + cat + '_' + rango]; if (!g) continue;
+    const hueso = h.a.raiz.getObjectByName(piezas[cat]); if (!hueso) continue;
+    const p = g.scene.clone(true); p.userData.rango = true; p.traverse((o) => {if (o.isMesh) {o.castShadow = true; o.material = o.material.clone(); o.material.roughness = 0.6; if (rango === 3 && o.material.emissive) {o.material.emissive.set('#3a2a00'); o.userData.brillo = [0.23, 0.16, 0];}}});
+    hueso.add(p);
+    for (const n of (RANGO_OCULTA[tipo] || {})[cat] || []) {const o = h.a.raiz.getObjectByName(n); if (o) o.visible = false;}
+  }
+}
 function subePoder() {
   if (!J || !J.h) return; const h = J.h, p = poderActual(); let t = 0; PODER.forEach((x, i) => {if (p >= x.n) t = i;});
   if (h.esc0 === undefined) h.esc0 = h.a.raiz.scale.x;
   if (t <= (J.poderT || 0)) return; J.poderT = t; const P = PODER[t];
   h.a.base = h.esc0 * (1 + 0.055 * t); h.a.sq = 0.16;   /* crece con un pequeño bote */
+  cargaRangos(h.tipo).then(() => {if (J && J.h === h) ponRango(h, Math.min(3, J.poderT || 0));});
   if (window._aro) {window._aro.material.color.set(P.c); window._aro.scale.setScalar(1 + 0.12 * t);}
   /* el arma brilla del color del rango */
   const col = new THREE.Color(P.c); h.a.raiz.traverse((o) => {if (o.isMesh && !o.isSkinnedMesh && !o.userData.borde && o.material && o.material.emissive) {o.userData.brillo = [col.r * 0.5 * t / 4, col.g * 0.5 * t / 4, col.b * 0.5 * t / 4]; o.material.emissive.setRGB(...o.userData.brillo); o.material.emissiveIntensity = 1;}});
@@ -3095,7 +3122,7 @@ function ritmo(a, o, velRef, dt) {
   const px = o._px ?? o.x, pz = o._pz ?? o.z, v = Math.hypot(o.x - px, o.z - pz) / dt; o._px = o.x; o._pz = o.z;
   o._v = (o._v || 0) + (Math.min(v, velRef * 3) - (o._v || 0)) * Math.min(1, dt * 10);
   const n = a.actual && a.actual.getClip().name;
-  if (n === 'andar' || n === 'correr') a.actual.timeScale = Math.max(0.55, Math.min(1.7, o._v / (velRef * (n === 'andar' ? 0.55 : 1)) || 1)) * (a.var || 1);
+  if (n === 'andar' || n === 'correr') a.actual.timeScale = Math.max(0.55, Math.min(a.maxTS || 1.7, o._v / (velRef * (n === 'andar' ? 0.55 : 1)) || 1)) * (a.var || 1);
   else if (a.actual && a.actual.timeScale !== 1 && !o.lento) a.actual.timeScale = 1;
   a.raiz.rotation.order = 'YXZ';
   const lean = (n === 'correr' || n === 'andar') ? Math.min(0.13, o._v / velRef * 0.09) : 0;
@@ -3225,7 +3252,7 @@ window._arma = (id, n) => {J.armas[id] = n; if (id === 'antorcha') ponOrbitales(
 window._sim = (seg, auto) => {for (let i = 0; i < seg * 20 && J && !J.fin; i++) {if (J.pausa && auto) {const c = document.querySelector('.carta'); if (c) c.click();} if (!J.pausa) {if (J.parada > 0) J.parada -= 0.05; else paso(0.05); actualizaEfectos(0.05);}} camara(1); return J && J.t;};
 window._M = M; window._P = P; window._maq = (t, n) => maquina(t, n); window._torre = (n) => torreK(n); window._altoP = (v) => {ALTO_PLATAFORMA = v;}; window.THREE_DBG = THREE; window._CAM = camera; window._SC = scene; window._R = renderer;
 window._crea = (t, x, z) => creaEnemigo(t, {patio: true, x, z});
-window._ofreceArbol = () => ofreceArbol(); window._arbolDisp = () => arbolDisponible();
+window._ofreceArbol = () => ofreceArbol(); window._rango = (n) => cargaRangos(J.h.tipo).then(() => ponRango(J.h, n)); window._arbolDisp = () => arbolDisponible();
 window._construye = (si) => construye(si);
 window._elfos = () => llegaElfos();
 window._arqT = (k) => arqueroTramo(J.tramos[k]);

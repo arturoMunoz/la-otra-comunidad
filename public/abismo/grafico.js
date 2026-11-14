@@ -99,7 +99,7 @@ export function creaGraficos({renderer, scene, camera, luna, hemi}) {
         const n = m.name || '';
         let r = m;
         if (/^(puddle|water)/.test(n)) {
-          r = new THREE.MeshStandardMaterial({name: n, color: new THREE.Color(m.color).multiplyScalar(0.45), roughness: 0.04, metalness: 0.3, envMapIntensity: 1.6});
+          r = new THREE.MeshStandardMaterial({name: n, color: new THREE.Color(m.color).multiplyScalar(0.4), roughness: 0.3, metalness: 0.15, envMapIntensity: 0.6});
         } else if (/^(stone|mortar|moss|ash|wood)/.test(n)) {
           r = m.clone(); r.roughness = /^wood/.test(n) ? 0.8 : 0.82; r.metalness = 0;
           r.userData.clase = /^wood/.test(n) ? 'madera' : 'piedra';
@@ -141,7 +141,7 @@ export function creaGraficos({renderer, scene, camera, luna, hemi}) {
             gMojado=arriba*smoothstep(.45,.62,fbm(vWP.xz*.21+7.7));
             diffuseColor.rgb*=1.-gMojado*.32;
           }`)
-        .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.12,gMojado);');
+        .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.3,gMojado);');
     };
     m.customProgramCacheKey = () => 'patio' + (suave ? 1 : 0);
   }
@@ -193,6 +193,8 @@ export function creaGraficos({renderer, scene, camera, luna, hemi}) {
     const k = m.name === 'losas' && TX.campo ? 'campo' : m.name, t = TX[k]; if (!t || m.map === t) return;
     const c = t.clone(); c.repeat.setScalar(ESCALA4[m.name] || 1); c.needsUpdate = true; m.map = c; m.color.set({sillares: '#c4b294', roca: '#9a9088', losas: '#bfae92'}[m.name] || '#ffffff');
     const nm = TX[k + '_pbr_n']; if (nm) {const n2 = nm.clone(); n2.repeat.copy(c.repeat); n2.needsUpdate = true; m.normalMap = n2; m.normalScale.set(0.9, 0.9);}
+    if (m.userData.u4 && TX.barro) {const tb = TX.barro.clone(); tb.wrapS = tb.wrapT = THREE.RepeatWrapping; tb.needsUpdate = true; m.userData.u4.tBarro2.value = tb;}
+    if (m.name === 'losas' || m.name === 'barro') {m.normalMap = null; c.wrapS = c.wrapT = THREE.RepeatWrapping;}
     m.needsUpdate = true;
   }
   G.mejoraPatio4 = (raiz) => {
@@ -204,12 +206,30 @@ export function creaGraficos({renderer, scene, camera, luna, hemi}) {
       if (!b[3]) o.geometry.computeVertexNormals(); /* las normales de los muros venían al revés: se rehacen según el orden de los vértices */
       if (hechos.has(m0)) {o.material = hechos.get(m0); return;}
       const m = new THREE.MeshStandardMaterial({name: m0.name, color: b[0], roughness: b[1], metalness: b[2], vertexColors: !!o.geometry.attributes.color, side: b[3] ? THREE.FrontSide : THREE.DoubleSide, shadowSide: THREE.FrontSide});
-      const u = {uSuelo: {value: b[3] ? 1 : 0}};
+      const u = {uSuelo: {value: b[3] ? 1 : 0}, tBarro2: {value: blanco}, uPatio: {value: m0.name === 'losas' || m0.name === 'barro' ? 1 : 0}};
+      m.userData.u4 = u;
       m.onBeforeCompile = (sh) => {
         Object.assign(sh.uniforms, u); sh.uniforms.uRotos = uRotos;
         sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; varying vec3 vWN;')
           .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.)).xyz; vWN=normalize(mat3(modelMatrix)*objectNormal);');
-        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; varying vec3 vWN; uniform float uSuelo; uniform float uRotos[6]; float gMojado;' + RUIDO)
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; varying vec3 vWN; uniform float uSuelo; uniform float uPatio; uniform sampler2D tBarro2; uniform float uRotos[6]; float gMojado;' + RUIDO)
+          /* suelo del patio: hierba y barro mezclados por manchas grandes, cada uno muestreado dos veces (girado y a otra escala) para que no se vea la repetición del dibujo */
+          .replace('#include <map_fragment>', `#ifdef USE_MAP
+            if(uPatio>.5){
+              vec2 w=vWP.xz; vec2 rw=mat2(.8,-.6,.6,.8)*w;
+              vec4 g1=texture2D(map,w*.15), g2=texture2D(map,rw*.067+.37);
+              vec4 hierba=mix(g1,g2,smoothstep(.3,.7,fbm(w*.1+5.)));
+              vec4 b1=texture2D(tBarro2,w*.12), b2=texture2D(tBarro2,rw*.053+.61);
+              vec4 barro=mix(b1,b2,smoothstep(.3,.7,fbm(w*.08+2.)))*vec4(.78,.72,.66,1.);
+              float mb=smoothstep(.45,.7,fbm(w*.055+1.3)+.22*fbm(w*.45));
+              mb=max(mb,(1.-smoothstep(1.2,4.2,abs(w.x)))*.7*smoothstep(-14.,-4.,w.y));
+              vec4 tc=mix(hierba,barro,mb);
+              tc.rgb=mix(vec3(dot(tc.rgb,vec3(.3,.59,.11))),tc.rgb,.82);
+              diffuseColor*=tc;
+            } else {
+              #include <map_fragment>
+            }
+          #endif`)
           .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
             if(vWP.z>-22.8&&vWP.z<-16.6&&vWP.y>0.35){
               ${XT.map((x, k) => `if(uRotos[${k}]>.5&&abs(vWP.x-(${x.toFixed(1)}))<1.5+vWP.y*.2+.25*sin(vWP.y*3.1+${k}.)) discard;`).join('')}
@@ -221,10 +241,10 @@ export function creaGraficos({renderer, scene, camera, luna, hemi}) {
               diffuseColor.rgb*=.86+.28*r1;
               float pie=(1.-arriba)*(1.-smoothstep(.0,1.6,vWP.y))*.25;
               diffuseColor.rgb*=1.-pie;
-              gMojado=uSuelo*arriba*smoothstep(.5,.66,fbm(vWP.xz*.17+7.7))*step(vWP.y,.4);
-              diffuseColor.rgb*=1.-gMojado*.35;
+              gMojado=uSuelo*arriba*smoothstep(.6,.74,fbm(vWP.xz*.13+7.7))*step(vWP.y,.4);
+              diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(.55,.6,.7),gMojado*.7);
             }`)
-          .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.1,gMojado);');
+          .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.42,gMojado);');
       };
       m.customProgramCacheKey = () => 'p4' + m0.name;
       hechos.set(m0, m); mats4.push(m); pintaTex4(m); if (!b[3]) G.cortaVista(m); o.material = m;
