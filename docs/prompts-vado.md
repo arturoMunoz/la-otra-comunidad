@@ -37,3 +37,26 @@ Para el mismo juego (El Vado del Isen, El Señor de los Anillos, Rohan contra Is
 
 Pásamelo en un .zip llamado Pack_Vado_2.zip con cada imagen por separado y nombres claros.
 ```
+
+## Pack Vado 3 — lo que falta para el mapa en «ojo» (14/11)
+
+### A. Interfaz (imágenes, a ChatGPT; adjuntar `tools/vado/boceto_mapa_arturo.jpg`)
+```
+Seguimos con «El Vado del Isen» (El Señor de los Anillos, Rohan contra Isengard, estilo Wild Rift / Brawl Stars oscuro y medieval: metal envejecido, cuero, oro gastado, verde de Rohan, negro y rojo de Isengard). Te adjunto el boceto del mapa nuevo. PNG con fondo transparente salvo el minimapa, sin texto escrito, sin marcas de agua.
+
+1. Minimapa del mapa nuevo, vista cenital plana, 512x1024 (vertical): la base de Rohan en la esquina de abajo a la izquierda (hierba verde, tiendas con el caballo blanco) y la de Isengard arriba a la derecha (tierra quemada, tocones, la Mano Blanca). Dos caminos de barro salen de una base y llegan a la otra formando un ojo o una hoja: uno sube pegado al borde izquierdo y cruza por arriba; el otro va por abajo y sube pegado al borde derecho. Dentro del ojo, bosque oscuro con claros, y en el centro exacto un claro de piedra donde duerme un gran uruk. Un río poco hondo (los Vados del Isen) cruza el mapa en diagonal por el centro, de arriba a la izquierda hacia abajo a la derecha. Fuera de los caminos, bosque cerrado.
+2. Iconos redondos 256x256 con el mismo marco que los de habilidades: «Destello» (un salto de luz plateada, estela de chispas) y «Curar» (una hoja de athelas brillando con luz verde).
+3. Iconos de bendición 128x128: «Aullido del alfa» (cabeza de huargo aullando) y «Furia del Uruk» (un yelmo de uruk con la Mano Blanca envuelto en fuego azul).
+4. Indicadores de habilidad en el suelo, blancos con brillo suave, para teñirlos por código: flecha larga 512x128, cono de 90° 512x512, círculo de área con borde marcado 512x512, círculo fino de alcance 512x512.
+5. Cartel de baja: una franja horizontal 1024x160 de metal y cuero con dos huecos redondos (izquierda y derecha) para retratos y una espada en medio; y una cinta 1024x128 para el grito («¡Primera sangre!»), en dos versiones de color: dorada (para nosotros) y roja (para ellos).
+
+Pásamelo en un .zip llamado Pack_Vado_3.zip.
+```
+
+### B. El Uruk Azul (modelo 3D, a ChatGPT; adjuntar `public/abismo/modelos/capitan.glb`)
+```
+Para el mismo juego necesito el jefe del centro del mapa, el «Uruk Azul»: un capitán uruk-hai de Isengard enorme (como un uruk de Lurtz pero más grande y acorazado), con armadura negra de placas, la Mano Blanca pintada, y vetas y ojos de un azul frío brillante (es el jefe raro del mapa, como el Barón Nashor del League of Legends). Te adjunto capitan.glb: usa EXACTAMENTE su mismo esqueleto, nombres de huesos y animaciones (andar, correr, quieto, atacar, recibir_golpe, morir…), y añade si puedes una animación «pisoton» (golpe al suelo con las dos manos). Estilo low-poly como el adjunto, colores oscuros con el azul como acento emisivo. Un solo .glb (uruk_azul.glb), menos de 3 MB, 1 unidad = 1 metro, unos 4,4 m de alto. Pásamelo en Pack_Vado_4.zip.
+```
+
+### C. Voces del anunciador (ElevenLabs, voz «Gala», un mp3 por frase)
+¡Primera sangre! · ¡Doble derribo! · ¡Triple derribo! · ¡En racha! · ¡Imparable! · ¡Leyenda de la Marca! · ¡Racha cortada! · ¡Aniquilación! · Torre enemiga destruida · Han destruido una de nuestras torres · ¡El Uruk Azul ha despertado! · Habéis derrotado al Uruk Azul · ¡Las hordas han llegado al vado! · ¡Victoria! · Derrota

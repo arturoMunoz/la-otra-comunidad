@@ -1,0 +1,235 @@
+PACK VADO 1 — PROCEDENCIA Y LICENCIAS
+Fecha: 14 noviembre 2026
+
+Modelos descargados: Kenney (Nature Kit 2.1, Castle Kit 2.0) y Kay Lousberg (KayKit Medieval Hexagon Pack 1.0).
+Licencia de los modelos fuente: CC0 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+Se incluyen los textos originales sin modificar en licencias_originales/.
+
+DESCARGAS UTILIZADAS
+Nature Kit: https://opengameart.org/sites/default/files/Nature%20Kit%20%282.1%29.zip
+Castle Kit: https://opengameart.org/sites/default/files/kenney_castle-kit.zip
+KayKit: repositorio oficial https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+Las páginas oficiales y la licencia incluida en cada descarga se comprobaron.
+
+ADAPTACIONES
+Selección, escalado, recoloración y montaje realizados para este encargo con Blender.
+Geometría adicional creada para el pack: ramas de árboles muertos, juncos/espigas, refuerzos y pinchos, fracturas y escombros, estandartes y siluetas heráldicas originales, antorchas, huesos y cráneos animales, tronco hueco, fondo de cueva, brocal de Isengard y agua.
+Estas aportaciones se ofrecen bajo CC0 en la medida en que existan derechos aplicables.
+Las torres, nexos y cubiles son composiciones/adaptaciones; no modelos oficiales de El Señor de los Anillos.
+Los nombres Rohan/Isengard identifican su destino dentro del juego.
+
+MAPEO POR NODO (autor, paquete, modelo original y enlace)
+
+vado_arboles.glb / pino_01
+  Kenney | Nature Kit 2.1 | tree_pineTallA_detailed | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_arboles.glb / pino_02
+  Kenney | Nature Kit 2.1 | tree_pineTallB_detailed | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_arboles.glb / pino_03
+  Kenney | Nature Kit 2.1 | tree_pineTallC_detailed | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_arboles.glb / pino_04
+  Kenney | Nature Kit 2.1 | tree_pineTallD_detailed | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_arboles.glb / roble_01
+  Kenney | Nature Kit 2.1 | tree_oak | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_arboles.glb / roble_02
+  Kenney | Nature Kit 2.1 | tree_detailed | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_arboles.glb / roble_03
+  Kenney | Nature Kit 2.1 | tree_oak_dark | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_arboles.glb / arbol_muerto_01
+  Kenney | Nature Kit 2.1 | stump_oldTall | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_arboles.glb / arbol_muerto_02
+  Kenney | Nature Kit 2.1 | stump_old | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_rocas.glb / roca_01
+  Kenney | Nature Kit 2.1 | rock_smallA | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / roca_02
+  Kenney | Nature Kit 2.1 | rock_smallC | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / roca_03
+  Kenney | Nature Kit 2.1 | rock_largeA | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / roca_04
+  Kenney | Nature Kit 2.1 | rock_largeC | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / roca_05
+  Kenney | Nature Kit 2.1 | rock_largeF | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / roca_06
+  Kenney | Nature Kit 2.1 | rock_tallC | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / arbusto_01
+  Kenney | Nature Kit 2.1 | plant_bush | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / arbusto_02
+  Kenney | Nature Kit 2.1 | plant_bushLarge | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / arbusto_03
+  Kenney | Nature Kit 2.1 | plant_bushDetailed | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / arbusto_04
+  Kenney | Nature Kit 2.1 | plant_bushLargeTriangle | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / juncos_01
+  Kenney | Nature Kit 2.1 | grass_large | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_rocas.glb / juncos_02
+  Kenney | Nature Kit 2.1 | grass_large | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_rocas.glb / juncos_03
+  Kenney | Nature Kit 2.1 | grass_large | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_rocas.glb / piedra_vado_01
+  Kenney | Nature Kit 2.1 | rock_smallFlatA | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / piedra_vado_02
+  Kenney | Nature Kit 2.1 | rock_smallFlatB | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / piedra_vado_03
+  Kenney | Nature Kit 2.1 | rock_smallFlatC | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / piedra_vado_04
+  Kenney | Nature Kit 2.1 | stone_smallFlatA | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / piedra_vado_05
+  Kenney | Nature Kit 2.1 | stone_smallFlatB | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_rocas.glb / piedra_vado_06
+  Kenney | Nature Kit 2.1 | stone_smallFlatC | CC0
+  https://kenney.nl/assets/nature-kit
+
+vado_torres.glb / torre_rohan_1
+  Kenney | Castle Kit 2.0 | tower-square-base | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-mid | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-top | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-roof | CC0
+  https://kenney.nl/assets/castle-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_torres.glb / torre_rohan_2
+  Kenney | Castle Kit 2.0 | tower-square-base | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-mid | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-top | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-roof | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Nature Kit 2.1 | rock_smallC | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_torres.glb / torre_rohan_3
+  Kenney | Castle Kit 2.0 | tower-square-base | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Nature Kit 2.1 | rock_smallC | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_torres.glb / torre_isengard_1
+  Kenney | Castle Kit 2.0 | tower-square-base | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-mid | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-top | CC0
+  https://kenney.nl/assets/castle-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_torres.glb / torre_isengard_2
+  Kenney | Castle Kit 2.0 | tower-square-base | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-mid | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Castle Kit 2.0 | tower-square-top | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Nature Kit 2.1 | rock_smallC | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_torres.glb / torre_isengard_3
+  Kenney | Castle Kit 2.0 | tower-square-base | CC0
+  https://kenney.nl/assets/castle-kit
+  Kenney | Nature Kit 2.1 | rock_smallC | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_nexos.glb / nexo_rohan
+  Kenney | Nature Kit 2.1 | rock_smallA | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_nexos.glb / nexo_isengard
+  Kenney | Nature Kit 2.1 | rock_smallA | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_cubiles.glb / cubil_huargo
+  Kenney | Nature Kit 2.1 | rock_smallA | CC0
+  https://kenney.nl/assets/nature-kit
+  Kenney | Nature Kit 2.1 | campfire_logs | CC0
+  https://kenney.nl/assets/nature-kit
+  Kenney | Nature Kit 2.1 | stump_old | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_cubiles.glb / cubil_troll
+  Kenney | Nature Kit 2.1 | rock_largeF | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_fuentes.glb / fuente_rohan
+  Kay Lousberg | KayKit Medieval Hexagon Pack 1.0 | building_well_green | CC0
+  https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+vado_fuentes.glb / fuente_isengard
+  Kenney | Nature Kit 2.1 | rock_smallA | CC0
+  https://kenney.nl/assets/nature-kit
+  Incluye adaptación/composición y/o geometría adicional descrita arriba.
+
+SHA256 DE ARCHIVOS FUENTE DESCARGADOS
+nature.zip  fa7974a0d342bfe63c38664ba9f8ec1a4aab8ea25f099bdc56870e33588c4d9d
+castle.zip  921f3f73927bb23106cae34bc21d5ab4b033a9fc120475e96f714a406e3169df

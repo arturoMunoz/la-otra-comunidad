@@ -32,7 +32,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 /* marcador */
 #hud{position:fixed;left:0;right:0;top:0;z-index:5;pointer-events:none;padding:calc(6px + env(safe-area-inset-top)) 8px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
 .caja{background:#0b0805c4;border:1.5px solid #6b5236;border-radius:10px;padding:4px 8px;font:700 13px system-ui}
-#marcador{font:900 18px system-ui;text-align:center}#marcador .a{color:#8fd0ff}#marcador .b{color:#ff9a8a}
+#marcador{font:900 18px system-ui;text-align:center;pointer-events:auto;cursor:pointer}#marcador .a{color:#8fd0ff}#marcador .b{color:#ff9a8a}
 #yo{display:flex;align-items:center;gap:6px}#yo img{width:40px;height:40px;border-radius:50%;border:2px solid #ffd24a}
 #oro{color:#ffd24a}
 #barras{position:fixed;inset:0;pointer-events:none;z-index:3}
@@ -50,13 +50,35 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 .hb img{width:100%;height:100%;display:block}.hb .cd{position:absolute;inset:0;background:#000b;color:#fff;font:900 20px system-ui;display:flex;align-items:center;justify-content:center}
 .hb .k{position:absolute;bottom:0;left:0;right:0;font:900 10px system-ui;background:#000a;color:#ffd24a;text-align:center}.hb.bloq{filter:grayscale(1) brightness(.5)}
 #bAt{right:0;bottom:0;width:88px;height:88px;border-color:#ffd24a}#bQ{right:96px;bottom:0}#bW{right:84px;bottom:68px}#bE{right:40px;bottom:120px}#bR{right:-4px;bottom:100px;border-color:#ff7a2a}
-#bTienda{position:fixed;left:10px;top:calc(64px + env(safe-area-inset-top));z-index:7;width:52px;height:52px;border-radius:50%;border:2px solid #c99a3a;background:#1d140c url(../abismo/ui/armeria.webp) center/80% no-repeat}
-#bBase{position:fixed;left:10px;top:calc(122px + env(safe-area-inset-top));z-index:7;width:52px;height:52px;border-radius:50%;border:2px solid #8fd0ff;background:#0d1a26;color:#8fd0ff;font:900 22px system-ui}
-#bZoom{position:fixed;left:10px;top:calc(180px + env(safe-area-inset-top));z-index:7;width:52px;height:52px;border-radius:50%;border:2px solid #c99a3a;background:#1d140c;font-size:22px}
+#bTienda{position:fixed;left:6px;top:calc(64px + env(safe-area-inset-top));z-index:7;width:58px;height:58px;border-radius:50%;border:0;background:url(ui/b_armeria.webp) center/contain no-repeat}
+#bBase{position:fixed;right:228px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:7;width:54px;height:54px;border-radius:50%;border:0;background:url(ui/b_volver.webp) center/contain no-repeat;color:transparent;--p:0%}
+#bBase.cargando{box-shadow:0 0 0 4px #0008,0 0 0 4px #ffd24a inset;background-image:conic-gradient(#ffd24acc var(--p),#0000 var(--p)),url(ui/b_volver.webp);background-size:contain;border-radius:50%}
+#bZoom{position:fixed;left:6px;top:calc(126px + env(safe-area-inset-top));z-index:7;width:50px;height:50px;border-radius:50%;border:0;background:url(ui/b_zoom.webp) center/contain no-repeat;color:transparent}
 #mini{position:fixed;inset:auto;right:8px;top:calc(58px + env(safe-area-inset-top));z-index:6;width:72px;height:147px;border:2px solid #8a6a3a;border-radius:8px;box-shadow:0 3px 10px #000a;opacity:.92;pointer-events:none}
 #objetivo{position:fixed;left:50%;top:calc(58px + env(safe-area-inset-top));transform:translateX(-50%);z-index:5;font:700 12px Georgia,serif;color:#ffe3a0;background:#0b0805b0;border-radius:8px;padding:3px 8px;pointer-events:none;white-space:nowrap}
 #buffs{position:fixed;left:50%;top:calc(82px + env(safe-area-inset-top));transform:translateX(-50%);z-index:5;display:flex;gap:5px;pointer-events:none}#buffs span{font:800 11px system-ui;background:#3a2a0ccc;border:1px solid #ffd24a;border-radius:7px;padding:1px 6px;color:#ffe3a0}
 .bv.e2 i u{background:#e8b13a}
+.hb .pip{position:absolute;left:0;right:0;bottom:3px;display:flex;justify-content:center;gap:2px}.hb .pip i{width:7px;height:4px;border-radius:2px;background:#0009;border:1px solid #000}.hb .pip i.on{background:#ffd24a}
+.hb.sinAprender img{filter:grayscale(1) brightness(.45)}
+.mas{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid #fff;background:radial-gradient(#7dff6a,#2a9a1f);color:#fff;font:900 20px/22px system-ui;padding:0;z-index:2;box-shadow:0 0 12px #7dff6a;animation:late 0.9s infinite alternate}
+@keyframes late{to{transform:scale(1.15)}}
+#mq{right:113px;bottom:56px}#mw{right:101px;bottom:124px}#me{right:57px;bottom:176px}#mr{right:13px;bottom:156px}
+.hs{width:46px;height:46px;border-color:#7aa0c9}#bD{right:162px;bottom:4px}#bF{right:154px;bottom:56px}
+#compraRapida{position:fixed;left:8px;top:calc(186px + env(safe-area-inset-top));z-index:7;width:70px;background:#1d140ce8;border:2px solid #7dff6a;border-radius:12px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;color:#f2e3c0;box-shadow:0 0 12px #7dff6a66}
+#compraRapida img{width:44px;height:44px}#compraRapida span{font:600 9.5px Georgia,serif;text-align:center;line-height:1.05}#compraRapida b{font:800 13px system-ui;color:#ffd24a}#compraRapida.caro{border-color:#6b5236;box-shadow:none;opacity:.75}#compraRapida.caro b{color:#c88}
+#kda{font:700 11px system-ui;color:#d9c49a}
+#buffs span.azul{border-color:#4aa8ff;background:#0c2244cc;color:#bfe0ff}
+#buffs span img{width:16px;height:16px;vertical-align:-3px;margin-right:3px}
+#anuncio{position:fixed;left:50%;top:calc(104px + env(safe-area-inset-top));transform:translateX(-50%);z-index:9;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;animation:anu .35s ease-out}
+@keyframes anu{from{transform:translateX(-50%) scale(1.6);opacity:0}}
+.anF{display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,#0000,#000c 20%,#000c 80%,#0000);padding:4px 30px}.anF img{width:46px;height:46px;border-radius:50%;border:3px solid}.anF img.az{border-color:#5fb6ff}.anF img.ro{border-color:#ff5a4a}.anF img.muerto{filter:grayscale(1)}.anF b{font-size:22px;color:#fff}
+.anT{font:900 22px Georgia,serif;text-shadow:0 2px 0 #000,0 0 14px #000;letter-spacing:.02em}.anT.bueno{color:#ffd77a}.anT.malo{color:#ff7a6a}
+#tabla{position:fixed;inset:0;z-index:25;background:#000a;display:flex;align-items:center;justify-content:center}
+.tbCaja{background:#1d140cf2;border:2px solid #c99a3a;border-radius:14px;padding:10px;width:min(94vw,420px);display:flex;flex-direction:column;gap:6px;color:#f2e3c0}.tbCaja>b{color:#ffd77a;font-size:18px;text-align:center}.tbCaja small{color:#b9a888;text-align:center}
+.tbFila{display:grid;grid-template-columns:36px 1fr 52px 42px;grid-template-areas:'i n k c' 'i o o o';gap:2px 6px;align-items:center;padding:4px;border-radius:8px;background:#0006;border-left:4px solid}.tbFila.az{border-color:#5fb6ff}.tbFila.ro{border-color:#ff5a4a}
+.tbFila>img{grid-area:i;width:36px;height:36px;border-radius:50%}.tbFila .n{grid-area:n;font:700 13px Georgia,serif}.tbFila .n small{display:block;font-size:10px}.tbFila .k{grid-area:k;font:800 13px system-ui}.tbFila .c{grid-area:c;font:700 12px system-ui}.tbFila .o{grid-area:o;display:flex;gap:2px}.tbFila .o img{width:22px;height:22px}
+.bv.h i::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,#0000 0 calc(var(--seg,100%) - 1px),#000d calc(var(--seg,100%) - 1px) var(--seg,100%))}
+.num.cur{color:#7dff6a}
 #aviso{position:fixed;left:50%;top:26%;transform:translateX(-50%);z-index:9;font:800 22px Georgia,serif;color:#ffd77a;text-shadow:0 3px 0 #000,0 0 14px #000;text-align:center;pointer-events:none;opacity:0;transition:opacity .3s;width:90%}
 #muerto{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;background:#000a;font:800 24px Georgia,serif;color:#ff9a8a;pointer-events:none}
 #fin{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#000c}#fin h2{font-size:38px;margin:0;color:#ffd77a}
@@ -88,7 +110,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
   <button class="bt s" id="bSalir">← Volver a La Otra Comunidad</button>
 </div>
 <div id="hud" class="hidden">
-  <div class="caja" id="yo"><img id="yoImg" alt=""><div><div id="yoNv">Nv 1</div><div id="oro">🪙 0</div></div></div>
+  <div class="caja" id="yo"><img id="yoImg" alt=""><div><div id="yoNv">Nv 1</div><div id="oro">🪙 0</div><div id="kda">0 / 0 / 0</div></div></div>
   <div class="caja" id="marcador"><span class="a">0</span> · <span class="b">0</span><div id="reloj" style="font-size:11px;color:#d9c49a">0:00</div></div>
   <div class="caja" id="ping" style="font-size:11px">—</div>
 </div>
@@ -96,10 +118,13 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 <div id="joy" class="hidden"><b><i></i></b></div>
 <div id="mandos" class="hidden">
   <button class="hb" id="bAt"><img src="../abismo/iconos/espada.webp" alt=""></button>
-  <button class="hb" id="bQ" data-k="q"><img alt=""><span class="k">Q</span><span class="cd hidden"></span></button>
-  <button class="hb" id="bW" data-k="w"><img alt=""><span class="k">W</span><span class="cd hidden"></span></button>
-  <button class="hb" id="bE" data-k="e"><img alt=""><span class="k">E</span><span class="cd hidden"></span></button>
-  <button class="hb" id="bR" data-k="r"><img alt=""><span class="k">R</span><span class="cd hidden"></span></button>
+  <button class="hb" id="bQ" data-k="q"><img alt=""><span class="pip" id="pq"></span><span class="cd hidden"></span></button>
+  <button class="hb" id="bW" data-k="w"><img alt=""><span class="pip" id="pw"></span><span class="cd hidden"></span></button>
+  <button class="hb" id="bE" data-k="e"><img alt=""><span class="pip" id="pe"></span><span class="cd hidden"></span></button>
+  <button class="hb" id="bR" data-k="r"><img alt=""><span class="pip" id="pr"></span><span class="cd hidden"></span></button>
+  <button class="mas hidden" id="mq">+</button><button class="mas hidden" id="mw">+</button><button class="mas hidden" id="me">+</button><button class="mas hidden" id="mr">+</button>
+  <button class="hb hs" id="bD" aria-label="Destello"><img src="../abismo/iconos/estrella.webp" alt=""><span class="cd hidden"></span></button>
+  <button class="hb hs" id="bF" aria-label="Curar"><img src="../abismo/iconos/corazon.webp" alt=""><span class="cd hidden"></span></button>
 </div>
 <button id="bTienda" class="hidden" aria-label="Armería"></button>
 <button id="bBase" class="hidden" aria-label="Volver a la base">⌂</button>
@@ -107,6 +132,9 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 <canvas id="mini" class="hidden" width="96" height="196"></canvas>
 <div id="objetivo" class="hidden"></div><div id="buffs"></div>
 <div id="aviso"></div>
+<div id="anuncio" class="hidden"></div>
+<button id="compraRapida" class="hidden"></button>
+<div id="tabla" class="hidden"></div>
 <div id="muerto" class="hidden"></div>
 <div id="tienda" class="hidden"></div>
 <div id="fin" class="hidden"></div>
