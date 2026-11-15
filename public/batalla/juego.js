@@ -1357,10 +1357,11 @@ function preparaMandos() {
   });
   for (const k of ['q', 'w', 'e', 'r']) {
     const b = $('b' + k.toUpperCase()); let p0 = null, apunta = null;
-    b.addEventListener('pointerdown', (e) => {p0 = {x: PX(e), y: PY(e), id: e.pointerId}; b.setPointerCapture(e.pointerId);});
-    b.addEventListener('pointermove', (e) => {if (!p0 || e.pointerId !== p0.id) return; const dx = PX(e) - p0.x, dy = PY(e) - p0.y; if (Math.hypot(dx, dy) > 18) {apunta = {dx, dy}; muestraMira(k, dx, dy);}});
-    b.addEventListener('pointerup', (e) => {if (!p0) return; const a = apunta; p0 = null; apunta = null; ocultaMira(); lanzaMia(k, a);});
-    b.addEventListener('pointercancel', () => {p0 = null; apunta = null; ocultaMira();});
+    /* como en el Wild Rift: al pulsar ya se ve el alcance y hacia dónde irá; arrastrando apuntas tú; la mira va pegada al héroe aunque te muevas */
+    b.addEventListener('pointerdown', (e) => {p0 = {x: PX(e), y: PY(e), id: e.pointerId}; try {b.setPointerCapture(e.pointerId);} catch (er) {} MIRA_ACT = {k, dx: null, dy: null}; muestraMira(k, null, null);});
+    b.addEventListener('pointermove', (e) => {if (!p0 || e.pointerId !== p0.id) return; const dx = PX(e) - p0.x, dy = PY(e) - p0.y; if (Math.hypot(dx, dy) > 18) {apunta = {dx, dy}; MIRA_ACT = {k, dx, dy}; muestraMira(k, dx, dy);}});
+    b.addEventListener('pointerup', (e) => {if (!p0) return; const a = apunta; if (MIRA_ACT) muestraMira(k, a ? a.dx : null, a ? a.dy : null); p0 = null; apunta = null; MIRA_ACT = null; lanzaMia(k, a); ocultaMira();});
+    b.addEventListener('pointercancel', () => {p0 = null; apunta = null; MIRA_ACT = null; ocultaMira();});
   }
   toca($('bTienda'), abreTienda);
   toca($('bAjustes'), abreAjustes);
@@ -1396,26 +1397,42 @@ function indicador(n, color) {
   const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: IND[n], color, transparent: true, depthWrite: false, opacity: 1, blending: THREE.AdditiveBlending}));
   m.renderOrder = 4; m.visible = false; scene.add(m); return m;
 }
+/* habilidades que se apuntan (las demás se lanzan sobre ti, como en el Wild Rift: sin mira) */
+const APUNTABLE = {dash: 1, linea: 1, cono: 1, zona: 1, salto: 1, area: 1};
+/* objetivo automático al tocar sin arrastrar: el héroe enemigo más cercano a tiro (o lo que tengas delante) */
+function autoObjetivo(H, x, z) {
+  let mejor = null, md = (H.alc || H.dist || 6) + 4; for (const q of VISTA.values()) if (q.eq !== MI_EQ && (q.k === 'h' ? q.muerto < 0 && !q.escondido : (q.k === 's' || q.k === 'j') && q.muerto !== 0)) {const d0 = Math.hypot((q.xi ?? q.x) - x, (q.zi ?? q.z) - z) - (q.k === 'h' ? 0 : 3); if (d0 < md) {md = d0; mejor = q;}}
+  return mejor;
+}
+/* la mira sigue al héroe mientras mantienes el dedo (se repinta cada fotograma desde bucle) */
+let MIRA_ACT = null;
 function muestraMira(k, dx, dy) {
-  const v = VISTA.get(YO); if (!v) return; const H = HEROES[v.tipo].hab[k], {F, R} = ejes(), l = Math.hypot(dx, dy), wx = (dx * R.x - dy * F.x) / l, wz = (dx * R.z - dy * F.z) / l, alc = H.alc || H.dist || H.radio || 4;
+  const v = VISTA.get(YO); if (!v) return; const H = HEROES[v.tipo].hab[k];
+  const iq = 'qwer'.indexOf(k); if (!APUNTABLE[H.tipo] || (v.cds && v.cds[iq] > 0) || !(v.rk && v.rk[iq] > 0) || v.muerto >= 0) {ocultaMira(); return;}
+  const {F, R} = ejes(), x0 = v.xi ?? v.x, z0 = v.zi ?? v.z, alc = H.alc || H.dist || H.radio || 4;
+  let wx, wz, l;
+  if (dx === null) {/* sin arrastrar: hacia el objetivo automático, a su distancia */
+    const ob = autoObjetivo(H, x0, z0); let ax, az; if (ob) {ax = (ob.xi ?? ob.x) - x0; az = (ob.zi ?? ob.z) - z0;} else {const r = v.ri ?? v.rot ?? 0; ax = Math.sin(r); az = Math.cos(r);}
+    const la = Math.hypot(ax, az) || 1; wx = ax / la; wz = az / la; l = ob ? Math.min(90, la / alc * 90) : 90;
+  } else {l = Math.hypot(dx, dy); wx = (dx * R.x - dy * F.x) / l; wz = (dx * R.z - dy * F.z) / l;}
   if (!mira) mira = {alc: indicador('ind_alcance', '#ffffff'), area: indicador('ind_area', '#ffe9a8'), flecha: indicador('ind_flecha', '#ffe9a8'), cono: indicador('ind_cono', '#ffe9a8')};
-  const x = v.xi ?? v.x, z = v.zi ?? v.z, k2 = Math.min(1, l / 90);
+  const x = x0, z = z0, k2 = Math.min(1, l / 90);
   for (const n of ['area', 'flecha', 'cono']) mira[n].visible = false;
   mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * (H.tipo === 'area' ? H.radio : alc) * 256 / 235);
   if (H.tipo === 'zona' || H.tipo === 'salto') {const a = mira.area; a.visible = true; a.scale.setScalar(2 * H.radio * 256 / 231); a.position.set(x + wx * alc * k2, 0.11, z + wz * alc * k2);}
   else if (H.tipo === 'area') {const a = mira.area; a.visible = true; a.scale.setScalar(2 * H.radio * 256 / 231); a.position.set(x, 0.11, z);}
   else if (H.tipo === 'cono') {const c = mira.cono, tam = H.alc * 512 / 325; c.visible = true; c.scale.set(tam * Math.min(1.2, H.ang / (Math.PI / 2)), 1, tam); c.position.set(x, 0.11, z); c.rotation.y = Math.atan2(-wx, -wz);}
-  else {const f = mira.flecha; f.visible = true; f.scale.set(alc, 1, (H.ancho ? H.ancho * 2 : 1.4) * 2); f.position.set(x + wx * alc / 2, 0.11, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);}
+  else {const f = mira.flecha; f.visible = true; f.scale.set(alc, 1, (H.ancho ? H.ancho * 2 : H.tipo === 'dash' ? (H.dano ? 3.2 : 1.1) : 1.4) * 2); /* ancho real de lo que golpea: la carga hiere a 1,6 m de cada lado; el paso élfico no hiere */ f.position.set(x + wx * alc / 2, 0.11, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);}
   mira.dir = {wx, wz, px: x + wx * alc * k2, pz: z + wz * alc * k2};
 }
-function ocultaMira() {if (mira) for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false;}
+function ocultaMira() {if (mira) {for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false; mira.dir = null;}}
 function lanzaMia(k, apunta) {
   const v = VISTA.get(YO); if (!v || v.muerto >= 0) return;
   const i = 'qwer'.indexOf(k); if (v.cds && v.cds[i] > 0) return; if (!(v.rk && v.rk[i] > 0)) {if (subeMia(k)) return; aviso(v.pts > 0 ? 'Pulsa el + de encima para aprender esta habilidad' : k === 'r' ? 'La definitiva se aprende a nivel 4' : 'Aún no la has aprendido: sube de nivel'); return;}
   const H = HEROES[v.tipo].hab[k], x = v.xi ?? v.x, z = v.zi ?? v.z; let dx, dz, px, pz;
   if (apunta && mira && mira.dir) {dx = mira.dir.wx; dz = mira.dir.wz; px = mira.dir.px; pz = mira.dir.pz;}
   else {/* toque: apunta solo al héroe enemigo más cercano (o a lo que tengas delante) */
-    let mejor = null, md = (H.alc || H.dist || 6) + 4; for (const q of VISTA.values()) if (q.eq !== MI_EQ && (q.k === 'h' ? q.muerto < 0 && !q.escondido : (q.k === 's' || q.k === 'j') && q.muerto !== 0)) {const d0 = Math.hypot(q.x - x, q.z - z) - (q.k === 'h' ? 0 : 3); if (d0 < md) {md = d0; mejor = q;}}
+    const mejor = autoObjetivo(H, x, z);
     if (mejor) {dx = mejor.x - x; dz = mejor.z - z; px = mejor.x; pz = mejor.z;} else {const r = v.rot || 0; dx = Math.sin(r); dz = Math.cos(r); px = x + dx * 5; pz = z + dz * 5;}
   }
   suena(['dash', 'salto'].includes(H.tipo) ? 'viento' : 'espada', 0.5);
@@ -1671,7 +1688,7 @@ function bucle() {
         inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
-      const t1 = performance.now(); camara(dt); dibuja(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
+      const t1 = performance.now(); camara(dt); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
   const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') renderer.render(scene, camera); /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
