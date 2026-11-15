@@ -228,7 +228,7 @@ function ajustaResolucion(dt) {
 renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18; /* más luz y color: estilo Supercell, menos oscuro */
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap; /* el «suave» hace 4 veces más lecturas por píxel */
 document.body.prepend(renderer.domElement);
-const scene = new THREE.Scene(); scene.background = new THREE.Color('#1b2230'); scene.fog = new THREE.Fog('#1b2230', 45, 110);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#14201a'); scene.fog = new THREE.Fog('#14201a', 50, 115);
 const camera = new THREE.PerspectiveCamera(42, VW / VH, 0.5, 200);
 addEventListener('resize', () => {giraPantalla(); renderer.setSize(VW, VH); camera.aspect = VW / VH; camera.updateProjectionMatrix(); APAI = VW > VH;});
 scene.add(new THREE.HemisphereLight('#d6e2ff', '#4a3620', 1.85));
@@ -266,7 +266,7 @@ function instancias(archivo, nombre, lista, sombra = true) {
 const BOSQUE = []; let bosqueEn = null;
 function cullBosque(cx, cz, forzar) {
   if (!forzar && bosqueEn && Math.hypot(cx - bosqueEn.x, cz - bosqueEn.z) < 3) return; bosqueEn = {x: cx, z: cz};
-  const R2 = 40 * 40;
+  const R2 = 36 * 36;
   for (const im of BOSQUE) {
     const c = im.userData.cull, dst = im.instanceMatrix.array; let k = 0;
     for (let i = 0; i < c.xs.length; i++) {const dx = c.xs[i] - cx, dz = c.zs[i] - cz; if (dx * dx + dz * dz < R2) {if (k !== i) dst.set(c.todo.subarray(i * 16, i * 16 + 16), k * 16); k++;}}
@@ -305,7 +305,7 @@ function construyeMapa() {
   if (MAPA_G) {scene.remove(MAPA_G); MAPA_G.traverse((q) => {if (q.isInstancedMesh) q.dispose();});}
   MAPA_G = new THREE.Group(); scene.add(MAPA_G); const scene_ = MAPA_G; BOSQUE.length = 0; bosqueEn = null;
   const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('texturas/barro.webp', true);
-  const g = new THREE.PlaneGeometry(110, 150, 1, 1); g.rotateX(-Math.PI / 2);
+  const g = new THREE.PlaneGeometry(220, 260, 1, 1); g.rotateX(-Math.PI / 2);
   const m = new THREE.MeshStandardMaterial({color: '#ffffff', roughness: 0.95});
   const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
   m.onBeforeCompile = (sh) => {
@@ -327,14 +327,26 @@ function construyeMapa() {
       float dc=dCar(w);
       float carril=1.-smoothstep(3.4,5.4,dc+fbm(w*.3)*1.4);
       float base=1.-smoothstep(7.,11.,min(length(w-uF[0]),length(w-uF[1]))+fbm(w*.2)*2.);
-      float mb=max(max(carril,base)*.88,smoothstep(.6,.78,fbm(w*.05+1.3))*.6);
-      vec3 musgo=hi*vec3(.62,.78,.55)*(.75+.5*fbm(w*.2+9.));
-      vec3 col=mix(musgo,ba,mb);
+      float mb=max(carril*.92,smoothstep(.62,.8,fbm(w*.05+1.3))*.5);
+      /* hierba de colores vivos (estilo Supercell): dos verdes que se mezclan por manchas y flores claras sueltas */
+      float mh=fbm(w*.09+9.);
+      vec3 musgo=hi*mix(vec3(1.55,2.15,.95),vec3(1.95,2.3,.85),smoothstep(.35,.7,mh))*(.85+.3*fbm(w*.6+3.));
+      musgo=mix(musgo,vec3(.42,.5,.16),smoothstep(.93,.97,vn(w*1.7))*.5);
+      vec3 arena=ba*vec3(1.35,1.18,.92);
+      vec3 col=mix(musgo,arena,mb);
+      /* borde oscuro de los caminos: se leen como en el Wild Rift */
+      float bc=smoothstep(.18,.42,carril)*(1.-smoothstep(.42,.75,carril)); col*=1.-bc*.32;
+      /* las bases: plaza de losas de piedra con juntas */
+      vec2 lz=w*.62+vec2(floor(w.y*.62)*.5,0.); vec2 lf=fract(lz); float junta=smoothstep(.0,.07,min(min(lf.x,1.-lf.x),min(lf.y,1.-lf.y)));
+      vec3 losa=vec3(.2,.19,.17)*(.75+.4*h2(floor(lz)))*(.5+.5*junta);
+      col=mix(col,losa,base*.95);
+      /* lado de Isengard: tierra cenicienta y quemada */
+      float isen=smoothstep(-2.,24.,dot(w,uEje)); col=mix(col,vec3(dot(col,vec3(.33)))*vec3(1.05,.95,.85),isen*.45);
       /* el centro: un claro de barro y piedra donde duerme el Uruk Azul */
       col=mix(col,ba*vec3(.7,.72,.8),(1.-smoothstep(5.5,8.,length(w-uPit)+fbm(w*.5)*1.5))*.9); col=mix(col,ba*vec3(.78,.66,.6),(1.-smoothstep(5.5,8.,length(w-uPit2)+fbm(w*.5)*1.5))*.9);
       /* el vado: el río cruza de lado a lado por la mitad del mapa */
       float rio=1.-smoothstep(1.9,3.3,abs(dot(w,uEje)+sin(dot(w,vec2(-uEje.y,uEje.x))*.22)*.9)+fbm(w*.4)*.8);
-      vec3 agua=mix(vec3(.004,.016,.026),vec3(.012,.04,.05),fbm(w*.5));
+      vec3 agua=mix(vec3(.05,.07,.06),vec3(.09,.1,.07),fbm(w*.5));
       col=mix(col,agua,rio*.9*(1.-(1.-smoothstep(5.,7.5,length(w-uPit))))*(1.-(1.-smoothstep(5.,7.5,length(w-uPit2)))));
       float borde=smoothstep(.0,1.,max(abs(w.x)-${MAPA.ancho.toFixed(1)},abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;
       diffuseColor.rgb*=col;`);
@@ -347,7 +359,7 @@ function construyeMapa() {
   const sendas = NAV.aristas.filter(([a, b]) => !(NAV.nodos[a].carril && NAV.nodos[b].carril)).map(([a, b]) => [NAV.nodos[a], NAV.nodos[b]]);
   const arboles = {};
   const planta = (n, x, z, s, choque) => {(arboles[n] = arboles[n] || []).push({x, z, ry: al() * 6.28, s}); if (choque) ponArbolChoque(x, z, 0.75 * s);};
-  for (let x = -44; x <= 44; x += 2.6) for (let z = -70; z <= 70; z += 2.6) {
+  for (let x = -58; x <= 58; x += 2.6) for (let z = -84; z <= 84; z += 2.6) {
     const px = x + (al() - 0.5) * 1.5, pz = z + (al() - 0.5) * 1.5, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
     if (dc < 4.7 || enBase(px, pz)) continue;
     if (juego) {
@@ -382,6 +394,65 @@ function construyeMapa() {
     for (const [dx, dz] of [[4, -4], [-1, -6]]) {pon2('brasero', b.fuente.x + dx * s, b.fuente.z + dz * s, 0, 1.4); luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);}
   }
   fusiona(MAPA_G);
+  vidaMapa(scene_);
+}
+/* ---------- vida del mapa (estilo Supercell): agua que corre, aros de las fuentes, luciérnagas y árboles que se mecen ---------- */
+const UT = {value: 0}, FUENTE_AROS = [];
+/* el aro de tu fuente, azul; el del enemigo, rojo (se llama al saber de qué bando eres) */
+function colorFuentes() {for (const a of FUENTE_AROS) a.material.color.set(a.userData.eq === MI_EQ ? '#4fb6ff' : '#ff5a4a');}
+const GLSL_RUIDO = `float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+  float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
+  float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.03;a*=.5;}return s;}`;
+function vidaMapa(g) {
+  FUENTE_AROS.length = 0;
+  /* el río: una franja de agua encima del lecho, con corriente, reflejos y espuma en la orilla (misma forma que el río pintado en el suelo) */
+  const pe = new THREE.Vector2(-EJE.z, EJE.x), largo = 190;
+  const geo = new THREE.PlaneGeometry(largo, 11, 60, 1); geo.rotateX(-Math.PI / 2);
+  const agua = new THREE.ShaderMaterial({transparent: true, depthWrite: false, fog: true,
+    uniforms: {uT: UT, uEje: {value: new THREE.Vector2(EJE.x, EJE.z)}, uPit: {value: new THREE.Vector2(PIT.x, PIT.z)}, uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)}, ...THREE.UniformsLib.fog},
+    vertexShader: `#include <fog_pars_vertex>
+      varying vec2 vW; void main(){vec4 wp=modelMatrix*vec4(position,1.);vW=wp.xz;vec4 mvPosition=viewMatrix*wp;gl_Position=projectionMatrix*mvPosition;
+      #include <fog_vertex>
+      }`,
+    fragmentShader: `#include <fog_pars_fragment>
+      varying vec2 vW; uniform float uT; uniform vec2 uEje,uPit,uPit2; ${GLSL_RUIDO}
+      void main(){vec2 w=vW; vec2 pe=vec2(-uEje.y,uEje.x);
+        float d=abs(dot(w,uEje)+sin(dot(w,pe)*.22)*.9)+fbm(w*.4)*.8;
+        float rio=(1.-smoothstep(1.9,3.3,d))*smoothstep(5.,7.5,length(w-uPit))*smoothstep(5.,7.5,length(w-uPit2));
+        if(rio<.02)discard;
+        float a=dot(w,pe), b=dot(w,uEje);
+        float corr=fbm(vec2(a*.35-uT*.9,b*.9))+.5*fbm(vec2(a*.8-uT*1.6,b*1.6+3.));
+        vec3 hondo=vec3(.07,.33,.45), claro=vec3(.25,.62,.72);
+        vec3 col=mix(hondo,claro,smoothstep(.55,1.2,corr)+(1.-smoothstep(.0,2.6,2.6-d))*.15);
+        float brillo=pow(smoothstep(.72,.95,fbm(vec2(a*1.2-uT*1.3,b*2.2))),3.)*.9; col+=brillo;
+        float espuma=smoothstep(.12,.0,abs(rio-.28))*(.55+.45*vn(vec2(a*2.-uT*2.,b*3.)));
+        col=mix(col,vec3(.92,.97,1.),espuma*.75);
+        gl_FragColor=vec4(col,clamp(rio*1.4,0.,.9));
+        #include <fog_fragment>
+      }`});
+  const ag = new THREE.Mesh(geo, agua); ag.position.y = 0.06; ag.rotation.y = -Math.atan2(pe.y, pe.x); ag.renderOrder = 1; ag.userData.vivo = 1; g.add(ag);
+  /* aro de luz de cada fuente con el color del bando (como el pozo de curación del Wild Rift) */
+  for (const eq of [0, 1]) {const f = BASES[eq].fuente, a = indicador('ind_alcance', eq === MI_EQ ? '#4fb6ff' : '#ff5a4a'); a.visible = true; a.material.opacity = 0.7; a.position.set(f.x, 0.07, f.z); a.scale.setScalar(2 * 7 * 256 / 235); a.userData.vivo = 1; a.userData.eq = eq; FUENTE_AROS.push(a); scene.remove(a); g.add(a);}
+  /* luciérnagas (lado de Rohan) y pavesas (lado de Isengard) que flotan cerca de la cámara */
+  const N = 70, pos = new Float32Array(N * 3), fa = new Float32Array(N);
+  for (let i = 0; i < N; i++) {pos[i * 3] = (Math.random() - 0.5) * 50; pos[i * 3 + 1] = 0.5 + Math.random() * 2.5; pos[i * 3 + 2] = (Math.random() - 0.5) * 50; fa[i] = Math.random() * 6.28;}
+  const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); pg.setAttribute('fase', new THREE.BufferAttribute(fa, 1));
+  const pm = new THREE.ShaderMaterial({transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: {uT: UT, uC: {value: camM}, uEje: {value: new THREE.Vector2(EJE.x, EJE.z)}},
+    vertexShader: `attribute float fase; uniform float uT; uniform vec3 uC; uniform vec2 uEje; varying float vA; varying float vI;
+      void main(){vec3 p=position; p.xz=uC.xz+mod(p.xz-uC.xz+25.,50.)-25.; p.x+=sin(uT*.6+fase*3.)*.8; p.z+=cos(uT*.5+fase*2.)*.8; p.y+=sin(uT*1.1+fase)*.35;
+        vI=smoothstep(-4.,4.,dot(p.xz,uEje)); vA=(.55+.45*sin(uT*2.3+fase*5.))*smoothstep(25.,15.,length(p.xz-uC.xz));
+        vec4 mv=modelViewMatrix*vec4(p,1.); gl_PointSize=22.*(30./-mv.z); gl_Position=projectionMatrix*mv;}`,
+    fragmentShader: `varying float vA; varying float vI; void main(){float d=length(gl_PointCoord-.5); float a=smoothstep(.5,.0,d); a=a*a*vA; vec3 c=mix(vec3(1.,.95,.45),vec3(1.,.45,.12),vI); gl_FragColor=vec4(c*a,a);}`});
+  const pts = new THREE.Points(pg, pm); pts.frustumCulled = false; pts.renderOrder = 6; pts.userData.vivo = 1; g.add(pts);
+  /* los árboles se mecen con el viento (solo en el sombreador: no cuesta nada al procesador) */
+  const vistos = new Set();
+  for (const im of BOSQUE) {const m = im.material; if (vistos.has(m)) continue; vistos.add(m);
+    m.onBeforeCompile = (sh) => {sh.uniforms.uT = UT; sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uT;').replace('#include <begin_vertex>', `#include <begin_vertex>
+      #ifdef USE_INSTANCING
+      vec2 ip=instanceMatrix[3].xz; float hb=max(0.,position.y); transformed.x+=sin(uT*1.4+ip.x*.3+ip.y*.2)*.012*hb*hb; transformed.z+=cos(uT*1.1+ip.x*.2)*.008*hb*hb;
+      #endif`);};
+    m.customProgramCacheKey = () => 'mecer'; m.needsUpdate = true;}
 }
 /* el decorado quieto se junta por material: de ~900 mallas a unas pocas decenas (en el móvil cada malla es una llamada de dibujo, y otra más para la sombra) */
 function fusiona(raiz, quitaSombraPeq = true) {
@@ -1658,7 +1729,7 @@ let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 let MODO = '1v1';
 function empieza(jugadores, modo, simulo) {
   MODO = modo; if (ponMapa(modo)) construyeMapa();
-  precargaVoces(); musica('batalla'); document.body.classList.add('jugando'); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
+  precargaVoces(); musica('batalla'); colorFuentes(); document.body.classList.add('jugando'); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; h.hf = hechElegido; recibeFoto(foto());}
@@ -1827,7 +1898,7 @@ function bucle() {
         inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
-      const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
+      UT.value += dt; const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
   const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') renderer.render(scene, camera); /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
@@ -1991,4 +2062,4 @@ bucle();
 /* primero que se vea el menú (retrato, fondo y letras) y después, los modelos: si no, los 16 MB se comen la conexión y el retrato tarda */
 {const img = $('mSplash'); const listo = () => new Promise((r) => {if (img.complete && img.naturalWidth) r(); else {img.addEventListener('load', r, {once: true}); img.addEventListener('error', r, {once: true});}});
  Promise.race([Promise.all([listo(), document.fonts ? document.fonts.ready : 0]), new Promise((r) => setTimeout(r, 2500))]).then(() => cargaTodo());}
-window._vado = {AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {get MIO() {return MIO;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};

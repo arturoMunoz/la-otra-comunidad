@@ -5,10 +5,10 @@ Cada vez que se escriba un prompt nuevo, se apunta aquí; cuando llega el zip y 
 ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens).
 
 ## La Brecha (antes El Vado del Isen) — prompts en `docs/prompts-vado.md`
-- [ ] **Pack Vado 11 · ART** — efectos de golpe normal y crítico, muerte de súbdito, subir de nivel, volver a la base, monedas; marcos del retrato y de los botones de habilidad; cartel de baja con dos retratos; adornos de victoria y derrota; kit del menú (JUGAR, botón secundario, tarjetas de Duelo y Batalla, botón redondo); iconos de las pestañas de la Armería y fondo de la Armería.
-- [ ] **Pack Vado 12 · ART + Meshy** — héroes nuevos al estilo Supercell: ChatGPT dibuja la ficha de cada héroe y en meshy.ai se pasa a 3D con esqueleto y animaciones (empezar por uno).
-- [ ] **Pack Vado 10 · WORK** — rehacer el Huorn (ahora es una bola-monstruo) y el draco (ahora es un triceratops teñido).
-- [ ] **Uruk Azul · WORK** — modelo propio (ahora es el capitán teñido de azul).
+- [x] ~~**Pack Vado 11 · ART**~~ (llegó como Pack 13, 16/11) — efectos de golpe normal y crítico, muerte de súbdito, subir de nivel, volver a la base, monedas; marcos del retrato y de los botones de habilidad; cartel de baja con dos retratos; adornos de victoria y derrota; kit del menú (JUGAR, botón secundario, tarjetas de Duelo y Batalla, botón redondo); iconos de las pestañas de la Armería y fondo de la Armería.
+- [ ] **Pack Vado 12 · Meshy** — las 4 fichas ya están (`tools/vado/pack13/fichas`): falta pasarlas a 3D con esqueleto y animaciones en meshy.ai (empezar por una).
+- [x] ~~**Pack Vado 10 · WORK**~~ (llegó como Pack 13, 16/11) — rehacer el Huorn (ahora es una bola-monstruo) y el draco (ahora es un triceratops teñido).
+- [x] ~~**Uruk Azul · WORK**~~ (Pack 13) — modelo propio (ahora es el capitán teñido de azul).
 - [ ] Minimapa del mapa del ojo (el de ChatGPT era del mapa recto; ahora se pinta por código) · ART.
 
 ## La Otra Comunidad
