@@ -1,4 +1,4 @@
-/* El Vado del Isen · duelo de héroes 1v1 / 2v2 (contra la máquina o con amigos en línea).
+/* La Brecha (antes «El Vado del Isen») · duelo de héroes 1v1 / 2v2 (contra la máquina o con amigos en línea).
    Un solo carril de norte a sur. Cada bando: fuente, estandarte (el «nexo») y dos torres.
    En línea manda el anfitrión: su móvil simula súbditos, torres, daño y bots, y manda una «foto» 12 veces por segundo.
    Cada jugador mueve a su héroe en su propio móvil (sin esperar al servidor) y avisa al anfitrión de dónde está y qué lanza. */

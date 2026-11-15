@@ -137,7 +137,8 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Solo Arturo tiene dibujos de andar (4 estados: normal, lluvia, noche, calor); el resto camina con el de Arturo hasta tener los suyos.
 - Pendiente: minijuegos (zurrón, quieto bajo el árbol, setas, balsa), recompensas, Android, avisos al cambiar de tramo.
 
-## El Vado del Isen (14/11/2026) — duelo de héroes 1v1 / 2v2, OTRO juego aparte del Abismo
+## La Brecha (antes «El Vado del Isen», renombrado el 15/11/2026) — duelo de héroes 1v1 / 2v2, OTRO juego aparte del Abismo
+- Nombre de cara al jugador: «La Brecha» (menú, título, botón «La Brecha · duelos de Rohan» en La Otra Comunidad). En el código y la documentación sigue llamándose «Vado» (carpeta `public/batalla`, `vado.*` en localStorage, `docs/prompts-vado.md`, «Pack Vado N»). El mapa del 2v2 sigue siendo el Vado del Isen.
 - `public/batalla/` (index.html + juego.js). Reutiliza modelos, iconos, texturas y sonidos de `../abismo/`. Botón «El Vado del Isen · duelos» en el menú (`mVado` en minijuegos.js; guarda `me.nombre` en `localStorage['vado.nombre']`).
 - Un carril de norte a sur (z ±54): por bando fuente (cura, tienda, reaparición), estandarte = nexo (3000) y 2 torres (2000), que se rompen en orden. Oleadas cada 25 s (3 cuerpo a cuerpo + 2 arqueros; desde el min 4 un «ariete» cada tercera oleada, triple daño a torres). 4 héroes con Q/W/E/R (R a nivel 4, máx. 9), tienda en la fuente con básicos y legendarios por receta (sin sus básicos no se compran). Partidas de 7-10 min (medido con bots).
 - Mandos: joystick a la izquierda, ataque (mantener) y 4 habilidades (tocar = apunta solo; arrastrar = apuntas tú, se ve la mira). ⌂ vuelve a la fuente en 3 s quieto.
