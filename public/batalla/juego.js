@@ -614,7 +614,7 @@ function paso(dt) {
     }
     /* ataque básico */
     if (h.fijo) {const f = S.porId.get(h.fijo); if (!f || f.vida <= 0 || f.muerto || dist(h, f) > 16 || (f.k === 'h' && oculto(f, h))) h.fijo = 0;}
-    if (h.ataca && !h.dash && !(h.aturd > S.t) && !(h.buf.estasis > 0) && h.cd.a <= 0) {
+    if ((h.ataca || h.tap > S.t) && !h.dash && !(h.aturd > S.t) && !(h.buf.estasis > 0) && h.cd.a <= 0) {
       const en = enemigosDe(h.eq, h).filter(atacable), r = st.alcance + 0.6, aTiro = (e) => dist(h, e) - radio(e) < r;
       let obj = null; const hh = en.filter((e) => e.k === 'h' && aTiro(e)), f = h.fijo && en.find((e) => e.id === h.fijo);
       /* como en el Wild Rift: objetivo fijado (arrastrando el ataque o tocando su retrato), botón de torre (solo estructuras),
@@ -623,8 +623,9 @@ function paso(dt) {
       else if (h.modoAt === 't') obj = masCercano(h, en.filter((e) => e.k === 't' || e.k === 'n'), r);
       else if (h.modoAt === 's') obj = en.filter((e) => (e.k === 's' || e.k === 'j') && aTiro(e)).sort((a, b) => a.vida - b.vida)[0] || null;
       else obj = hh.length && (h.prioHeroe !== false) ? hh.sort((a, b) => a.vida - b.vida)[0] : masCercano(h, en.filter((e) => e.k !== 'j' || e.agro === h.id || !h.bot || h.ataca), r);
-      if (obj) {h.cd.a = 1 / st.vatq; h.rot = Math.atan2(obj.x - h.x, obj.z - h.z); if (h.buf.invis) h.buf.invis = 0; h.revela = S.t + 1.2; golpea(h, obj);}
-      else if (!h.bot && !h.mueve && !f && !h.modoAt) {h.cd.a = 1 / st.vatq; h.ac++;}
+      if (obj) {h.cd.a = 1 / st.vatq; h.rot = Math.atan2(obj.x - h.x, obj.z - h.z); if (h.buf.invis) h.buf.invis = 0; h.revela = S.t + 1.2; golpea(h, obj); h.tap = 0;}
+      /* pedido de Arturo: cada toque del ataque da un golpe SIEMPRE, aunque te muevas y no haya nadie (golpe al aire) */
+      else if (!h.bot && (h.tap > S.t || !h.mueve)) {h.cd.a = 1 / st.vatq; h.ac++; h.tap = 0;}
     }
   }
   /* súbditos */
@@ -1340,7 +1341,7 @@ function preparaMandos() {
   const suelta = (e) => {if (e.pointerId !== joy.id) return; joy.id = null; bola.style.display = 'none'; dedo.style.transform = ''; MANDO.mx = 0; MANDO.mz = 0;};
   J.addEventListener('pointerup', suelta); J.addEventListener('pointercancel', suelta);
   const at = $('bAt'); let atP = null, cand = null;
-  at.addEventListener('pointerdown', (e) => {MANDO.ataca = true; MANDO.hasta = performance.now() + 350; atP = {x: PX(e), y: PY(e), id: e.pointerId}; cand = null; at.setPointerCapture(e.pointerId); at.classList.add('pulsado');});
+  at.addEventListener('pointerdown', (e) => {MANDO.golpes = (MANDO.golpes || 0) + 1; MANDO.ataca = true; MANDO.hasta = performance.now() + 350; atP = {x: PX(e), y: PY(e), id: e.pointerId}; cand = null; at.setPointerCapture(e.pointerId); at.classList.add('pulsado');});
   at.addEventListener('pointermove', (e) => {if (!atP || e.pointerId !== atP.id) return; const dx = PX(e) - atP.x, dy = PY(e) - atP.y; if (Math.hypot(dx, dy) > 24) {cand = candidatoFijo(dx, dy); MANDO.cand = cand ? cand.id : 0;}});
   for (const t of ['pointerup', 'pointercancel']) at.addEventListener(t, () => {if (cand) {fija(cand.id); MANDO.hasta = performance.now() + 700;} atP = null; cand = null; MANDO.cand = 0; MANDO.ataca = false; MANDO.hasta = Math.max(MANDO.hasta || 0, performance.now() + 120); at.classList.remove('pulsado');});
   for (const [id, modo] of [['bAtT', 't'], ['bAtS', 's']]) {
@@ -1479,7 +1480,7 @@ function recibe(o) {
   if (o.t === 'foto' && !S) recibeFoto(o.f);
   if (S) {/* soy el anfitrión: mandos de los demás */
     const h = S.u.find((q) => q.k === 'h' && q.slot === o.de); if (!h) return;
-    if (o.t === 'in') {if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0;}
+    if (o.t === 'in') {if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; usaHab(h, o.k, o.dx, o.dz, o.px, o.pz);}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
@@ -1659,7 +1660,7 @@ function bucle() {
     if (ESTADO === 'juego' || ESTADO === 'fin') {
       if (S && ESTADO === 'juego') {
         const h = S.u.find((q) => q.id === YO);
-        if (h) {const ac = acercaAtaque(h.x, h.z); h.mx = ac ? ac.x : MANDO.mx; h.mz = ac ? ac.z : MANDO.mz; h.ataca = atacando(); h.prioHeroe = true; h.modoAt = modoAtaque(); h.fijo = MANDO.fijo || 0;}
+        if (h) {const ac = acercaAtaque(h.x, h.z); h.mx = ac ? ac.x : MANDO.mx; h.mz = ac ? ac.z : MANDO.mz; h.ataca = atacando(); if ((MANDO.golpes || 0) > (h.gVisto || 0)) {h.gVisto = MANDO.golpes; h.tap = S.t + 1.5;} h.prioHeroe = true; h.modoAt = modoAtaque(); h.fijo = MANDO.fijo || 0;}
         if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0 && h && !h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; aviso('En la fuente: ya puedes comprar');}}
         acum += dt; let pasos = 0; const ts = performance.now(); while (acum >= 1 / 30 && pasos < 4) {paso(1 / 30); acum -= 1 / 30; pasos++;} if (acum > 0.1) acum = 0; ALFA = Math.min(1, acum * 30);
         fotoT -= dt;
@@ -1667,7 +1668,7 @@ function bucle() {
       } else if (!S && ESTADO === 'juego') {
         mueveMio(dt);
         if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0) {NET.manda({t: 'volver'}); MIO.listo = false;}}
-        inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0});}
+        inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
       const t1 = performance.now(); camara(dt); dibuja(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
