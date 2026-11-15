@@ -192,3 +192,19 @@ D) ARMERÍA (la tienda, como la del Wild Rift):
    2. fondo_armeria: 1600x900, el interior de la armería de Meduseld en Edoras (armeros de madera tallada, escudos colgados, luz cálida de braseros), oscuro y desenfocado para poner encima la tienda.
 Pásamelo todo en un .zip llamado Pack_Vado_11.zip, con un nombre claro por archivo.
 ```
+
+## Pack Vado 12 — héroes bonitos al estilo Supercell (15/11)
+ChatGPT no modela bien personajes 3D con esqueleto. El camino que funciona: ChatGPT dibuja la ficha (ART) → Meshy la convierte en 3D, la rigea y la anima (lo hace Henar o Arturo en meshy.ai, en el navegador) → Claude la mete en el juego.
+
+**Paso 1 · ART** (una imagen por héroe; empezar por uno para probar):
+```
+Personaje para un juego de móvil al estilo de Brawl Stars y Clash Royale (Supercell): proporciones chibi gordotas (cabeza grande, manos y pies grandes, cuerpo corto), colores vivos y limpios, formas simples y redondeadas, materiales mates estilo dibujo animado.
+Personaje: [JINETE DE ROHAN: guerrero de los Rohirrim de El Señor de los Anillos, yelmo con crin de caballo, cota de escamas, capa verde con el caballo blanco de Rohan, espada y escudo redondo]
+[ENANO DE EREBOR: enano de la Montaña Solitaria, barba trenzada pelirroja enorme, armadura de placas con runas, hacha de dos manos]
+[ARQUERO DE LÓRIEN: elfo de Lothlórien, pelo rubio largo, capa gris-verde élfica con broche de hoja, arco largo, carcaj]
+[HOBBIT DE LA COMARCA: hobbit de Hobbiton, pies grandes y peludos descalzos, chaleco amarillo, pañuelo, honda y bolsa de piedras]
+Requisitos técnicos para pasarlo a 3D: UN solo personaje, de cuerpo entero, de frente, en pose A (brazos separados del cuerpo unos 30°, piernas un poco abiertas), las armas sujetas en la mano sin tapar el cuerpo, fondo blanco liso, luz plana sin sombras, sin texto, imagen 1024x1024.
+```
+**Paso 2 · en meshy.ai** (no es ChatGPT): «Image to 3D» con la imagen → «Animate» (el rigging y las animaciones de su biblioteca son gratis) → exportar .glb con estas animaciones: quieto, correr, atacar, atacar_2, golpe_cargado (habilidad), recibir_golpe, aturdido, morir. Ponerle a cada clip ese nombre si deja; si no, me lo mandas tal cual y los renombro yo.
+**Paso 3**: me pasas el .glb y la imagen. Si el primero queda bien, se hacen los otros tres y después los súbditos de Rohan e Isengard.
+Ojo: el plan gratis de Meshy da pocos créditos al mes (una generación completa son unos 30); para los 4 héroes y los súbditos probablemente haga falta un mes de pago.
