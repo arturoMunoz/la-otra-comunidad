@@ -208,3 +208,18 @@ Requisitos técnicos para pasarlo a 3D: UN solo personaje, de cuerpo entero, de 
 **Paso 2 · en meshy.ai** (no es ChatGPT): «Image to 3D» con la imagen → «Animate» (el rigging y las animaciones de su biblioteca son gratis) → exportar .glb con estas animaciones: quieto, correr, atacar, atacar_2, golpe_cargado (habilidad), recibir_golpe, aturdido, morir. Ponerle a cada clip ese nombre si deja; si no, me lo mandas tal cual y los renombro yo.
 **Paso 3**: me pasas el .glb y la imagen. Si el primero queda bien, se hacen los otros tres y después los súbditos de Rohan e Isengard.
 Ojo: el plan gratis de Meshy da pocos créditos al mes (una generación completa son unos 30); para los 4 héroes y los súbditos probablemente haga falta un mes de pago.
+
+## Pack Vado 14 — el mapa con las Dos Torres y el Ojo (16/11)
+**Dónde: WORK** (modelos 3D). Adjuntar `public/batalla/modelos/vado_torres.glb` y `vado_nexos.glb` como referencia de tamaño y de nombres.
+```
+Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard junto al Vado del Isen; mecánicas de League of Legends: Wild Rift, estilo low-poly colorido tipo Supercell/KayKit). Te adjunto vado_torres.glb y vado_nexos.glb: los nuevos tienen que sustituirlos con EXACTAMENTE los mismos nombres de objeto, el mismo tamaño aproximado y el mismo formato (.glb, 1 unidad = 1 metro, +Y arriba, frente +Z, el pie de cada objeto en y=0, con normales, sin texturas externas, colores en los materiales, menos de 400 KB por archivo).
+1. vado_torres.glb — LAS DOS TORRES, en tres estados cada una (_1 entera, _2 dañada con grietas y piedras caídas, _3 en ruinas solo con la base):
+   · torre_isengard_1/2/3: una Orthanc en pequeño, la torre negra de Isengard de El Señor de los Anillos: roca negra pulida de una sola pieza, cuatro aristas que suben y se abren arriba en cuatro cuernos afilados, ventanas con luz anaranjada, y en la base escaleras y la Mano Blanca de Saruman. Unos 7 m.
+   · torre_rohan_1/2/3: la Torre del Cuerno de Cuernavilla (el Abismo de Helm): torre redonda de piedra clara con almenas, tejadillo de madera, estandarte verde con el caballo blanco de Rohan, braseros. Unos 7 m.
+2. vado_nexos.glb — los estandartes de cada base:
+   · nexo_rohan: el estandarte de Edoras sobre un estrado de madera tallada con caballos (como el tejado de oro de Meduseld), mástil alto y la tela verde con el caballo blanco.
+   · nexo_isengard: el estandarte de la Mano Blanca sobre un estrado de hierro negro con engranajes y cadenas de las forjas de Isengard.
+3. palantir.glb (nuevo, va junto al estandarte de Isengard): el palantír de Orthanc, una esfera de cristal oscuro de 1,2 m sobre un pedestal de hierro negro con garras, y dentro el Ojo: un óvalo de fuego con la pupila vertical, como objeto separado llamado «ojo» con material emisivo naranja-rojo, para hacerlo latir y mirar a los jugadores por código. Unos 2,5 m en total.
+Pásamelo en Pack_Vado_14.zip con LICENCIAS.txt.
+```
+Por qué el palantír y no Barad-dûr de fondo: con la cámara desde arriba del juego, una torre lejana no se vería nunca; el palantír está dentro del mapa y además es fiel al libro (Saruman habla con Sauron por el palantír de Orthanc). Ojo con la regla del proyecto: el Ojo es Sauron, y la regla dice que no se dibujan personajes del libro; aquí es solo un ojo de fuego dentro de una piedra. Si preferís no saltaros la regla, se quita el punto 3.

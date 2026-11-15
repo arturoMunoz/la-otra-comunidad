@@ -342,6 +342,24 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 #menu .modos button{padding:0 6px 5px !important;gap:0}#menu .modos button b{font-size:15px}#menu .modos button span{font-size:10px;opacity:.9}
 #tienda .tCats button img{width:46px;height:46px}
 .ajSon{display:flex;gap:8px;justify-content:center;margin-top:6px}.ajSon .bt{min-width:0;font-size:13px;min-height:44px}
+
+/* rendimiento (16/11): los brillos que laten ya no animan «filter» (repinta todo el botón en cada fotograma);
+   se anima la opacidad de un halo aparte, que la tarjeta gráfica mueve sola */
+#menu .jugar{animation:none !important;filter:drop-shadow(0 4px 4px #000a) !important;isolation:isolate}
+#menu .jugar::before{content:'';position:absolute;inset:-14% -6%;background:radial-gradient(closest-side,#ffb02a99,#ffb02a00);z-index:-1;will-change:opacity;animation:halo 2.4s ease-in-out infinite;pointer-events:none}
+@keyframes halo{0%,100%{opacity:.35}50%{opacity:1}}
+#bR.pronta{animation:none}
+#bR.pronta::before{content:'';position:absolute;inset:-22%;border-radius:50%;background:radial-gradient(closest-side,#ffb02aaa,#ffb02a00);will-change:opacity;animation:halo 1.6s ease-in-out infinite;pointer-events:none}
+#menu .modos button,#menu .modos button.on{filter:none !important}
+#menu .modos button:not(.on){opacity:.68}
+#menu .modos button.on{box-shadow:0 0 18px #ffb02a66}
+.hb[data-k]::after,.hb.hs::after{filter:none !important}
+#rotulo{position:fixed;left:50%;top:calc(26*var(--vh));transform:translateX(-50%);z-index:6;pointer-events:none;text-align:center;opacity:0;white-space:nowrap}
+#rotulo b{display:block;font:900 22px 'Cinzel',Georgia,serif;color:#fff3c0;letter-spacing:.12em;text-shadow:0 2px 0 #000,0 0 14px #000}
+#rotulo span{display:block;font:italic 600 12px 'Alegreya Sans',system-ui,sans-serif;color:#d9c49a;text-shadow:0 1px 3px #000;letter-spacing:.06em}
+#rotulo b::before,#rotulo b::after{content:'';display:inline-block;width:38px;height:1px;background:linear-gradient(90deg,#0000,#ffd77a);vertical-align:middle;margin:0 10px}#rotulo b::after{transform:scaleX(-1)}
+#rotulo.ver{animation:rotulo 2.6s ease-out}@keyframes rotulo{0%{opacity:0;translate:0 8px}15%{opacity:1;translate:0 0}75%{opacity:1}100%{opacity:0}}
+#menu .mPanel{padding-top:46px !important}
 </style>
 </head>
 <body>
@@ -391,7 +409,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 <button id="bAjustes" class="hidden" aria-label="Ajustes">⚙</button><div id="ajustes" class="hidden"></div><div id="voto" class="hidden"></div>
 <button id="bZoom" class="hidden" aria-label="Alejar o acercar la cámara">🔍</button>
 <canvas id="mini" class="hidden" width="96" height="196"></canvas>
-<div id="objetivo" class="hidden"></div><div id="buffs"></div>
+<div id="rotulo"></div><div id="objetivo" class="hidden"></div><div id="buffs"></div>
 <div id="aviso"></div>
 <div id="vs" class="hidden"></div>
 <div id="pings" class="hidden"><button id="bPing" aria-label="Avisos al equipo">💬</button><div class="pOp"><button data-p="ataca">⚔ Atacad</button><button data-p="retira">🛡 Retirada</button><button data-p="voy">🏃 Voy</button><button data-p="cuidado">⚠ Cuidado</button></div></div>

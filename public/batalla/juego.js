@@ -226,6 +226,7 @@ function ajustaResolucion(dt) {
   const ms = PR.v <= 1 ? 1024 : 2048; if (sol.shadow.mapSize.x !== ms) {sol.shadow.mapSize.set(ms, ms); if (sol.shadow.map) {sol.shadow.map.dispose(); sol.shadow.map = null;}}
 }
 renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18; /* más luz y color: estilo Supercell, menos oscuro */
+renderer.debug.checkShaderErrors = false; /* comprobar los sombreadores obliga a esperar a que compilen: tirón */
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap; /* el «suave» hace 4 veces más lecturas por píxel */
 document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#14201a'); scene.fog = new THREE.Fog('#14201a', 50, 115);
@@ -237,9 +238,13 @@ sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30,
 
 const loader = new GLTFLoader(), M = {}, TX = {};
 const VADO = ['vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard', 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul'];
-const NOMBRES = [...VADO, 'warg', 'huargo_alfa', 'troll', 'orco', 'capitan', 'carro_k', 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles', 'torre_k', 'estandarte_muro', 'estandarte_patio', 'brasero', 'tienda', 'empalizada', 'barril_1', 'barril_2', 'caja_1', 'heno', 'sacos_terreros', 'antorcha_pie'];
+/* modelos: los de la jungla solo hacen falta en la Batalla (2 contra 2) y se bajan después; los que no se usaban (capitán, estandartes, barriles…: casi 3 MB) ya no se bajan.
+   Los del Abismo van adelgazados en modelos_l/ (sin los clips que aquí no se usan y con las texturas en WebP: tools/vado/adelgaza.py). */
+const JUNGLA = ['huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'warg', 'huargo_alfa', 'troll', 'orco'];
+const LIGEROS = ['warg', 'huargo_alfa', 'troll', 'orco', 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'brasero', 'tienda'];
+const NOMBRES = [...VADO.filter((n) => !JUNGLA.includes(n)), 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles', 'brasero', 'tienda'];
 async function cargaModelo(n) {
-  const r = await fetch((VADO.includes(n) ? 'modelos/' : '../abismo/modelos/') + n + '.glb'); if (!r.ok) throw new Error(n);
+  const r = await fetch((VADO.includes(n) ? 'modelos/' : LIGEROS.includes(n) ? 'modelos_l/' : '../abismo/modelos/') + n + '.glb'); if (!r.ok) throw new Error(n);
   return new Promise(async (res, rej) => loader.parse(await r.arrayBuffer(), '', res, rej));
 }
 function cargaTex(n, rep) {const t = new THREE.TextureLoader().load('../abismo/' + n); t.colorSpace = THREE.SRGBColorSpace; if (rep) t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;}
@@ -248,13 +253,16 @@ function cargaTex(n, rep) {const t = new THREE.TextureLoader().load('../abismo/'
 /* un objeto del pack del Vado (cada .glb es un catálogo con todo en el origen) */
 function pieza(archivo, nombre) {const o = M[archivo] && M[archivo].scene.getObjectByName(nombre); if (!o) return new THREE.Group(); const c = o.clone(true); c.position.set(0, 0, 0); c.rotation.set(0, 0, 0); c.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); return c;}
 /* muchas copias del mismo objeto en pocas llamadas de dibujo: un InstancedMesh por cada malla del objeto */
+/* el decorado repetido (árboles, matas, rocas) con luz Lambert: se ve casi igual en estos modelos de colores planos y cuesta bastante menos por píxel */
+const LAMB = new Map();
+function lambert(m) {if (Array.isArray(m) || !m.isMeshStandardMaterial) return m; if (!LAMB.has(m)) LAMB.set(m, new THREE.MeshLambertMaterial({color: m.color, map: m.map, transparent: m.transparent, opacity: m.opacity, alphaTest: m.alphaTest, side: m.side, vertexColors: m.vertexColors, emissive: m.emissive, emissiveMap: m.emissiveMap})); return LAMB.get(m);}
 function instancias(archivo, nombre, lista, sombra = true) {
   const o = M[archivo] && M[archivo].scene.getObjectByName(nombre); if (!o || !lista.length) return;
   M[archivo].scene.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(o.matrixWorld).invert();
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
   o.traverse((malla) => {
     if (!malla.isMesh) return;
-    const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, malla.material, lista.length);
+    const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, lambert(malla.material), lista.length);
     lista.forEach((c, i) => {q.setFromAxisAngle(up, c.ry || 0); p.set(c.x, c.y || 0, c.z); e.setScalar(c.s || 1); m4.compose(p, q, e).multiply(rel); im.setMatrixAt(i, m4);});
     im.castShadow = sombra; im.receiveShadow = true; im.computeBoundingSphere(); (MAPA_G || scene).add(im);
     /* el bosque son ~1.500 árboles (270.000 triángulos, el doble con la sombra): solo se dibujan los que hay cerca de la cámara */
@@ -300,27 +308,27 @@ function pon(a, k, f = 0.15) {const n = a.clips[k]; if (!n || a.actual === n) re
 function otraVez(a, k) {const n = a.clips[k]; if (!n) return; n.reset().play(); if (a.actual && a.actual !== n) a.actual.crossFadeTo(n, 0.08, false); a.actual = n;}
 
 /* ---------- el mapa ---------- */
-let MAPA_G = null;
+let MAPA_G = null, SUELO_RT = null;
 function construyeMapa() {
   if (MAPA_G) {scene.remove(MAPA_G); MAPA_G.traverse((q) => {if (q.isInstancedMesh) q.dispose();});}
   MAPA_G = new THREE.Group(); scene.add(MAPA_G); const scene_ = MAPA_G; BOSQUE.length = 0; bosqueEn = null;
+  /* SUELO HORNEADO (16/11): el sombreador del suelo (ruido, caminos, río, bases…) se pinta UNA vez en una textura al montar el mapa;
+     en partida el suelo es una textura y luz sencilla. Antes cada píxel de la pantalla calculaba ~50 ruidos en cada fotograma (lo que más calienta el móvil). */
   const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('texturas/barro.webp', true);
-  const g = new THREE.PlaneGeometry(220, 260, 1, 1); g.rotateX(-Math.PI / 2);
-  const m = new THREE.MeshStandardMaterial({color: '#ffffff', roughness: 0.95});
   const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
-  m.onBeforeCompile = (sh) => {
-    sh.uniforms.tH = {value: tH}; sh.uniforms.tB = {value: tB}; sh.uniforms.uA = {value: v2(CARRILES[0])}; sh.uniforms.uB = {value: v2(CARRILES[1])};
-    sh.uniforms.uEje = {value: new THREE.Vector2(EJE.x, EJE.z)}; sh.uniforms.uPit = {value: new THREE.Vector2(PIT.x, PIT.z)}; sh.uniforms.uPit2 = {value: new THREE.Vector2(PIT2.x, PIT2.z)};
-    sh.uniforms.uF = {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]};
-    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.)).xyz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-      varying vec3 vWP; uniform sampler2D tH,tB; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec2 uEje, uPit, uPit2;
+  const BX = MAPA.ancho + 14, BZ = MAPA.largo + 12; /* zona horneada (la jugable con margen); fuera, suelo sencillo bajo el bosque */
+  const bakeU = {tH: {value: tH}, tB: {value: tB}, uA: {value: v2(CARRILES[0])}, uB: {value: v2(CARRILES[1])}, uEje: {value: new THREE.Vector2(EJE.x, EJE.z)}, uPit: {value: new THREE.Vector2(PIT.x, PIT.z)}, uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)},
+    uF: {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]}};
+  const bakeM = new THREE.ShaderMaterial({uniforms: bakeU, depthTest: false, depthWrite: false,
+    vertexShader: `varying vec3 vWP; void main(){vWP=(modelMatrix*vec4(position,1.)).xyz; gl_Position=vec4(uv*2.-1.,0.,1.);}`,
+    fragmentShader: `varying vec3 vWP; 
+      uniform sampler2D tH,tB; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec2 uEje, uPit, uPit2;
       float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
       float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.03;a*=.5;}return s;}
       float dSeg(vec2 p,vec2 a,vec2 b){vec2 v=b-a;float t=clamp(dot(p-a,v)/dot(v,v),0.,1.);return length(p-a-v*t);}
-      float dCar(vec2 p){float d=1e3;for(int i=0;i<6;i++){d=min(d,dSeg(p,uA[i],uA[i+1]));d=min(d,dSeg(p,uB[i],uB[i+1]));}return d;}`)
-      .replace('#include <map_fragment>', `
+      float dCar(vec2 p){float d=1e3;for(int i=0;i<6;i++){d=min(d,dSeg(p,uA[i],uA[i+1]));d=min(d,dSeg(p,uB[i],uB[i+1]));}return d;}
+      void main(){
       vec2 w=vWP.xz; vec2 rw=mat2(.8,-.6,.6,.8)*w;
       vec3 hi=mix(texture2D(tH,w*.15).rgb,texture2D(tH,rw*.067+.37).rgb,smoothstep(.3,.7,fbm(w*.1+5.)));
       vec3 ba=mix(texture2D(tB,w*.12).rgb,texture2D(tB,rw*.053+.61).rgb,smoothstep(.3,.7,fbm(w*.08+2.)))*vec3(.8,.74,.68);
@@ -349,9 +357,26 @@ function construyeMapa() {
       vec3 agua=mix(vec3(.05,.07,.06),vec3(.09,.1,.07),fbm(w*.5));
       col=mix(col,agua,rio*.9*(1.-(1.-smoothstep(5.,7.5,length(w-uPit))))*(1.-(1.-smoothstep(5.,7.5,length(w-uPit2)))));
       float borde=smoothstep(.0,1.,max(abs(w.x)-${MAPA.ancho.toFixed(1)},abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;
-      diffuseColor.rgb*=col;`);
-  };
-  const suelo = new THREE.Mesh(g, m); suelo.receiveShadow = true; scene_.add(suelo);
+      
+      gl_FragColor=vec4(col,1.);
+      #include <colorspace_fragment>
+      }`});
+  const gB = new THREE.PlaneGeometry(BX * 2, BZ * 2, 1, 1); gB.rotateX(-Math.PI / 2);
+  const listoTex = () => [tH, tB].every((t) => t.image && t.image.complete !== false && t.image.width);
+  const RES = 2048, rt = new THREE.WebGLRenderTarget(RES, RES, {colorSpace: THREE.SRGBColorSpace, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter, anisotropy: 4});
+  if (SUELO_RT) SUELO_RT.dispose(); SUELO_RT = rt;
+  const hornea = () => {const sc = new THREE.Scene(), q = new THREE.Mesh(gB, bakeM); sc.add(q); const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); const prev = renderer.getRenderTarget(); renderer.setRenderTarget(rt); renderer.render(sc, cam); renderer.setRenderTarget(prev); bakeM.dispose();};
+  (function espera() {if (listoTex()) hornea(); else setTimeout(espera, 60);})();
+  const m = new THREE.MeshLambertMaterial({map: rt.texture});
+  /* detalle fino encima (la hierba de cerca se ve nítida aunque la textura horneada sea de ~5 cm por píxel) */
+  m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH};
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWD=(modelMatrix*vec4(transformed,1.)).xz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD; uniform sampler2D tH;').replace('#include <map_fragment>', '#include <map_fragment>\nvec3 dt=texture2D(tH,vWD*.45).rgb; diffuseColor.rgb*=clamp(.55+dot(dt,vec3(.3,.6,.1))*9.,.75,1.25);');};
+  const suelo = new THREE.Mesh(gB, m); suelo.receiveShadow = true; scene_.add(suelo);
+  /* fuera de la zona horneada: suelo sencillo y oscuro (queda bajo el bosque) */
+  const g = new THREE.PlaneGeometry(220, 260, 1, 1); g.rotateX(-Math.PI / 2);
+  const tF = cargaTex('texturas/campo.webp', true); tF.repeat.set(30, 36); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#9ab870'});
+  const fuera_ = new THREE.Mesh(g, mF); fuera_.position.y = -0.03; fuera_.receiveShadow = true; scene_.add(fuera_);
   const pon2 = (n, x, z, ry = 0, e = 1) => {if (!M[n]) return null; const o = M[n].scene.clone(true); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.setScalar(e); o.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); scene_.add(o); return o;};
   const semilla = {v: 7}; const al = () => {semilla.v = (semilla.v * 16807) % 2147483647; return semilla.v / 2147483647;};
   const enBase = (x, z) => BASES.some((b) => Math.hypot(b.fuente.x - x, b.fuente.z - z) < 10 || Math.hypot(b.nexo.x - x, b.nexo.z - z) < 9 || Math.hypot(b.torre.x - x, b.torre.z - z) < 6);
@@ -394,7 +419,22 @@ function construyeMapa() {
     for (const [dx, dz] of [[4, -4], [-1, -6]]) {pon2('brasero', b.fuente.x + dx * s, b.fuente.z + dz * s, 0, 1.4); luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);}
   }
   fusiona(MAPA_G);
-  vidaMapa(scene_);
+  vidaMapa(scene_); PALANTIR = null; ponPalantir();
+}
+/* el palantír junto al estandarte de Isengard: el Ojo late y mira al héroe más cercano */
+let PALANTIR = null; const HAY_PALANTIR = false; /* poner a true cuando llegue modelos/palantir.glb (Pack Vado 14) */
+function ponPalantir() {
+  if (!M.palantir || !MAPA_G || PALANTIR) return;
+  const b = BASES[1], o = M.palantir.scene.clone(true), dx = b.nexo.x - b.fuente.x, dz = b.nexo.z - b.fuente.z, l = Math.hypot(dx, dz) || 1;
+  o.position.set(b.nexo.x + dz / l * 4.5, 0, b.nexo.z - dx / l * 4.5); o.traverse((q) => {if (q.isMesh) q.castShadow = true;}); MAPA_G.add(o);
+  const ojo = o.getObjectByName('ojo'); const mats = []; if (ojo) ojo.traverse((q) => {if (q.isMesh) {q.material = q.material.clone(); q.material.fog = false; mats.push(q.material);}});
+  PALANTIR = {o, ojo, mats}; luzFuego(o.position.x, o.position.z);
+}
+function animaPalantir() {
+  if (!PALANTIR || !PALANTIR.ojo) return; const t = UT.value, P = PALANTIR;
+  for (const m of P.mats) if (m.emissive) m.emissiveIntensity = 2.2 + Math.sin(t * 2.4) * 0.8;
+  let mejor = null, md = 30; for (const v of VISTA.values()) if (v.k === 'h' && v.muerto < 0) {const d = Math.hypot(v.x - P.o.position.x, v.z - P.o.position.z); if (d < md) {md = d; mejor = v;}}
+  const obj = mejor ? Math.atan2(mejor.x - P.o.position.x, mejor.z - P.o.position.z) : Math.sin(t * 0.3) * 1.2; let d = obj - P.ojo.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); P.ojo.rotation.y += d * 0.04;
 }
 /* ---------- vida del mapa (estilo Supercell): agua que corre, aros de las fuentes, luciérnagas y árboles que se mecen ---------- */
 const UT = {value: 0}, FUENTE_AROS = [];
@@ -1493,6 +1533,28 @@ function pintaVoto(e) {
   v.classList.remove('hidden'); clearTimeout(v._t); v._t = setTimeout(() => {v.classList.add('hidden'); v.dataset.vote = '';}, (quedan + 1) * 1000);
   if (!yaVote) {$('vSi').onclick = () => {v.dataset.vote = '1'; votaMio(true);}; $('vNo').onclick = () => {v.dataset.vote = '1'; votaMio(false);};}
 }
+/* ---------- LUGARES DEL LIBRO: al entrar en una zona sale su nombre, como un rótulo de mapa ---------- */
+function zonaDe(x, z) {
+  const l = ladoDe({x, z}), dB = (eq) => Math.hypot(x - BASES[eq].fuente.x, z - BASES[eq].fuente.z);
+  if (dB(0) < 14) return MI_EQ === 0 ? ['Campamento de los Rohirrim', 'tu base'] : ['Campamento de los Rohirrim', 'base enemiga'];
+  if (dB(1) < 14) return MI_EQ === 1 ? ['Anillo de Isengard', 'tu base'] : ['Anillo de Isengard', 'base enemiga'];
+  if (TIPO_MAPA === 'linea') {
+    if (Math.abs(l) < 5) return ['El Vado del Isen', 'el río parte el desfiladero'];
+    return l < 0 ? ['Desfiladero del Abismo de Helm', 'lado de Rohan'] : ['Camino de Isengard', 'lado de Saruman'];
+  }
+  if (Math.hypot(x - PIT.x, z - PIT.z) < 9) return ['Foso del Uruk', 'el capitán de la Mano Blanca'];
+  if (Math.hypot(x - PIT2.x, z - PIT2.z) < 9) return ['Guarida del draco', 'bajó de las Montañas Grises'];
+  if (Math.abs(l) < 4.5) return ['El Vado del Isen', 'los islotes del río'];
+  const dc = distCarril(x, z);
+  if (dc < 5) return l < 0 ? ['Camino de los Rohirrim', ''] : ['Calzada de Isengard', ''];
+  return l < 0 ? ['Linde del Bosque de Fangorn', 'los árboles escuchan'] : ['Tierras Brunas', 'las colinas de los dunlendinos'];
+}
+let zonaAct = '', zonaT = 0;
+function rotuloZona(v) {
+  const [n, sub] = zonaDe(v.xi ?? v.x, v.zi ?? v.z), ahora = performance.now();
+  if (n === zonaAct) return; zonaAct = n; if (ahora - zonaT < 6000) return; zonaT = ahora;
+  const r = $('rotulo'); r.innerHTML = '<b>' + n + '</b>' + (sub ? '<span>' + sub + '</span>' : ''); r.classList.remove('ver'); void r.offsetWidth; r.classList.add('ver');
+}
 function aviso(txt) {const a = $('aviso'); a.textContent = txt; a.style.opacity = 1; clearTimeout(avisoT); avisoT = setTimeout(() => {a.style.opacity = 0;}, 2200);}
 
 /* ---------- cámara ---------- */
@@ -1744,6 +1806,14 @@ function empieza(jugadores, modo, simulo) {
 function pantallaVS(jugadores, modo) {
   /* calentar: durante el VS se dibuja una vez cada efecto bajo el suelo, así la textura sube y el sombreador se compila antes de la primera pelea */
   try {for (const n in FB) {flip(n, 0, 0, 0.01, false, 0, -40, 0.3); flip(n, 0, 0, 0.01, true, 0, -40, 0.3);}} catch (e) {}
+  /* y se compilan ya los sombreadores de todos los personajes, bestias y marcas del suelo (antes se compilaban en la primera pelea: tirón) */
+  try {
+    const tmp = [], mods = new Set([...Object.values(HEROES).map((h) => h.modelo), ...MODELO_SUBD.flatMap((q) => Object.values(q)), ...Object.values(NEUTRO).map((q) => q.modelo)]);
+    for (const n of mods) if (M[n]) {const o = montar(n, 1); o.raiz.position.set(0, -60, 0); scene.add(o.raiz); tmp.push(o.raiz);}
+    for (const n of ['ind_area', 'ind_alcance', 'ind_flecha', 'ind_cono']) {const q = indicador(n, '#ffffff'); q.visible = true; q.position.y = -60; tmp.push(q);}
+    renderer.compile(scene, camera);
+    setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400); /* sin dispose: si se tirara el material, el sombreador compilado se borraría y volvería el tirón */
+  } catch (e) {}
   const plazas = modo === '2v2' ? 4 : 2, el = $('vs'), lado = (eq) => {let h = ''; for (let s = eq; s < plazas; s += 2) {const j = jugadores.find((q) => q.slot === s), tipo = j ? j.heroe : Object.keys(HEROES)[(s * 3 + 1) % 4]; h += '<div class="vsH"><img class="spl" src="ui/splash_' + tipo + '.webp" alt=""><b>' + (j ? j.nombre : 'Máquina') + '</b><span>' + HEROES[tipo].nombre + '</span></div>';} return h;};
   el.innerHTML = '<div class="vsLado az"><i>Rohan</i>' + lado(0) + '</div><div class="vsX">VS</div><div class="vsLado ro"><i>Isengard</i>' + lado(1) + '</div>';
   el.classList.remove('hidden'); setTimeout(() => el.classList.add('fuera'), 2300); setTimeout(() => {el.classList.add('hidden'); el.classList.remove('fuera');}, 2900);
@@ -1804,16 +1874,18 @@ function minimapa() {
   g.setTransform(1, 0, 0, 1, 0, 0); return;
   const vw = ZOOMS[zoomI][0] * 0.5, vh = ZOOMS[zoomI][0] * 0.85; g.strokeStyle = '#ffffffaa'; g.lineWidth = 1; g.strokeRect(Math.min(px(camM.x - vw), px(camM.x + vw)), Math.min(pz(camM.z - vh), pz(camM.z + vh * 0.5)), Math.abs(px(camM.x + vw) - px(camM.x - vw)), Math.abs(pz(camM.z + vh * 0.5) - pz(camM.z - vh)));
 }
+/* escribe en la página solo si cambia (cada escritura obliga al móvil a recolocar y repintar) */
+function pon_(el, p, v) {if (el['_' + p] !== v) {el['_' + p] = v; el[p] = v;}}
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
-  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; $('buffs').innerHTML = (bu ? '<span class="azul"><img src="ui/bend_furia.webp" alt="">' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/bend_brasa.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/bend_savia.webp" alt="">' + v.bAlfa + ' s</span>' : '') + (() => {const d = (EXTRA.dr || [])[MI_EQ] || [0, 0, 0]; return d[2] ? '<span><img src="ui/bend_alma.webp" alt="">Alma</span>' : (d[0] ? '<span><img src="ui/bend_fuego.webp" alt="">×' + d[0] + '</span>' : '') + (d[1] ? '<span><img src="ui/bend_hielo.webp" alt="">×' + d[1] + '</span>' : '');})(); consejos(+($('marcador').dataset.t || 0));}
-  $('yoNv').textContent = 'Nv ' + v.nivel; $('oro').textContent = '🪙 ' + v.oro; $('xpBar').style.width = (v.nivel >= NIVEL_MAX ? 100 : (v.xpP || 0) * 100) + '%';
-  if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel;
-  $('kda').textContent = (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3];
+  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); pon_($('objetivo'), 'textContent', objetivoTxt()); const bu = EXTRA.be[MI_EQ] || 0; pon_($('buffs'), 'innerHTML', (bu ? '<span class="azul"><img src="ui/bend_furia.webp" alt="">' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/bend_brasa.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/bend_savia.webp" alt="">' + v.bAlfa + ' s</span>' : '') + (() => {const d = (EXTRA.dr || [])[MI_EQ] || [0, 0, 0]; return d[2] ? '<span><img src="ui/bend_alma.webp" alt="">Alma</span>' : (d[0] ? '<span><img src="ui/bend_fuego.webp" alt="">×' + d[0] + '</span>' : '') + (d[1] ? '<span><img src="ui/bend_hielo.webp" alt="">×' + d[1] + '</span>' : '');})()); consejos(+($('marcador').dataset.t || 0));}
+  pon_($('yoNv'), 'textContent', 'Nv ' + v.nivel); pon_($('oro'), 'textContent', '🪙 ' + v.oro); pon_($('xpBar').style, 'width', (v.nivel >= NIVEL_MAX ? 100 : Math.round((v.xpP || 0) * 100)) + '%');
+  if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel; rotuloZona(v);
+  pon_($('kda'), 'textContent', (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3]);
   ['q', 'w', 'e', 'r'].forEach((k, i) => {const mas = $('m' + k), rk = v.rk ? v.rk[i] : 0, max = rangoMax(v.nivel, k); mas.classList.toggle('hidden', !(v.pts > 0 && rk < max) || v.muerto >= 0 && false); $('p' + k).innerHTML = Array.from({length: k === 'r' ? 2 : 4}, (_, j) => '<i class="' + (j < rk ? 'on' : '') + '"></i>').join(''); $('b' + k.toUpperCase()).classList.toggle('sinAprender', !rk);});
   {const be = $('bEnc'), e = ENC[v.enc]; be.classList.toggle('hidden', !e); if (e) {if (be.dataset.e !== v.enc) {be.dataset.e = v.enc; be.querySelector('img').src = e.i;} const c = be.querySelector('.cd'), cd = v.cdEnc; c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / e.cd * 100) + '%' : '0%');}}
   {const r = $('retratos'), cerca = [...VISTA.values()].filter((q) => q.k === 'h' && q.eq !== MI_EQ && q.muerto < 0 && !q.escondido && Math.hypot(q.x - v.x, q.z - v.z) < 13).slice(0, 2);
-   const key = cerca.map((q) => q.id + (q.id === MANDO.fijo ? 'f' : '')).join(','); if (r.dataset.k !== key) {r.dataset.k = key; r.innerHTML = cerca.map((q) => '<button data-id="' + q.id + '"' + (q.id === MANDO.fijo ? ' class="on"' : '') + '><img src="../abismo/ui/' + HEROES[q.tipo].retrato + '.webp" alt=""></button>').join('');}
+   const key = cerca.map((q) => q.id + (q.id === MANDO.fijo ? 'f' : '')).join(','); if (r.dataset.k !== key) {r.dataset.k = key; pon_(r, 'innerHTML', cerca.map((q) => '<button data-id="' + q.id + '"' + (q.id === MANDO.fijo ? ' class="on"' : '') + '><img src="../abismo/ui/' + HEROES[q.tipo].retrato + '.webp" alt=""></button>').join(''));}
    if (MANDO.fijo) {const f = VISTA.get(MANDO.fijo); if (!f || f.vida <= 0 || (f.k === 'h' && (f.muerto >= 0 || f.escondido)) || Math.hypot(f.x - v.x, f.z - v.z) > 16) MANDO.fijo = 0;}
    if (!aroFijo) {aroFijo = indicador('ind_alcance', '#ffd24a'); aroFijo.renderOrder = 6;}
    const af = VISTA.get(MANDO.cand || MANDO.fijo); aroFijo.visible = !!af && v.muerto < 0;
@@ -1822,13 +1894,13 @@ function hud() {
   for (const [k, cd] of [['d', v.cdD], ['f', v.cdF]]) {const c = $('b' + k.toUpperCase()).querySelector('.cd'); c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / HECHIZOS[k === 'f' && v.hf === 'c' ? 'c' : k].cd * 100) + '%' : '0%');}
   /* volver a la fuente: el botón se va llenando */
   $('bBase').style.setProperty('--p', volverBase > 0 ? (1 - volverBase / VOLVER_T) * 100 + '%' : '0%'); $('bBase').classList.toggle('cargando', volverBase > 0);
-  const cn = $('canal'); cn.classList.toggle('hidden', !(volverBase > 0)); if (volverBase > 0) cn.innerHTML = 'Volviendo a la base… <b>' + Math.ceil(volverBase) + '</b><i style="width:' + (1 - volverBase / VOLVER_T) * 100 + '%"></i>';
+  const cn = $('canal'); cn.classList.toggle('hidden', !(volverBase > 0)); if (volverBase > 0) pon_(cn, 'innerHTML', 'Volviendo a la base… <b>' + Math.ceil(volverBase) + '</b><i style="width:' + (1 - volverBase / VOLVER_T) * 100 + '%"></i>');
   if (!circVuelta) {circVuelta = fbObjeto('base', false); circVuelta.center.set(0.5, FB_ANCLA.base); circVuelta.renderOrder = 2; scene.add(circVuelta);}
   circVuelta.visible = volverBase > 0; if (circVuelta.visible) {const f = Math.floor(performance.now() / 70) % 16; circVuelta.material.map.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4); circVuelta.position.set(v.xi ?? v.x, 0, v.zi ?? v.z); circVuelta.scale.setScalar(4.2);}
   /* compra rápida en la fuente */
   const sug = sugerencia(v), cr = $('compraRapida'), enF = Math.hypot(v.x - BASES[MI_EQ].fuente.x, v.z - BASES[MI_EQ].fuente.z) < 9 || v.muerto >= 0;
-  if (sug && enF) {const o = OBJ[sug], pr = precio(v.inv, sug), ok = v.oro >= pr; cr.classList.remove('hidden'); if (cr.dataset.id !== sug || cr.dataset.oro !== String(ok) || cr.dataset.pr !== String(pr)) {cr.dataset.id = sug; cr.dataset.oro = String(ok); cr.dataset.pr = String(pr); cr.innerHTML = '<img src="' + ICO(o.i) + '" alt=""><span>' + o.t + '</span><b>' + pr + '</b>'; cr.classList.toggle('caro', !ok);}} else cr.classList.add('hidden');
-  renderer.domElement.style.filter = v.muerto >= 0 ? 'grayscale(.85) brightness(.8)' : '';
+  if (sug && enF) {const o = OBJ[sug], pr = precio(v.inv, sug), ok = v.oro >= pr; cr.classList.remove('hidden'); if (cr.dataset.id !== sug || cr.dataset.oro !== String(ok) || cr.dataset.pr !== String(pr)) {cr.dataset.id = sug; cr.dataset.oro = String(ok); cr.dataset.pr = String(pr); pon_(cr, 'innerHTML', '<img src="' + ICO(o.i) + '" alt=""><span>' + o.t + '</span><b>' + pr + '</b>'); cr.classList.toggle('caro', !ok);}} else cr.classList.add('hidden');
+  pon_(renderer.domElement.style, 'filter', v.muerto >= 0 ? 'grayscale(.85) brightness(.8)' : '');
   aroTorre(v);
   if (!marcaObj) {marcaObj = indicador('ind_alcance', '#ff4a3a'); marcaObj.renderOrder = 5;}
   const ob = v.objAt && VISTA.get(v.objAt); marcaObj.visible = !!ob && v.muerto < 0 && ob.vida > 0 && !ob.escondido;
@@ -1838,7 +1910,7 @@ function hud() {
     c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? (cd < 1 ? cd.toFixed(1) : Math.ceil(cd)) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / tot * 100) + '%' : '0%');
     if (b._cd > 0 && !(cd > 0)) {b.classList.remove('lista'); void b.offsetWidth; b.classList.add('lista');} b._cd = cd; const pr = !(cd > 0) && rk > 0 && v.muerto < 0; if (b._pr !== pr) {b._pr = pr; b.classList.toggle('pronta', pr);}
   });;
-  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); m.innerHTML = (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en la armería</small>';} else m.classList.add('hidden');
+  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); pon_(m, 'innerHTML', (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en la armería</small>');} else m.classList.add('hidden');
   const enFuente = enF;
   $('bTienda').style.opacity = enFuente ? 1 : 0.45;
 }
@@ -1898,7 +1970,7 @@ function bucle() {
         inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
-      UT.value += dt; const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
+      UT.value += dt; animaPalantir(); const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
   const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') renderer.render(scene, camera); /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
@@ -2026,9 +2098,9 @@ function preparaMenu() {
   {const bs = $('bSon'), pinta = () => {bs.textContent = AUD.musOn || AUD.fxOn ? '🔊' : '🔇';}; pinta(); bs.onclick = () => {const on = !(AUD.musOn || AUD.fxOn); ponSonido('mus', on); ponSonido('fx', on); if (on) musica('menu'); pinta();};}
   pintaMenu();
   $('bGirar').onclick = apaisa;
-  $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);});});
-  $('bCrear').onclick = () => eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => {const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);});});
-  $('bUnir').onclick = () => {const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => conecta(c, modoElegido, nombreJugador(), heroeElegido));});};
+  $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);}, modoElegido === '2v2');});
+  $('bCrear').onclick = () => eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => {const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);}, true);});
+  $('bUnir').onclick = () => {const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => conecta(c, modoElegido, nombreJugador(), heroeElegido), true);});};
   $('bSalir').onclick = () => {sueltaApaisado(); location.href = '../';};
 }
 
@@ -2042,16 +2114,32 @@ function cargaTodo() {
   LISTO = (async () => {
     let n = 0; const gl = await Promise.all(NOMBRES.map(async (k) => {const g = await cargaModelo(k); n++; CARGA = n / NOMBRES.length * 0.95; pintaCarga(); return g;}));
     NOMBRES.forEach((k, i) => M[k] = gl[i]);
-    /* algunos modelos del Pack 9 vienen sin normales: sin ellas la luz no les da */
-    for (const k of ['huorn', 'nutria', 'crebain', 'sapo', 'draco']) M[k].scene.traverse((q) => {if (q.isMesh && !q.geometry.attributes.normal) q.geometry.computeVertexNormals();});
     await new Promise((r) => setTimeout(r, 30));
     ponMapa(modoElegido); construyeMapa(); CARGA = 1; pintaCarga();
+    cargaJungla();
+    /* el palantír de Orthanc con el Ojo (Pack Vado 14): si aún no está el archivo, no pasa nada */
+    if (HAY_PALANTIR) cargaModelo('palantir').then((g) => {M.palantir = g; ponPalantir();}).catch(() => {});
   })();
   LISTO.catch((e) => {LISTO = null; msg('No se pudo cargar: ' + e.message + ' · toca JUGAR para reintentar');});
   return LISTO;
 }
-/* espera a que esté todo cargado antes de empezar (con un velo y el porcentaje) */
-async function trasCarga(fn) {
+let LISTO_J = null, CARGA_J = 0;
+function cargaJungla() {
+  if (LISTO_J) return LISTO_J;
+  LISTO_J = (async () => {
+    let n = 0; const gl = await Promise.all(JUNGLA.map(async (k) => {const g = await cargaModelo(k); n++; CARGA_J = n / JUNGLA.length; return g;}));
+    JUNGLA.forEach((k, i) => M[k] = gl[i]);
+    /* algunos modelos del Pack 9 vienen sin normales: sin ellas la luz no les da */
+    for (const k of ['nutria', 'crebain', 'sapo']) M[k].scene.traverse((q) => {if (q.isMesh && !q.geometry.attributes.normal) q.geometry.computeVertexNormals();});
+    CARGA_J = 1;
+  })();
+  LISTO_J.catch(() => {LISTO_J = null;});
+  return LISTO_J;
+}
+/* espera a que esté todo cargado antes de empezar (con un velo y el porcentaje); la jungla solo si hace falta (Batalla o sala) */
+async function trasCarga(fn, jungla) {
+  if (jungla && CARGA_J < 1) {const ve = $('cargaVelo'); ve.classList.remove('hidden'); const t = setInterval(() => {ve.querySelector('b').textContent = Math.round((CARGA * 0.7 + CARGA_J * 0.3) * 100) + ' %';}, 120);
+    try {await cargaTodo(); await cargaJungla();} catch (e) {clearInterval(t); ve.classList.add('hidden'); return;} clearInterval(t); ve.classList.add('hidden');}
   if (CARGA < 1) {const ve = $('cargaVelo'); ve.classList.remove('hidden'); const t = setInterval(() => {ve.querySelector('b').textContent = Math.round(CARGA * 100) + ' %';}, 120);
     try {await cargaTodo();} catch (e) {clearInterval(t); ve.classList.add('hidden'); return;} clearInterval(t); ve.classList.add('hidden');}
   fn();
