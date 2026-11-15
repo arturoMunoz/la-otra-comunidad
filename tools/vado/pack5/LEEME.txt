@@ -1,0 +1,25 @@
+PACK VADO 5 — BOTONES Y EFECTOS
+
+botones/: cuatro PNG RGBA de 512x512, ataque básico de Rohan, enano,
+elfo y hobbit, con marco de metal envejecido y oro gastado.
+
+efectos/: doce PNG RGBA de 1024x1024, cuadrícula 4x4.
+16 fotogramas de 256x256, de izquierda a derecha y de arriba abajo.
+Índice = fila * 4 + columna. Centro de celda = (128,128).
+Margen transparente incorporado para separar los fotogramas.
+Reproducir una vez; al terminar el fotograma 15 ocultar el efecto.
+Velocidad orientativa: tajos 20 fps (0,8 s), resto 16 fps (1 s).
+Adaptar duración al tiempo del ataque o habilidad en el juego.
+Para escudo/aturdimiento persistentes, programar repetición o sostener
+un fotograma intermedio según la duración del estado.
+
+atlas_efectos.json: coordenadas de cada fotograma y velocidades sugeridas.
+Las coordenadas de píxel tienen origen superior izquierdo.
+Si utilizas Texture.offset/repeat de Three.js, ajustar el eje Y según flipY.
+Usar transparent:true, depthWrite:false y una pequeña separación del suelo.
+NormalBlending conserva bien polvo/humo; AdditiveBlending puede ser útil
+para efectos de luz. Revisar el resultado con la iluminación del juego.
+
+Los efectos son ilustraciones secuenciales generadas para este encargo.
+No incluyen personajes, terreno, textos ni marcas de agua.
+Generación de imágenes integrada; exportación y división con ImageMagick.

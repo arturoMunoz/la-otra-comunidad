@@ -766,44 +766,96 @@ function animaClip(o, nombre, vel = 1) {
   if (o.actual && o.actual !== a) o.actual.crossFadeTo(a, 0.06, false); o.actual = a; return a.getClip().duration / vel;
 }
 function aura(o, color, dur, tam = 1.6) {const m = indicador('ind_area', color); m.visible = true; m.material.opacity = 0.75; (o.auras = o.auras || []).push({m, t: 0, dur, tam}); return m;}
+/* efecto de hoja 4x4 que sigue a alguien: aparece (fotogramas 0-6), se mantiene (6-8) y se deshace (9-15) */
+function auraFx(o, nombre, dur, tam, alto) {
+  const [f, c, r, mez] = FB[nombre]; if (!fbTex[f]) fbTex[f] = cargaTex(f);
+  const t = fbTex[f].clone(); t.needsUpdate = true; t.repeat.set(1 / c, 1 / r);
+  const mat = new THREE.MeshBasicMaterial({map: t, color: FB_TINTE[nombre] || '#ffffff', transparent: true, depthWrite: false, blending: mez === 'n' ? THREE.NormalBlending : THREE.AdditiveBlending});
+  tam *= 1.25; let m; if (alto) {m = new THREE.Sprite(mat); m.scale.setScalar(tam);} else {const g = new THREE.PlaneGeometry(tam, tam); g.rotateX(-Math.PI / 2); m = new THREE.Mesh(g, mat); m.renderOrder = 3;}
+  scene.add(m); const a = {m, t: 0, dur, tam, hoja: {c, r}, alto}; (o.auras = o.auras || []).push(a); return a;
+}
+/* la definitiva: la pantalla se oscurece un instante, sale su nombre y la cámara da un tirón */
+let camGolpe = 0;
+function ultiFx(v, H, k, mio, cerca) {
+  if (!cerca) return;
+  const el = $('ulti'); el.className = (v.eq === MI_EQ ? 'az' : 'ro') + (mio ? ' mia' : '');
+  el.innerHTML = '<div class="uF"><img src="ui/h_' + v.tipo + '_r.webp" alt=""><b>' + H.n + '</b></div>';
+  void el.offsetWidth; el.classList.add('va'); clearTimeout(el._t); el._t = setTimeout(() => {el.className = '';}, 1300);
+  if (mio) {camGolpe = 1; if (navigator.vibrate) try {navigator.vibrate([30, 40, 60]);} catch (e) {}}
+  suena('cuerno', mio ? 0.75 : 0.5);
+}
 function habVisual(e) {
   const [, id, k, dx, dz, px, pz] = e, o = VIS.get(id), v = VISTA.get(id); if (!o || !v) return;
   const H = HEROES[v.tipo].hab[k], x = v.xi ?? v.x, z = v.zi ?? v.z, rot = Math.atan2(dx, dz), mio = id === YO;
   /* animación del héroe */
   const d = animaClip(o, HAB_ANIM[v.tipo][k], H.tipo === 'dash' || H.tipo === 'salto' ? 1.3 : 1.15); o.ocup = Math.min(0.9, d * 0.85); o.habYa = true;
-  const temb = (n) => {if (mio || Math.hypot(x - camM.x, z - camM.z) < 14) tiemblaCam = Math.max(tiemblaCam, n);};
+  const cerca = mio || Math.hypot(x - camM.x, z - camM.z) < 16, temb = (n) => {if (cerca) tiemblaCam = Math.max(tiemblaCam, n);};
+  const luego2 = (ms, fn) => setTimeout(() => {if (VIS.get(id) === o) fn();}, ms), rs = rot - Math.PI / 4;
+  if (k === 'r') {ultiFx(v, H, k, mio, cerca); aura(o, v.eq === MI_EQ ? '#8fd0ff' : '#ff8a6a', 1.1, 2.6); if (H.tipo !== 'area') flip('ondaC', x, z, 7, true); o.flash = 0.13; o.punch = 1.6;}
   const anillo = (cx, cz, r, n, fx = 'polvo', tam = 1.6) => {for (let i = 0; i < n; i++) {const a = i / n * Math.PI * 2; flip(fx, cx + Math.cos(a) * r, cz + Math.sin(a) * r, tam);}};
-  if (H.tipo === 'dash') {o.estela = {t: H.dist / 18 + 0.15, cada: 0, fx: k === 'r' ? 'fuego' : 'polvo', tam: k === 'r' ? 2.4 : 1.5}; flip('onda', x, z, 3, true); suena('viento', 0.5); if (k === 'r') {temb(0.4); flip('tajoOro', x + dx * 2, z + dz * 2, 6, true, -rot + Math.PI / 2);}}
-  if (H.tipo === 'salto') {const dist0 = Math.min(H.dist, Math.hypot(px - x, pz - z) || H.dist); o.salto = {t: 0, dur: 0.45, alto: 2.2 + dist0 * 0.12, cx: x + dx * dist0, cz: z + dz * dist0, r: H.radio}; flip('polvo', x, z, 2.5); suena('viento', 0.5);}
+  if (H.tipo === 'dash') {
+    o.estela = {t: H.dist / 18 + 0.15, cada: 0, fx: k === 'r' ? 'fuego' : 'polvo', tam: k === 'r' ? 2.4 : 1.5}; flip('polvoA', x, z, 3.4, true); suena('viento', 0.5);
+    if (v.tipo === 'elfo') flip('hojas', x, z, 3.2, true); else if (k !== 'r') flip('tArco', x + dx * H.dist * 0.5, z + dz * H.dist * 0.5, 4.2, true, rs);
+    if (k === 'r') {/* Carga de los Rohirrim: tajos a lo largo de la carga y el suelo reventado al final */
+      temb(0.45); const n = Math.floor(H.dist / 2.2);
+      for (let i = 1; i <= n; i++) luego2(i * 55, () => {const f = i / n * H.dist; flip('tArco', x + dx * f, z + dz * f, 5.5, true, rs + (i % 2 ? 0 : Math.PI)); flip('fuego', x + dx * f + rnd(-1, 1), z + dz * f + rnd(-1, 1), 2.2);});
+      luego2(H.dist / 18 * 1000, () => {const p = o.raiz.position; flip('grietas', p.x, p.z, 7, true); flip('ondaC', p.x, p.z, 8, true); flip('polvoA', p.x, p.z, 7, true); flip('explosion', p.x, p.z, 3.2); temb(0.65); suena('explosion', 0.7);});
+    }
+  }
+  if (H.tipo === 'salto') {const dist0 = Math.min(H.dist, Math.hypot(px - x, pz - z) || H.dist); o.salto = {t: 0, dur: 0.45, alto: 2.2 + dist0 * 0.12, cx: x + dx * dist0, cz: z + dz * dist0, r: H.radio}; flip('polvoA', x, z, 3.2, true); suena('viento', 0.5);}
   if (H.tipo === 'cono') {
     const fx = v.tipo === 'enano' ? 'tajoFuego' : 'polvo', tam = H.alc * 2.2;
     if (fx === 'polvo') {for (let i = 0; i < 5; i++) {const a = rot + (i - 2) * H.ang / 5; flip('polvo', x + Math.sin(a) * H.alc * 0.6, z + Math.cos(a) * H.alc * 0.6, 1.8);}}
-    else {flip(fx, x + dx * H.alc * 0.45, z + dz * H.alc * 0.45, tam, true, -rot + Math.PI / 2); flip('tajoOro', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, tam * 0.8, true, -rot + Math.PI / 2 + 0.4);}
+    else {flip('tFuego', x + dx * 0.6, z + dz * 0.6, H.alc * 2.5, true, rs); flip('tArco', x + dx * H.alc * 0.35, z + dz * H.alc * 0.35, H.alc * 1.7, true, rs, 0.16);}
     for (let i = 0; i < 3; i++) {const a = rot + (i - 1) * H.ang / 3; flip('impacto', x + Math.sin(a) * H.alc * 0.8, z + Math.cos(a) * H.alc * 0.8, 2.2);}
     flip('explosion', x + dx * H.alc * 0.55, z + dz * H.alc * 0.55, 2.4, false, undefined, 1);
     suena('espada', 0.7); temb(0.18);
   }
-  if (H.tipo === 'area') {flip('onda', x, z, H.radio * 2.4, true); flip('explosion', x, z, H.radio * 1.2); anillo(x, z, H.radio * 0.8, 8, k === 'r' ? 'fuego' : 'polvo', k === 'r' ? 2.2 : 1.6); if (k === 'r') {flip('onda', x, z, H.radio * 3.2, true); setTimeout(() => {flip('onda', x, z, H.radio * 2, true); anillo(x, z, H.radio * 0.5, 6, 'polvo', 2);}, 180);} temb(k === 'r' ? 0.5 : 0.22); suena(k === 'r' ? 'explosion' : 'cuerno', 0.6);}
-  if (H.tipo === 'linea') {o.estelaTiro = {x, z, dx, dz, t: 0, alc: H.alc}; flip('impacto', x + dx * 1.2, z + dz * 1.2, 1.8); suena('arco', 0.6);}
-  if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - x, pz - z)), cx = x + dx * d0, cz = z + dz * d0; LLUVIAS.push({x: cx, z: cz, r: H.radio, t: 0, dur: H.dur, cada: 0}); temb(0.12);}
-  if (AURA_COL[H.tipo]) {aura(o, AURA_COL[H.tipo], H.dur || 3, H.tipo === 'escudo' ? 1.9 : 1.6); flip('onda', x, z, 3.2, true); if (H.tipo === 'suerte') {flip('explosion', x, z, 2.5, false, undefined, 1.6); anillo(x, z, 1.2, 6, 'impacto', 1.2);} suena('magia', 0.5);}
-  if (H.tipo === 'invis') {for (let i = 0; i < 4; i++) flip('polvo', x + rnd(-0.8, 0.8), z + rnd(-0.8, 0.8), 2.6); suena('viento', 0.5);}
+  if (H.tipo === 'area') {
+    flip('ondaC', x, z, H.radio * 2.6, true); flip('polvoA', x, z, H.radio * 2.2, true); flip('explosion', x, z, H.radio * 1.2);
+    if (k === 'r') {/* Furia de Durin: el suelo se abre bajo el enano y luego alrededor, en dos oleadas */
+      flip('grietas', x, z, H.radio * 2.7, true, rot, 0.13, 1.5); anillo(x, z, H.radio * 0.8, 8, 'fuego', 2.2);
+      luego2(150, () => {for (let i = 0; i < 6; i++) {const a = i / 6 * Math.PI * 2 + rot; flip('grietas', x + Math.cos(a) * H.radio * 0.72, z + Math.sin(a) * H.radio * 0.72, 3.4, true, a, 0.14, 1.1); flip('explosion', x + Math.cos(a) * H.radio * 0.72, z + Math.sin(a) * H.radio * 0.72, 1.8);} temb(0.5);});
+      luego2(330, () => {flip('ondaC', x, z, H.radio * 3.6, true); flip('polvoA', x, z, H.radio * 3.2, true); auraFx(o, 'piedra', 0.9, H.radio * 1.6); temb(0.6); suena('explosion', 0.6);});
+    }
+    temb(k === 'r' ? 0.75 : 0.22); suena(k === 'r' ? 'explosion' : 'cuerno', 0.6);
+  }
+  if (H.tipo === 'linea') {o.estelaTiro = {x, z, dx, dz, t: 0, alc: H.alc, verde: v.tipo === 'elfo'}; flip('impacto', x + dx * 1.2, z + dz * 1.2, 1.8); suena('arco', 0.6);}
+  if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - x, pz - z)), cx = x + dx * d0, cz = z + dz * d0; LLUVIAS.push({x: cx, z: cz, r: H.radio, t: 0, dur: H.dur, cada: 0}); flip('ondaC', cx, cz, H.radio * 2.6, true); flip('hojas', cx, cz, H.radio * 2.5, true, 0, 0.13, H.dur); luego2(H.dur * 500, () => flip('hojas', cx, cz, H.radio * 2, true, 1, 0.13, H.dur * 0.5)); temb(0.3);}
+  if (AURA_COL[H.tipo]) {
+    const du = H.dur || 3; flip('onda', x, z, 3.2, true);
+    if (H.tipo === 'escudo') auraFx(o, 'escudo', du, 3.8);
+    else if (H.tipo === 'reduce') {auraFx(o, 'piedra', du, 3.6); flip('polvoA', x, z, 3.4, true);}
+    else if (H.tipo === 'rafaga') auraFx(o, 'hojas', du, 3.4);
+    else {/* Suerte de Bolsón: trébol de luz sobre la cabeza, aro dorado y estallido */
+      aura(o, AURA_COL.suerte, du, 1.8); auraFx(o, 'suerte', du, 2.6, 2.7); flip('suerte', x, z, 5, true); flip('ondaC', x, z, 6, true); flip('explosion', x, z, 2.5, false, undefined, 1.6); anillo(x, z, 1.4, 8, 'impacto', 1.3); temb(0.3);
+    }
+    suena('magia', 0.5);
+  }
+  if (H.tipo === 'invis') {flip('humo', x, z, 4.2, false, undefined, 1.2); flip('humo', x, z, 4.6, true); suena('viento', 0.5);}
 }
 /* lluvia de flechas: caen flechas de verdad sobre la zona */
 const LLUVIAS = [];
 function animaHabilidades(dt) {
-  for (const o of VIS.values()) {
+  for (const [id, o] of VIS) {
+    const vv = VISTA.get(id), atur = vv && (vv.flags & 2) && (vv.k !== 'h' || vv.muerto < 0);
+    if (atur && !o.estr) o.estr = auraFx(o, 'estrellas', 30, 1.9, vv.k === 'h' ? 2.5 : 2.2); else if (!atur && o.estr) {o.estr.t = Math.max(o.estr.t, o.estr.dur - 0.3); o.estr = null;}
     if (o.estela) {o.estela.t -= dt; o.estela.cada -= dt; if (o.estela.cada <= 0) {o.estela.cada = 0.045; flip(o.estela.fx, o.raiz.position.x, o.raiz.position.z, o.estela.tam);} if (o.estela.t <= 0) {flip('impacto', o.raiz.position.x, o.raiz.position.z, 2); o.estela = null;}}
     if (o.salto) {
       o.salto.t += dt; const k = Math.min(1, o.salto.t / o.salto.dur); o.raiz.position.y = Math.sin(k * Math.PI) * o.salto.alto;
-      if (k >= 1) {const sx = o.raiz.position.x, sz = o.raiz.position.z; flip('onda', sx, sz, o.salto.r * 2.6, true); flip('explosion', sx, sz, 2.4); for (let i = 0; i < 8; i++) {const a = i / 8 * Math.PI * 2; flip('polvo', sx + Math.cos(a) * o.salto.r * 0.8, sz + Math.sin(a) * o.salto.r * 0.8, 1.8);} if (Math.hypot(sx - camM.x, sz - camM.z) < 14) tiemblaCam = Math.max(tiemblaCam, 0.3); suena('explosion', 0.5); o.raiz.position.y = 0; o.salto = null;}
+      if (k >= 1) {const sx = o.raiz.position.x, sz = o.raiz.position.z; flip('ondaC', sx, sz, o.salto.r * 2.8, true); flip('grietas', sx, sz, o.salto.r * 2.2, true); flip('polvoA', sx, sz, o.salto.r * 2.8, true); flip('explosion', sx, sz, 2.4); if (Math.hypot(sx - camM.x, sz - camM.z) < 14) tiemblaCam = Math.max(tiemblaCam, 0.3); suena('explosion', 0.5); o.raiz.position.y = 0; o.salto = null;}
     }
-    if (o.estelaTiro) {const t = o.estelaTiro; t.t += dt; const d0 = Math.min(t.alc, t.t * 26); if (Math.floor(t.t / 0.03) !== Math.floor((t.t - dt) / 0.03)) flip('polvo', t.x + t.dx * d0, t.z + t.dz * d0, 0.9); if (d0 >= t.alc) {flip('impacto', t.x + t.dx * d0, t.z + t.dz * d0, 1.8); o.estelaTiro = null;}}
-    if (o.auras) for (let i = o.auras.length - 1; i >= 0; i--) {const a = o.auras[i]; a.t += dt; const k = a.t / a.dur; if (k >= 1 || !o.raiz.visible) {scene.remove(a.m); o.auras.splice(i, 1); continue;} a.m.position.set(o.raiz.position.x, 0.17, o.raiz.position.z); a.m.scale.setScalar(2 * a.tam * (1 + 0.08 * Math.sin(a.t * 8))); a.m.rotation.y += dt * 1.5; a.m.material.opacity = 0.75 * Math.min(1, (1 - k) * 4);}
+    if (o.estelaTiro) {const t = o.estelaTiro; t.t += dt; const d0 = Math.min(t.alc, t.t * 26); if (Math.floor(t.t / 0.03) !== Math.floor((t.t - dt) / 0.03)) {if (t.verde) flip('estelaF', t.x + t.dx * d0, t.z + t.dz * d0, 3, true, Math.atan2(t.dx, t.dz) - Math.PI / 2, 0.9, 0.3); else flip('polvo', t.x + t.dx * d0, t.z + t.dz * d0, 0.9);} if (d0 >= t.alc) {flip('impacto', t.x + t.dx * d0, t.z + t.dz * d0, 1.8); o.estelaTiro = null;}}
+    if (o.auras) for (let i = o.auras.length - 1; i >= 0; i--) {const a = o.auras[i]; a.t += dt; const k = a.t / a.dur; if (k >= 1 || !o.raiz.visible) {scene.remove(a.m); o.auras.splice(i, 1); continue;} if (a.hoja) {
+        const fin = Math.min(0.45, a.dur * 0.4), f = a.t < 0.3 ? Math.floor(a.t / 0.3 * 6) : a.t > a.dur - fin ? 9 + Math.min(6, Math.floor((a.t - (a.dur - fin)) / fin * 7)) : 6 + Math.round(1 + Math.sin(a.t * 9));
+        a.m.material.map.offset.set((f % a.hoja.c) / a.hoja.c, 1 - (Math.floor(f / a.hoja.c) + 1) / a.hoja.r);
+        a.m.position.set(o.raiz.position.x, a.alto ? o.raiz.position.y + a.alto : 0.16, o.raiz.position.z); if (!a.alto) a.m.rotation.y += dt * 1.2; continue;
+      }
+      a.m.position.set(o.raiz.position.x, 0.17, o.raiz.position.z); a.m.scale.setScalar(2 * a.tam * (1 + 0.08 * Math.sin(a.t * 8))); a.m.rotation.y += dt * 1.5; a.m.material.opacity = 0.75 * Math.min(1, (1 - k) * 4);}
   }
   for (let i = LLUVIAS.length - 1; i >= 0; i--) {
     const l = LLUVIAS[i]; l.t += dt; l.cada -= dt; if (l.t > l.dur) {LLUVIAS.splice(i, 1); continue;}
-    if (l.cada <= 0) {l.cada = 0.07; const a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * l.r, fx = l.x + Math.cos(a) * r, fz = l.z + Math.sin(a) * r, f = modeloProy('flecha_elfica'); f.scale.multiplyScalar(1.4); f.rotation.x = Math.PI / 2; scene.add(f); FXP.push({tipo: 'cae', o: f, x: fx, z: fz, y: 9, t: 0});}
+    if (l.cada <= 0) {l.cada = 0.045; const a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * l.r, fx = l.x + Math.cos(a) * r, fz = l.z + Math.sin(a) * r, f = modeloProy('flecha_elfica'); f.scale.multiplyScalar(1.4); f.rotation.x = Math.PI / 2; scene.add(f); FXP.push({tipo: 'cae', o: f, x: fx, z: fz, y: 9, t: 0});}
   }
 }
 function golpeVisual(id, de, fuerte) {
@@ -887,14 +939,22 @@ function dibuja(dt) {
 function veoHierba(v) {for (const q of VISTA.values()) if (q.k === 'h' && q.eq === MI_EQ && q.muerto < 0 && (Math.hypot((q.xi ?? q.x) - v.x, (q.zi ?? q.z) - v.z) < 3.2 || (q.hierba >= 0 && q.hierba === v.hierba))) return true; return false;}
 /* efectos que llegan como avisos de la simulación (se ven igual en todos los móviles) */
 const FXP = [], NUMS = [];
-const FB = {impacto: ['texturas/fx_impacto.webp', 2, 2], onda: ['texturas/fx_onda.webp', 4, 1], explosion: ['texturas/fx_explosion.webp', 4, 4], tajo: ['texturas/fx_tajo.webp', 4, 1], polvo: ['texturas/fx_humo.webp', 4, 2], fuego: ['texturas/fx_fuego.webp', 4, 2], tajoOro: ['texturas/fx_tajo_oro.webp', 4, 1], tajoFuego: ['texturas/fx_tajo_fuego.webp', 4, 1]};
+const FB = {impacto: ['texturas/fx_impacto.webp', 2, 2], onda: ['texturas/fx_onda.webp', 4, 1], explosion: ['texturas/fx_explosion.webp', 4, 4], tajo: ['texturas/fx_tajo.webp', 4, 1], polvo: ['texturas/fx_humo.webp', 4, 2], fuego: ['texturas/fx_fuego.webp', 4, 2], tajoOro: ['texturas/fx_tajo_oro.webp', 4, 1], tajoFuego: ['texturas/fx_tajo_fuego.webp', 4, 1],
+  /* Pack Vado 5 (ChatGPT): 4x4 fotogramas; 'n' = mezcla normal (humo, polvo, piedra) */
+  tArco: ['../batalla/fx/tajo_arco.webp', 4, 4], tFuego: ['../batalla/fx/tajo_fuego.webp', 4, 4], ondaC: ['../batalla/fx/onda_choque.webp', 4, 4], grietas: ['../batalla/fx/grietas.webp', 4, 4], polvoA: ['../batalla/fx/polvo.webp', 4, 4, 'n'], escudo: ['../batalla/fx/escudo.webp', 4, 4], piedra: ['../batalla/fx/piedra.webp', 4, 4, 'n'], hojas: ['../batalla/fx/hojas.webp', 4, 4, 'n'], humo: ['../batalla/fx/humo.webp', 4, 4, 'n'], suerte: ['../batalla/fx/suerte.webp', 4, 4], estrellas: ['../batalla/fx/estrellas.webp', 4, 4], estelaF: ['../batalla/fx/estela_flecha.webp', 4, 4]};
+const FB_TINTE = {polvoA: '#a88c6c', humo: '#a0a0a0', piedra: '#d0c8be'};
+const FB_OP = {ondaC: 0.6, polvoA: 0.75, grietas: 1.2, tFuego: 1.1, hojas: 0.9, humo: 0.85};
+const FB_DUR = {tArco: 0.5, tFuego: 0.6, ondaC: 0.7, grietas: 1.2, polvoA: 0.85, humo: 0.9, hojas: 0.9, estelaF: 0.4, suerte: 1, escudo: 0.9, piedra: 0.9, estrellas: 0.9};
 const fbTex = {};
-function flip(nombre, x, z, tam, suelo, rot, y) {
-  const [f, c, r] = FB[nombre]; if (!fbTex[f]) fbTex[f] = cargaTex(f);
+for (const n in FB) if (!fbTex[FB[n][0]]) fbTex[FB[n][0]] = cargaTex(FB[n][0]); /* cargadas de antemano: que el primer efecto no salga en blanco */
+function flip(nombre, x, z, tam, suelo, rot, y, dur) {
+  const [f, c, r, mez] = FB[nombre]; if (!fbTex[f]) fbTex[f] = cargaTex(f);
+  if (FB_DUR[nombre]) tam *= 1.3; /* las hojas del Pack 5 llevan margen en cada fotograma */
   const t = fbTex[f].clone(); t.needsUpdate = true; t.repeat.set(1 / c, 1 / r);
-  const mat = new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, blending: nombre === 'polvo' ? THREE.NormalBlending : THREE.AdditiveBlending});
-  let o; if (suelo) {const g = new THREE.PlaneGeometry(tam, tam); g.rotateX(-Math.PI / 2); o = new THREE.Mesh(g, mat); o.position.set(x, 0.12, z); if (rot !== undefined) o.rotation.y = rot;} else {o = new THREE.Sprite(mat); o.scale.setScalar(tam); o.position.set(x, y ?? 1.3, z);}
-  scene.add(o); FXP.push({o, t: 0, dur: nombre === 'onda' ? 0.65 : nombre.startsWith('tajo') ? 0.5 : 0.55, flip: {c, r, n: c * r}, esc: tam});
+  const mat = new THREE.MeshBasicMaterial({map: t, color: FB_TINTE[nombre] || '#ffffff', transparent: true, depthWrite: false, blending: nombre === 'polvo' || mez === 'n' ? THREE.NormalBlending : THREE.AdditiveBlending});
+  let o; if (suelo) {const g = new THREE.PlaneGeometry(tam, tam); g.rotateX(-Math.PI / 2); o = new THREE.Mesh(g, mat); o.position.set(x, y ?? 0.12, z); o.renderOrder = 3; if (rot !== undefined) o.rotation.y = rot;} else {o = new THREE.Sprite(mat); o.scale.setScalar(tam); o.position.set(x, y ?? 1.3, z);}
+  scene.add(o); FXP.push({o, t: 0, dur: dur || FB_DUR[nombre] || (nombre === 'onda' ? 0.65 : nombre.startsWith('tajo') ? 0.5 : 0.55), flip: {c, r, n: c * r}, esc: tam, op: FB_OP[nombre] || 1});
+  return o;
 }
 /* sonido con WebAudio: cada archivo se descodifica una vez y se reproduce sin crear reproductores nuevos */
 let AC = null; const SON = {}, SON_T = {};
@@ -975,7 +1035,7 @@ function camara(dt) {
   const v = VISTA.get(YO); if (!v) return;
   const {F} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, ade = APAI ? 5 : 3;
   camM.x += (x + F.x * ade - camM.x) * Math.min(1, dt * 6); camM.z += (z + F.z * ade - camM.z) * Math.min(1, dt * 6);
-  const zz = ZOOMS[zoomI]; tiemblaCam = Math.max(0, tiemblaCam - dt * 1.6); const tb = tiemblaCam * tiemblaCam * 1.6, ox = (Math.random() - 0.5) * tb, oz = (Math.random() - 0.5) * tb;
+  camGolpe = Math.max(0, camGolpe - dt * 1.5); const zg = 1 - 0.16 * Math.sin(Math.min(1, camGolpe) * Math.PI), z0 = ZOOMS[zoomI], zz = [z0[0] * zg, z0[1] * zg]; tiemblaCam = Math.max(0, tiemblaCam - dt * 1.6); const tb = tiemblaCam * tiemblaCam * 1.6, ox = (Math.random() - 0.5) * tb, oz = (Math.random() - 0.5) * tb;
   camera.position.set(camM.x - F.x * zz[1] + ox, zz[0], camM.z - F.z * zz[1] + oz); camera.lookAt(camM.x + ox, 0, camM.z + oz);
   luces(); sol.position.set(camM.x + 10, 40, camM.z + 8); sol.target.position.set(camM.x, 0, camM.z);
 }
@@ -1002,21 +1062,28 @@ function preparaMandos() {
     b.addEventListener('pointerup', (e) => {if (!p0) return; const a = apunta; p0 = null; apunta = null; ocultaMira(); lanzaMia(k, a);});
     b.addEventListener('pointercancel', () => {p0 = null; apunta = null; ocultaMira();});
   }
-  $('bTienda').onclick = abreTienda;
-  for (const k of ['q', 'w', 'e', 'r']) $('m' + k).onclick = (e) => {e.stopPropagation(); if (S) {const h = S.u.find((q) => q.id === YO); if (subeHab(h, k)) suena('nivel', 0.4);} else {NET.manda({t: 'sube', k}); suena('nivel', 0.4);}};
-  for (const k of ['d', 'f']) $('b' + k.toUpperCase()).onclick = () => {
+  const toca = (el, fn) => {el.addEventListener('pointerdown', (e) => {e.preventDefault(); e.stopPropagation(); fn(e);}); el.addEventListener('click', (e) => e.preventDefault());};
+  toca($('bTienda'), abreTienda);
+  for (const k of ['q', 'w', 'e', 'r']) toca($('m' + k), () => subeMia(k));
+  for (const k of ['d', 'f']) toca($('b' + k.toUpperCase()), () => {
     const v = VISTA.get(YO); if (!v || v.muerto >= 0 || (k === 'd' ? v.cdD : v.cdF) > 0) return;
     const dx = MANDO.mx || Math.sin(v.rot || 0), dz = MANDO.mz || Math.cos(v.rot || 0);
     if (S) usaHechizo(S.u.find((q) => q.id === YO), k, dx, dz);
     else {NET.manda({t: 'hech', k, dx, dz, x: MIO.x, z: MIO.z}); if (k === 'd') {const l = Math.hypot(dx, dz) || 1; MIO.x += dx / l * 4.5; MIO.z += dz / l * 4.5; MIO.px = undefined; limita(MIO);}}
-  };
-  for (const b of document.querySelectorAll('#pings button[data-p]')) b.onclick = () => {$('pings').classList.remove('abierto'); const v = VISTA.get(YO); if (!v) return; const k = b.dataset.p; if (S) {S.ev.push(['ping', MI_EQ, YO, k, v.x, v.z]); efectoLocal(['ping', MI_EQ, YO, k, v.x, v.z]);} else NET.manda({t: 'ping', k, x: v.x, z: v.z});};
-  $('bPing').onclick = () => $('pings').classList.toggle('abierto');
-  $('compraRapida').onclick = () => {const id = $('compraRapida').dataset.id; if (id) compraMia(id);};
+  });
+  for (const b of document.querySelectorAll('#pings button[data-p]')) toca(b, () => {$('pings').classList.remove('abierto'); const v = VISTA.get(YO); if (!v) return; const k = b.dataset.p; if (S) {S.ev.push(['ping', MI_EQ, YO, k, v.x, v.z]); efectoLocal(['ping', MI_EQ, YO, k, v.x, v.z]);} else NET.manda({t: 'ping', k, x: v.x, z: v.z});});
+  toca($('bPing'), () => $('pings').classList.toggle('abierto'));
+  toca($('compraRapida'), () => {const id = $('compraRapida').dataset.id; if (id) compraMia(id);});
   $('marcador').onclick = () => {$('tabla').classList.toggle('hidden'); pintaTabla();};
   $('tabla').onclick = () => $('tabla').classList.add('hidden');
-  $('bZoom').onclick = () => {zoomI = (zoomI + 1) % ZOOMS.length; localStorage.setItem('vado.zoom', zoomI);};
-  $('bBase').onclick = () => {const v = VISTA.get(YO); if (!v || v.muerto >= 0) return; volverBase = VOLVER_T; volverVida = v.vida; suena('magia', 0.35);};
+  toca($('bZoom'), () => {zoomI = (zoomI + 1) % ZOOMS.length; localStorage.setItem('vado.zoom', zoomI);});
+  toca($('bBase'), () => {const v = VISTA.get(YO); if (!v || v.muerto >= 0) return; volverBase = VOLVER_T; volverVida = v.vida; suena('magia', 0.35);});
+}
+/* subir de rango una habilidad (el + verde, o tocar la propia habilidad si aún no la tienes) */
+function subeMia(k) {
+  const v = VISTA.get(YO), i = 'qwer'.indexOf(k); if (!v || !(v.pts > 0) || (v.rk ? v.rk[i] : 0) >= rangoMax(v.nivel, k)) return false;
+  if (S) subeHab(S.u.find((q) => q.id === YO), k); else NET.manda({t: 'sube', k});
+  suena('nivel', 0.4); const b = $('b' + k.toUpperCase()); b.classList.remove('subida'); void b.offsetWidth; b.classList.add('subida'); return true;
 }
 let volverBase = 0, volverVida = 0, circVuelta = null; const VOLVER_T = 4.5;
 let mira = null;
@@ -1044,7 +1111,7 @@ function muestraMira(k, dx, dy) {
 function ocultaMira() {if (mira) for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false;}
 function lanzaMia(k, apunta) {
   const v = VISTA.get(YO); if (!v || v.muerto >= 0) return;
-  const i = 'qwer'.indexOf(k); if (v.cds && v.cds[i] > 0) return; if (!(v.rk && v.rk[i] > 0)) {aviso(v.pts > 0 ? 'Pulsa el + de encima para aprender esta habilidad' : k === 'r' ? 'La definitiva se aprende a nivel 4' : 'Aún no la has aprendido: sube de nivel'); return;}
+  const i = 'qwer'.indexOf(k); if (v.cds && v.cds[i] > 0) return; if (!(v.rk && v.rk[i] > 0)) {if (subeMia(k)) return; aviso(v.pts > 0 ? 'Pulsa el + de encima para aprender esta habilidad' : k === 'r' ? 'La definitiva se aprende a nivel 4' : 'Aún no la has aprendido: sube de nivel'); return;}
   const H = HEROES[v.tipo].hab[k], x = v.xi ?? v.x, z = v.zi ?? v.z; let dx, dz, px, pz;
   if (apunta && mira && mira.dir) {dx = mira.dir.wx; dz = mira.dir.wz; px = mira.dir.px; pz = mira.dir.pz;}
   else {/* toque: apunta solo al héroe enemigo más cercano (o a lo que tengas delante) */
@@ -1148,7 +1215,7 @@ function pantallaVS(jugadores, modo) {
 }
 const ARMA = {rohan: 'lanza', enano: 'hacha', elfo: 'arco', hobbit: 'honda'};
 function iconosHab(tipo) {
-  $('bAt').querySelector('img').src = ICO(ARMA[tipo]); $('bAt').classList.add('arma');for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = 'ui/h_' + tipo + '_' + k + '.webp'; b.title = HEROES[tipo].hab[k].n;}}
+  $('bAt').querySelector('img').src = 'ui/at_' + tipo + '.webp'; $('bAt').classList.remove('arma');for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = 'ui/h_' + tipo + '_' + k + '.webp'; b.title = HEROES[tipo].hab[k].n;}}
 function subeNivelFx(v) {
   flip('onda', v.xi ?? v.x, v.zi ?? v.z, 5, true); flip('explosion', v.xi ?? v.x, v.zi ?? v.z, 2.2); suena('nivel', 0.6);
   const n = document.createElement('div'); n.className = 'nivelSube'; n.textContent = '¡Nivel ' + v.nivel + '!'; document.body.appendChild(n); setTimeout(() => n.remove(), 1400);
@@ -1359,4 +1426,4 @@ function preparaMenu() {
   camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
   bucle();
 })();
-window._vado = {AROS, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {AROS, flip, FXP, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
