@@ -151,7 +151,7 @@ function camino(desde, hasta) {
 const SUBD = {m: {vida: 380, dano: 12, alcance: 1.9, vatq: 0.85, vel: 3.4, oro: 22, xp: 32}, r: {vida: 270, dano: 16, alcance: 6, vatq: 0.75, vel: 3.4, oro: 16, xp: 26}, a: {vida: 1100, dano: 30, alcance: 2.3, vatq: 0.6, vel: 3.1, oro: 60, xp: 70, muros: 3}};
 const SUBD_X = {s: 1.6, t: 2.2, n: 2.2};
 /* desde el minuto 5 las hordas pegan cada vez más fuerte a las torres, para que las partidas no se eternicen */
-const asedio = () => (1 + Math.max(0, (S.t - 300) / 240)) * (S.crecida ? 1.5 : 1);   /* multiplicador contra súbditos y contra torres/estandarte */
+const asedio = () => 1 + Math.max(0, (S.t - 300) / 240);   /* multiplicador contra súbditos y contra torres/estandarte */
 const MODELO_SUBD = [{m: 'ballestero2', r: 'arquero_rohan2', a: 'ballestero2'}, {m: 'uruk', r: 'q_arquero', a: 'uruk'}];
 const ALTO_SUBD = {m: 1.7, r: 1.6, a: 2.6};
 const signo = (eq) => eq === 0 ? 1 : -1;
@@ -475,13 +475,8 @@ function oleada() {
 function paso(dt) {
   S.t += dt; S.ola -= dt; S.porId = new Map(S.u.map((u) => [u.id, u]));
   for (let i = S.dif.length - 1; i >= 0; i--) if (S.dif[i].t <= S.t) {const f = S.dif[i].fn; S.dif.splice(i, 1); f();} if (S.ola <= 0) {S.ola = S.carriles.length > 1 ? 28 : 24; oleada();}
-  /* «La crecida del Isen»: para que en el móvil no haya partidas eternas, a partir del minuto 11 (1v1) o 15 (2v2)
-     el río se lleva las defensas: torres y estandartes pierden vida poco a poco y las hordas pegan más fuerte a las torres */
-  const tC = S.carriles.length > 1 ? 900 : 660;
-  if (S.t >= tC) {
-    if (!S.crecida) {S.crecida = 1; ev(['aviso', 0, '🌊 ¡La crecida del Isen! Las defensas empiezan a ceder']); ev(['voz', 'hordas']);}
-    for (const t of S.u) if ((t.k === 't' || t.k === 'n') && t.vida > 1) t.vida = Math.max(1, t.vida - t.max * 0.004 * dt);
-  }
+  /* rendición: si se acaba el tiempo de la votación sin votos suficientes, falla */
+  for (const eq of [0, 1]) {const R = S.voto && S.voto[eq]; if (R && S.t >= R.hasta) cierraVoto(eq, false);}
   const hs = heroes();
   for (const h of hs) {
     for (const k in h.cd) h.cd[k] = Math.max(0, h.cd[k] - dt);
@@ -694,6 +689,30 @@ function ia(h, dt, st) {
   }
 }
 
+/* ---------- rendirse (como en el Wild Rift: desde el minuto 5; hasta el 9 hace falta que voten sí todos,
+   después más del 70 %; si falla, otra vez a los 2 minutos). Solo votan las personas, no los bots. ---------- */
+const RINDE_T = 300, RINDE_MAYORIA = 540, VOTO_DUR = 15, VOTO_ESPERA = 120;
+function votosNecesarios(eq) {const n = heroes().filter((h) => h.eq === eq && !h.bot).length || 1; return S.t < RINDE_MAYORIA ? n : Math.floor(n * 0.7) + 1;}
+function rinde(h, si) {
+  if (!S.voto) {S.voto = [null, null]; S.votoT = [0, 0];}
+  const eq = h.eq; let R = S.voto[eq];
+  if (!R) {
+    if (!si) return;
+    if (S.t < RINDE_T) {ev(['aviso', h.id, 'Podrás rendirte a partir del minuto 5']); return;}
+    if (S.votoT[eq] > S.t) {ev(['aviso', h.id, 'Podrás volver a votar en ' + Math.ceil(S.votoT[eq] - S.t) + ' s']); return;}
+    R = S.voto[eq] = {si: new Set(), no: new Set(), hasta: S.t + VOTO_DUR};
+  }
+  if (R.si.has(h.id) || R.no.has(h.id)) return;
+  (si ? R.si : R.no).add(h.id);
+  const n = heroes().filter((q) => q.eq === eq && !q.bot).length || 1, need = votosNecesarios(eq);
+  ev(['voto', eq, h.id, R.si.size, R.no.size, need, n, Math.max(0, R.hasta - S.t)]);
+  if (R.si.size >= need) cierraVoto(eq, true); else if (R.no.size > n - need) cierraVoto(eq, false);
+}
+function cierraVoto(eq, ok) {
+  S.voto[eq] = null;
+  if (ok) {S.fin = 1 - eq; ev(['aviso', 0, (eq ? 'Isengard' : 'Rohan') + ' se rinde']); ev(['fin', 1 - eq]);}
+  else {S.votoT[eq] = S.t + VOTO_ESPERA; ev(['votoFin', eq]);}
+}
 /* ---------- tienda ---------- */
 function puedeComprar(h) {return h.muerto || dist(h, BASES[h.eq].fuente) < 9;}
 function falta(h, id) {const o = OBJ[id]; if (!o.rec) return []; const q = [...h.inv], f = []; for (const r of o.rec) {const k = q.indexOf(r); if (k >= 0) q.splice(k, 1); else f.push(r);} return f;}
@@ -1014,6 +1033,8 @@ function efectoLocal(e) {
   if (t === 'baja') anuncio(e[1], e[2], e[3]);
   if (t === 'aviso' && (e[1] === 0 || e[1] === YO)) aviso(e[2]);
   if (t === 'fin') acaba(e[1]);
+  if (t === 'voto' && e[1] === MI_EQ) pintaVoto(e);
+  if (t === 'votoFin' && e[1] === MI_EQ) {$('voto').classList.add('hidden'); aviso('No ha salido la rendición');}
 }
 let avisoT = 0;
 /* cartel de baja al estilo Wild Rift: retrato del que derriba ⚔ retrato del derribado, y el grito si lo hay */
@@ -1029,6 +1050,24 @@ function anuncio(a, d, txt) {
   el.classList.remove('hidden'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
   clearTimeout(anuncioT); anuncioT = setTimeout(() => el.classList.add('hidden'), 2600);
   if (txt) {suena('cuerno', 0.3); vozDeTexto(txt, vd.k === 't' && mio(vd));}
+}
+/* panel de ajustes y votación */
+function votaMio(si) {if (S) rinde(S.u.find((q) => q.id === YO), si); else NET.manda({t: 'rinde', si});}
+function abreAjustes() {
+  const t = +($('marcador').dataset.t || 0), a = $('ajustes'), falta = Math.ceil(RINDE_T - t);
+  a.innerHTML = '<div class="ajC"><b>Partida</b><button class="bt" id="ajSeguir">Seguir jugando</button><button class="bt s" id="ajRinde"' + (falta > 0 ? ' disabled' : '') + '>🏳 Rendirse' + (falta > 0 ? ' (en ' + Math.floor(falta / 60) + ':' + String(falta % 60).padStart(2, '0') + ')' : '') + '</button>' +
+    '<p>' + (MODO === '2v2' ? 'Hasta el minuto 9 hace falta que votéis sí los dos.' : 'Te rindes y gana el rival.') + '</p></div>';
+  a.classList.remove('hidden');
+  $('ajSeguir').onclick = () => a.classList.add('hidden');
+  $('ajRinde').onclick = () => {a.classList.add('hidden'); votaMio(true);};
+}
+function pintaVoto(e) {
+  const [, , quien, si, no, need, n, quedan] = e, v = $('voto'), yaVote = quien === YO || v.dataset.vote === '1';
+  if (quien === YO) v.dataset.vote = '1';
+  const cajas = Array.from({length: n}, (_, i) => '<i class="' + (i < si ? 'si' : i < si + no ? 'no' : '') + '"></i>').join('');
+  v.innerHTML = '<b>🏳 ¿Rendirse?</b><div class="vC">' + cajas + '</div><small>Hacen falta ' + need + ' de ' + n + '</small>' + (yaVote ? '' : '<div class="vB"><button class="bt" id="vSi">Sí</button><button class="bt s" id="vNo">No</button></div>');
+  v.classList.remove('hidden'); clearTimeout(v._t); v._t = setTimeout(() => {v.classList.add('hidden'); v.dataset.vote = '';}, (quedan + 1) * 1000);
+  if (!yaVote) {$('vSi').onclick = () => {v.dataset.vote = '1'; votaMio(true);}; $('vNo').onclick = () => {v.dataset.vote = '1'; votaMio(false);};}
 }
 function aviso(txt) {const a = $('aviso'); a.textContent = txt; a.style.opacity = 1; clearTimeout(avisoT); avisoT = setTimeout(() => {a.style.opacity = 0;}, 2200);}
 
@@ -1073,6 +1112,7 @@ function preparaMandos() {
   }
   const toca = (el, fn) => {el.addEventListener('pointerdown', (e) => {e.preventDefault(); e.stopPropagation(); fn(e);}); el.addEventListener('click', (e) => e.preventDefault());};
   toca($('bTienda'), abreTienda);
+  toca($('bAjustes'), abreAjustes);
   for (const k of ['q', 'w', 'e', 'r']) toca($('m' + k), () => subeMia(k));
   for (const k of ['d', 'f']) toca($('b' + k.toUpperCase()), () => {
     const v = VISTA.get(YO); if (!v || v.muerto >= 0 || (k === 'd' ? v.cdD : v.cdF) > 0) return;
@@ -1190,6 +1230,7 @@ function recibe(o) {
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; usaHab(h, o.k, o.dx, o.dz, o.px, o.pz);}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
+    if (o.t === 'rinde') rinde(h, !!o.si);
     if (o.t === 'ping') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; S.ev.push(e); efectoLocal(e);}
     if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
     if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined;}}
@@ -1205,7 +1246,7 @@ let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 let MODO = '1v1';
 function empieza(jugadores, modo, simulo) {
   MODO = modo; if (ponMapa(modo)) construyeMapa();
-  precargaVoces(); document.body.classList.add('jugando'); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
+  precargaVoces(); document.body.classList.add('jugando'); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; recibeFoto(foto());}
@@ -1269,7 +1310,7 @@ function minimapa() {
 }
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
-  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; const tC = MODO === '2v2' ? 900 : 660, tt = +($('marcador').dataset.t || 0); $('buffs').innerHTML = (tt >= tC ? '<span class="azul">🌊 Crecida del Isen</span>' : tt >= tC - 60 ? '<span class="azul">🌊 Crecida en ' + Math.ceil(tC - tt) + ' s</span>' : '') + (bu ? '<span class="azul">🔷 Furia del Uruk ' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/buff_troll.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/buff_alfa.webp" alt="">' + v.bAlfa + ' s</span>' : ''); consejos(+($('marcador').dataset.t || 0));}
+  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; $('buffs').innerHTML = (bu ? '<span class="azul">🔷 Furia del Uruk ' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/buff_troll.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/buff_alfa.webp" alt="">' + v.bAlfa + ' s</span>' : ''); consejos(+($('marcador').dataset.t || 0));}
   $('yoNv').textContent = 'Nv ' + v.nivel; $('oro').textContent = '🪙 ' + v.oro; $('xpBar').style.width = (v.nivel >= NIVEL_MAX ? 100 : (v.xpP || 0) * 100) + '%';
   if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel;
   $('kda').textContent = (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3];
@@ -1435,4 +1476,4 @@ function preparaMenu() {
   camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
   bucle();
 })();
-window._vado = {AROS, flip, FXP, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {AROS, flip, FXP, rinde, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
