@@ -123,3 +123,34 @@ C) FONDO DE LA PANTALLA DE CARGA (VS), horizontal 1920x1080: mitad izquierda ton
 
 Pásamelo en un .zip llamado Pack_Vado_7.zip.
 ```
+
+## Pack Vado 8 — la espesura como la jungla del LoL: ICONOS (15/11)
+**Dónde: ART** (chat normal; solo imágenes).
+```
+Seguimos con «El Vado del Isen» (El Señor de los Anillos, Rohan contra Isengard junto al Vado del Isen, estilo League of Legends: Wild Rift). Todo PNG con fondo transparente, sin texto, sin marcas de agua, mismo marco redondo de metal y oro gastado que los iconos de habilidades que ya me hiciste.
+
+A) 6 ICONOS DE BENDICIÓN de la espesura, 256x256:
+   1. Brasa del troll (bendición roja): un puño de piedra envuelto en brasas y llamas.
+   2. Savia del Huorn (bendición azul): una hoja de roble antiguo brillando en azul, raíces que se mueven.
+   3. Furia del Uruk: un yelmo uruk-hai con la Mano Blanca y aura azul.
+   4. Aliento de fuego (draco de fuego): una garra de draco entre llamas rojas.
+   5. Aliento helado (draco frío de las Montañas Grises): un colmillo de hielo azul.
+   6. Alma del draco (al cazar 3 dracos): un ojo de draco dorado dentro de un sol de runas.
+B) 9 MARCAS DE MINIMAPA, 96x96, siluetas muy claras que se lean pequeñas: huargo, cuervo crebain, troll de piedra, huorn, uruk azul, draco, nutria del río, planta explosiva, flor de visión.
+C) 3 ICONOS DE HECHIZOS 256x256: Destello (un destello dorado de luz élfica), Curar (una hoja de athelas brillando), Castigo (un relámpago cayendo sobre una garra de bestia).
+D) 3 PLANTAS DE LA ESPESURA vistas desde arriba en 3/4, 512x512, para pintar en el suelo: «seta de humo» (una seta gorda que explota y lanza por los aires), «baya de los Entagüe» (un arbusto con bayas rojas que curan), «flor de elanor» (una flor dorada de Lothlórien que, al pisarla, deja ver alrededor).
+
+Pásamelo en un .zip llamado Pack_Vado_8.zip, con un nombre claro por archivo.
+```
+
+## Pack Vado 9 — la espesura como la jungla del LoL: MODELOS 3D (15/11)
+**Dónde: WORK** (modo agente: hay que descargar modelos CC0, comprobar sus animaciones y montar los .glb).
+```
+Seguimos con «El Vado del Isen» (El Señor de los Anillos, Rohan contra Isengard, estilo Wild Rift, low-poly como KayKit/Quaternius). Necesito bestias nuevas para la espesura, en .glb con animaciones (mínimo: quieto, andar o correr, atacar y morir; si el modelo trae otros nombres, dime cuál es cuál en un LEEME). Busca y descarga modelos CC0 (Quaternius «Ultimate Monsters» / «Animated Animals», KayKit, Kenney…) y adáptalos con colores sobrios y oscuros, nada de colores de juguete:
+   1. HUORN: un árbol antiguo que camina (el guardián de la bendición azul). Si no hay árbol animado, un golem de madera y raíces.
+   2. CREBAIN: un cuervo grande negro de las Tierras Brunas (sale en bandada de 4-5, que vuelen o salten bajo).
+   3. DRACO: un draco sin alas, reptil grande con cuernos (lo tiño yo en rojo fuego o azul hielo).
+   4. NUTRIA DEL ISEN: un animal pequeño de río que huye (como el cangrejo del río del LoL).
+   5. Opcional: un SAPO GIGANTE de las Ciénagas de los Muertos (como el Gromp).
+Escala aproximada en metros: huorn 3,5 · crebain 0,8 · draco 3 · nutria 0,7 · sapo 1,6. Un .glb por bestia, con las licencias en un LICENCIAS.txt. Pásamelo en un .zip llamado Pack_Vado_9.zip.
+```
