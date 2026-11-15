@@ -225,13 +225,13 @@ function ajustaResolucion(dt) {
   /* si el móvil va justo, la sombra a la mitad de resolución (4 veces menos píxeles que pintar) */
   const ms = PR.v <= 1 ? 1024 : 2048; if (sol.shadow.mapSize.x !== ms) {sol.shadow.mapSize.set(ms, ms); if (sol.shadow.map) {sol.shadow.map.dispose(); sol.shadow.map = null;}}
 }
-renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18; /* más luz y color: estilo Supercell, menos oscuro */
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap; /* el «suave» hace 4 veces más lecturas por píxel */
 document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#1b2230'); scene.fog = new THREE.Fog('#1b2230', 45, 110);
 const camera = new THREE.PerspectiveCamera(42, VW / VH, 0.5, 200);
 addEventListener('resize', () => {giraPantalla(); renderer.setSize(VW, VH); camera.aspect = VW / VH; camera.updateProjectionMatrix(); APAI = VW > VH;});
-scene.add(new THREE.HemisphereLight('#c9d6ff', '#3a2a1a', 1.5));
+scene.add(new THREE.HemisphereLight('#d6e2ff', '#4a3620', 1.85));
 const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30, 10); sol.castShadow = true;
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
@@ -513,7 +513,7 @@ function dana(o, d, n, tipo) {
   }
   if (d.k === 'j' && o && o.k === 'h') {d.agro = o.id; d.agroT = S.t + 6;}
   if (o) {o.atacaA = d.id; o.atacaT = S.t + 2;}
-  d.vida -= n; ev(['num', d.x, d.z, Math.round(n), tipo === 'crit' ? 'c' : '']);
+  d.vida -= n; ev(['num', d.x, d.z, Math.round(n), tipo === 'crit' ? 'c' : '', o ? o.id : 0, d.id]);
   if (d.k === 'h' || (o && o.k === 'h') || (o && o.k === 't')) ev(['g', d.id, o ? o.id : 0, tipo === 'crit' || tipo === 'hab' || n > 150 ? 1 : 0]);
   if (o && o.k === 'h' && o.vida > 0) {const r = stats(o).robo; if (r) o.vida = Math.min(stats(o).vida, o.vida + n * r);}
   if (d.vida <= 0) muere(d, o);
@@ -592,7 +592,11 @@ function mueveHacia(u, tx, tz, vel, dt) {
   const p = Math.min(l, vel * dt); u.x += dx / l * p; u.z += dz / l * p; u.rot = Math.atan2(dx, dz); limita(u); return true;
 }
 function limita(u) {u.x = Math.max(-MAPA.ancho, Math.min(MAPA.ancho, u.x)); u.z = Math.max(-MAPA.largo, Math.min(MAPA.largo, u.z)); choca(u);}
+/* torres y estandartes son sólidos (antes se atravesaban): ESTR se rehace en cada paso del anfitrión y, en los demás móviles, desde lo que se ve */
+let ESTR = [];
+function estructuras(lista) {ESTR = []; if (window._sinEstr) return; for (const q of lista) if ((q.k === 't' || q.k === 'n') && q.vida > 0) ESTR.push({x: q.x, z: q.z, r: (q.k === 'n' ? 2.4 : 1.9)});}
 function choca(u) {
+  for (const a of ESTR) {const dx = u.x - a.x, dz = u.z - a.z, d = Math.hypot(dx, dz), m = a.r + (u.rad && u.k !== 'h' ? 0.3 : 0.45); if (d < m) {if (d < 0.001) {u.x = a.x + m; continue;} u.x = a.x + dx / d * m; u.z = a.z + dz / d * m;}}
   for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {const l = ARB.get((Math.floor(u.x / 4) + i) + ',' + (Math.floor(u.z / 4) + j)); if (l) for (const a of l) {const dx = u.x - a.x, dz = u.z - a.z, d = Math.hypot(dx, dz), m = a.r + 0.45; if (d < m && d > 0.001) {u.x = a.x + dx / d * m; u.z = a.z + dz / d * m;}}}
 }
 /* rumbo de un bot: recto si no hay árboles en medio; si los hay, por la red de sendas */
@@ -625,7 +629,7 @@ function oleada() {
 }
 
 function paso(dt) {
-  S.t += dt; S.ola -= dt; S.porId = new Map(S.u.map((u) => [u.id, u]));
+  S.t += dt; S.ola -= dt; S.porId = new Map(S.u.map((u) => [u.id, u])); estructuras(S.u);
   for (let i = S.dif.length - 1; i >= 0; i--) if (S.dif[i].t <= S.t) {const f = S.dif[i].fn; S.dif.splice(i, 1); f();} if (S.ola <= 0) {S.ola = S.carriles.length > 1 ? 28 : 24; oleada();}
   /* quemadura de la brasa del troll */
   for (const u of S.u) if (u.quema) {if (S.t > u.quema.hasta || u.vida <= 0 || u.muerto) {u.quema = null; continue;} u.quema.tick -= dt; if (u.quema.tick <= 0) {u.quema.tick = 0.5; dana(S.porId.get(u.quema.o) || null, u, u.quema.dps * 0.5, 'hab');}}
@@ -1030,7 +1034,7 @@ function habVisual(e) {
   const d = animaClip(o, HAB_ANIM[v.tipo][k], H.tipo === 'dash' || H.tipo === 'salto' ? 1.3 : 1.15); o.ocup = Math.min(0.9, d * 0.85); o.habYa = true;
   const cerca = mio || Math.hypot(x - camM.x, z - camM.z) < 16, temb = (n) => {if (cerca) tiemblaCam = Math.max(tiemblaCam, n);};
   const luego2 = (ms, fn) => setTimeout(() => {if (VIS.get(id) === o) fn();}, ms), rs = rot - Math.PI / 4;
-  if (k === 'r') {ultiFx(v, H, k, mio, cerca); aura(o, v.eq === MI_EQ ? '#8fd0ff' : '#ff8a6a', 1.1, 2.6); if (H.tipo !== 'area') flip('ondaC', x, z, 7, true); o.flash = 0.13; o.punch = 1.6;}
+  if (k === 'r') {ultiFx(v, H, k, mio, cerca); aura(o, v.eq === MI_EQ ? '#8fd0ff' : '#ff8a6a', 1.1, 2.6); if (H.tipo !== 'area') flip('ondaC', x, z, 7, true); o.flash = 0.13; o.punch = 1.6; o.sqA = 0.22; o.sqT = o.sqD = 0.35;}
   const anillo = (cx, cz, r, n, fx = 'polvo', tam = 1.6) => {for (let i = 0; i < n; i++) {const a = i / n * Math.PI * 2; flip(fx, cx + Math.cos(a) * r, cz + Math.sin(a) * r, tam);}};
   if (H.tipo === 'dash') {
     o.estela = {t: H.dist / 18 + 0.15, cada: 0, fx: k === 'r' ? 'fuego' : 'polvo', tam: k === 'r' ? 2.4 : 1.5}; flip('polvoA', x, z, 3.4, true); suena('viento', 0.5);
@@ -1133,7 +1137,7 @@ function animaHabilidades(dt) {
 }
 function golpeVisual(id, de, fuerte) {
   const o = VIS.get(id), v = VISTA.get(id); if (!o || !v) return;
-  o.flash = 0.13; o.punch = fuerte ? 1 : 0.6;
+  o.flash = 0.13; o.punch = fuerte ? 1 : 0.6; o.sqA = -(fuerte ? 0.2 : 0.12); o.sqT = o.sqD = 0.24;
   const yoPego = de === YO, meDan = id === YO;
   const ahora = performance.now(); /* como mucho una chispa cada 0,18 s por personaje: en una pelea grande eran decenas a la vez */
   if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; flip('impacto', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2 : 1.3); suena(fuerte ? 'espada' : 'golpe', yoPego ? 0.55 : 0.3);}
@@ -1160,7 +1164,7 @@ function dibuja(dt) {
       if (muerto) pon(o, 'morir', 0.1);
       else {
         if (v.hc !== o.hc) {o.hc = v.hc; if (!o.habYa) {otraVez(o, 'hab'); o.ocup = 0.45;} o.habYa = false;}
-        else if (v.ac !== o.ac) {o.ac = v.ac; otraVez(o, 'atacar'); o.ocup = 0.35; if (v.id === YO && !HEROES[v.tipo].proy) suena('espada', 0.25);}
+        else if (v.ac !== o.ac) {o.ac = v.ac; otraVez(o, 'atacar'); o.ocup = 0.35; if (v.k === 'h') {o.sqA = 0.1; o.sqT = o.sqD = 0.22;} if (v.id === YO && !HEROES[v.tipo].proy) suena('espada', 0.25);}
         o.ocup = (o.ocup || 0) - dt;
         const vel = o.lx === undefined ? 0 : Math.hypot(x - o.lx, z - o.lz) / Math.max(dt, 0.001); o.lx = x; o.lz = z; o.vel = (o.vel || 0) + (Math.min(vel, 12) - (o.vel || 0)) * Math.min(1, dt * 10);
         const corre = v.mueve || o.vel > 0.6;
@@ -1177,9 +1181,11 @@ function dibuja(dt) {
         o.flash = Math.max(0, (o.flash || 0) - dt); const k = o.flash / 0.13;
         for (const m of materiales(o)) {if (k > 0) {m.m.emissive.setRGB(1, 0.95, 0.85); m.m.emissiveIntensity = 0.9 * k;} else {m.m.emissive.copy(m.e); m.m.emissiveIntensity = m.i;}}
         o.flashOn = k > 0;
-        if (o.escala === undefined) o.escala = o.raiz.scale.x;
-        o.raiz.scale.setScalar(o.escala * (1 + 0.1 * (o.punch || 0) * Math.sin(k * Math.PI)));
       }
+      /* estirar y aplastar (como en los juegos de Supercell): al pegar se estira, al recibir se aplasta, y vuelve con rebote */
+      if (o.escala === undefined) o.escala = o.raiz.scale.x;
+      if (o.sqT > 0) {o.sqT -= dt; const k = 1 - Math.max(0, o.sqT) / o.sqD, a = o.sqA * Math.sin(k * Math.PI * 1.5) * (1 - k) * 1.4; o.raiz.scale.set(o.escala * (1 - a * 0.55), o.escala * (1 + a), o.escala * (1 - a * 0.55)); o.sqOn = true;}
+      else if (o.sqOn) {o.sqOn = false; o.raiz.scale.setScalar(o.escala);}
       const invis = v.k === 'h' && (v.flags & 1 || (v.flags & 8 && v.eq === MI_EQ)), escondido = v.k === 'h' && v.eq !== MI_EQ && ((v.flags & 1) || ((v.flags & 8) && !veoHierba(v))); v.escondido = escondido; o.raiz.visible = !escondido && !(v.k === 'h' && muerto && v.muerto > 3);
       if (invis && v.eq === MI_EQ) o.raiz.traverse((q) => {if (q.isMesh) {q.material.transparent = true; q.material.opacity = 0.4;}}); else if (o.semi) o.raiz.traverse((q) => {if (q.isMesh) q.material.opacity = 1;});
       o.semi = invis;
@@ -1193,7 +1199,7 @@ function dibuja(dt) {
     if (o.aro) {o.aro.position.set(x, 0.05, z); o.aro.visible = o.raiz.visible && !muerto; if (v.k === 'h') o.aro.rotation.y += dt * 0.6;}
     /* barra de vida */
     let b = BARRAS.get(v.id);
-    if (!b) {b = document.createElement('div'); b.className = 'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].grande ? 't' : 'm'}[v.k] + ' e' + (v.eq === 2 ? 2 : v.eq === MI_EQ ? 0 : 1); b.innerHTML = (v.k === 'h' ? '<b></b>' : '') + '<i><u></u></i>'; $('barras').appendChild(b); BARRAS.set(v.id, b);}
+    if (!b) {b = document.createElement('div'); b.className = 'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].grande ? 't' : 'm'}[v.k] + ' e' + (v.eq === 2 ? 2 : v.eq === MI_EQ ? 0 : 1) + (v.id === YO ? ' yo' : ''); b.innerHTML = (v.k === 'h' ? '<b></b>' : '') + '<i><u></u></i>'; $('barras').appendChild(b); BARRAS.set(v.id, b);}
     const altoB = v.k === 'h' ? 2.6 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 : v.k === 't' ? 8 : 8.4;
     _p.set(x, altoB, z).project(camera);
     const vis = o.raiz.visible && !muerto && v.vida > 0 && _p.z < 1 && Math.abs(_p.x) < 1.2 && Math.abs(_p.y) < 1.2 && (v.k !== 'j' || v.vida < v.max || NEUTRO[v.tipo].grande);
@@ -1299,12 +1305,13 @@ function suena(n, vol = 0.5) {
 function numero(x, z, txt, cls) {if (cls === 'v') cls = 'cur'; if (NUMS.length > 24) {NUMS[0].el.remove(); NUMS.shift();}const el = document.createElement('div'); el.className = 'num ' + (cls || ''); el.textContent = txt; $('barras').appendChild(el); NUMS.push({el, x: x + rnd(-0.3, 0.3), z, t: 0});}
 function efectoLocal(e) {
   const t = e[0];
-  if (t === 'num') {if (e[4] === 'o' && e[5] !== YO) return; numero(e[1], e[2], e[3], e[4]); if (e[4] === 'o') suena('moneda', 0.3);}
+  if (t === 'num') {if (e[4] === 'o' && e[5] !== YO) return; if ((e[4] === '' || e[4] === 'c') && e[6] !== undefined && e[5] !== YO && e[6] !== YO) return; /* como en el Wild Rift: solo los números de tus golpes y de los que te dan */ if (e[6] === YO && e[4] !== 'c') e[4] = 'r'; numero(e[1], e[2], e[3], e[4]); if (e[4] === 'o') suena('moneda', 0.3);}
   if (t === 'fx') {if (e[1] === 'onda') flip('onda', e[2], e[3], e[4], true); else flip(e[1], e[2], e[3], e[4], e[1] === 'tajo'); if (e[1] === 'explosion') suena('explosion', 0.6); if (e[1] === 'onda') suena('viento', 0.4);}
   if (t === 'proy') {const o = modeloProy(e[1]); o.scale.multiplyScalar(e[6] || 1); scene.add(o); FXP.push({tipo: 'proy', o, x: e[2], z: e[3], y: e[7] || 1.2, d: e[4], v: e[5], t: 0}); suena(e[1] === 'piedra' ? 'golpe' : 'arco', 0.25);}
   if (t === 'tiro') {const o = modeloProy(e[1]); o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); suena('arco', 0.5);}
   if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.userData.tira = 1; a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}
   if (t === 'muere') suena('muerte', 0.35);
+  if (t === 'vive') {const o = VIS.get(e[1]); if (o) {o.sqA = 0.3; o.sqT = o.sqD = 0.45;} const v = VISTA.get(e[1]); if (v) {const f = BASES[v.eq].fuente; flip('ondaC', f.x, f.z, 4, true);}}
   if (t === 'son') suena(e[1], 0.5);
   if (t === 'g') golpeVisual(e[1], e[2], e[3]);
   if (t === 'hb') habVisual(e);
@@ -1512,6 +1519,15 @@ function lanzaMia(k, apunta) {
 /* mi héroe en un móvil que no simula: se mueve aquí y se avisa al anfitrión */
 const MIO = {x: 0, z: 0, rot: 0, listo: false, dash: null};
 const atacando = () => MANDO.ataca || performance.now() < (MANDO.hasta || 0);
+/* como en el Wild Rift: mientras pulsas el ataque ves tu alcance (aro blanco alrededor de tu héroe) */
+let aroAt = null;
+function pintaAroAtaque(dt) {
+  const v = VISTA.get(YO); if (!v) return;
+  if (!aroAt) {aroAt = indicador('ind_alcance', '#ffffff'); aroAt.op = 0;}
+  const on = atacando() && v.muerto < 0 && !MIRA_ACT, alc = (HEROES[v.tipo].alcance || 2) + 0.6;
+  aroAt.op += ((on ? 0.85 : 0) - aroAt.op) * Math.min(1, dt * 14); aroAt.visible = aroAt.op > 0.03;
+  if (aroAt.visible) {aroAt.material.opacity = aroAt.op; aroAt.position.set(v.xi ?? v.x, 0.08, v.zi ?? v.z); aroAt.scale.setScalar(2 * alc * 256 / 235);}
+}
 /* con el ataque pulsado y sin mover el joystick: si no hay nadie a tiro, camina hacia el enemigo más cercano (hasta 5 m más allá de su alcance) */
 const RADIO_V = {h: 0.6, s: 0.5, t: 1.6, n: 2};
 function acercaAtaque(px, pz) {
@@ -1530,7 +1546,7 @@ function acercaAtaque(px, pz) {
   return {x: mejor.x - px, z: mejor.z - pz};
 }
 function mueveMio(dt) {
-  const v = VISTA.get(YO); if (!v) return;
+  const v = VISTA.get(YO); if (!v) return; if (!S) estructuras(VISTA.values());
   if (v.flagsE & 1) {MIO.x = v.x; MIO.z = v.z; return;}
   if (!MIO.listo || v.muerto >= 0) {MIO.x = v.x; MIO.z = v.z; MIO.listo = v.muerto < 0; return;}
   const st = {vel: HEROES[v.tipo].vel * (v.inv.includes('botas') ? 1.12 : 1) * (v.inv.includes('capa') ? 1.18 : 1)};
@@ -1754,7 +1770,7 @@ function bucle() {
         inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
-      const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
+      const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
   const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') renderer.render(scene, camera); /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
