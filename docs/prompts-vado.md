@@ -60,3 +60,30 @@ Para el mismo juego necesito el jefe del centro del mapa, el «Uruk Azul»: un c
 
 ### C. Voces del anunciador (ElevenLabs, voz «Gala», un mp3 por frase)
 ¡Primera sangre! · ¡Doble derribo! · ¡Triple derribo! · ¡En racha! · ¡Imparable! · ¡Leyenda de la Marca! · ¡Racha cortada! · ¡Aniquilación! · Torre enemiga destruida · Han destruido una de nuestras torres · ¡El Uruk Azul ha despertado! · Habéis derrotado al Uruk Azul · ¡Las hordas han llegado al vado! · ¡Victoria! · Derrota
+
+## Pack Vado 5 — botón de ataque por héroe y efectos de habilidades (15/11)
+```
+Seguimos con «El Vado del Isen» (El Señor de los Anillos, Rohan contra Isengard, estilo League of Legends: Wild Rift / Brawl Stars, oscuro y medieval). Necesito dos cosas. PNG con fondo transparente, sin texto, sin marcas de agua.
+
+A) 4 botones de ATAQUE BÁSICO, redondos 512x512, el botón grande que se pulsa para pegar, con marco de metal y oro gastado igual para los cuatro y el arma de cada héroe dentro, grande y clara:
+   1. Jinete de Rohan: lanza de la Marca con banderín verde y el caballo blanco.
+   2. Enano de Erebor: hacha de guerra enana de doble filo con runas.
+   3. Arquero de Lórien: arco élfico de Lothlórien con una flecha montada, hojas doradas.
+   4. Hobbit de la Comarca: honda de cuero con una piedra, hojas de la Comarca.
+
+B) EFECTOS DE HABILIDADES en hojas de animación (sprite sheets) de 1024x1024 con 4x4 fotogramas cada una (16 fotogramas de 256x256, de izquierda a derecha y de arriba abajo, del principio al final del efecto), sobre fondo transparente, brillantes y legibles desde arriba como en el Wild Rift:
+   1. tajo_arco: un tajo en media luna blanco-dorado (golpe de espada/hacha visto desde arriba).
+   2. tajo_fuego: el mismo tajo con llamas naranjas (el hachazo del enano).
+   3. onda_choque: anillo de onda expansiva visto desde arriba (golpe contra el suelo).
+   4. grietas: el suelo agrietándose con luz naranja dentro (la Furia de Durin), vista cenital.
+   5. polvo: nube de polvo y tierra que se levanta (cargas y saltos).
+   6. escudo: burbuja/anillo de energía azul alrededor de un héroe, vista cenital (Escudo de Edoras).
+   7. piedra: aura de roca y polvo gris alrededor de un héroe (Piedra de la Montaña).
+   8. hojas: remolino de hojas doradas de Lórien (Paso élfico, Ráfaga).
+   9. humo: bocanada de humo gris que oculta (el hobbit desapareciendo).
+   10. suerte: destellos dorados y un trébol de luz (Suerte de Bolsón).
+   11. estrellas: estrellitas girando en círculo (aturdido).
+   12. estela_flecha: estela de luz verde para flechas y piedras lanzadas.
+
+Pásamelo todo en un .zip llamado Pack_Vado_5.zip, con un nombre claro por archivo.
+```

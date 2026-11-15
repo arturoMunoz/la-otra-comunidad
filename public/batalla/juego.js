@@ -60,30 +60,58 @@ const PLAN_BOT = {rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo',
 /* El mapa en «ojo» (dibujo de Arturo, 14/11): dos caminos curvos de la base de Rohan (abajo a la izquierda) a la de Isengard
    (arriba a la derecha), la espesura en medio con el Uruk azul en el centro y el río (el vado) cruzando por la mitad.
    Todo es simétrico girando 180° alrededor del centro. */
-const MAPA = {ancho: 33, largo: 58};
-const gira = (p) => ({x: -p.x, z: -p.z});
-const CAM_A = [{x: -21, z: 45}, {x: -27, z: 28}, {x: -27, z: 8}, {x: -21, z: -14}, {x: -9, z: -33}, {x: 6, z: -44}, {x: 21, z: -45}];
-const CARRILES = [CAM_A, CAM_A.map(gira).reverse()];   /* índice 0 = lado de Rohan, último = lado de Isengard */
-const LARGOS = CARRILES.map((L) => {const c = [0]; for (let i = 1; i < L.length; i++) c.push(c[i - 1] + Math.hypot(L[i].x - L[i - 1].x, L[i].z - L[i - 1].z)); return c;});
+/* Dos mapas:
+   · «OJO» (2 contra 2, dibujo de Arturo): dos caminos curvos de Rohan (abajo izquierda) a Isengard (arriba derecha), espesura en medio,
+     el Uruk Azul en el centro y el río cruzando; simétrico girando 180°.
+   · «LÍNEA» (1 contra 1): un solo camino recto de abajo arriba, espesura a los dos lados, el río por la mitad y el Uruk a un lado del vado;
+     simétrico como en un espejo (cada bando su mitad). */
+const gira = (p) => ({x: -p.x, z: -p.z}), refleja = (p) => ({x: p.x, z: -p.z});
+let MAPA, CARRILES, LARGOS, OJO, EJE, BASES, HIERBAS, CAMPOS, PIT, TIPO_MAPA = '', SIM, ORILLA;
 function puntoCarril(l, f) {const L = CARRILES[l], c = LARGOS[l], d = f * c[c.length - 1]; for (let i = 1; i < L.length; i++) if (d <= c[i]) {const k = (d - c[i - 1]) / (c[i] - c[i - 1]); return {x: L[i - 1].x + (L[i].x - L[i - 1].x) * k, z: L[i - 1].z + (L[i].z - L[i - 1].z) * k};} return {...L[L.length - 1]};}
 function distSeg(px, pz, a, b) {const vx = b.x - a.x, vz = b.z - a.z, l2 = vx * vx + vz * vz, t = Math.max(0, Math.min(1, ((px - a.x) * vx + (pz - a.z) * vz) / l2)); return Math.hypot(px - a.x - vx * t, pz - a.z - vz * t);}
-function distCarril(x, z, l) {let m = 1e9; for (const k of l === undefined ? [0, 1] : [l]) {const L = CARRILES[k]; for (let i = 1; i < L.length; i++) m = Math.min(m, distSeg(x, z, L[i - 1], L[i]));} return m;}
+function distCarril(x, z, l) {let m = 1e9; for (const k of l === undefined ? (TIPO_MAPA === 'ojo' ? [0, 1] : [0]) : [l]) {const L = CARRILES[k]; for (let i = 1; i < L.length; i++) m = Math.min(m, distSeg(x, z, L[i - 1], L[i]));} return m;}
 /* cuánto ha avanzado un punto por un camino (0 en Rohan, 1 en Isengard) */
 function progreso(l, p) {const L = CARRILES[l], c = LARGOS[l]; let mejor = 1e9, f = 0; for (let i = 1; i < L.length; i++) {const a = L[i - 1], b = L[i], vx = b.x - a.x, vz = b.z - a.z, l2 = vx * vx + vz * vz, t = Math.max(0, Math.min(1, ((p.x - a.x) * vx + (p.z - a.z) * vz) / l2)), d = Math.hypot(p.x - a.x - vx * t, p.z - a.z - vz * t); if (d < mejor) {mejor = d; f = (c[i - 1] + t * (c[i] - c[i - 1])) / c[c.length - 1];}} return f;}
-const OJO = [...CARRILES[0], ...CARRILES[1].slice().reverse()];
-function dentroOjo(x, z) {let c = false; for (let i = 0, j = OJO.length - 1; i < OJO.length; j = i++) {const a = OJO[i], b = OJO[j]; if ((a.z > z) !== (b.z > z) && x < (b.x - a.x) * (z - a.z) / (b.z - a.z) + a.x) c = !c;} return c;}
-const EJE = {x: 0.423, z: -0.906};                     /* de Rohan hacia Isengard */
+function dentroOjo(x, z) {if (!OJO) return Math.abs(x) < MAPA.ancho && Math.abs(z) < MAPA.largo; let c = false; for (let i = 0, j = OJO.length - 1; i < OJO.length; j = i++) {const a = OJO[i], b = OJO[j]; if ((a.z > z) !== (b.z > z) && x < (b.x - a.x) * (z - a.z) / (b.z - a.z) + a.x) c = !c;} return c;}
 const ladoDe = (p) => p.x * EJE.x + p.z * EJE.z;        /* < 0 lado de Rohan, > 0 lado de Isengard */
-const BASE_R = {fuente: {x: -29, z: 53}, nexo: {x: -24.5, z: 48.5}, torre: {x: -17, z: 40.5}};
-const BASES = [BASE_R, {fuente: gira(BASE_R.fuente), nexo: gira(BASE_R.nexo), torre: gira(BASE_R.torre)}];
 const TORRE_F = 0.27;                                   /* las torres de camino, al 27 % desde su base */
-/* hierba alta (como los matorrales del Wild Rift): dentro no te ven los héroes enemigos salvo que estén a tu lado */
-const HIERBAS = [];
-for (const l of [0, 1]) for (const [f, hacia] of [[0.36, 6.2], [0.5, -5.6], [0.64, 6.2]]) {const p = puntoCarril(l, f), d = Math.hypot(p.x, p.z), h = {x: p.x - p.x / d * hacia, z: p.z - p.z / d * hacia, r: 2.4}; HIERBAS.push(h);}
-for (const q of [{x: 7, z: 3.2}, {x: -7, z: -3.2}]) HIERBAS.push({...q, r: 2.4});
 const enHierba = (u) => HIERBAS.findIndex((b) => Math.hypot(u.x - b.x, u.z - b.z) < b.r);
-/* árboles que estorban (se llenan al montar el mapa; rejilla de 4 m para buscarlos rápido) */
-const ARB = new Map(); const arbKey = (x, z) => Math.floor(x / 4) + ',' + Math.floor(z / 4);
+function ponMapa(modo) {
+  const tipo = modo === '2v2' ? 'ojo' : 'linea'; if (tipo === TIPO_MAPA) return false; TIPO_MAPA = tipo;
+  if (tipo === 'ojo') {
+    MAPA = {ancho: 33, largo: 58}; SIM = gira; EJE = {x: 0.423, z: -0.906}; PIT = {x: 0, z: 0};
+    const A = [{x: -21, z: 45}, {x: -27, z: 28}, {x: -27, z: 8}, {x: -21, z: -14}, {x: -9, z: -33}, {x: 6, z: -44}, {x: 21, z: -45}];
+    CARRILES = [A, A.map(gira).reverse()];
+    const R = {fuente: {x: -29, z: 53}, nexo: {x: -24.5, z: 48.5}, torre: {x: -17, z: 40.5}};
+    BASES = [R, {fuente: gira(R.fuente), nexo: gira(R.nexo), torre: gira(R.torre)}];
+    const C = [{x: -13, z: 18, tipo: 'warg', n: 2}, {x: 3, z: 25, tipo: 'warg', n: 2}, {x: -6, z: 35, tipo: 'orco', n: 3}, {x: -16, z: 4, tipo: 'troll', n: 1}, {x: 9, z: 13, tipo: 'alfa', n: 1}];
+    CAMPOS = [...C, ...C.map((c) => ({...c, ...gira(c)})), {x: 0, z: 0, tipo: 'uruk', n: 1}];
+    ORILLA = [{x: 7, z: 3.2}, {x: -7, z: -3.2}];
+  } else {
+    MAPA = {ancho: 27, largo: 58}; SIM = refleja; EJE = {x: 0, z: -1}; PIT = {x: 17, z: 0};
+    const A = [{x: 0, z: 46}, {x: 0, z: 31}, {x: 0, z: 15}, {x: 0, z: 0}, {x: 0, z: -15}, {x: 0, z: -31}, {x: 0, z: -46}];
+    CARRILES = [A, A];
+    const R = {fuente: {x: 0, z: 55}, nexo: {x: 0, z: 49.5}, torre: {x: 0, z: 41}};
+    BASES = [R, {fuente: refleja(R.fuente), nexo: refleja(R.nexo), torre: refleja(R.torre)}];
+    const C = [{x: -12, z: 18, tipo: 'warg', n: 2}, {x: 12, z: 26, tipo: 'warg', n: 2}, {x: -13, z: 35, tipo: 'orco', n: 3}, {x: 14, z: 13, tipo: 'troll', n: 1}, {x: -15, z: 7, tipo: 'alfa', n: 1}];
+    CAMPOS = [...C, ...C.map((c) => ({...c, ...refleja(c)})), {x: PIT.x, z: 0, tipo: 'uruk', n: 1}];
+    ORILLA = [{x: -6, z: 2.8}, {x: -6, z: -2.8}, {x: 6.5, z: 0}];
+  }
+  LARGOS = CARRILES.map((L) => {const c = [0]; for (let i = 1; i < L.length; i++) c.push(c[i - 1] + Math.hypot(L[i].x - L[i - 1].x, L[i].z - L[i - 1].z)); return c;});
+  OJO = tipo === 'ojo' ? [...CARRILES[0], ...CARRILES[1].slice().reverse()] : null;
+  /* hierba alta (como los matorrales del Wild Rift): dentro no te ven los héroes enemigos salvo que estén a tu lado */
+  HIERBAS = [];
+  for (const l of tipo === 'ojo' ? [0, 1] : [0]) for (const [f, lado] of [[0.36, 1], [0.5, -1], [0.64, 1]]) for (const sgn of tipo === 'ojo' ? [0] : [1, -1]) {
+    const p = puntoCarril(l, f), q = puntoCarril(l, Math.min(1, f + 0.01)), tx = q.x - p.x, tz = q.z - p.z, tl = Math.hypot(tx, tz) || 1, nx = -tz / tl, nz = tx / tl;
+    const haciaDentro = Math.sign((PIT.x - p.x) * nx + (PIT.z - p.z) * nz) || 1, s2 = sgn || lado * haciaDentro, d = tipo === 'ojo' ? (lado > 0 ? 6.2 : 5.6) : 6;
+    HIERBAS.push({x: p.x + nx * s2 * d, z: p.z + nz * s2 * d, r: 2.4});
+  }
+  for (const q of ORILLA) HIERBAS.push({...q, r: 2.4});
+  ARB.clear(); FUEGOS.length = 0;
+  NAV = haceNav();
+  return true;
+}
+const ARB = new Map(); const FUEGOS = [], LUCES = []; let NAV = null; const arbKey = (x, z) => Math.floor(x / 4) + ',' + Math.floor(z / 4);
 function ponArbolChoque(x, z, r) {const k = arbKey(x, z); if (!ARB.has(k)) ARB.set(k, []); ARB.get(k).push({x, z, r});}
 function lineaLibre(a, b) {const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
 const NEUTRO = {
@@ -94,11 +122,9 @@ const NEUTRO = {
   /* el «Barón» del Vado: un uruk enorme y azulado en el centro; da la Furia del Uruk a todo el equipo */
   uruk: {nombre: 'Uruk Azul', vida: 6500, dano: 130, alcance: 3.2, vatq: 0.5, vel: 3.4, oro: 250, xp: 400, modelo: 'capitan', alto: 4.4, buff: 'uruk', grande: true, jefe: true, azul: true},
 };
-const CAMPOS_R = [{x: -13, z: 18, tipo: 'warg', n: 2}, {x: 3, z: 25, tipo: 'warg', n: 2}, {x: -6, z: 35, tipo: 'orco', n: 3}, {x: -16, z: 4, tipo: 'troll', n: 1}, {x: 9, z: 13, tipo: 'alfa', n: 1}];
-const CAMPOS = [...CAMPOS_R, ...CAMPOS_R.map((c) => ({...c, ...gira(c)})), {x: 0, z: 0, tipo: 'uruk', n: 1}];
 const BUFF_TXT = {troll: 'Fuerza del troll: +20 % de daño durante 90 s', alfa: 'Aullido del alfa: corres más y te curas deprisa durante 90 s', uruk: 'Furia del Uruk: todo el equipo pega más, se cura más y sus hordas salen más fuertes durante 150 s'};
 /* red de caminos para los bots: puntos de los dos caminos, cubiles y fuentes; los árboles nunca se ponen encima de estas sendas */
-const NAV = (() => {
+function haceNav() {
   const nodos = [], aristas = [], idx = new Map(), add = (p, extra) => {nodos.push({x: p.x, z: p.z, ...extra}); return nodos.length - 1;};
   const ruta = CARRILES.map(() => []);
   CARRILES.forEach((L, l) => L.forEach((p, i) => {const k = p.x + ',' + p.z; if (!idx.has(k)) idx.set(k, add(p, {carril: true})); ruta[l].push(idx.get(k));}));
@@ -111,10 +137,10 @@ const NAV = (() => {
     for (const i of cerca(carriles, 2, 24)) aristas.push([c, i]);
     for (const i of cerca(camp, nodos[c].x === 0 && nodos[c].z === 0 ? 4 : 2, 26)) aristas.push([c, i]);
   }
-  for (const b of BASES) {const f = add(b.fuente, {}), n = idx.get(CARRILES[0][b === BASES[0] ? 0 : CARRILES[0].length - 1].x + ',' + CARRILES[0][b === BASES[0] ? 0 : CARRILES[0].length - 1].z); aristas.push([f, n]);}
+  for (const b of BASES) {const p = CARRILES[0][b === BASES[0] ? 0 : CARRILES[0].length - 1], f = add(b.fuente, {}), n = idx.get(p.x + ',' + p.z); aristas.push([f, n]);}
   const vec = nodos.map(() => []); for (const [a, b] of aristas) {vec[a].push(b); vec[b].push(a);}
   return {nodos, aristas, vec, d};
-})();
+}
 function camino(desde, hasta) {
   const N = NAV.nodos, cerca = (p) => {let m = -1, md = 1e9; N.forEach((n, i) => {const dd = Math.hypot(n.x - p.x, n.z - p.z) + (lineaLibre(p, n) ? 0 : 40); if (dd < md) {md = dd; m = i;}}); return m;};
   const a = cerca(desde), b = cerca(hasta), dist0 = N.map(() => 1e9), prev = N.map(() => -1), hecho = N.map(() => false); dist0[a] = 0;
@@ -165,7 +191,7 @@ function instancias(archivo, nombre, lista, sombra = true) {
     if (!malla.isMesh) return;
     const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, malla.material, lista.length);
     lista.forEach((c, i) => {q.setFromAxisAngle(up, c.ry || 0); p.set(c.x, c.y || 0, c.z); e.setScalar(c.s || 1); m4.compose(p, q, e).multiply(rel); im.setMatrixAt(i, m4);});
-    im.castShadow = sombra; im.receiveShadow = true; im.computeBoundingSphere(); scene.add(im);
+    im.castShadow = sombra; im.receiveShadow = true; im.computeBoundingSphere(); (MAPA_G || scene).add(im);
   });
 }
 const ALTO = {};
@@ -178,23 +204,27 @@ function montar(n, altura) {
   const alias = {atacar: ['disparar', 'atacar'], correr: ['correr', 'andar'], quieto: ['quieto'], morir: ['morir'], hab: ['golpe_cargado', 'atacar_3', 'atacar_2', 'disparar', 'atacar'], aturdido: ['aturdido', 'recibir_golpe', 'recibir', 'quieto']};
   const c2 = {}; for (const k in alias) {const f = alias[k].find((x) => clips[x]); if (f) c2[k] = clips[f];}
   for (const k of ['atacar', 'morir', 'hab']) if (c2[k]) {c2[k].setLoop(THREE.LoopOnce, 1); c2[k].clampWhenFinished = true;}
-  return {raiz, mixer, clips: c2, actual: null};
+  return {raiz, mixer, clips: c2, todos: clips, actual: null};
 }
 function pon(a, k, f = 0.15) {const n = a.clips[k]; if (!n || a.actual === n) return; n.reset().play(); if (a.actual) a.actual.crossFadeTo(n, f, false); a.actual = n;}
 function otraVez(a, k) {const n = a.clips[k]; if (!n) return; n.reset().play(); if (a.actual && a.actual !== n) a.actual.crossFadeTo(n, 0.08, false); a.actual = n;}
 
 /* ---------- el mapa ---------- */
+let MAPA_G = null;
 function construyeMapa() {
+  if (MAPA_G) {scene.remove(MAPA_G); MAPA_G.traverse((q) => {if (q.isInstancedMesh) q.dispose();});}
+  MAPA_G = new THREE.Group(); scene.add(MAPA_G); const scene_ = MAPA_G;
   const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('texturas/barro.webp', true);
   const g = new THREE.PlaneGeometry(110, 150, 1, 1); g.rotateX(-Math.PI / 2);
   const m = new THREE.MeshStandardMaterial({color: '#ffffff', roughness: 0.95});
   const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
   m.onBeforeCompile = (sh) => {
     sh.uniforms.tH = {value: tH}; sh.uniforms.tB = {value: tB}; sh.uniforms.uA = {value: v2(CARRILES[0])}; sh.uniforms.uB = {value: v2(CARRILES[1])};
+    sh.uniforms.uEje = {value: new THREE.Vector2(EJE.x, EJE.z)}; sh.uniforms.uPit = {value: new THREE.Vector2(PIT.x, PIT.z)};
     sh.uniforms.uF = {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]};
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.)).xyz;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-      varying vec3 vWP; uniform sampler2D tH,tB; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2];
+      varying vec3 vWP; uniform sampler2D tH,tB; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec2 uEje, uPit;
       float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
       float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.03;a*=.5;}return s;}
@@ -211,16 +241,16 @@ function construyeMapa() {
       vec3 musgo=hi*vec3(.62,.78,.55)*(.75+.5*fbm(w*.2+9.));
       vec3 col=mix(musgo,ba,mb);
       /* el centro: un claro de barro y piedra donde duerme el Uruk Azul */
-      col=mix(col,ba*vec3(.7,.72,.8),(1.-smoothstep(5.5,8.,length(w)+fbm(w*.5)*1.5))*.9);
+      col=mix(col,ba*vec3(.7,.72,.8),(1.-smoothstep(5.5,8.,length(w-uPit)+fbm(w*.5)*1.5))*.9);
       /* el vado: el río cruza de lado a lado por la mitad del mapa */
-      float rio=1.-smoothstep(1.9,3.3,abs(dot(w,vec2(.423,-.906))+sin(dot(w,vec2(.906,.423))*.22)*.9)+fbm(w*.4)*.8);
+      float rio=1.-smoothstep(1.9,3.3,abs(dot(w,uEje)+sin(dot(w,vec2(-uEje.y,uEje.x))*.22)*.9)+fbm(w*.4)*.8);
       vec3 agua=mix(vec3(.004,.016,.026),vec3(.012,.04,.05),fbm(w*.5));
-      col=mix(col,agua,rio*.9*(1.-(1.-smoothstep(5.,7.5,length(w)))));
-      float borde=smoothstep(.0,1.,max(abs(w.x)-33.,abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;
+      col=mix(col,agua,rio*.9*(1.-(1.-smoothstep(5.,7.5,length(w-uPit)))));
+      float borde=smoothstep(.0,1.,max(abs(w.x)-${MAPA.ancho}.,abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;
       diffuseColor.rgb*=col;`);
   };
-  const suelo = new THREE.Mesh(g, m); suelo.receiveShadow = true; scene.add(suelo);
-  const pon2 = (n, x, z, ry = 0, e = 1) => {if (!M[n]) return null; const o = M[n].scene.clone(true); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.setScalar(e); o.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); scene.add(o); return o;};
+  const suelo = new THREE.Mesh(g, m); suelo.receiveShadow = true; scene_.add(suelo);
+  const pon2 = (n, x, z, ry = 0, e = 1) => {if (!M[n]) return null; const o = M[n].scene.clone(true); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.setScalar(e); o.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); scene_.add(o); return o;};
   const semilla = {v: 7}; const al = () => {semilla.v = (semilla.v * 16807) % 2147483647; return semilla.v / 2147483647;};
   const enBase = (x, z) => BASES.some((b) => Math.hypot(b.fuente.x - x, b.fuente.z - z) < 10 || Math.hypot(b.nexo.x - x, b.nexo.z - z) < 9 || Math.hypot(b.torre.x - x, b.torre.z - z) < 6);
   /* senderos de la espesura: los mismos que usan los bots para moverse (sin árboles encima) */
@@ -231,7 +261,7 @@ function construyeMapa() {
     const px = x + (al() - 0.5) * 1.5, pz = z + (al() - 0.5) * 1.5, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
     if (dc < 4.7 || enBase(px, pz)) continue;
     if (juego) {
-      if (Math.hypot(px, pz) < 8.5 || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
+      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
       if (dentroOjo(px, pz) && al() < 0.3) continue;
     }
     const isen = ladoDe({x: px, z: pz}) > 0, r = al();
@@ -242,25 +272,24 @@ function construyeMapa() {
   /* hierba alta, juncos del río, piedras de vadear y rocas */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
   for (const b of HIERBAS) for (let i = 0; i < 9; i++) {const a = al() * 6.28, d = Math.sqrt(al()) * b.r * 0.85; mata('arbusto_0' + (1 + i % 4), b.x + Math.cos(a) * d, b.z + Math.sin(a) * d, 1.3 + al() * 0.5);}
-  for (let i = 0; i < 90; i++) {const t = (al() - 0.5) * 70, o = (al() < 0.5 ? -1 : 1) * (2.4 + al() * 1.8), x = t * 0.906 + o * 0.423, z = t * 0.423 - o * 0.906; if (Math.hypot(x, z) < 8 || distCarril(x, z) < 3 || Math.abs(x) > 33 || Math.abs(z) > 57) continue; mata('juncos_0' + (1 + i % 3), x, z, 0.9 + al() * 0.6);}
-  for (const l of [0, 1]) {const L = CARRILES[l]; let mejor = 0; for (let f = 0; f <= 1; f += 0.01) {const p = puntoCarril(l, f); if (Math.abs(ladoDe(p)) < Math.abs(ladoDe(puntoCarril(l, mejor)))) mejor = f;} const c = puntoCarril(l, mejor); for (let i = 0; i < 8; i++) mata('piedra_vado_0' + (1 + i % 6), c.x + (al() - 0.5) * 5, c.z + (al() - 0.5) * 3, 0.5 + al() * 0.3);}
+  for (let i = 0; i < 90; i++) {const t = (al() - 0.5) * 70, o = (al() < 0.5 ? -1 : 1) * (2.4 + al() * 1.8), x = -t * EJE.z + o * EJE.x, z = t * EJE.x + o * EJE.z; if (Math.hypot(x - PIT.x, z - PIT.z) < 8 || distCarril(x, z) < 3 || Math.abs(x) > 33 || Math.abs(z) > 57) continue; mata('juncos_0' + (1 + i % 3), x, z, 0.9 + al() * 0.6);}
+  for (const l of TIPO_MAPA === 'ojo' ? [0, 1] : [0]) {const L = CARRILES[l]; let mejor = 0; for (let f = 0; f <= 1; f += 0.01) {const p = puntoCarril(l, f); if (Math.abs(ladoDe(p)) < Math.abs(ladoDe(puntoCarril(l, mejor)))) mejor = f;} const c = puntoCarril(l, mejor); for (let i = 0; i < 8; i++) mata('piedra_vado_0' + (1 + i % 6), c.x + (al() - 0.5) * 5, c.z + (al() - 0.5) * 3, 0.5 + al() * 0.3);}
   for (let i = 0; i < 40; i++) {const x = (al() - 0.5) * 60, z = (al() - 0.5) * 100; if (!dentroOjo(x, z) || distCarril(x, z) < 5 || CAMPOS.some((c) => Math.hypot(c.x - x, c.z - z) < 4) || sendas.some(([a, b]) => distSeg(x, z, a, b) < 2.4)) continue; mata('roca_0' + (1 + i % 6), x, z, 0.35 + al() * 0.5);}
   for (const n in matas) instancias('vado_rocas', n, matas[n], !n.startsWith('juncos'));
   /* cubiles de las bestias, braseros y fuentes */
   for (const c of CAMPOS) {
     const nd = NEUTRO[c.tipo], o = pieza('vado_cubiles', nd.grande ? 'cubil_troll' : 'cubil_huargo'), d = Math.hypot(c.x, c.z) || 1;
-    o.position.set(c.x + (nd.grande ? c.x / d * 3.4 : 0), 0, c.z + (nd.grande ? c.z / d * 3.4 : 0)); o.rotation.y = Math.atan2(-c.x, -c.z); if (nd.jefe) {o.position.set(0, 0, 4.5); o.scale.setScalar(1.5);} scene.add(o);
+    o.position.set(c.x + (nd.grande ? c.x / d * 3.4 : 0), 0, c.z + (nd.grande ? c.z / d * 3.4 : 0)); o.rotation.y = Math.atan2(-c.x, -c.z); if (nd.jefe) {o.position.set(PIT.x + (TIPO_MAPA === 'ojo' ? 0 : 4.5), 0, PIT.z + (TIPO_MAPA === 'ojo' ? 4.5 : 0)); o.scale.setScalar(1.5);} scene_.add(o);
     const bx = c.x + (c.x / d) * 3 + 2.4, bz = c.z + (c.z / d) * 3; if (!nd.jefe) {pon2('brasero', bx, bz, 0, nd.grande ? 1.6 : 1.2); luzFuego(bx, bz);}
   }
-  for (const x of [-5.5, 5.5]) {pon2('brasero', x, -4.5, 0, 1.8); luzFuego(x, -4.5);}
+  for (const x of [-5.5, 5.5]) {pon2('brasero', PIT.x + x, PIT.z - 4.5, 0, 1.8); luzFuego(PIT.x + x, PIT.z - 4.5);}
   for (const eq of [0, 1]) {
-    const b = BASES[eq], o = pieza('vado_fuentes', eq ? 'fuente_isengard' : 'fuente_rohan'); o.position.set(b.fuente.x, 0, b.fuente.z); o.scale.setScalar(1.3); scene.add(o);
+    const b = BASES[eq], o = pieza('vado_fuentes', eq ? 'fuente_isengard' : 'fuente_rohan'); o.position.set(b.fuente.x, 0, b.fuente.z); o.scale.setScalar(1.3); scene_.add(o);
     const s = signo(eq); pon2('tienda', b.fuente.x - 3 * s, b.fuente.z + 3.5 * s, eq ? 0 : Math.PI, 1.6);
     for (const [dx, dz] of [[4, -4], [-1, -6]]) {pon2('brasero', b.fuente.x + dx * s, b.fuente.z + dz * s, 0, 1.4); luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);}
   }
 }
 /* fuegos: solo 4 luces de verdad que se colocan en los fuegos más cercanos a la cámara (en el móvil, muchas luces lo hunden) */
-const FUEGOS = [], LUCES = [];
 function luzFuego(x, z) {FUEGOS.push({x, z});}
 function luces() {
   if (!LUCES.length) for (let i = 0; i < 4; i++) {const l = new THREE.PointLight('#ff9a4a', 12, 12, 1.6); l.position.set(0, -50, 0); scene.add(l); LUCES.push(l);}
@@ -577,6 +606,7 @@ function usaHab(h, k, dx, dz, px, pz) {
     for (const o of lista) {const px0 = ex0 + dx * o.t, pz0 = ez0 + dz * o.t; if (Math.hypot(o.e.x - px0, o.e.z - pz0) < H.ancho + radio(o.e)) {const e = o.e; luego(o.t / 26, () => {dana(h, e, n, 'hab'); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde;}); golpeados++; if (!H.perfora) break;}}
     ev(['tiro', H.proy, ex0, ez0, ex0 + dx * H.alc, ez0 + dz * H.alc, 26]);
   }
+  ev(['hb', h.id, k, +dx.toFixed(2), +dz.toFixed(2), +(px || 0).toFixed(1), +(pz || 0).toFixed(1)]);
   if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - h.x, pz - h.z)), x = h.x + dx * d0, z = h.z + dz * d0; S.zonas.push({x, z, r: H.radio, t: H.dur, tick: 0, dps: H.dps * escala, l: H.lento, eq: h.eq, o: h}); ev(['zona', x, z, H.radio, H.dur]);}
   return true;
 }
@@ -726,6 +756,56 @@ function creaVis(v) {
 }
 function materiales(o) {if (!o.mats) {o.mats = []; o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.emissive) o.mats.push({m: q.material, e: q.material.emissive.clone(), i: q.material.emissiveIntensity});});} return o.mats;}
 let tiemblaCam = 0;
+/* ---------- habilidades: cada una con su animación y su efecto (lo que en el LoL hace que «se note») ---------- */
+const HAB_ANIM = {rohan: {q: 'atacar_3', w: 'celebrar', e: 'giro', r: 'golpe_cargado'}, enano: {q: 'giro', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'},
+  elfo: {q: 'atacar_2', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'}, hobbit: {q: 'atacar_2', w: 'esquivar', e: 'atacar_3', r: 'celebrar'}};
+const AURA_COL = {escudo: '#6fc8ff', reduce: '#c9b48a', rafaga: '#7dff6a', suerte: '#ffd24a'};
+function animaClip(o, nombre, vel = 1) {
+  const a = o.todos && o.todos[nombre]; if (!a) return 0;
+  a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; a.timeScale = vel; a.reset().play();
+  if (o.actual && o.actual !== a) o.actual.crossFadeTo(a, 0.06, false); o.actual = a; return a.getClip().duration / vel;
+}
+function aura(o, color, dur, tam = 1.6) {const m = indicador('ind_area', color); m.visible = true; m.material.opacity = 0.75; (o.auras = o.auras || []).push({m, t: 0, dur, tam}); return m;}
+function habVisual(e) {
+  const [, id, k, dx, dz, px, pz] = e, o = VIS.get(id), v = VISTA.get(id); if (!o || !v) return;
+  const H = HEROES[v.tipo].hab[k], x = v.xi ?? v.x, z = v.zi ?? v.z, rot = Math.atan2(dx, dz), mio = id === YO;
+  /* animación del héroe */
+  const d = animaClip(o, HAB_ANIM[v.tipo][k], H.tipo === 'dash' || H.tipo === 'salto' ? 1.3 : 1.15); o.ocup = Math.min(0.9, d * 0.85); o.habYa = true;
+  const temb = (n) => {if (mio || Math.hypot(x - camM.x, z - camM.z) < 14) tiemblaCam = Math.max(tiemblaCam, n);};
+  const anillo = (cx, cz, r, n, fx = 'polvo', tam = 1.6) => {for (let i = 0; i < n; i++) {const a = i / n * Math.PI * 2; flip(fx, cx + Math.cos(a) * r, cz + Math.sin(a) * r, tam);}};
+  if (H.tipo === 'dash') {o.estela = {t: H.dist / 18 + 0.15, cada: 0, fx: k === 'r' ? 'fuego' : 'polvo', tam: k === 'r' ? 2.4 : 1.5}; flip('onda', x, z, 3, true); suena('viento', 0.5); if (k === 'r') {temb(0.4); flip('tajoOro', x + dx * 2, z + dz * 2, 6, true, -rot + Math.PI / 2);}}
+  if (H.tipo === 'salto') {const dist0 = Math.min(H.dist, Math.hypot(px - x, pz - z) || H.dist); o.salto = {t: 0, dur: 0.45, alto: 2.2 + dist0 * 0.12, cx: x + dx * dist0, cz: z + dz * dist0, r: H.radio}; flip('polvo', x, z, 2.5); suena('viento', 0.5);}
+  if (H.tipo === 'cono') {
+    const fx = v.tipo === 'enano' ? 'tajoFuego' : 'polvo', tam = H.alc * 2.2;
+    if (fx === 'polvo') {for (let i = 0; i < 5; i++) {const a = rot + (i - 2) * H.ang / 5; flip('polvo', x + Math.sin(a) * H.alc * 0.6, z + Math.cos(a) * H.alc * 0.6, 1.8);}}
+    else {flip(fx, x + dx * H.alc * 0.45, z + dz * H.alc * 0.45, tam, true, -rot + Math.PI / 2); flip('tajoOro', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, tam * 0.8, true, -rot + Math.PI / 2 + 0.4);}
+    for (let i = 0; i < 3; i++) {const a = rot + (i - 1) * H.ang / 3; flip('impacto', x + Math.sin(a) * H.alc * 0.8, z + Math.cos(a) * H.alc * 0.8, 2.2);}
+    flip('explosion', x + dx * H.alc * 0.55, z + dz * H.alc * 0.55, 2.4, false, undefined, 1);
+    suena('espada', 0.7); temb(0.18);
+  }
+  if (H.tipo === 'area') {flip('onda', x, z, H.radio * 2.4, true); flip('explosion', x, z, H.radio * 1.2); anillo(x, z, H.radio * 0.8, 8, k === 'r' ? 'fuego' : 'polvo', k === 'r' ? 2.2 : 1.6); if (k === 'r') {flip('onda', x, z, H.radio * 3.2, true); setTimeout(() => {flip('onda', x, z, H.radio * 2, true); anillo(x, z, H.radio * 0.5, 6, 'polvo', 2);}, 180);} temb(k === 'r' ? 0.5 : 0.22); suena(k === 'r' ? 'explosion' : 'cuerno', 0.6);}
+  if (H.tipo === 'linea') {o.estelaTiro = {x, z, dx, dz, t: 0, alc: H.alc}; flip('impacto', x + dx * 1.2, z + dz * 1.2, 1.8); suena('arco', 0.6);}
+  if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - x, pz - z)), cx = x + dx * d0, cz = z + dz * d0; LLUVIAS.push({x: cx, z: cz, r: H.radio, t: 0, dur: H.dur, cada: 0}); temb(0.12);}
+  if (AURA_COL[H.tipo]) {aura(o, AURA_COL[H.tipo], H.dur || 3, H.tipo === 'escudo' ? 1.9 : 1.6); flip('onda', x, z, 3.2, true); if (H.tipo === 'suerte') {flip('explosion', x, z, 2.5, false, undefined, 1.6); anillo(x, z, 1.2, 6, 'impacto', 1.2);} suena('magia', 0.5);}
+  if (H.tipo === 'invis') {for (let i = 0; i < 4; i++) flip('polvo', x + rnd(-0.8, 0.8), z + rnd(-0.8, 0.8), 2.6); suena('viento', 0.5);}
+}
+/* lluvia de flechas: caen flechas de verdad sobre la zona */
+const LLUVIAS = [];
+function animaHabilidades(dt) {
+  for (const o of VIS.values()) {
+    if (o.estela) {o.estela.t -= dt; o.estela.cada -= dt; if (o.estela.cada <= 0) {o.estela.cada = 0.045; flip(o.estela.fx, o.raiz.position.x, o.raiz.position.z, o.estela.tam);} if (o.estela.t <= 0) {flip('impacto', o.raiz.position.x, o.raiz.position.z, 2); o.estela = null;}}
+    if (o.salto) {
+      o.salto.t += dt; const k = Math.min(1, o.salto.t / o.salto.dur); o.raiz.position.y = Math.sin(k * Math.PI) * o.salto.alto;
+      if (k >= 1) {const sx = o.raiz.position.x, sz = o.raiz.position.z; flip('onda', sx, sz, o.salto.r * 2.6, true); flip('explosion', sx, sz, 2.4); for (let i = 0; i < 8; i++) {const a = i / 8 * Math.PI * 2; flip('polvo', sx + Math.cos(a) * o.salto.r * 0.8, sz + Math.sin(a) * o.salto.r * 0.8, 1.8);} if (Math.hypot(sx - camM.x, sz - camM.z) < 14) tiemblaCam = Math.max(tiemblaCam, 0.3); suena('explosion', 0.5); o.raiz.position.y = 0; o.salto = null;}
+    }
+    if (o.estelaTiro) {const t = o.estelaTiro; t.t += dt; const d0 = Math.min(t.alc, t.t * 26); if (Math.floor(t.t / 0.03) !== Math.floor((t.t - dt) / 0.03)) flip('polvo', t.x + t.dx * d0, t.z + t.dz * d0, 0.9); if (d0 >= t.alc) {flip('impacto', t.x + t.dx * d0, t.z + t.dz * d0, 1.8); o.estelaTiro = null;}}
+    if (o.auras) for (let i = o.auras.length - 1; i >= 0; i--) {const a = o.auras[i]; a.t += dt; const k = a.t / a.dur; if (k >= 1 || !o.raiz.visible) {scene.remove(a.m); o.auras.splice(i, 1); continue;} a.m.position.set(o.raiz.position.x, 0.17, o.raiz.position.z); a.m.scale.setScalar(2 * a.tam * (1 + 0.08 * Math.sin(a.t * 8))); a.m.rotation.y += dt * 1.5; a.m.material.opacity = 0.75 * Math.min(1, (1 - k) * 4);}
+  }
+  for (let i = LLUVIAS.length - 1; i >= 0; i--) {
+    const l = LLUVIAS[i]; l.t += dt; l.cada -= dt; if (l.t > l.dur) {LLUVIAS.splice(i, 1); continue;}
+    if (l.cada <= 0) {l.cada = 0.07; const a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * l.r, fx = l.x + Math.cos(a) * r, fz = l.z + Math.sin(a) * r, f = modeloProy('flecha_elfica'); f.scale.multiplyScalar(1.4); f.rotation.x = Math.PI / 2; scene.add(f); FXP.push({tipo: 'cae', o: f, x: fx, z: fz, y: 9, t: 0});}
+  }
+}
 function golpeVisual(id, de, fuerte) {
   const o = VIS.get(id), v = VISTA.get(id); if (!o || !v) return;
   o.flash = 0.13; o.punch = fuerte ? 1 : 0.6;
@@ -748,12 +828,12 @@ function dibuja(dt) {
     if (!(v.id === YO && !S)) {const k = S ? ALFA : Math.min(1, (ahora - v.t0) / 90); x = v.x0 + (v.x - v.x0) * k; z = v.z0 + (v.z - v.z0) * k; let dr = v.rot - v.r0; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = v.r0 + dr * k;}
     v.xi = x; v.zi = z; v.ri = r;
     const muerto = v.k === 'h' ? v.muerto >= 0 : v.muerto === 0;
-    o.raiz.position.set(x, 0, z);
+    o.raiz.position.set(x, o.salto ? o.raiz.position.y : 0, z);
     if (o.clips) {
       let dr = r - (o.rv ?? r); dr = Math.atan2(Math.sin(dr), Math.cos(dr)); o.rv = (o.rv ?? r) + dr * Math.min(1, dt * 14); o.raiz.rotation.y = o.rv;
       if (muerto) pon(o, 'morir', 0.1);
       else {
-        if (v.hc !== o.hc) {o.hc = v.hc; otraVez(o, 'hab'); o.ocup = 0.45;}
+        if (v.hc !== o.hc) {o.hc = v.hc; if (!o.habYa) {otraVez(o, 'hab'); o.ocup = 0.45;} o.habYa = false;}
         else if (v.ac !== o.ac) {o.ac = v.ac; otraVez(o, 'atacar'); o.ocup = 0.35; if (v.id === YO && !HEROES[v.tipo].proy) suena('espada', 0.25);}
         o.ocup = (o.ocup || 0) - dt;
         const vel = o.lx === undefined ? 0 : Math.hypot(x - o.lx, z - o.lz) / Math.max(dt, 0.001); o.lx = x; o.lz = z; o.vel = (o.vel || 0) + (Math.min(vel, 12) - (o.vel || 0)) * Math.min(1, dt * 10);
@@ -794,6 +874,7 @@ function dibuja(dt) {
   for (let i = FXP.length - 1; i >= 0; i--) {
     const p = FXP[i]; p.t += dt;
     if (p.tipo === 'proy') {const d = VISTA.get(p.d); const tx = d ? (d.xi ?? d.x) : p.tx, tz = d ? (d.zi ?? d.z) : p.tz; p.tx = tx; p.tz = tz; const dx = tx - p.x, dz = tz - p.z, l = Math.hypot(dx, dz); if (l < 0.5 || p.t > 2) {scene.remove(p.o); FXP.splice(i, 1); continue;} p.x += dx / l * Math.min(l, p.v * dt); p.z += dz / l * Math.min(l, p.v * dt); p.o.position.set(p.x, p.y, p.z); p.o.rotation.y = Math.atan2(dx, dz);}
+    else if (p.tipo === 'cae') {p.y -= dt * 26; p.o.position.set(p.x, p.y, p.z); if (p.y <= 0.2) {scene.remove(p.o); FXP.splice(i, 1); flip('impacto', p.x, p.z, 0.9);}}
     else if (p.tipo === 'tiro') {const k = Math.min(1, p.t / p.dur); p.o.position.set(p.x + (p.tx - p.x) * k, 1.2, p.z + (p.tz - p.z) * k); if (k >= 1) {scene.remove(p.o); FXP.splice(i, 1);}}
     else {const k = p.t / p.dur; if (k >= 1) {scene.remove(p.o); FXP.splice(i, 1); continue;} if (p.flip) {const f = Math.min(p.flip.n - 1, Math.floor(k * p.flip.n)); p.o.material.map.offset.set((f % p.flip.c) / p.flip.c, 1 - (Math.floor(f / p.flip.c) + 1) / p.flip.r);} if (p.crece) p.o.scale.setScalar(p.esc * (0.6 + 0.6 * k)); if (p.o.material) p.o.material.opacity = (p.op || 1) * (1 - k * k);}
   }
@@ -806,14 +887,14 @@ function dibuja(dt) {
 function veoHierba(v) {for (const q of VISTA.values()) if (q.k === 'h' && q.eq === MI_EQ && q.muerto < 0 && (Math.hypot((q.xi ?? q.x) - v.x, (q.zi ?? q.z) - v.z) < 3.2 || (q.hierba >= 0 && q.hierba === v.hierba))) return true; return false;}
 /* efectos que llegan como avisos de la simulación (se ven igual en todos los móviles) */
 const FXP = [], NUMS = [];
-const FB = {impacto: ['texturas/fx_impacto.webp', 2, 2], onda: ['texturas/fx_onda.webp', 4, 1], explosion: ['texturas/fx_explosion.webp', 4, 4], tajo: ['texturas/fx_tajo.webp', 4, 1], polvo: ['texturas/fx_humo.webp', 4, 2], fuego: ['texturas/fx_fuego.webp', 4, 2]};
+const FB = {impacto: ['texturas/fx_impacto.webp', 2, 2], onda: ['texturas/fx_onda.webp', 4, 1], explosion: ['texturas/fx_explosion.webp', 4, 4], tajo: ['texturas/fx_tajo.webp', 4, 1], polvo: ['texturas/fx_humo.webp', 4, 2], fuego: ['texturas/fx_fuego.webp', 4, 2], tajoOro: ['texturas/fx_tajo_oro.webp', 4, 1], tajoFuego: ['texturas/fx_tajo_fuego.webp', 4, 1]};
 const fbTex = {};
-function flip(nombre, x, z, tam, suelo) {
+function flip(nombre, x, z, tam, suelo, rot, y) {
   const [f, c, r] = FB[nombre]; if (!fbTex[f]) fbTex[f] = cargaTex(f);
   const t = fbTex[f].clone(); t.needsUpdate = true; t.repeat.set(1 / c, 1 / r);
   const mat = new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, blending: nombre === 'polvo' ? THREE.NormalBlending : THREE.AdditiveBlending});
-  let o; if (suelo) {const g = new THREE.PlaneGeometry(tam, tam); g.rotateX(-Math.PI / 2); o = new THREE.Mesh(g, mat); o.position.set(x, 0.12, z);} else {o = new THREE.Sprite(mat); o.scale.setScalar(tam); o.position.set(x, 1.3, z);}
-  scene.add(o); FXP.push({o, t: 0, dur: nombre === 'onda' ? 0.5 : 0.45, flip: {c, r, n: c * r}, esc: tam});
+  let o; if (suelo) {const g = new THREE.PlaneGeometry(tam, tam); g.rotateX(-Math.PI / 2); o = new THREE.Mesh(g, mat); o.position.set(x, 0.12, z); if (rot !== undefined) o.rotation.y = rot;} else {o = new THREE.Sprite(mat); o.scale.setScalar(tam); o.position.set(x, y ?? 1.3, z);}
+  scene.add(o); FXP.push({o, t: 0, dur: nombre === 'onda' ? 0.65 : nombre.startsWith('tajo') ? 0.5 : 0.55, flip: {c, r, n: c * r}, esc: tam});
 }
 /* sonido con WebAudio: cada archivo se descodifica una vez y se reproduce sin crear reproductores nuevos */
 let AC = null; const SON = {}, SON_T = {};
@@ -857,6 +938,7 @@ function efectoLocal(e) {
   if (t === 'muere') suena('muerte', 0.35);
   if (t === 'son') suena(e[1], 0.5);
   if (t === 'g') golpeVisual(e[1], e[2], e[3]);
+  if (t === 'hb') habVisual(e);
   if (t === 'ping' && e[1] === MI_EQ) {const q = VISTA.get(e[2]), txt = {ataca: '⚔ ¡Atacad!', retira: '🛡 ¡Retirada!', voy: '🏃 ¡Voy!', cuidado: '⚠ ¡Cuidado!'}[e[3]]; aviso((q && q.id !== YO ? q.nombre + ': ' : '') + txt); PINGS.push({x: e[4], z: e[5], t: performance.now(), k: e[3]}); flip('onda', e[4], e[5], 4, true); suena('cuerno', 0.25);}
   if (t === 'voz') voz(e[1]);
   if (t === 'tp' && e[1] === YO && !S) {MIO.x = e[2]; MIO.z = e[3]; MIO.dash = null;}
@@ -1046,7 +1128,7 @@ function recibe(o) {
 let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 let MODO = '1v1';
 function empieza(jugadores, modo, simulo) {
-  MODO = modo;
+  MODO = modo; if (ponMapa(modo)) construyeMapa();
   precargaVoces(); document.body.classList.add('jugando'); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
@@ -1064,7 +1146,9 @@ function pantallaVS(jugadores, modo) {
   el.innerHTML = '<div class="vsLado az"><i>Rohan</i>' + lado(0) + '</div><div class="vsX">VS</div><div class="vsLado ro"><i>Isengard</i>' + lado(1) + '</div>';
   el.classList.remove('hidden'); setTimeout(() => el.classList.add('fuera'), 2300); setTimeout(() => {el.classList.add('hidden'); el.classList.remove('fuera');}, 2900);
 }
-function iconosHab(tipo) {for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = 'ui/h_' + tipo + '_' + k + '.webp'; b.title = HEROES[tipo].hab[k].n;}}
+const ARMA = {rohan: 'lanza', enano: 'hacha', elfo: 'arco', hobbit: 'honda'};
+function iconosHab(tipo) {
+  $('bAt').querySelector('img').src = ICO(ARMA[tipo]); $('bAt').classList.add('arma');for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = 'ui/h_' + tipo + '_' + k + '.webp'; b.title = HEROES[tipo].hab[k].n;}}
 function subeNivelFx(v) {
   flip('onda', v.xi ?? v.x, v.zi ?? v.z, 5, true); flip('explosion', v.xi ?? v.x, v.zi ?? v.z, 2.2); suena('nivel', 0.6);
   const n = document.createElement('div'); n.className = 'nivelSube'; n.textContent = '¡Nivel ' + v.nivel + '!'; document.body.appendChild(n); setTimeout(() => n.remove(), 1400);
@@ -1190,7 +1274,7 @@ function bucle() {
         inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando()});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
-      camara(dt); dibuja(dt); hud();
+      camara(dt); dibuja(dt); animaHabilidades(dt); hud();
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
   renderer.render(scene, camera);
@@ -1270,7 +1354,7 @@ function preparaMenu() {
 (async () => {
   $('bBots').disabled = $('bCrear').disabled = true; msg('Cargando…');
   try {const gl = await Promise.all(NOMBRES.map(cargaModelo)); NOMBRES.forEach((n, i) => M[n] = gl[i]);} catch (e) {msg('No se pudo cargar: ' + e.message); return;}
-  construyeMapa(); preparaMenu(); preparaMandos();
+  ponMapa('2v2'); construyeMapa(); preparaMenu(); preparaMandos();
   $('bBots').disabled = $('bCrear').disabled = false; msg('');
   camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
   bucle();
