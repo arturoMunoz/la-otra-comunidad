@@ -18,3 +18,7 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [ ] Dibujos de los premios de los minijuegos (prompts A y B en `docs/premios.md`) · ART.
 - [ ] Objetos de cabeza del sistema por capas (tiara, sombrero…) · ART, con `docs/prompts-capas.md`.
 - [ ] Minijuegos del Acto III: canción del Poney (Guitar Hero), mosquitos (Fruit Ninja), fuego contra las sombras (Missile Command) · código con `docs/kit-minijuegos.html`.
+
+## Pedido unificado (15/11, 22:55): se mandan juntos
+- WORK = Pack Vado 10 + Uruk Azul → zip `Pack_Vado_13_WORK.zip`.
+- ART = Pack Vado 11 + fichas de héroes del Pack 12 (paso 1) → zip `Pack_Vado_13_ART.zip`.
