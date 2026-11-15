@@ -1,0 +1,37 @@
+LICENCIAS — Pack Vado 9
+Autor de todas las mallas base: Quaternius (https://quaternius.com/).
+Licencia de todas las mallas y animaciones originales: CC0 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+huorn.glb
+Modelo: Walking Tree, Cute Animated Monsters Pack.
+Fuente del autor y licencia: https://quaternius.com/packs/cutemonsters.html
+Copia descargada: https://github.com/crisleyhguimaraes/space-ship/blob/main/public/models/monsters/walking-tree.glb
+Cambios: recolor, PNG incrustada, escala; clips nuevos atacar y morir.
+
+crebain.glb
+Modelo: Bird, Quaternius.
+Fuente y licencia: https://poly.pizza/m/gYYC0gYMnw
+Copia descargada: https://github.com/crisleyhguimaraes/space-ship/blob/main/public/models/adventurers/bird.glb
+Cambios: recolor negro azulado, orientación, escala; cuatro animaciones nuevas del objeto completo.
+
+draco.glb
+Modelo: Triceratops, Animated Dinosaur Pack.
+Fuente y licencia: https://quaternius.com/packs/animateddinosaurs.html
+Copia descargada: https://github.com/trebeljahr/quaternius-showcase/blob/main/public/glb/dinosaurs_pack/Triceratops.glb
+Cambios: colores, escala, nombres de clips.
+
+nutria.glb
+Modelo base: Rat, Easy Enemy Pack.
+Fuente y licencia: https://quaternius.com/packs/easyenemy.html
+Copia descargada: https://github.com/trebeljahr/quaternius-showcase/blob/main/public/glb/easy_enemies_pack/Rat.glb
+Cambios: proporciones de cuerpo, orejas, hocico y cola; recolor, escala y nombres de clips. Es una adaptación aproximada, no una nutria original del autor.
+
+sapo.glb
+Modelo base: Frog, Easy Enemy Pack.
+Fuente y licencia: https://quaternius.com/packs/easyenemy.html
+Copia descargada: https://github.com/trebeljahr/quaternius-showcase/blob/main/public/glb/easy_enemies_pack/Frog.glb
+Cambios: recolor, escala, nombres de clips; salto reutilizado como locomoción.
+
+Las modificaciones creadas para este pack pueden utilizarse, modificarse y redistribuirse sin requisito adicional de atribución, hasta donde existan derechos sobre ellas.
+Los nombres de ambientación de Tolkien no forman parte de la licencia CC0 de los modelos y no implican afiliación oficial.

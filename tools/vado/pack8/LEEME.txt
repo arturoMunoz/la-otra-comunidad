@@ -1,0 +1,47 @@
+EL VADO DEL ISEN — PACK 8 | RECURSOS DE JUEGO
+===========================================
+Juego: Rohan contra Isengard, El Vado del Isen.
+Formato: PNG RGBA con fondo transparente. Sin textos.
+Total: 21 archivos PNG (6 + 9 + 3 + 3).
+
+A_Bendiciones/ (256 x 256 px)
+  A_01_brasa_del_troll.png    — puño de piedra y fuego
+  A_02_savia_del_huorn.png    — hoja y raíces con aura azul
+  A_03_furia_del_uruk.png     — casco de la Mano Blanca, aura azul
+  A_04_aliento_de_fuego.png   — garra de draco de fuego
+  A_05_aliento_helado.png     — colmillo de hielo
+  A_06_alma_del_draco.png     — ojo de draco y sol de runas
+
+B_Minimapa/ (96 x 96 px)
+  B_01_huargo.png
+  B_02_cuervo_crebain.png
+  B_03_troll_de_piedra.png
+  B_04_huorn.png
+  B_05_uruk_azul.png
+  B_06_draco.png
+  B_07_nutria_del_rio.png
+  B_08_planta_explosiva.png
+  B_09_flor_de_vision.png
+
+C_Hechizos/ (256 x 256 px)
+  C_01_destello.png          — destello dorado
+  C_02_curar.png             — hoja de athelas verde
+  C_03_castigo.png           — rayo contra una garra
+
+D_Plantas/ (512 x 512 px)
+  D_01_seta_de_humo.png      — seta explosiva con humo
+  D_02_baya_de_los_Entague.png — arbusto con bayas rojas
+  D_03_flor_de_elanor.png    — flor dorada de visión
+
+USO E INTEGRACIÓN
+-----------------
+- A y C: sprites de UI centrados; aros dorados / bronce.
+- B: marcas de minimapa de 96 px, siluetas legibles.
+- D: sprites de suelo sin aro. Elanor tiene representación pintada
+  de planta decorativa, para cámara 3/4, no malla 3D.
+- El canal alfa es real. Recomendamos revisar D_02 sobre el suelo
+  del juego: puede conservar algunos píxeles verdes en los bordes.
+- Las fuentes se han escalado a las resoluciones finales y conservan
+  los colores y efectos originales.
+
+Comprobación automática: 21 PNG, tamaños esperados y alfa no opaco.

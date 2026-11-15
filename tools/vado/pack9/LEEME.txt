@@ -1,0 +1,92 @@
+PACK VADO 9 — Bestias de la espesura
+
+CONTENIDO Y ALCANCE
+Los modelos base son obras de Quaternius con licencia CC0; no son modelos oficiales de las películas.
+Se han descargado copias públicas, adaptado colores, normalizado escala y empaquetado en GLB autónomos.
+
+huorn.glb: Walking Tree, árbol-monstruo de Cute Animated Monsters. 3,5 m de alto.
+crebain.glb: adaptación oscura de Bird (ave tipo arrendajo), con movimientos nuevos de reposo, saltos bajos, picotazo y caída. NO incluye vuelo ni rig de alas. Para bandada, crea 4–5 instancias con desfases de animación.
+draco.glb: adaptación de Triceratops, cuadrúpedo sin alas y con cuernos; conserva una silueta de dinosaurio. Longitud aproximada de 3 m. Materiales gris verdoso neutros para teñirlos.
+nutria.glb: aproximación estilizada para el animal de río, adaptada de Rat: cuerpo ensanchado, orejas y hocico reducidos, cola más gruesa y colores de pelaje marrón. No procede de un modelo anatómico de nutria. Longitud aproximada de 0,7 m.
+sapo.glb: adaptación de Frog, cuadrúpedo; 1,6 m de longitud. El clip andar usa el salto original como locomoción a saltos.
+
+CONVENCIONES
+GLB 2.0, metros, +Y arriba, frente +Z. Escala en nodos de ajuste: conserva la jerarquía completa al cargar.
+No hacen falta archivos externos ni decodificadores Draco/Meshopt. Texturas, donde existen, PNG incrustadas de 512 px como máximo. Los demás modelos usan colores de material.
+Las dimensiones de animales son longitudes de cabeza a cola en pose neutral, no alturas. El árbol se mide en altura.
+
+ANIMACIONES
+Se conservan los rigs y clips originales disponibles. El ave originalmente era estática: sus cuatro clips animan el objeto completo, no alas ni patas articuladas.
+El ataque y la muerte del árbol son movimientos nuevos del conjunto; quieto y andar son los clips originales con skin.
+Los clips nuevos se muestrean a 30 fps. No se presentan como animaciones originales de Quaternius.
+Repetir quieto/andar/correr. Para atacar y morir usar LoopOnce, clampWhenFinished=true; hacer transición suave y parar la acción anterior. El desplazamiento de navegación lo controla el juego.
+
+MEDIDAS Y CLIPS
+
+huorn.glb — 1368 triángulos
+Dimensiones X/Y/Z (m), pose neutral: [3.442, 3.5, 2.114]
+  quieto: 2.500 s
+  andar: 0.542 s
+  atacar: 1.200 s
+  morir: 1.800 s
+  Origen: Idle -> quieto
+  Origen: Walk -> andar
+  Origen: Adaptación nueva a 30 fps: attack -> atacar
+  Origen: Adaptación nueva a 30 fps: death -> morir
+
+crebain.glb — 1204 triángulos
+Dimensiones X/Y/Z (m), pose neutral: [0.8, 0.404, 0.664]
+  quieto: 2.400 s
+  andar: 0.700 s
+  atacar: 0.650 s
+  morir: 1.100 s
+  Origen: Adaptación nueva a 30 fps: idle -> quieto
+  Origen: Adaptación nueva a 30 fps: hop -> andar
+  Origen: Adaptación nueva a 30 fps: attack -> atacar
+  Origen: Adaptación nueva a 30 fps: death -> morir
+
+draco.glb — 1332 triángulos
+Dimensiones X/Y/Z (m), pose neutral: [0.836, 1.268, 3.0]
+  atacar: 0.750 s
+  morir: 1.792 s
+  quieto: 2.542 s
+  saltar: 1.667 s
+  correr: 0.792 s
+  andar: 2.917 s
+  Origen: Armature|Triceratops_Attack -> atacar
+  Origen: Armature|Triceratops_Death -> morir
+  Origen: Armature|Triceratops_Idle -> quieto
+  Origen: Armature|Triceratops_Jump -> saltar
+  Origen: Armature|Triceratops_Run -> correr
+  Origen: Armature|Triceratops_Walk -> andar
+
+nutria.glb — 4004 triángulos
+Dimensiones X/Y/Z (m), pose neutral: [0.25, 0.237, 0.7]
+  atacar: 0.667 s
+  morir: 1.083 s
+  quieto: 2.375 s
+  saltar: 0.833 s
+  correr: 0.500 s
+  andar: 1.333 s
+  Origen: RatArmature|Rat_Attack -> atacar
+  Origen: RatArmature|Rat_Death -> morir
+  Origen: RatArmature|Rat_Idle -> quieto
+  Origen: RatArmature|Rat_Jump -> saltar
+  Origen: RatArmature|Rat_Run -> correr
+  Origen: RatArmature|Rat_Walk -> andar
+
+sapo.glb — 4920 triángulos
+Dimensiones X/Y/Z (m), pose neutral: [1.762, 0.72, 1.6]
+  atacar: 0.750 s
+  morir: 0.833 s
+  quieto: 2.500 s
+  saltar: 0.875 s
+  andar: 0.875 s
+  Origen: FrogArmature|Frog_Attack -> atacar
+  Origen: FrogArmature|Frog_Death -> morir
+  Origen: FrogArmature|Frog_Idle -> quieto
+  Origen: FrogArmature|Frog_Jump -> saltar
+  Origen: Frog_Jump (desplazamiento a saltos) -> andar
+
+VALIDACIÓN
+Recarga de los cinco GLB; clips y buffers comprobados; importación en Blender y renders de quieto, locomoción, ataque y muerte. La lámina de revisión muestra esas cuatro poses. No se ha ejecutado dentro del proyecto Three.js del usuario.

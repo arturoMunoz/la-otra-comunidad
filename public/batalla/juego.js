@@ -41,7 +41,7 @@ function puedeSubir(h, k) {return h.pts > 0 && h.rk[k] < rangoMax(h.nivel, k);}
 function subeHab(h, k) {if (!puedeSubir(h, k)) return false; h.rk[k]++; h.pts--; return true;}
 function autoSube(h) {let n = 0; while (h.pts > 0 && n++ < 6) {const o = ['r', 'q', 'e', 'w', 'q', 'e'].find((k) => puedeSubir(h, k) && (k === 'r' || h.rk[k] <= Math.min(h.rk.q, h.rk.e, h.rk.w) + (k === 'q' ? 1 : 0))) || ['q', 'w', 'e'].find((k) => puedeSubir(h, k)); if (!o) break; subeHab(h, o);}}
 /* hechizos de invocador: Destello y Curar */
-const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: '../abismo/iconos/estrella.webp'}, f: {n: 'Curar', cd: 90, icono: '../abismo/iconos/corazon.webp'}};
+const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/hz_curar.webp'}, c: {n: 'Castigo', cd: 60, icono: 'ui/hz_castigo.webp'}};
 const OBJ = {
   hoja: {t: 'Hoja larga', i: 'obj_01', c: 350, st: {dano: 18}},
   daga: {t: 'Daga de Bree', i: 'obj_02', c: 300, st: {vatq: 0.2}},
@@ -66,7 +66,7 @@ const PLAN_BOT = {rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo',
    · «LÍNEA» (1 contra 1): un solo camino recto de abajo arriba, espesura a los dos lados, el río por la mitad y el Uruk a un lado del vado;
      simétrico como en un espejo (cada bando su mitad). */
 const gira = (p) => ({x: -p.x, z: -p.z}), refleja = (p) => ({x: p.x, z: -p.z});
-let MAPA, CARRILES, LARGOS, OJO, EJE, BASES, HIERBAS, CAMPOS, PIT, TIPO_MAPA = '', SIM, ORILLA, RELIQ = [];
+let MAPA, CARRILES, LARGOS, OJO, EJE, BASES, HIERBAS, CAMPOS, PIT, TIPO_MAPA = '', SIM, ORILLA, RELIQ = [], PIT2 = {x: 400, z: 400}, PLANTAS = [];
 function puntoCarril(l, f) {const L = CARRILES[l], c = LARGOS[l], d = f * c[c.length - 1]; for (let i = 1; i < L.length; i++) if (d <= c[i]) {const k = (d - c[i - 1]) / (c[i] - c[i - 1]); return {x: L[i - 1].x + (L[i].x - L[i - 1].x) * k, z: L[i - 1].z + (L[i].z - L[i - 1].z) * k};} return {...L[L.length - 1]};}
 function distSeg(px, pz, a, b) {const vx = b.x - a.x, vz = b.z - a.z, l2 = vx * vx + vz * vz, t = Math.max(0, Math.min(1, ((px - a.x) * vx + (pz - a.z) * vz) / l2)); return Math.hypot(px - a.x - vx * t, pz - a.z - vz * t);}
 function distCarril(x, z, l) {let m = 1e9; for (const k of l === undefined ? (TIPO_MAPA === 'ojo' ? [0, 1] : [0]) : [l]) {const L = CARRILES[k]; for (let i = 1; i < L.length; i++) m = Math.min(m, distSeg(x, z, L[i - 1], L[i]));} return m;}
@@ -84,13 +84,17 @@ function ponMapa(modo) {
     CARRILES = [A, A.map(gira).reverse()];
     const R = {fuente: {x: -29, z: 53}, nexo: {x: -24.5, z: 48.5}, torre: {x: -17, z: 40.5}};
     BASES = [R, {fuente: gira(R.fuente), nexo: gira(R.nexo), torre: gira(R.torre)}];
-    const C = [{x: -13, z: 18, tipo: 'warg', n: 2}, {x: 3, z: 25, tipo: 'warg', n: 2}, {x: -6, z: 35, tipo: 'orco', n: 3}, {x: -16, z: 4, tipo: 'troll', n: 1}, {x: 9, z: 13, tipo: 'alfa', n: 1}];
-    CAMPOS = [...C, ...C.map((c) => ({...c, ...gira(c)})), {x: 0, z: 0, tipo: 'uruk', n: 1}];
+    /* como la jungla del LoL: roja (troll) y azul (Huorn), lobos (huargos), rapaces (crebain), Gromp (sapo); el Uruk (Barón) y el draco (dragón) en dos fosos a orillas del río, uno a cada lado, y la nutria (cangrejo) por el río */
+    PIT = {x: 11.8, z: 5.5}; PIT2 = {x: -11.8, z: -5.5};
+    const C = [{x: -13, z: 18, tipo: 'crebain', n: 4}, {x: 3, z: 25, tipo: 'warg', n: 2}, {x: -6, z: 35, tipo: 'sapo', n: 1}, {x: -16, z: 4, tipo: 'troll', n: 1}, {x: 9, z: 13, tipo: 'huorn', n: 1}];
+    CAMPOS = [...C, ...C.map((c) => ({...c, ...gira(c)})), {x: PIT.x, z: PIT.z, tipo: 'uruk', n: 1}, {x: PIT2.x, z: PIT2.z, tipo: 'draco', n: 1}, {x: 0, z: 0, tipo: 'nutria', n: 1}];
+    const PL = [{x: -10, z: 26, tipo: 'seta'}, {x: -19.5, z: 13, tipo: 'baya'}, {x: 2, z: 17, tipo: 'flor'}];
+    PLANTAS = [...PL, ...PL.map((q) => ({...q, ...gira(q)}))];
     ORILLA = [{x: 7, z: 3.2}, {x: -7, z: -3.2}];
   } else {
     /* 1 contra 1 en «el Abismo», como el Abismo de los Lamentos del ARAM (donde el Wild Rift juega su Duelo):
        un único puente recto, sin espesura ni bestias, matorrales a los lados y 4 reliquias de vida */
-    MAPA = {ancho: 10.5, largo: 58}; SIM = refleja; EJE = {x: 0, z: -1}; PIT = {x: 400, z: 400};
+    MAPA = {ancho: 10.5, largo: 58}; SIM = refleja; EJE = {x: 0, z: -1}; PIT = {x: 400, z: 400}; PIT2 = {x: 400, z: -400}; PLANTAS = [];
     const A = [{x: 0, z: 46}, {x: 0, z: 31}, {x: 0, z: 15}, {x: 0, z: 0}, {x: 0, z: -15}, {x: 0, z: -31}, {x: 0, z: -46}];
     CARRILES = [A, A];
     const R = {fuente: {x: 0, z: 55}, nexo: {x: 0, z: 49.5}, torre: {x: 0, z: 41}};
@@ -123,11 +127,17 @@ const NEUTRO = {
   warg: {nombre: 'Huargo', vida: 560, dano: 26, alcance: 1.9, vatq: 0.9, vel: 5, oro: 45, xp: 55, modelo: 'warg', alto: 1.5},
   orco: {nombre: 'Saqueador orco', vida: 430, dano: 22, alcance: 1.8, vatq: 1, vel: 4.4, oro: 35, xp: 40, modelo: 'orco', alto: 1.75},
   troll: {nombre: 'Troll de piedra', vida: 2200, dano: 60, alcance: 2.8, vatq: 0.55, vel: 3.6, oro: 120, xp: 200, modelo: 'troll', alto: 3.6, buff: 'troll', grande: true},
+  /* la jungla del LoL a la manera de la Tierra Media (Pack Vado 9): rapaces → crebain, Gromp → sapo, azul → Huorn, dragón → draco, cangrejo → nutria */
+  crebain: {nombre: 'Crebain', vida: 300, dano: 16, alcance: 1.6, vatq: 1.1, vel: 5, oro: 22, xp: 28, modelo: 'crebain', alto: 0.75},
+  sapo: {nombre: 'Sapo de las Ciénagas', vida: 1300, dano: 38, alcance: 2.2, vatq: 0.7, vel: 3.4, oro: 80, xp: 110, modelo: 'sapo', alto: 1.1},
+  huorn: {nombre: 'Huorn', vida: 1900, dano: 46, alcance: 2.8, vatq: 0.6, vel: 3.2, oro: 110, xp: 180, modelo: 'huorn', alto: 3.5, buff: 'huorn', grande: true},
+  draco: {nombre: 'Draco', vida: 4200, dano: 85, alcance: 3.2, vatq: 0.6, vel: 3.6, oro: 150, xp: 260, modelo: 'draco', alto: 2.4, grande: true, draco: true},
+  nutria: {nombre: 'Nutria del Isen', vida: 900, dano: 0, alcance: 0, vatq: 1, vel: 3.2, oro: 70, xp: 90, modelo: 'nutria', alto: 0.55, pasiva: true},
   alfa: {nombre: 'Huargo alfa', vida: 1800, dano: 50, alcance: 2.2, vatq: 0.8, vel: 5, oro: 110, xp: 180, modelo: 'huargo_alfa', alto: 2.2, buff: 'alfa', grande: true},
   /* el «Barón» del Vado: un uruk enorme y azulado en el centro; da la Furia del Uruk a todo el equipo */
   uruk: {nombre: 'Uruk Azul', vida: 6500, dano: 130, alcance: 3.2, vatq: 0.5, vel: 3.4, oro: 250, xp: 400, modelo: 'capitan', alto: 4.4, buff: 'uruk', grande: true, jefe: true, azul: true},
 };
-const BUFF_TXT = {troll: 'Fuerza del troll: +20 % de daño durante 90 s', alfa: 'Aullido del alfa: corres más y te curas deprisa durante 90 s', uruk: 'Furia del Uruk: todo el equipo pega más, se cura más y sus hordas salen más fuertes durante 150 s'};
+const BUFF_TXT = {troll: 'Brasa del troll: tus golpes queman y frenan durante 90 s', huorn: 'Savia del Huorn: habilidades un 20 % más rápidas y más regeneración durante 90 s', alfa: 'Aullido del alfa: corres más y te curas deprisa durante 90 s', uruk: 'Furia del Uruk: todo el equipo pega más, se cura más y sus hordas salen más fuertes durante 150 s'};
 /* red de caminos para los bots: puntos de los dos caminos, cubiles y fuentes; los árboles nunca se ponen encima de estas sendas */
 function haceNav() {
   const nodos = [], aristas = [], idx = new Map(), add = (p, extra) => {nodos.push({x: p.x, z: p.z, ...extra}); return nodos.length - 1;};
@@ -192,7 +202,7 @@ const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30,
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard'];
+const VADO = ['vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard', 'huorn', 'crebain', 'draco', 'nutria', 'sapo'];
 const NOMBRES = [...VADO, 'warg', 'huargo_alfa', 'troll', 'orco', 'capitan', 'carro_k', 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles', 'torre_k', 'estandarte_muro', 'estandarte_patio', 'brasero', 'tienda', 'empalizada', 'barril_1', 'barril_2', 'caja_1', 'heno', 'sacos_terreros', 'antorcha_pie'];
 async function cargaModelo(n) {
   const r = await fetch((VADO.includes(n) ? 'modelos/' : '../abismo/modelos/') + n + '.glb'); if (!r.ok) throw new Error(n);
@@ -216,7 +226,7 @@ function instancias(archivo, nombre, lista, sombra = true) {
   });
 }
 const ALTO = {};
-function alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene); ALTO[n] = Math.max(0.5, b.max.y - b.min.y);} return ALTO[n];}
+function alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene, ['draco', 'huorn', 'crebain', 'nutria', 'sapo'].includes(n)); ALTO[n] = Math.max(0.5, b.max.y - b.min.y);} return ALTO[n];}
 function montar(n, altura) {
   const raiz = SkeletonUtils.clone(M[n].scene); raiz.scale.setScalar(altura / alto(n));
   raiz.traverse((o) => {if (o.isMesh) {o.castShadow = true; o.material = o.material.clone(); if (o.isSkinnedMesh) o.frustumCulled = false;}});
@@ -241,11 +251,11 @@ function construyeMapa() {
   const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
   m.onBeforeCompile = (sh) => {
     sh.uniforms.tH = {value: tH}; sh.uniforms.tB = {value: tB}; sh.uniforms.uA = {value: v2(CARRILES[0])}; sh.uniforms.uB = {value: v2(CARRILES[1])};
-    sh.uniforms.uEje = {value: new THREE.Vector2(EJE.x, EJE.z)}; sh.uniforms.uPit = {value: new THREE.Vector2(PIT.x, PIT.z)};
+    sh.uniforms.uEje = {value: new THREE.Vector2(EJE.x, EJE.z)}; sh.uniforms.uPit = {value: new THREE.Vector2(PIT.x, PIT.z)}; sh.uniforms.uPit2 = {value: new THREE.Vector2(PIT2.x, PIT2.z)};
     sh.uniforms.uF = {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]};
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.)).xyz;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-      varying vec3 vWP; uniform sampler2D tH,tB; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec2 uEje, uPit;
+      varying vec3 vWP; uniform sampler2D tH,tB; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec2 uEje, uPit, uPit2;
       float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
       float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.03;a*=.5;}return s;}
@@ -262,11 +272,11 @@ function construyeMapa() {
       vec3 musgo=hi*vec3(.62,.78,.55)*(.75+.5*fbm(w*.2+9.));
       vec3 col=mix(musgo,ba,mb);
       /* el centro: un claro de barro y piedra donde duerme el Uruk Azul */
-      col=mix(col,ba*vec3(.7,.72,.8),(1.-smoothstep(5.5,8.,length(w-uPit)+fbm(w*.5)*1.5))*.9);
+      col=mix(col,ba*vec3(.7,.72,.8),(1.-smoothstep(5.5,8.,length(w-uPit)+fbm(w*.5)*1.5))*.9); col=mix(col,ba*vec3(.78,.66,.6),(1.-smoothstep(5.5,8.,length(w-uPit2)+fbm(w*.5)*1.5))*.9);
       /* el vado: el río cruza de lado a lado por la mitad del mapa */
       float rio=1.-smoothstep(1.9,3.3,abs(dot(w,uEje)+sin(dot(w,vec2(-uEje.y,uEje.x))*.22)*.9)+fbm(w*.4)*.8);
       vec3 agua=mix(vec3(.004,.016,.026),vec3(.012,.04,.05),fbm(w*.5));
-      col=mix(col,agua,rio*.9*(1.-(1.-smoothstep(5.,7.5,length(w-uPit)))));
+      col=mix(col,agua,rio*.9*(1.-(1.-smoothstep(5.,7.5,length(w-uPit))))*(1.-(1.-smoothstep(5.,7.5,length(w-uPit2)))));
       float borde=smoothstep(.0,1.,max(abs(w.x)-${MAPA.ancho.toFixed(1)},abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;
       diffuseColor.rgb*=col;`);
   };
@@ -282,7 +292,7 @@ function construyeMapa() {
     const px = x + (al() - 0.5) * 1.5, pz = z + (al() - 0.5) * 1.5, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
     if (dc < 4.7 || enBase(px, pz)) continue;
     if (juego) {
-      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
+      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
       if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.3) continue;
     }
     const isen = ladoDe({x: px, z: pz}) > 0, r = al();
@@ -293,17 +303,18 @@ function construyeMapa() {
   /* hierba alta, juncos del río, piedras de vadear y rocas */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
   for (const b of HIERBAS) for (let i = 0; i < 9; i++) {const a = al() * 6.28, d = Math.sqrt(al()) * b.r * 0.85; mata('arbusto_0' + (1 + i % 4), b.x + Math.cos(a) * d, b.z + Math.sin(a) * d, 1.3 + al() * 0.5);}
-  for (let i = 0; i < 90; i++) {const t = (al() - 0.5) * 70, o = (al() < 0.5 ? -1 : 1) * (2.4 + al() * 1.8), x = -t * EJE.z + o * EJE.x, z = t * EJE.x + o * EJE.z; if (Math.hypot(x - PIT.x, z - PIT.z) < 8 || distCarril(x, z) < 3 || Math.abs(x) > 33 || Math.abs(z) > 57) continue; mata('juncos_0' + (1 + i % 3), x, z, 0.9 + al() * 0.6);}
+  for (let i = 0; i < 90; i++) {const t = (al() - 0.5) * 70, o = (al() < 0.5 ? -1 : 1) * (2.4 + al() * 1.8), x = -t * EJE.z + o * EJE.x, z = t * EJE.x + o * EJE.z; if (Math.hypot(x - PIT.x, z - PIT.z) < 8 || Math.hypot(x - PIT2.x, z - PIT2.z) < 8 || distCarril(x, z) < 3 || Math.abs(x) > 33 || Math.abs(z) > 57) continue; mata('juncos_0' + (1 + i % 3), x, z, 0.9 + al() * 0.6);}
   for (const l of TIPO_MAPA === 'ojo' ? [0, 1] : [0]) {const L = CARRILES[l]; let mejor = 0; for (let f = 0; f <= 1; f += 0.01) {const p = puntoCarril(l, f); if (Math.abs(ladoDe(p)) < Math.abs(ladoDe(puntoCarril(l, mejor)))) mejor = f;} const c = puntoCarril(l, mejor); for (let i = 0; i < 8; i++) mata('piedra_vado_0' + (1 + i % 6), c.x + (al() - 0.5) * 5, c.z + (al() - 0.5) * 3, 0.5 + al() * 0.3);}
   for (let i = 0; i < 40; i++) {const x = (al() - 0.5) * 60, z = (al() - 0.5) * 100; if (!dentroOjo(x, z) || (TIPO_MAPA === 'linea' && Math.abs(x) < 9) || distCarril(x, z) < 5 || CAMPOS.some((c) => Math.hypot(c.x - x, c.z - z) < 4) || sendas.some(([a, b]) => distSeg(x, z, a, b) < 2.4)) continue; mata('roca_0' + (1 + i % 6), x, z, 0.35 + al() * 0.5);}
   for (const n in matas) instancias('vado_rocas', n, matas[n], !n.startsWith('juncos'));
   /* cubiles de las bestias, braseros y fuentes */
   for (const c of CAMPOS) {
+    if (NEUTRO[c.tipo].pasiva || c.tipo === 'huorn' || c.tipo === 'draco') continue;
     const nd = NEUTRO[c.tipo], o = pieza('vado_cubiles', nd.grande ? 'cubil_troll' : 'cubil_huargo'), d = Math.hypot(c.x, c.z) || 1;
-    o.position.set(c.x + (nd.grande ? c.x / d * 3.4 : 0), 0, c.z + (nd.grande ? c.z / d * 3.4 : 0)); o.rotation.y = Math.atan2(-c.x, -c.z); if (nd.jefe) {o.position.set(PIT.x + (TIPO_MAPA === 'ojo' ? 0 : 4.5), 0, PIT.z + (TIPO_MAPA === 'ojo' ? 4.5 : 0)); o.scale.setScalar(1.5);} scene_.add(o);
+    o.position.set(c.x + (nd.grande ? c.x / d * 3.4 : 0), 0, c.z + (nd.grande ? c.z / d * 3.4 : 0)); o.rotation.y = Math.atan2(-c.x, -c.z); if (nd.jefe) {const l = Math.hypot(PIT.x, PIT.z) || 1; o.position.set(PIT.x + PIT.x / l * 5.5, 0, PIT.z + PIT.z / l * 5.5); o.rotation.y = Math.atan2(-PIT.x, -PIT.z); o.scale.setScalar(1.5);} scene_.add(o);
     const bx = c.x + (c.x / d) * 3 + 2.4, bz = c.z + (c.z / d) * 3; if (!nd.jefe) {pon2('brasero', bx, bz, 0, nd.grande ? 1.6 : 1.2); luzFuego(bx, bz);}
   }
-  if (CAMPOS.some((c) => NEUTRO[c.tipo].jefe)) for (const x of [-5.5, 5.5]) {pon2('brasero', PIT.x + x, PIT.z - 4.5, 0, 1.8); luzFuego(PIT.x + x, PIT.z - 4.5);}
+  if (CAMPOS.some((c) => NEUTRO[c.tipo].jefe)) for (const P of [PIT, PIT2]) for (const x of [-5.5, 5.5]) {pon2('brasero', P.x + x, P.z - 4.5, 0, 1.8); luzFuego(P.x + x, P.z - 4.5);}
   /* braseros a lo largo del puente del Abismo */
   if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-9.4, 9.4]) {pon2('brasero', x, z, 0, 1.5); luzFuego(x, z);}
   for (const eq of [0, 1]) {
@@ -330,7 +341,7 @@ let ESTADO = 'menu';   /* menu, sala, juego, fin */
 let idSig = 1;
 
 function nuevaPartida(jugadores, modo) {
-  S = {t: 0, u: [], proy: [], zonas: [], dif: [], reliq: RELIQ.map((r) => ({...r, listo: r.t0})), bufEq: [{}, {}], campos: CAMPOS.map((c) => ({...c, resp: NEUTRO[c.tipo].jefe ? 180 : NEUTRO[c.tipo].grande ? 75 : 30, vivos: 0})), ev: [], ola: 5, oleadaN: 0, muertes: [0, 0], fin: -1, modo};
+  S = {t: 0, u: [], proy: [], zonas: [], dif: [], reliq: RELIQ.map((r) => ({...r, listo: r.t0})), bufEq: [{}, {}], plantas: PLANTAS.map((q) => ({...q, listo: 90})), santuarios: [], visiones: [], dracoSig: Math.random() < 0.5 ? 'f' : 'h', campos: CAMPOS.map((c) => ({...c, resp: NEUTRO[c.tipo].jefe ? 360 : NEUTRO[c.tipo].draco ? 150 : NEUTRO[c.tipo].pasiva ? 90 : NEUTRO[c.tipo].grande ? 75 : 30, vivos: 0})), ev: [], ola: 5, oleadaN: 0, muertes: [0, 0], fin: -1, modo};
   idSig = 1;
   const plazas = modo === '2v2' ? 4 : 2; S.carriles = modo === '2v2' ? [0, 1] : [0];
   for (let slot = 0; slot < plazas; slot++) {
@@ -339,7 +350,7 @@ function nuevaPartida(jugadores, modo) {
     const eq = slot % 2, f = BASES[eq].fuente, x = f.x + (slot >= 2 ? 1.5 : -1.5), z0 = f.z - signo(eq) * 2.5;
     const b = HEROES[tipo] || HEROES.rohan;
     S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: !j, nombre: j ? j.nombre : 'Bot ' + b.nombre.split(' ')[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
-      vida: b.vida, max: b.vida, nivel: 1, xp: 0, oro: 500, inv: [], enc: '', modoAt: '', fijo: 0, cd: {q: 0, w: 0, e: 0, r: 0, a: 0, d: 0, f: 0}, rk: {q: 0, w: 0, e: 0, r: 0}, pts: 1, muertes: 0, asist: 0, cs: 0, racha: 0, hierba: -1, multi: 0, multiT: -99, danos: {}, buf: {}, resp: 0, muerto: false, ac: 0, hc: 0, hk: '', mueve: false, ataca: false, mx: 0, mz: 0, kills: 0, plan: 0});
+      vida: b.vida, max: b.vida, nivel: 1, xp: 0, oro: 500, inv: [], enc: '', hf: j && j.hech === 'c' ? 'c' : 'f', modoAt: '', fijo: 0, cd: {q: 0, w: 0, e: 0, r: 0, a: 0, d: 0, f: 0}, rk: {q: 0, w: 0, e: 0, r: 0}, pts: 1, muertes: 0, asist: 0, cs: 0, racha: 0, hierba: -1, multi: 0, multiT: -99, danos: {}, buf: {}, resp: 0, muerto: false, ac: 0, hc: 0, hk: '', mueve: false, ataca: false, mx: 0, mz: 0, kills: 0, plan: 0});
   }
   for (const eq of [0, 1]) {
     /* «los soles» del dibujo: una torre en cada camino y otra delante del estandarte */
@@ -356,7 +367,9 @@ function stats(h) {
   let va = 0, ve = 0;
   for (const id of h.inv) {const o = OBJ[id].st; st.vida += o.vida || 0; st.dano += o.dano || 0; va += o.vatq || 0; ve += o.vel || 0; st.reduc += o.reduc || 0; st.regen += o.regen || 0; st.crit += o.crit || 0; st.robo += o.robo || 0; st.espinas += o.espinas || 0; st.esquiva += o.esquiva || 0;}
   const be = S && S.bufEq[h.eq] || {};
-  if (h.buf.troll > 0) st.dano *= 1.2;
+  if (be.drF) st.dano *= 1 + 0.06 * be.drF; if (be.drH) st.vida *= 1 + 0.06 * be.drH; if (be.alma) {st.dano *= 1.1; st.vida *= 1.1;}
+  if (h.buf.huorn > 0) st.regen += 4;
+  if (S && S.santuarios.some((z) => z.eq === h.eq && z.hasta > S.t && Math.hypot(h.x - z.x, h.z - z.z) < z.r)) ve += 0.3;
   if (h.buf.alfa > 0) {ve += 0.15; st.regen += 6;}
   if (be.uruk > S.t) {st.dano *= 1.2; st.regen += 8;}
   if (h.buf.rafaga > 0) va += 0.6;
@@ -430,11 +443,19 @@ function muere(d, o) {
   }
   if (d.k === 'j') {
     d.muerto = true; d.quitar = S.t + 2; ev(['muere', d.id]);
-    const nd = NEUTRO[d.tipo], c = S.campos[d.campo]; c.vivos--; if (c.vivos <= 0) c.resp = S.t + (nd.jefe ? 210 : nd.grande ? 100 : 55);
+    const nd = NEUTRO[d.tipo], c = S.campos[d.campo]; c.vivos--; if (c.vivos <= 0) c.resp = S.t + (nd.jefe ? 240 : nd.draco ? 240 : nd.pasiva ? 150 : nd.grande ? 100 : 55);
     const eq = o && o.k === 'h' ? o.eq : null;
     if (o && o.k === 'h') {o.oro += nd.oro; o.cs++; ev(['num', d.x, d.z, '+' + nd.oro, 'o', o.id]);}
     if (eq !== null) for (const h of heroes()) if (h.eq === eq && !h.muerto && (h === o || dist(h, d) < 14)) ganaXp(h, nd.xp);
     if (nd.buff === 'uruk' && eq !== null) {S.bufEq[eq].uruk = S.t + 150; for (const h of heroes()) if (h.eq === eq) h.oro += 150; ev(['fx', 'onda', d.x, d.z, 9]); ev(['baja', o.id, d.id, (eq === 0 ? 'Rohan' : 'Isengard') + ' derriba al Uruk Azul']); ev(['aviso', 0, BUFF_TXT.uruk]);}
+    else if (nd.draco && eq !== null) {
+      const be = S.bufEq[eq]; be.drF = be.drF || 0; be.drH = be.drH || 0; if (d.elem === 'f') be.drF++; else be.drH++;
+      S.dracoSig = S.dracoSig === 'f' ? 'h' : 'f'; ev(['fx', 'onda', d.x, d.z, 9]);
+      ev(['baja', o.id, d.id, (eq === 0 ? 'Rohan' : 'Isengard') + (d.elem === 'f' ? ' caza al draco de fuego' : ' caza al draco frío')]);
+      if (be.drF + be.drH >= 3 && !be.alma) {be.alma = 1; ev(['aviso', 0, '🐉 ' + (eq === 0 ? 'Rohan' : 'Isengard') + ' consigue el ALMA DEL DRACO']); for (const q of S.campos) if (NEUTRO[q.tipo].draco) q.resp = 1e9;}
+      else ev(['aviso', 0, d.elem === 'f' ? 'Aliento de fuego: el equipo pega un 6 % más' : 'Aliento helado: el equipo tiene un 6 % más de vida']);
+    }
+    else if (nd.pasiva && eq !== null) {S.santuarios.push({x: d.x, z: d.z, r: 7, eq, hasta: S.t + 90}); ev(['aviso', 0, (eq === 0 ? 'Rohan' : 'Isengard') + ' caza a la nutria: santuario de velocidad y vista en el río']); ev(['fx', 'onda', d.x, d.z, 7]);}
     else if (nd.buff && o && o.k === 'h') {o.buf[nd.buff] = 90; ev(['fx', 'onda', d.x, d.z, 5]); ev(['aviso', o.id, BUFF_TXT[nd.buff]]);}
   }
   if (d.k === 'h') {
@@ -466,6 +487,7 @@ function muere(d, o) {
 function luego(seg, fn) {S.dif.push({t: S.t + seg, fn});}
 function golpea(o, d) {
   if (o.k === 'h') {
+    if (o.buf.troll > 0 && d.k !== 't' && d.k !== 'n') {d.quema = {dps: 10 + 3 * o.nivel, hasta: S.t + 3, o: o.id, tick: 0}; if (d.k === 'h') {d.buf.lento = 1; d.buf.lentoV = 0.2;} else d.lento = S.t + 1;}
     const st = stats(o), crit = st.crit && Math.random() < st.crit, n = st.dano * (crit ? 2 : 1), b = HEROES[o.tipo];
     o.ac++;
     if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');
@@ -520,6 +542,17 @@ function oleada() {
 function paso(dt) {
   S.t += dt; S.ola -= dt; S.porId = new Map(S.u.map((u) => [u.id, u]));
   for (let i = S.dif.length - 1; i >= 0; i--) if (S.dif[i].t <= S.t) {const f = S.dif[i].fn; S.dif.splice(i, 1); f();} if (S.ola <= 0) {S.ola = S.carriles.length > 1 ? 28 : 24; oleada();}
+  /* quemadura de la brasa del troll */
+  for (const u of S.u) if (u.quema) {if (S.t > u.quema.hasta || u.vida <= 0 || u.muerto) {u.quema = null; continue;} u.quema.tick -= dt; if (u.quema.tick <= 0) {u.quema.tick = 0.5; dana(S.porId.get(u.quema.o) || null, u, u.quema.dps * 0.5, 'hab');}}
+  /* plantas de la espesura (como las del LoL): seta de humo lanza por los aires, baya cura, flor de elanor da vista */
+  for (const q of S.plantas) if (S.t >= q.listo) for (const h of heroes()) if (!h.muerto && dist(h, q) < 1.4) {
+    q.listo = S.t + (q.tipo === 'seta' ? 60 : 75); ev(['planta', q.tipo, q.x, q.z]);
+    if (q.tipo === 'seta') for (const a of heroes()) if (!a.muerto && dist(a, q) < 3.4) {const dx = a.x - q.x, dz = a.z - q.z, l = Math.hypot(dx, dz) || 1, ux = l > 0.2 ? dx / l : Math.sin(a.rot || 0), uz = l > 0.2 ? dz / l : Math.cos(a.rot || 0); a.x = q.x + ux * 7.5; a.z = q.z + uz * 7.5; a.px = undefined; a.dash = null; limita(a); ev(['tp', a.id, a.x, a.z]);}
+    if (q.tipo === 'baya') {const st = stats(h); const n = Math.min(st.vida - h.vida, st.vida * 0.12 + 40); h.vida += n; ev(['num', h.x, h.z, '+' + Math.round(n), 'v']);}
+    if (q.tipo === 'flor') S.visiones.push({x: q.x, z: q.z, r: 11, eq: h.eq, hasta: S.t + 12});
+    break;
+  }
+  for (const z of [...S.santuarios, ...S.visiones]) if (z.hasta > S.t) for (const e of heroes()) if (e.eq !== z.eq && Math.hypot(e.x - z.x, e.z - z.z) < z.r) e.revela = Math.max(e.revela || 0, S.t + 0.3);
   /* reliquias de vida: cura un 20 % + 30 por nivel al que pasa por encima */
   for (const r of S.reliq) if (S.t >= r.listo) for (const h of heroes()) if (!h.muerto && dist(h, r) < 1.6) {const st = stats(h); const n = Math.min(st.vida - h.vida, st.vida * 0.2 + 30 * h.nivel); h.vida += n; r.listo = S.t + 90; ev(['num', h.x, h.z, '+' + Math.round(n), 'v']); ev(['fx', 'onda', r.x, r.z, 3]); ev(['son', 'magia']); break;}
   /* anillo de fuego del Duelo */
@@ -598,12 +631,18 @@ function paso(dt) {
   S.campos.forEach((c, ci) => {
     if (c.vivos > 0 || S.t < c.resp) return;
     const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;
-    for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.jefe ? 1.5 : nd.grande ? 1.1 : 0.6});
-    if (nd.jefe) {ev(['aviso', 0, '¡El Uruk Azul ha despertado en el centro de la espesura!']); ev(['voz', 'uruk_despierta']);}
+    if (nd.draco) {c.elem = S.dracoSig; ev(['aviso', 0, c.elem === 'f' ? '🔥 Un draco de fuego ha despertado junto al río' : '❄ Un draco frío ha bajado de las Montañas Grises']);}
+    for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, elem: c.elem, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.jefe ? 1.5 : nd.grande ? 1.1 : 0.6});
+    if (nd.jefe) {ev(['aviso', 0, '¡El Uruk Azul ha despertado en su foso junto al río!']); ev(['voz', 'uruk_despierta']);}
   });
   for (const u of S.u) {
     if (u.k !== 'j' || u.muerto) continue;
     const nd = NEUTRO[u.tipo]; u.cd = Math.max(0, u.cd - dt);
+    if (nd.pasiva) {
+      const t = (u.ruta = u.ruta ?? 1), R = 9, dx = 0.906 * R * t, dz = 0.423 * R * t, huye = u.agro && S.t < u.agroT;
+      u.mueve = mueveHacia(u, dx, dz, nd.vel * (huye ? 1.6 : 0.8), dt); if (!u.mueve) u.ruta = -t;
+      continue;
+    }
     if (u.aturd > S.t) continue;
     let obj = u.agro && S.t < u.agroT + 4 ? S.u.find((q) => q.id === u.agro && !q.muerto && q.vida > 0) : null;
     const lejos = Math.hypot(u.x - u.cx, u.z - u.cz) > 11;
@@ -654,7 +693,7 @@ function usaHab(h, k, dx, dz, px, pz) {
   if (!h || h.muerto || h.aturd > S.t || h.cd[k] > 0 || !(h.rk[k] > 0)) return false;
   const H = HEROES[h.tipo].hab[k], st = stats(h), escala = 1 + 0.22 * (h.rk[k] - 1) + 0.03 * (h.nivel - 1) + (st.dano - HEROES[h.tipo].dano) / 150;
   const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l; h.rot = Math.atan2(dx, dz);
-  h.cd[k] = H.cd * (1 - 0.08 * (h.rk[k] - 1)); h.hc++; h.hk = k; h.revela = S.t + 1.2; if (h.buf.invis && H.tipo !== 'invis') h.buf.invis = 0;
+  h.cd[k] = H.cd * (1 - 0.08 * (h.rk[k] - 1)) * (h.buf.huorn > 0 ? 0.8 : 1); h.hc++; h.hk = k; h.revela = S.t + 1.2; if (h.buf.invis && H.tipo !== 'invis') h.buf.invis = 0;
   const n = (H.dano || 0) * escala, en = () => enemigosDe(h.eq).filter((e) => e.k !== 'n' && (e.k !== 't' || atacable(e)));
   if (H.tipo === 'dash') {const v = H.dist / 0.28; h.dash = {vx: dx * v, vz: dz * v, t: 0.28, n, aturde: H.aturde, toc: new Set()}; ev(['fx', 'polvo', h.x, h.z, 1.5]);}
   if (H.tipo === 'salto') {const d0 = Math.min(H.dist, Math.hypot(px - h.x, pz - h.z) || H.dist), v = d0 / 0.45; h.dash = {vx: dx * v, vz: dz * v, t: 0.45, salto: true, toc: new Set(), cae: {x: h.x + dx * d0, z: h.z + dz * d0, r: H.radio, n, l: H.lento, dur: H.durL}};}
@@ -689,6 +728,10 @@ function usaEnc(h) {
 }
 function usaHechizo(h, k, dx, dz) {
   if (!h || h.muerto || h.cd[k] > 0 || h.aturd > S.t) return false;
+  if (k === 'f' && h.hf === 'c') {/* Castigo: golpe seco a la bestia o súbdito más cercano (como el Smite del LoL) */
+    const t = masCercano(h, S.u.filter((u) => (u.k === 'j' || u.k === 's') && u.eq !== h.eq && !u.muerto && u.vida > 0), 5.5); if (!t) return false;
+    h.cd.f = HECHIZOS.c.cd; dana(h, t, 380 + 45 * h.nivel, 'hab'); ev(['castigo', t.x, t.z]); return true;
+  }
   h.cd[k] = HECHIZOS[k].cd;
   if (k === 'd') {const l = Math.hypot(dx, dz) || 1, r = h.rot || 0; if (!dx && !dz) {dx = Math.sin(r); dz = Math.cos(r);} else {dx /= l; dz /= l;} ev(['fx', 'onda', h.x, h.z, 2]); h.x += dx * 4.5; h.z += dz * 4.5; h.px = undefined; limita(h); h.rot = Math.atan2(dx, dz); ev(['fx', 'onda', h.x, h.z, 2.4]); ev(['tp', h.id, h.x, h.z]);}
   if (k === 'f') {for (const a of heroes()) if (a.eq === h.eq && !a.muerto && (a === h || dist(a, h) < 8)) {const st = stats(a); a.vida = Math.min(st.vida, a.vida + st.vida * 0.18 + 25 * h.nivel); a.buf.prisa = 1.5; ev(['fx', 'onda', a.x, a.z, 3]); ev(['num', a.x, a.z, '+' + Math.round(st.vida * 0.18 + 25 * h.nivel), 'v']);}}
@@ -739,7 +782,7 @@ function ia(h, dt, st) {
   const empujando = S.u.some((t) => (t.k === 't' || t.k === 'n') && t.eq !== h.eq && t.vida > 0 && atacable(t) && aliados.some((a) => dist(a, t) < 13));
   const camTranquilo = !empujando && !S.u.some((u) => u.k === 's' && u.eq !== h.eq && !u.muerto && u.carril === l && dist(u, h) < 18);
   if (camTranquilo && pv > 0.6 && !(heroeEn && dist(h, heroeEn) < 10)) {
-    const bestias = S.u.filter((u) => u.k === 'j' && !u.muerto && (NEUTRO[u.tipo].jefe ? h.nivel >= 8 && pv > 0.9 : ladoDe(u) * avanza <= 4) && dist(h, u) < 26 && !en.some((e) => e.k === 'h' && dist(e, u) < 12));
+    const bestias = S.u.filter((u) => u.k === 'j' && !u.muerto && (NEUTRO[u.tipo].jefe ? h.nivel >= 8 && pv > 0.9 : NEUTRO[u.tipo].draco ? h.nivel >= 5 && pv > 0.85 : ladoDe(u) * avanza <= 4) && dist(h, u) < 26 && !en.some((e) => e.k === 'h' && dist(e, u) < 12));
     const b = bestias.sort((a, c) => dist(h, a) - dist(h, c))[0];
     if (b) {if (dist(h, b) - radio(b) > st.alcance) ve(h, b.x, b.z); else {h.ataca = true;} return;}
   }
@@ -812,11 +855,11 @@ function compra(h, id) {
 const AN = {quieto: 0, correr: 1};
 function foto() {
   const u = S.u.map((q) => q.k === 'h'
-    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.alfa || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0]
-    : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
-  const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t)));
+    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0, q.hf]
+    : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') : q.k === 'j' ? q.elem || '' : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
+  const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t))), dr = S.bufEq.map((b) => [b.drF || 0, b.drH || 0, b.alma || 0]);
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
-  return {t: +S.t.toFixed(2), u, m: S.muertes, be, cp, an: S.modo === '1v1' ? +radioAnillo(S.t).toFixed(1) : 0, rl: S.reliq.map((r) => S.t >= r.listo ? 1 : 0), ev: S.ev.splice(0)};
+  return {t: +S.t.toFixed(2), u, m: S.muertes, be, cp, an: S.modo === '1v1' ? +radioAnillo(S.t).toFixed(1) : 0, rl: S.reliq.map((r) => S.t >= r.listo ? 1 : 0), dr, pl: S.plantas.map((q) => S.t >= q.listo ? 1 : 0), sa: S.santuarios.filter((z) => z.hasta > S.t).map((z) => [+z.x.toFixed(1), +z.z.toFixed(1), z.eq]), ev: S.ev.splice(0)};
 }
 function aplicaFila(f, t) {
   const [id, k, eq, x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo] = f;
@@ -825,13 +868,13 @@ function aplicaFila(f, t) {
   else if (S) {v.x0 = v.x; v.z0 = v.z; v.r0 = v.rot;}   /* anfitrión: de un paso de la simulación al siguiente */
   else {v.x0 = v.xi ?? v.x; v.z0 = v.zi ?? v.z; v.r0 = v.ri ?? v.rot; v.t0 = performance.now();}
   Object.assign(v, {x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo, visto: true, llega: performance.now()});
-  if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30], enc: f[31] || '', cdEnc: f[32] || 0, flagsE: f[33] || 0, fijo: f[34] || 0});
+  if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30], enc: f[31] || '', cdEnc: f[32] || 0, flagsE: f[33] || 0, fijo: f[34] || 0, hf: f[35] || 'f'});
 }
 function recibeFoto(o) {
   for (const v of VISTA.values()) v.visto = false;
   for (const f of o.u) aplicaFila(f, o.t);
   for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);}
-  marcador(o.m, o.t); EXTRA.be = o.be; EXTRA.cp = o.cp; EXTRA.an = o.an || 0; EXTRA.rl = o.rl || [];
+  marcador(o.m, o.t); EXTRA.be = o.be; EXTRA.cp = o.cp; EXTRA.an = o.an || 0; EXTRA.rl = o.rl || []; EXTRA.dr = o.dr || [[0, 0, 0], [0, 0, 0]]; EXTRA.pl = o.pl || []; EXTRA.sa = o.sa || [];
   for (const e of o.ev || []) efectoLocal(e);
 }
 
@@ -849,7 +892,7 @@ function creaVis(v) {
     tiñe(o.raiz, col, v.hk === 'F' ? 1 : 0.75);
     o.aro = aro(col, v.tipo === 'a' ? 1 : v.tipo === 'x' ? 1.25 : 0.62); o.aro.material.opacity = 0.95; scene.add(o.aro);
   }
-  else if (v.k === 'j') {o = montar(NEUTRO[v.tipo].modelo, NEUTRO[v.tipo].alto); if (NEUTRO[v.tipo].azul) tiñe(o.raiz, '#4a7dff', 0.9);}
+  else if (v.k === 'j') {o = montar(NEUTRO[v.tipo].modelo, NEUTRO[v.tipo].alto); if (NEUTRO[v.tipo].azul) tiñe(o.raiz, '#4a7dff', 0.9); if (NEUTRO[v.tipo].draco) tiñe(o.raiz, v.hk === 'h' ? '#6fb8ff' : '#e0461e', 0.85); if (v.tipo === 'huorn') o.raiz.traverse((q) => {if (q.isMesh) {q.material.map = null; q.material.color.set('#7a5c38'); q.material.emissive && q.material.emissive.set('#16240a'); q.material.needsUpdate = true;}}); if (v.tipo === 'crebain') o.raiz.traverse((q) => {if (q.isMesh) q.material.color.set('#2a2a30');});}
   else if (v.k === 't') {
     const g = new THREE.Group(), lado = v.eq ? 'isengard' : 'rohan', est = [1, 2, 3].map((n) => {const p = pieza('vado_torres', 'torre_' + lado + '_' + n); p.visible = n === 1; g.add(p); return p;});
     g.rotation.y = v.eq ? 0 : Math.PI; g.scale.setScalar(0.82);
@@ -954,8 +997,17 @@ function pintaReliquias() {
   const t = performance.now() / 1000;
   RELIQ_V.forEach((o, i) => {const on = !!(EXTRA.rl && EXTRA.rl[i]); o.sp.visible = o.aro.visible = on; if (on) {const f = Math.floor(t * 8) % 16; o.tx.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4); o.sp.position.set(o.r.x, 1.05, o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t;}});
 }
+const PLANTA_V = []; const PL_TAM = {seta: 3.4, baya: 2.8, flor: 2.4};
+const SANT_V = [];
+function pintaJungla() {
+  if (PLANTA_V.length !== PLANTAS.length || (PLANTA_V[0] && PLANTA_V[0].q !== PLANTAS[0])) {for (const o of PLANTA_V) scene.remove(o.sp); PLANTA_V.length = 0;
+    for (const q of PLANTAS) {const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: cargaTex('../batalla/ui/pl_' + q.tipo + '.webp'), transparent: true, depthWrite: false})); const t = PL_TAM[q.tipo]; sp.scale.setScalar(t); sp.center.set(0.5, 0.12); sp.position.set(q.x, 0, q.z); scene.add(sp); PLANTA_V.push({sp, q});}}
+  PLANTA_V.forEach((o, i) => {o.sp.visible = !!(EXTRA.pl && EXTRA.pl[i]); if (o.q.tipo === 'seta') o.sp.scale.setScalar(PL_TAM.seta * (1 + 0.04 * Math.sin(performance.now() / 200)));});
+  const sa = EXTRA.sa || []; while (SANT_V.length < sa.length) {const a = aro('#5ae0ff', 7); a.material.opacity = 0.35; scene.add(a); SANT_V.push(a);}
+  SANT_V.forEach((a, i) => {a.visible = i < sa.length; if (a.visible) {a.position.set(sa[i][0], 0.08, sa[i][1]); a.material.color.set(sa[i][2] === MI_EQ ? '#5ae0ff' : '#ff6a5a'); a.rotation.y += 0.004;}});
+}
 function pintaAnillo(dt) {
-  pintaReliquias();
+  pintaReliquias(); pintaJungla();
   const r = MODO === '1v1' ? EXTRA.an || 0 : 0;
   if (!r) {if (ANILLO) ANILLO.visible = false; return;}
   if (!ANILLO) {
@@ -1136,6 +1188,8 @@ function efectoLocal(e) {
   if (t === 'son') suena(e[1], 0.5);
   if (t === 'g') golpeVisual(e[1], e[2], e[3]);
   if (t === 'hb') habVisual(e);
+  if (t === 'planta') {const [, tp, x, z] = e; if (tp === 'seta') {flip('humo', x, z, 6, false, undefined, 1.2); flip('ondaC', x, z, 7, true); flip('explosion', x, z, 3); suena('explosion', 0.6); if (Math.hypot(x - camM.x, z - camM.z) < 16) tiemblaCam = Math.max(tiemblaCam, 0.5);} if (tp === 'baya') {flip('hojas', x, z, 3, true); suena('magia', 0.4);} if (tp === 'flor') {flip('ondaC', x, z, 22, true, 0, 0.13, 1.4); flip('suerte', x, z, 3); suena('magia', 0.5);}}
+  if (t === 'castigo') {const [, x, z] = e; flip('ondaC', x, z, 4, true); flip('explosion', x, z, 2.6); flip('impacto', x, z, 2.2); suena('explosion', 0.5); if (Math.hypot(x - camM.x, z - camM.z) < 16) tiemblaCam = Math.max(tiemblaCam, 0.35);}
   if (t === 'enc') {const o = VIS.get(e[1]), v = VISTA.get(e[1]); if (o && v) {const x = v.xi ?? v.x, z = v.zi ?? v.z;
     if (e[2] === 'estasis') {auraFx(o, 'suerte', 2.5, 2.4, 1.3); auraFx(o, 'escudo', 2.5, 3.2); flip('ondaC', x, z, 4, true); o.oro = 2.5;}
     if (e[2] === 'gargola') {auraFx(o, 'piedra', 4, 3.6); flip('polvoA', x, z, 3.6, true); o.punch = 1.3;}
@@ -1379,6 +1433,7 @@ function recibe(o) {
     if (o.t === 'sube') subeHab(h, o.k);
     if (o.t === 'rinde') rinde(h, !!o.si);
     if (o.t === 'enc') usaEnc(h);
+    if (o.t === 'hech1') h.hf = o.v === 'c' ? 'c' : 'f';
     if (o.t === 'ping') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; S.ev.push(e); efectoLocal(e);}
     if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
     if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined;}}
@@ -1397,8 +1452,8 @@ function empieza(jugadores, modo, simulo) {
   precargaVoces(); document.body.classList.add('jugando'); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
-  if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; recibeFoto(foto());}
-  else {S = null; YO = null; const pide = setInterval(() => {const v = [...VISTA.values()].find((q) => q.k === 'h' && q.slot === yo.slot); if (v) {YO = v.id; MIO.listo = false; clearInterval(pide); iconosHab(v.tipo);}}, 100);}
+  if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; h.hf = hechElegido; recibeFoto(foto());}
+  else {S = null; YO = null; const pide = setInterval(() => {const v = [...VISTA.values()].find((q) => q.k === 'h' && q.slot === yo.slot); if (v) {YO = v.id; MIO.listo = false; clearInterval(pide); iconosHab(v.tipo); NET.manda({t: 'hech1', v: hechElegido});}}, 100);}
   if (simulo) iconosHab(yo.heroe);
   $('yoImg').src = '../abismo/ui/' + HEROES[yo.heroe].retrato + '.webp';
   camM.set(BASES[MI_EQ].fuente.x, 0, BASES[MI_EQ].fuente.z); reloj0 = performance.now();
@@ -1434,6 +1489,8 @@ function objetivoTxt() {
 const PINGS = [];
 const MARCAS = {}; for (const n of ['m_huargo', 'm_troll', 'm_torre0', 'm_torre1']) {MARCAS[n] = new Image(); MARCAS[n].src = 'ui/' + n + '.webp';}
 const marca = (g, n, x, z, t) => {const im = MARCAS[n]; if (im.complete && im.naturalWidth) g.drawImage(im, x - t / 2, z - t / 2, t, t); else return false; return true;};
+const MM_IMG = {};
+function marcaMm(g, n, x, y, t) {let im = MM_IMG[n]; if (!im) {im = MM_IMG[n] = new Image(); im.src = 'ui/' + n + '.webp';} if (!im.complete || !im.naturalWidth) return false; g.drawImage(im, x - t / 2, y - t / 2, t, t); return true;}
 function minimapa() {
   const c = $('mini'); if (APAI !== (c.width > c.height)) {c.width = APAI ? 196 : 96; c.height = APAI ? 96 : 196;}
   const W = 96, H = 196, g = c.getContext('2d'), s = signo(MI_EQ);
@@ -1444,7 +1501,13 @@ function minimapa() {
   g.strokeStyle = '#7a5a36'; g.lineWidth = 6; g.lineCap = g.lineJoin = 'round';
   CARRILES.forEach((L, l) => {g.globalAlpha = MODO === '2v2' || l === 0 ? 1 : 0.3; g.beginPath(); L.forEach((p, i) => i ? g.lineTo(px(p.x), pz(p.z)) : g.moveTo(px(p.x), pz(p.z))); g.stroke();}); g.globalAlpha = 1;
   for (const b of BASES) {g.fillStyle = b === BASES[0] ? '#35552a' : '#4a2220'; g.beginPath(); g.arc(px(b.nexo.x), pz(b.nexo.z), 11, 0, 7); g.fill();}
-  CAMPOS.forEach((cp, i) => {const t = EXTRA.cp[i]; if (t === -1 && !NEUTRO[cp.tipo].jefe && marca(g, NEUTRO[cp.tipo].grande ? 'm_troll' : 'm_huargo', px(cp.x), pz(cp.z), NEUTRO[cp.tipo].grande ? 16 : 12)) return; g.fillStyle = t === -1 ? (NEUTRO[cp.tipo].jefe ? '#4aa8ff' : NEUTRO[cp.tipo].grande ? '#ffb02e' : '#e8d27a') : '#555'; g.beginPath(); g.arc(px(cp.x), pz(cp.z), NEUTRO[cp.tipo].jefe ? 6 : NEUTRO[cp.tipo].grande ? 4.5 : 3, 0, 7); g.fill(); if (t > 0 && NEUTRO[cp.tipo].grande) {g.fillStyle = '#bbb'; g.font = '8px system-ui'; g.textAlign = 'center'; g.fillText(t, px(cp.x), pz(cp.z) - 6);}});
+  const MM = {warg: 'huargo', crebain: 'crebain', troll: 'troll', huorn: 'huorn', uruk: 'uruk', draco: 'draco', nutria: 'nutria', sapo: 'huargo', orco: 'huargo', alfa: 'huargo'};
+  CAMPOS.forEach((cp, i) => {
+    const t = EXTRA.cp[i], nd = NEUTRO[cp.tipo], tam = nd.jefe || nd.draco ? 17 : nd.grande ? 15 : 11, x = px(cp.x), y = pz(cp.z);
+    if (t === -1) {if (!marcaMm(g, 'mm_' + MM[cp.tipo], x, y, tam)) {g.fillStyle = '#e8d27a'; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill();}}
+    else if (!(t > 900)) {g.globalAlpha = 0.45; marcaMm(g, 'mm_' + MM[cp.tipo], x, y, tam * 0.75); g.globalAlpha = 1; if (t > 0) {g.save(); g.translate(x, y); if (APAI) g.rotate(-Math.PI / 2); g.fillStyle = '#fff'; g.strokeStyle = '#000'; g.lineWidth = 2; g.font = 'bold 8px system-ui'; g.textAlign = 'center'; g.strokeText(t, 0, 3); g.fillText(t, 0, 3); g.restore();}}
+  });
+  PLANTAS.forEach((q, i) => {if (EXTRA.pl && EXTRA.pl[i]) {if (q.tipo === 'baya') {g.fillStyle = '#ff4a5a'; g.beginPath(); g.arc(px(q.x), pz(q.z), 2.4, 0, 7); g.fill();} else marcaMm(g, 'mm_' + q.tipo, px(q.x), pz(q.z), 9);}});
   RELIQ.forEach((r, i) => {if (EXTRA.rl && EXTRA.rl[i]) {g.fillStyle = '#5aff6a'; g.beginPath(); g.arc(px(r.x), pz(r.z), 2.6, 0, 7); g.fill();}});
   if (MODO === '1v1' && EXTRA.an) {g.strokeStyle = '#ff6a1a'; g.lineWidth = 2; g.beginPath(); g.ellipse(px(0), pz(0), EXTRA.an / KX * W / 2, EXTRA.an / 59 * H / 2, 0, 0, 7); g.stroke();}
   for (const q of VISTA.values()) {
@@ -1461,7 +1524,7 @@ function minimapa() {
 }
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
-  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; $('buffs').innerHTML = (bu ? '<span class="azul">🔷 Furia del Uruk ' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/buff_troll.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/buff_alfa.webp" alt="">' + v.bAlfa + ' s</span>' : ''); consejos(+($('marcador').dataset.t || 0));}
+  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; $('buffs').innerHTML = (bu ? '<span class="azul"><img src="ui/bend_furia.webp" alt="">' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/bend_brasa.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/bend_savia.webp" alt="">' + v.bAlfa + ' s</span>' : '') + (() => {const d = (EXTRA.dr || [])[MI_EQ] || [0, 0, 0]; return d[2] ? '<span><img src="ui/bend_alma.webp" alt="">Alma</span>' : (d[0] ? '<span><img src="ui/bend_fuego.webp" alt="">×' + d[0] + '</span>' : '') + (d[1] ? '<span><img src="ui/bend_hielo.webp" alt="">×' + d[1] + '</span>' : '');})(); consejos(+($('marcador').dataset.t || 0));}
   $('yoNv').textContent = 'Nv ' + v.nivel; $('oro').textContent = '🪙 ' + v.oro; $('xpBar').style.width = (v.nivel >= NIVEL_MAX ? 100 : (v.xpP || 0) * 100) + '%';
   if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel;
   $('kda').textContent = (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3];
@@ -1473,7 +1536,8 @@ function hud() {
    if (!aroFijo) {aroFijo = indicador('ind_alcance', '#ffd24a'); aroFijo.renderOrder = 6;}
    const af = VISTA.get(MANDO.cand || MANDO.fijo); aroFijo.visible = !!af && v.muerto < 0;
    if (af) {const rr = af.k === 't' ? 2.4 : af.k === 'n' ? 2.8 : af.k === 'h' ? 1.3 : 1.1; aroFijo.position.set(af.xi ?? af.x, 0.18, af.zi ?? af.z); aroFijo.scale.setScalar(2 * rr * 256 / 235 * (1 + 0.1 * Math.sin(performance.now() / 70))); aroFijo.material.color.set(MANDO.cand ? '#ffffff' : '#ffd24a');}}
-  for (const [k, cd] of [['d', v.cdD], ['f', v.cdF]]) {const c = $('b' + k.toUpperCase()).querySelector('.cd'); c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / HECHIZOS[k].cd * 100) + '%' : '0%');}
+  {const bf = $('bF').querySelector('img'), src = v.hf === 'c' ? 'ui/hz_castigo.webp' : 'ui/hz_curar.webp'; if (!bf.src.endsWith(src)) bf.src = src; const bd = $('bD').querySelector('img'); if (!bd.src.endsWith('hz_destello.webp')) bd.src = 'ui/hz_destello.webp';}
+  for (const [k, cd] of [['d', v.cdD], ['f', v.cdF]]) {const c = $('b' + k.toUpperCase()).querySelector('.cd'); c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / HECHIZOS[k === 'f' && v.hf === 'c' ? 'c' : k].cd * 100) + '%' : '0%');}
   /* volver a la fuente: el botón se va llenando */
   $('bBase').style.setProperty('--p', volverBase > 0 ? (1 - volverBase / VOLVER_T) * 100 + '%' : '0%'); $('bBase').classList.toggle('cargando', volverBase > 0);
   const cn = $('canal'); cn.classList.toggle('hidden', !(volverBase > 0)); if (volverBase > 0) cn.innerHTML = 'Volviendo a la base… <b>' + Math.ceil(volverBase) + '</b><i style="width:' + (1 - volverBase / VOLVER_T) * 100 + '%"></i>';
@@ -1557,7 +1621,7 @@ function bucle() {
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];
-function recibeFotoLocal(f) {ENVIAR.push(...f.ev); f.ev = []; for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} marcador(f.m, f.t); EXTRA.be = f.be; EXTRA.cp = f.cp; EXTRA.an = f.an || 0; EXTRA.rl = f.rl || [];}
+function recibeFotoLocal(f) {ENVIAR.push(...f.ev); f.ev = []; for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} marcador(f.m, f.t); EXTRA.be = f.be; EXTRA.cp = f.cp; EXTRA.an = f.an || 0; EXTRA.rl = f.rl || []; EXTRA.dr = f.dr || [[0, 0, 0], [0, 0, 0]]; EXTRA.pl = f.pl || []; EXTRA.sa = f.sa || [];}
 const EXTRA = {be: [0, 0], cp: []};
 
 /* ---------- tienda (en la fuente) ---------- */
@@ -1619,7 +1683,7 @@ async function apaisa() {
 function sueltaApaisado() {try {if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();} catch (e) {} try {if (document.fullscreenElement) document.exitFullscreen();} catch (e) {}}
 
 /* ---------- menú y sala ---------- */
-let heroeElegido = localStorage.getItem('vado.heroe') || 'rohan', modoElegido = localStorage.getItem('vado.modo') || '1v1';
+let hechElegido = localStorage.getItem('vado.hech') || 'f', heroeElegido = localStorage.getItem('vado.heroe') || 'rohan', modoElegido = localStorage.getItem('vado.modo') || '1v1';
 const ROL_H = {rohan: 'Luchador', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Asesino'};
 let eligeSel = null;
 function eligeHeroe(titulo, listo) {
@@ -1631,9 +1695,10 @@ function eligeHeroe(titulo, listo) {
       '<div class="eLista">' + Object.entries(HEROES).map(([k, h]) => '<button class="eH' + (k === eligeSel ? ' on' : '') + '" data-h="' + k + '"><img src="ui/splash_' + k + '.webp" alt=""><span>' + h.nombre.split(' ')[0] + '</span></button>').join('') + '</div>' +
       '<div class="eFicha"><div class="eRet"><img src="ui/splash_' + eligeSel + '.webp" alt=""><b>' + H.nombre + '</b><em>' + ROL_H[eligeSel] + '</em></div>' +
       '<div class="eDatos">' + barra('Vida', H.vida, max.vida) + barra('Daño', H.dano, max.dano) + barra('Alcance', H.alcance, max.alcance) + barra('Velocidad', H.vel, max.vel) +
-      '<div class="eHabs">' + ['q', 'w', 'e', 'r'].map((k) => '<div class="eHab' + (k === 'r' ? ' ult' : '') + '"><img src="ui/h_' + eligeSel + '_' + k + '.webp" alt=""><div><b>' + H.hab[k].n + (k === 'r' ? ' · definitiva' : '') + '</b><small>' + H.hab[k].d + '</small></div></div>').join('') + '</div></div></div>' +
+      '<div class="eHabs">' + ['q', 'w', 'e', 'r'].map((k) => '<div class="eHab' + (k === 'r' ? ' ult' : '') + '"><img src="ui/h_' + eligeSel + '_' + k + '.webp" alt=""><div><b>' + H.hab[k].n + (k === 'r' ? ' · definitiva' : '') + '</b><small>' + H.hab[k].d + '</small></div></div>').join('') + '<div class="eHech"><span>Hechizos:</span><b><img src="ui/hz_destello.webp" alt="">Destello</b>' + ['f', 'c'].map((k) => '<button data-hz="' + k + '"' + (hechElegido === k ? ' class="on"' : '') + '><img src="' + HECHIZOS[k].icono + '" alt="">' + HECHIZOS[k].n + '</button>').join('') + '<small>' + (hechElegido === 'c' ? 'Castigo: golpe seco a una bestia o súbdito (para cazar en la espesura y robar el draco o el Uruk).' : 'Curar: te cura a ti y a un aliado cercano.') + '</small></div>' + '</div></div></div>' +
       '<div class="eBot"><button class="bt s" id="eVolver">← Volver</button><button class="bt" id="eOk">¡Confirmar!</button></div>';
     el.querySelectorAll('[data-h]').forEach((b) => b.onclick = () => {eligeSel = b.dataset.h; pinta();});
+    el.querySelectorAll('[data-hz]').forEach((b) => b.onclick = () => {hechElegido = b.dataset.hz; localStorage.setItem('vado.hech', hechElegido); pinta();});
     $('eVolver').onclick = () => el.classList.add('hidden');
     $('eOk').onclick = () => {heroeElegido = eligeSel; localStorage.setItem('vado.heroe', heroeElegido); el.classList.add('hidden'); pintaMenu(); listo();};
   };
@@ -1663,7 +1728,7 @@ function nombreJugador() {let n = localStorage.getItem('vado.nombre'); if (!n) {
 function preparaMenu() {
   pintaMenu();
   $('bGirar').onclick = apaisa;
-  $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido}]; empieza(js, modoElegido, true);});
+  $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);});
   $('bCrear').onclick = () => eligeHeroe('Elige a tu héroe', () => {apaisa(); const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);});
   $('bUnir').onclick = () => {const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} eligeHeroe('Elige a tu héroe', () => {apaisa(); conecta(c, modoElegido, nombreJugador(), heroeElegido);});};
   $('bSalir').onclick = () => {sueltaApaisado(); location.href = '../';};
@@ -1672,10 +1737,12 @@ function preparaMenu() {
 /* ---------- arranque ---------- */
 (async () => {
   $('bBots').disabled = $('bCrear').disabled = true; msg('Cargando…');
-  try {const gl = await Promise.all(NOMBRES.map(cargaModelo)); NOMBRES.forEach((n, i) => M[n] = gl[i]);} catch (e) {msg('No se pudo cargar: ' + e.message); return;}
+  try {const gl = await Promise.all(NOMBRES.map(cargaModelo)); NOMBRES.forEach((n, i) => M[n] = gl[i]);
+    /* algunos modelos del Pack 9 vienen sin normales: sin ellas la luz no les da */
+    for (const n of ['huorn', 'nutria', 'crebain', 'sapo', 'draco']) M[n].scene.traverse((q) => {if (q.isMesh && !q.geometry.attributes.normal) q.geometry.computeVertexNormals();});} catch (e) {msg('No se pudo cargar: ' + e.message); return;}
   ponMapa('2v2'); construyeMapa(); preparaMenu(); preparaMandos();
   $('bBots').disabled = $('bCrear').disabled = false; msg('');
   camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
   bucle();
 })();
-window._vado = {AROS, flip, FXP, rinde, RELIQ_V, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};

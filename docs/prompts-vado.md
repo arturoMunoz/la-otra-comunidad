@@ -154,3 +154,12 @@ Seguimos con «El Vado del Isen» (El Señor de los Anillos, Rohan contra Isenga
    5. Opcional: un SAPO GIGANTE de las Ciénagas de los Muertos (como el Gromp).
 Escala aproximada en metros: huorn 3,5 · crebain 0,8 · draco 3 · nutria 0,7 · sapo 1,6. Un .glb por bestia, con las licencias en un LICENCIAS.txt. Pásamelo en un .zip llamado Pack_Vado_9.zip.
 ```
+
+## Pack Vado 10 — rehacer dos bestias que no han quedado bien (15/11)
+**Dónde: WORK** (modelos 3D animados).
+```
+Seguimos con «El Vado del Isen» (El Señor de los Anillos, estilo Wild Rift, low-poly como KayKit/Quaternius). Del Pack 9, dos modelos no sirven y hay que rehacerlos, con el mismo formato (.glb, metros, +Y arriba, frente +Z, clips quieto/andar/atacar/morir, CON NORMALES y colores sobrios):
+   1. HUORN: el «Walking Tree» de los monstruos monos parece una bola con ojos. Necesito un árbol antiguo y oscuro de los bosques de Fangorn que camina sobre sus raíces, tronco retorcido, ramas como brazos y copa pequeña, 3,5 m de alto, sin cara de dibujos animados. Si no hay uno CC0 animado, monta uno con el esqueleto de un humanoide de Quaternius o KayKit.
+   2. DRACO: el triceratops no parece un draco. Necesito un draco sin alas de las Montañas Grises: reptil largo y bajo, cuello y cola largos, cabeza con cuernos hacia atrás y escamas, 4,5 m de largo. Puede salir del «Dragon» de Quaternius (Ultimate Monsters) quitándole las alas, o del cocodrilo/lagarto de Animated Animals con cuernos añadidos.
+Pásamelo en un .zip llamado Pack_Vado_10.zip con LICENCIAS.txt.
+```
