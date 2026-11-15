@@ -946,12 +946,13 @@ function habVisual(e) {
 /* lluvia de flechas: caen flechas de verdad sobre la zona */
 const LLUVIAS = [];
 let ANILLO = null, anilloFx = 0;
-const RELIQ_V = [];
+const RELIQ_V = []; let RELIQ_MAT = null;
 function pintaReliquias() {
   if (RELIQ_V.length !== RELIQ.length) {for (const o of RELIQ_V) {scene.remove(o.sp); scene.remove(o.aro);} RELIQ_V.length = 0;
-    for (const r of RELIQ) {const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: cargaTex('../abismo/iconos/lembas.webp'), transparent: true})); sp.scale.setScalar(1.3); scene.add(sp); const a = aro('#5aff6a', 1.1); a.material.opacity = 0.8; scene.add(a); RELIQ_V.push({sp, aro: a, r});}}
+    if (!RELIQ_MAT) {const tx = cargaTex('../batalla/ui/reliquia.webp'); tx.repeat.set(0.25, 0.25); RELIQ_MAT = new THREE.SpriteMaterial({map: tx, transparent: true, depthWrite: false});}
+    for (const r of RELIQ) {const tx = RELIQ_MAT.map; const sp = new THREE.Sprite(RELIQ_MAT); sp.scale.setScalar(3); scene.add(sp); const a = aro('#5aff6a', 1.2); a.material.opacity = 0.35; scene.add(a); RELIQ_V.push({sp, aro: a, r, tx});}}
   const t = performance.now() / 1000;
-  RELIQ_V.forEach((o, i) => {const on = !!(EXTRA.rl && EXTRA.rl[i]); o.sp.visible = o.aro.visible = on; if (on) {o.sp.position.set(o.r.x, 1.1 + 0.18 * Math.sin(t * 2.4 + i), o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t;}});
+  RELIQ_V.forEach((o, i) => {const on = !!(EXTRA.rl && EXTRA.rl[i]); o.sp.visible = o.aro.visible = on; if (on) {const f = Math.floor(t * 8) % 16; o.tx.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4); o.sp.position.set(o.r.x, 1.05, o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t;}});
 }
 function pintaAnillo(dt) {
   pintaReliquias();
@@ -1677,4 +1678,4 @@ function preparaMenu() {
   camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
   bucle();
 })();
-window._vado = {AROS, flip, FXP, rinde, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {AROS, flip, FXP, rinde, RELIQ_V, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};

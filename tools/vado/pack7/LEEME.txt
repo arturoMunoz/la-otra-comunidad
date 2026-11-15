@@ -1,0 +1,18 @@
+PACK VADO 7
+
+reliquia_vida.png — 1024x1024, PNG RGBA transparente.
+4 columnas x 4 filas. 16 fotogramas de 256x256.
+Orden: izquierda a derecha y arriba abajo. Tras el fotograma 15 volver al 0.
+Velocidad sugerida: 8 fps, 2 segundos por vuelta. Ajustar al juego.
+La reliquia gira y flota sobre un circulo de luz verde.
+Margen transparente de seguridad en cada celda.
+atlas_reliquia.json contiene las coordenadas de los fotogramas.
+Origen de coordenadas en la esquina superior izquierda.
+
+fondo_menu.png — 1920x1080, fondo opaco. Mitad izquierda oscura para
+superponer el retrato; estandartes y Orthanc concentrados a la derecha.
+fondo_carga_vs.png — 1920x1080, fondo opaco. Rohan verde/dorado a la
+izquierda e Isengard negro/rojo con Mano Blanca a la derecha, unidos por el Isen.
+
+Ilustraciones generadas para este encargo con el generador integrado;
+exportacion y montaje del atlas con ImageMagick. Sin texto ni marcas de agua.
