@@ -187,5 +187,8 @@ C) MENÚ PRINCIPAL (que parezca el del Wild Rift pero de Rohan):
    3. carta_duelo y carta_batalla: tarjetas 600x360 con ilustración de fondo y la parte de abajo oscura para el texto: el duelo en un puente de piedra sobre el Abismo de Helm al atardecer; la batalla en el Vado del Isen con el río, las islas y Orthanc al fondo. Una tercera versión de marco dorado brillante para la elegida (solo el marco, hueco).
    4. boton_redondo: botón redondo 256x256 de hierro y oro, hueco en el centro (volver, ajustes).
 
+D) ARMERÍA (la tienda, como la del Wild Rift):
+   1. iconos de pestaña 256x256, mismo marco: «Recomendado» (estrella dorada sobre un escudo de Rohan), «Ataque» (espada y hacha cruzadas), «Defensa» (escudo redondo de Rohan), «Movilidad» (bota con espuela y viento), «Encantamientos» (runa brillante sobre una bota).
+   2. fondo_armeria: 1600x900, el interior de la armería de Meduseld en Edoras (armeros de madera tallada, escudos colgados, luz cálida de braseros), oscuro y desenfocado para poner encima la tienda.
 Pásamelo todo en un .zip llamado Pack_Vado_11.zip, con un nombre claro por archivo.
 ```

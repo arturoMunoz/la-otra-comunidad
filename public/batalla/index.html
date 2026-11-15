@@ -142,17 +142,6 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 #muerto{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;background:#000a;font:800 22.1px 'Cinzel',Georgia,serif;color:#ff9a8a;pointer-events:none}
 #fin{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#000c}#fin h2{font-size:38px;margin:0;color:#ffd77a}
 /* tienda */
-#tienda{position:fixed;inset:0;z-index:20;background:radial-gradient(ellipse at top,#2a1c10,#0d0805);display:flex;flex-direction:column;gap:6px;padding:calc(8px + var(--sat)) 8px 0}
-.tCab{display:flex;align-items:center;gap:8px}.tCab b{font-size:20px;flex:1;color:#ffd77a}.tOro{background:#0008;border:1.5px solid #c99a3a;border-radius:10px;padding:3px 10px;font-weight:800;color:#ffd24a}
-.tX{width:40px;height:40px;border-radius:50%;background:#3a2410;color:#ffd77a;border:2px solid #c99a3a;font:900 20px 'Alegreya Sans',system-ui,sans-serif;padding:0}
-.tInv{display:flex;gap:6px;justify-content:center}.tHueco{width:42px;height:42px;border-radius:9px;border:2px dashed #6b5236;background:#0006;display:flex;align-items:center;justify-content:center;padding:0}.tHueco.lleno{border:2px solid #c99a3a}.tHueco img{width:34px;height:34px}
-.tLista{flex:1;overflow-y:auto;min-height:0}.tLista h4{margin:6px 2px 4px;color:#ffd77a;font-size:13px}.tGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.tObj{position:relative;background:#0009;border:2px solid #6b5236;border-radius:11px;padding:5px 2px 3px;display:flex;flex-direction:column;align-items:center;color:#e8d6ae}.tObj img{width:44px;height:44px}.tObj span{font:600 10.5px 'Alegreya Sans',system-ui,sans-serif;text-align:center;min-height:23px}.tObj b{font:800 13px 'Alegreya Sans',system-ui,sans-serif;color:#ffd24a}
-.tObj i{position:absolute;top:2px;left:3px;font:800 10px 'Alegreya Sans',system-ui,sans-serif;font-style:normal;color:#fff;background:#5a2a1a;border-radius:6px;padding:0 4px}
-.tObj.leg{border-color:#a07a3a}.tObj.forja{border-color:#7dff6a;box-shadow:0 0 12px #7dff6a88}.tObj.bloq img,.tObj.caro img{filter:grayscale(.75) brightness(.6)}.tObj.caro b{color:#c88}.tObj.sel{outline:3px solid #fff}
-.tDet{background:#1d140cf2;border-top:2px solid #c99a3a;border-radius:14px 14px 0 0;margin:0 -8px;padding:9px 12px calc(10px + var(--sab));max-height:calc(44*var(--vh));overflow:auto}
-.tDet b.n{font-size:17px;color:#fff1c9}.tDet ul{margin:5px 0;padding-left:18px;color:#9dff8a;font-size:13.5px}.tDet p{margin:4px 0;font-size:12.5px;color:#ffd9a0}
-.tComprar{width:100%;margin-top:6px;background:linear-gradient(#4fbf3f,#2a7a1f);color:#fff;border:2px solid #b6ff9a;border-radius:11px;font:800 14.7px 'Cinzel',Georgia,serif;padding:10px}.tComprar:disabled{background:#3a3028;border-color:#6b5236;color:#b9a888}
 /* ---------- horizontal ---------- */
 #girar{display:none;position:fixed;inset:0;z-index:60;background:#0c0806f4;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:20px}
 #girar b{font-size:24px;color:#ffd77a}#girar p{margin:0;color:#d9c49a;font-size:14px}
@@ -190,11 +179,6 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 .pOp{display:none;flex-direction:column;gap:4px}#pings.abierto .pOp{display:flex}.pOp button{background:#1d140cf0;border:1.5px solid #c99a3a;border-radius:9px;color:#f2e3c0;font:700 13px 'Alegreya Sans',system-ui,sans-serif;padding:5px 10px;text-align:left}
 #fin .tbCaja{max-height:calc(50*var(--vh));overflow:auto}
 #aviso{top:18%;font-size:19px;width:60%}
-  #tienda{flex-direction:row;flex-wrap:wrap;padding-left:calc(8px + var(--sal));padding-right:calc(8px + var(--sar))}
-  #tienda .tCab{width:100%}#tienda .tInv{width:100%}
-  #tienda .tLista{flex:1 1 55%;height:calc(calc(100*var(--vh)) - 120px)}
-  #tienda .tGrid{grid-template-columns:repeat(5,1fr)}
-  #tienda .tDet{flex:0 0 40%;margin:0 0 0 8px;border-radius:14px 14px 0 0;max-height:none;height:calc(calc(100*var(--vh)) - 120px)}
   .tbCaja{width:min(calc(70*var(--vw)),520px)}
 }
 
@@ -258,6 +242,52 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 #fin h2{position:relative;font:900 40.5px 'Cinzel',Georgia,serif;letter-spacing:.08em;text-shadow:0 4px 0 #000,0 0 30px currentColor}
 #fin h2.gana{color:#ffd24a}#fin h2.pierde{color:#ff5a4a}
 #fin p,#fin .tbCaja,#fin .bt{position:relative}
+
+/* ===== ARMERÍA al estilo del Wild Rift ===== */
+#tienda{position:fixed;inset:0;z-index:20;background:radial-gradient(ellipse at 50% 0%,#3a2612 0%,#150d07 60%,#0a0604 100%);color:#f2e3c0;display:flex;flex-direction:column;padding:calc(6px + var(--sat)) calc(10px + var(--sar)) calc(6px + var(--sab)) calc(10px + var(--sal));gap:6px;font-family:'Alegreya Sans',system-ui,sans-serif}
+#tienda .tCab{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+#tienda .tCab>b{font:800 20px 'Cinzel',Georgia,serif;color:#ffd77a;letter-spacing:.08em;text-shadow:0 2px 0 #000}
+#tienda .tX{width:40px;height:40px;border-radius:50%;background:#1a0f07;color:#ffd77a;border:2px solid #c99a3a;font:900 20px 'Alegreya Sans',system-ui,sans-serif;padding:0;flex:0 0 auto}
+#tienda .tInv{display:flex;gap:5px;margin-left:auto}
+#tienda .tHueco{width:38px;height:38px;border-radius:8px;border:1.5px solid #5a4226;background:#0008;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 2px 5px #000}
+#tienda .tHueco.lleno{border-color:#c99a3a;background:#1a0f07}#tienda .tHueco img{width:32px;height:32px}
+#tienda .tOro{background:#0009;border:1.5px solid #c99a3a;border-radius:20px;padding:5px 12px;font:800 15px 'Alegreya Sans',system-ui,sans-serif;color:#ffd24a;flex:0 0 auto}
+#tienda .tCuerpo{flex:1;min-height:0;display:grid;grid-template-columns:96px minmax(0,1fr) minmax(220px,36%);gap:8px}
+#tienda .tCats{display:flex;flex-direction:column;gap:5px;overflow-y:auto}
+#tienda .tCats button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px;border-radius:10px;border:1.5px solid #3a2a18;background:#0007;color:#b8a27a;font:700 11.5px 'Alegreya Sans',system-ui,sans-serif}
+#tienda .tCats button img{width:28px;height:28px;filter:grayscale(.6) brightness(.8)}
+#tienda .tCats button.on{border-color:#ffd24a;background:linear-gradient(#3a2410,#1a0f07);color:#ffd77a;box-shadow:0 0 10px #ffb02a55}#tienda .tCats button.on img{filter:none}
+#tienda .tLista{overflow-y:auto;min-height:0;padding-right:2px}
+#tienda .tLista h4{margin:2px 2px 5px;font:800 11px 'Alegreya Sans',system-ui,sans-serif;color:#c9a96a;letter-spacing:.18em;text-transform:uppercase}
+#tienda .tRej{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:7px;margin-bottom:8px}
+#tienda .tI{position:relative;aspect-ratio:1/1.12;border-radius:10px;border:2px solid #4a3620;background:radial-gradient(#2a1c10,#0c0806);padding:4px 2px 2px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:#ffd24a}
+#tienda .tI img{width:78%;aspect-ratio:1;object-fit:contain}
+#tienda .tI b{font:800 12px 'Alegreya Sans',system-ui,sans-serif}
+#tienda .tI i{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:#2f8a24;color:#fff;font:800 11px/18px 'Alegreya Sans',system-ui,sans-serif;font-style:normal;padding:0 3px}
+#tienda .tI.leg{border-color:#8a6a3a;background:radial-gradient(#3a2610,#120a05)}
+#tienda .tI.forja{border-color:#7dff6a;box-shadow:0 0 10px #7dff6a77}
+#tienda .tI.caro b{color:#d08070}#tienda .tI.caro img,#tienda .tI.bloq img{filter:grayscale(.7) brightness(.55)}
+#tienda .tI.mio{border-color:#7dff6a}
+#tienda .tI.sel{border-color:#fff;box-shadow:0 0 0 2px #ffd24a,0 0 14px #ffd24a99}
+#tienda .tI:active{transform:scale(.95)}
+#tienda .tRuta{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px;border-radius:12px;background:linear-gradient(90deg,#3a2410cc,#1a0f0700);border:1px solid #6b5236}
+#tienda .tI.g{width:78px;flex:0 0 auto;border-color:#ffd24a;box-shadow:0 0 16px #ffb02a77}
+#tienda .tFlechas{display:flex;align-items:center;gap:4px;flex-wrap:wrap}#tienda .tFlechas .tI{width:50px}#tienda .tFlechas span{color:#8a6a3a;font-size:18px}
+#tienda .tVacio{margin:0;color:#b8a27a}
+#tienda .tDet{display:flex;flex-direction:column;gap:7px;overflow-y:auto;min-height:0;border-radius:14px;background:linear-gradient(#24170c,#120a05);border:1.5px solid #6b5236;padding:10px 11px}
+#tienda .tDH{display:flex;gap:10px;align-items:center}#tienda .tDH img{width:58px;height:58px;border-radius:10px;border:2px solid #c99a3a;background:#0008}
+#tienda .tDH b{display:block;font:800 16px 'Cinzel',Georgia,serif;color:#fff1c9;line-height:1.15}
+#tienda .tP{font:800 14px 'Alegreya Sans',system-ui,sans-serif;color:#ffd24a}#tienda .tP s{color:#8a7a5a;font-weight:600;margin-left:4px}
+#tienda .tSt{display:flex;flex-wrap:wrap;gap:4px}#tienda .tSt span{background:#2f8a2433;border:1px solid #4fbf3f88;color:#b6ff9a;border-radius:6px;padding:2px 6px;font:700 12px 'Alegreya Sans',system-ui,sans-serif}
+#tienda .tPas{margin:0;font:italic 500 12.5px 'Alegreya Sans',system-ui,sans-serif;color:#ffd9a0}
+#tienda .tNota{margin:0;font-size:11.5px;color:#b8a27a}
+#tienda .tRec small{display:block;font:800 10px 'Alegreya Sans',system-ui,sans-serif;color:#c9a96a;letter-spacing:.16em;text-transform:uppercase;margin-bottom:3px}
+#tienda .tRec div{display:flex;align-items:center;gap:4px;flex-wrap:wrap}#tienda .tRec em{color:#8a6a3a;font-style:normal}
+#tienda .tRec span{position:relative;width:36px;height:36px;border-radius:8px;border:1.5px solid #5a4226;background:#0008;display:flex;align-items:center;justify-content:center}
+#tienda .tRec span img{width:30px;height:30px}#tienda .tRec span.ten{border-color:#7dff6a}#tienda .tRec span i{position:absolute;top:-5px;right:-5px;background:#2f8a24;color:#fff;border-radius:50%;width:15px;height:15px;font:800 10px/15px system-ui;font-style:normal;text-align:center}
+#tienda .tBuy{margin-top:auto;min-height:54px;border:solid transparent;border-width:13px 18px;border-image:url(../abismo/ui/boton.webp) 92 100 fill / 13px 18px stretch;background:none;color:#ffe08a;font:900 17px 'Cinzel',Georgia,serif;letter-spacing:.1em;text-shadow:0 2px 0 #1a0d04,0 0 8px #000;filter:drop-shadow(0 0 8px #ffb02a88)}
+#tienda .tBuy:disabled{filter:grayscale(.9) brightness(.6);color:#c9b48a}
+#tienda .tBuy:active{transform:scale(.97)}
 </style>
 </head>
 <body>

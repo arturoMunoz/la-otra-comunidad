@@ -920,6 +920,8 @@ function cierraVoto(eq, ok) {
 }
 /* ---------- tienda ---------- */
 function puedeComprar(h) {return h.muerto || dist(h, BASES[h.eq].fuente) < 9;}
+/* precio de verdad como en el Wild Rift: un legendario se compra de golpe pagando también los básicos que te falten */
+function precio(inv, id) {const o = OBJ[id]; return o.c + falta({inv}, id).reduce((a, f) => a + OBJ[f].c, 0);}
 function falta(h, id) {const o = OBJ[id]; if (!o.rec) return []; const q = [...h.inv], f = []; for (const r of o.rec) {const k = q.indexOf(r); if (k >= 0) q.splice(k, 1); else f.push(r);} return f;}
 function compra(h, id) {
   if (ENC[id]) {
@@ -929,11 +931,12 @@ function compra(h, id) {
   }
   const o = OBJ[id]; if (!o) return 'No existe';
   if (!puedeComprar(h)) return 'Solo se compra en tu fuente (o mientras esperas a volver)';
-  const fl = falta(h, id); if (fl.length) return 'Antes necesitas: ' + fl.map((f) => OBJ[f].t).join(' y ');
-  if (h.oro < o.c) return 'Te falta oro';
-  const usa = o.rec ? [...o.rec] : [];
-  if (h.inv.length - usa.length >= 6) return 'No caben más objetos';
-  const v0 = stats(h).vida; h.oro -= o.c; for (const u of usa) h.inv.splice(h.inv.indexOf(u), 1); h.inv.push(id);
+  const fl = falta(h, id), pr = precio(h.inv, id);
+  if (h.oro < pr) return 'Te falta oro';
+  /* se gastan los básicos que tengas de la receta; los que faltan van incluidos en el precio */
+  const tengo = [...h.inv], gasto = []; if (o.rec) for (const r of o.rec) {const k = tengo.indexOf(r); if (k >= 0) {tengo.splice(k, 1); gasto.push(r);}}
+  if (h.inv.length - gasto.length >= 6) return 'No caben más objetos';
+  const v0 = stats(h).vida; h.oro -= pr; for (const u of gasto) h.inv.splice(h.inv.indexOf(u), 1); h.inv.push(id);
   h.vida += Math.max(0, stats(h).vida - v0); return '';
 }
 
@@ -1680,7 +1683,7 @@ function hud() {
   circVuelta.visible = volverBase > 0; if (circVuelta.visible) {circVuelta.position.set(v.xi ?? v.x, 0.13, v.zi ?? v.z); circVuelta.scale.setScalar(2.6 + Math.sin(performance.now() / 160) * 0.2);}
   /* compra rápida en la fuente */
   const sug = sugerencia(v), cr = $('compraRapida'), enF = Math.hypot(v.x - BASES[MI_EQ].fuente.x, v.z - BASES[MI_EQ].fuente.z) < 9 || v.muerto >= 0;
-  if (sug && enF) {const o = OBJ[sug], fl = falta({inv: v.inv}, sug); cr.classList.remove('hidden'); if (cr.dataset.id !== sug || cr.dataset.oro !== String(v.oro >= o.c && !fl.length)) {cr.dataset.id = sug; cr.dataset.oro = String(v.oro >= o.c && !fl.length); cr.innerHTML = '<img src="' + ICO(o.i) + '" alt=""><span>' + o.t + '</span><b>' + o.c + '</b>'; cr.classList.toggle('caro', !(v.oro >= o.c && !fl.length));}} else cr.classList.add('hidden');
+  if (sug && enF) {const o = OBJ[sug], pr = precio(v.inv, sug), ok = v.oro >= pr; cr.classList.remove('hidden'); if (cr.dataset.id !== sug || cr.dataset.oro !== String(ok) || cr.dataset.pr !== String(pr)) {cr.dataset.id = sug; cr.dataset.oro = String(ok); cr.dataset.pr = String(pr); cr.innerHTML = '<img src="' + ICO(o.i) + '" alt=""><span>' + o.t + '</span><b>' + pr + '</b>'; cr.classList.toggle('caro', !ok);}} else cr.classList.add('hidden');
   renderer.domElement.style.filter = v.muerto >= 0 ? 'grayscale(.85) brightness(.8)' : '';
   aroTorre(v);
   if (!marcaObj) {marcaObj = indicador('ind_alcance', '#ff4a3a'); marcaObj.renderOrder = 5;}
@@ -1766,7 +1769,7 @@ let tSel = 'hoja';
 function compraMia(id) {
   const v = VISTA.get(YO); if (!v) return;
   if (S) {const hh = S.u.find((q) => q.id === YO), r = compra(hh, id); if (r) aviso(r); else {suena('moneda'); recibeFotoLocal(foto());}}
-  else {NET.manda({t: 'compra', id}); suena('moneda'); v.oro -= OBJ[id].c;}
+  else {NET.manda({t: 'compra', id}); suena('moneda'); v.oro -= ENC[id] ? ENC[id].c : precio(v.inv, id);}
 }
 /* lo siguiente que conviene comprar (la ruta recomendada de cada héroe, como la compra rápida del Wild Rift) */
 function sugerencia(v) {
@@ -1774,42 +1777,55 @@ function sugerencia(v) {
   plan.forEach((id, i) => {const k = tengo.indexOf(id); if (k >= 0) {tengo.splice(k, 1); hecho[i] = true; if (OBJ[id].rec) for (const r of OBJ[id].rec) {for (let j = i - 1; j >= 0; j--) if (!hecho[j] && plan[j] === r) {hecho[j] = true; break;}}}});
   const i = hecho.indexOf(false); return i >= 0 ? plan[i] : null;
 }
+/* ---------- ARMERÍA al estilo del Wild Rift ----------
+   arriba: volver, tus 6 huecos y tu oro · izquierda: pestañas · centro: ruta recomendada + rejilla de iconos · derecha: ficha con receta y COMPRAR */
+let tCat = 'rec';
+const T_CATS = [['rec', 'Recomendado', 'obj_07'], ['atq', 'Ataque', 'obj_01'], ['def', 'Defensa', 'obj_03'], ['mov', 'Movilidad', 'obj_05'], ['enc', 'Encantamientos', null]];
+const CAT_OBJ = {atq: ['hoja', 'daga', 'herugrim', 'guthwine', 'hacha'], def: ['cota', 'yelmo', 'escudo', 'mithril'], mov: ['botas', 'amuleto', 'capa']};
+const ST_TXT = {dano: (v) => '+' + v + ' daño', vatq: (v) => '+' + Math.round(v * 100) + ' % vel. ataque', vida: (v) => '+' + v + ' vida', reduc: (v) => '−' + Math.round(v * 100) + ' % daño recibido', vel: (v) => '+' + Math.round(v * 100) + ' % velocidad', regen: (v) => '+' + v + ' vida/s', crit: (v) => Math.round(v * 100) + ' % crítico', espinas: (v) => Math.round(v * 100) + ' % espinas', esquiva: (v) => Math.round(v * 100) + ' % esquiva', robo: (v) => Math.round(v * 100) + ' % robo de vida'};
 function abreTienda() {
   const v = VISTA.get(YO); if (!v) return;
   if (!(Math.hypot(v.x - BASES[MI_EQ].fuente.x, v.z - BASES[MI_EQ].fuente.z) < 9 || v.muerto >= 0)) {aviso('La armería está en tu fuente (botón ⌂ para volver)'); return;}
+  const sg = sugerencia(v); if (sg) tSel = sg; tCat = 'rec';
   $('tienda').classList.remove('hidden'); pintaTienda();
-}
-/* encantamientos de botas en la armería */
-function encGrid(v) {
-  const hay = tieneBotas(v.inv);
-  return '<h4>Encantamientos de botas ' + (hay ? '' : '(antes compra unas botas)') + '</h4><div class="tGrid">' + Object.entries(ENC).map(([id, e]) => '<button class="tObj ' + (!hay ? 'bloq' : v.enc === id ? 'forja' : v.oro < e.c ? 'caro' : '') + (id === tSel ? ' sel' : '') + '" data-id="' + id + '"><img src="' + e.i + '" alt="">' + (!hay ? '<i>🔒</i>' : v.enc === id ? '<i>✓</i>' : '') + '<span>' + e.t + '</span><b>' + e.c + '</b></button>').join('') + '</div>';
-}
-function pintaTiendaEnc(v, t) {
-  const e = ENC[tSel], hay = tieneBotas(v.inv), ya = v.enc === tSel, puede = hay && !ya && v.oro >= e.c;
-  const listaB = (ids) => ids.map((id) => {const x = OBJ[id]; return '<button class="tObj' + (x.leg ? ' leg' : '') + '" data-id="' + id + '"><img src="' + ICO(x.i) + '" alt=""><span>' + x.t + '</span><b>' + x.c + '</b></button>';}).join('');
-  t.innerHTML = '<div class="tCab"><button class="tX" id="tX">←</button><b>Armería</b><span class="tOro">🪙 ' + v.oro + '</span></div>' +
-    '<div class="tInv">' + Array.from({length: 6}, (_, i) => v.inv[i] ? '<span class="tHueco lleno"><img src="' + ICO(OBJ[v.inv[i]].i) + '" alt=""></span>' : '<span class="tHueco"></span>').join('') + '</div>' +
-    '<div class="tLista"><h4>Básicos</h4><div class="tGrid">' + listaB(Object.keys(OBJ).filter((k) => !OBJ[k].leg)) + '</div><h4>Legendarios (se forjan con sus básicos)</h4><div class="tGrid">' + listaB(Object.keys(OBJ).filter((k) => OBJ[k].leg)) + '</div>' + encGrid(v) + '</div>' +
-    '<div class="tDet"><b class="n">' + e.t + '</b><p>' + e.d + '</p><p>Recarga: ' + e.cd + ' s · Mejora tus botas y te da un botón propio. Solo uno a la vez: si compras otro, cambia.</p>' +
-    '<button class="tComprar" id="tComprar"' + (puede ? '' : ' disabled') + '>' + (!hay ? 'Antes: unas botas' : ya ? 'Ya lo llevas' : v.oro < e.c ? 'Te faltan ' + (e.c - v.oro) + ' de oro' : 'Encantar · ' + e.c) + '</button></div>';
-  t.querySelectorAll('[data-id]').forEach((b) => b.onclick = () => {tSel = b.dataset.id; pintaTienda();});
-  $('tX').onclick = () => t.classList.add('hidden');
-  $('tComprar').onclick = () => {compraMia(tSel); setTimeout(pintaTienda, 150);};
 }
 function pintaTienda() {
   const v = VISTA.get(YO), t = $('tienda'); if (!v) return;
-  if (ENC[tSel]) return pintaTiendaEnc(v, t);
-  const o = OBJ[tSel], h = {inv: v.inv}, fl = falta(h, tSel), puede = !fl.length && v.oro >= o.c;
-  const carta = (id) => {const x = OBJ[id], f = falta(h, id), st = f.length ? 'bloq' : v.oro < x.c ? 'caro' : x.leg ? 'forja' : ''; return '<button class="tObj ' + st + (x.leg ? ' leg' : '') + (id === tSel ? ' sel' : '') + '" data-id="' + id + '"><img src="' + ICO(x.i) + '" alt="">' + (f.length ? '<i>🔒</i>' : '') + '<span>' + x.t + '</span><b>' + x.c + '</b></button>';};
-  const st = Object.entries(o.st).map(([k, val]) => '<li>' + ({dano: '+' + val + ' de daño', vatq: '+' + Math.round(val * 100) + ' % de velocidad de ataque', vida: '+' + val + ' de vida', reduc: '−' + Math.round(val * 100) + ' % de daño recibido', vel: '+' + Math.round(val * 100) + ' % de velocidad', regen: '+' + val + ' de vida por segundo', crit: Math.round(val * 100) + ' % de críticos', espinas: 'Devuelve ' + Math.round(val * 100) + ' % del daño', esquiva: Math.round(val * 100) + ' % de esquiva', robo: Math.round(val * 100) + ' % de robo de vida'}[k]) + '</li>').join('');
-  t.innerHTML = '<div class="tCab"><button class="tX" id="tX">←</button><b>Armería</b><span class="tOro">🪙 ' + v.oro + '</span></div>' +
-    '<div class="tInv">' + Array.from({length: 6}, (_, i) => v.inv[i] ? '<span class="tHueco lleno"><img src="' + ICO(OBJ[v.inv[i]].i) + '" alt=""></span>' : '<span class="tHueco"></span>').join('') + '</div>' +
-    '<div class="tLista"><h4>Básicos</h4><div class="tGrid">' + Object.keys(OBJ).filter((k) => !OBJ[k].leg).map(carta).join('') + '</div><h4>Legendarios (se forjan con sus básicos)</h4><div class="tGrid">' + Object.keys(OBJ).filter((k) => OBJ[k].leg).map(carta).join('') + '</div>' + encGrid(v) + '</div>' +
-    '<div class="tDet"><b class="n">' + o.t + '</b><ul>' + st + '</ul>' + (o.p ? '<p>' + o.p + '</p>' : '') + (o.rec ? '<p>Receta: ' + o.rec.map((r) => (v.inv.includes(r) ? '✓ ' : '') + OBJ[r].t).join(' + ') + ' + ' + o.c + ' de oro</p>' : '') +
-    '<button class="tComprar" id="tComprar"' + (puede ? '' : ' disabled') + '>' + (fl.length ? 'Antes: ' + fl.map((f) => OBJ[f].t).join(' y ') : v.oro < o.c ? 'Te faltan ' + (o.c - v.oro) + ' de oro' : 'Comprar · ' + o.c) + '</button></div>';
+  const icoDe = (id) => ENC[id] ? ENC[id].i : ICO(OBJ[id].i);
+  const ficha = (id, grande) => {
+    if (ENC[id]) {const e = ENC[id], hay = tieneBotas(v.inv), st = !hay ? 'bloq' : v.enc === id ? 'mio' : v.oro < e.c ? 'caro' : ''; return '<button class="tI ' + st + (grande ? ' g' : '') + (id === tSel ? ' sel' : '') + '" data-id="' + id + '"><img src="' + e.i + '" alt=""><b>' + e.c + '</b>' + (v.enc === id ? '<i>✓</i>' : '') + '</button>';}
+    const o = OBJ[id], pr = precio(v.inv, id), n = v.inv.filter((x) => x === id).length, st = v.oro < pr ? 'caro' : (o.leg && !falta({inv: v.inv}, id).length) ? 'forja' : '';
+    return '<button class="tI ' + st + (o.leg ? ' leg' : '') + (grande ? ' g' : '') + (id === tSel ? ' sel' : '') + '" data-id="' + id + '"><img src="' + ICO(o.i) + '" alt=""><b>' + pr + '</b>' + (n ? '<i>' + (n > 1 ? '×' + n : '✓') + '</i>' : '') + '</button>';
+  };
+  let centro = '';
+  if (tCat === 'rec') {
+    const plan = PLAN_BOT[v.tipo] || [], sg = sugerencia(v), i0 = Math.max(0, plan.indexOf(sg)), ruta = [...new Set(plan.slice(i0).filter((id) => OBJ[id].leg))].slice(0, 4);
+    centro = '<h4>Siguiente compra</h4><div class="tRuta">' + (sg ? ficha(sg, true) : '<p class="tVacio">Ya tienes la ruta completa</p>') + '<div class="tFlechas">' + ruta.map((id) => ficha(id)).join('<span>›</span>') + '</div></div>' +
+      '<h4>Legendarios</h4><div class="tRej">' + Object.keys(OBJ).filter((k) => OBJ[k].leg).map((id) => ficha(id)).join('') + '</div><h4>Básicos</h4><div class="tRej">' + Object.keys(OBJ).filter((k) => !OBJ[k].leg).map((id) => ficha(id)).join('') + '</div>';
+  } else if (tCat === 'enc') centro = '<h4>Encantamientos de botas' + (tieneBotas(v.inv) ? '' : ' · antes, unas botas') + '</h4><div class="tRej">' + Object.keys(ENC).map((id) => ficha(id)).join('') + '</div>';
+  else centro = '<div class="tRej">' + CAT_OBJ[tCat].map((id) => ficha(id)).join('') + '</div>';
+  /* ficha de la derecha */
+  let det;
+  if (ENC[tSel]) {
+    const e = ENC[tSel], hay = tieneBotas(v.inv), ya = v.enc === tSel, puede = hay && !ya && v.oro >= e.c;
+    det = '<div class="tDH"><img src="' + e.i + '" alt=""><div><b>' + e.t + '</b><span class="tP">🪙 ' + e.c + '</span></div></div><p class="tPas">' + e.d + '</p><p class="tNota">Recarga ' + e.cd + ' s · se lleva en las botas y tiene botón propio. Solo uno a la vez.</p>' +
+      '<button class="tBuy" id="tComprar"' + (puede ? '' : ' disabled') + '>' + (!hay ? 'Antes: unas botas' : ya ? 'Ya lo llevas' : v.oro < e.c ? 'Faltan ' + (e.c - v.oro) + ' de oro' : 'Encantar') + '</button>';
+  } else {
+    const o = OBJ[tSel], pr = precio(v.inv, tSel), fl = falta({inv: v.inv}, tSel), puede = v.oro >= pr && v.inv.length - ((o.rec || []).length - fl.length) < 6;
+    const usos = Object.keys(OBJ).filter((k) => (OBJ[k].rec || []).includes(tSel));
+    det = '<div class="tDH"><img src="' + ICO(o.i) + '" alt=""><div><b>' + o.t + '</b><span class="tP">🪙 ' + pr + (pr !== o.c ? ' <s>' + (o.c + (o.rec || []).reduce((a, r) => a + OBJ[r].c, 0)) + '</s>' : '') + '</span></div></div>' +
+      '<div class="tSt">' + Object.entries(o.st).map(([k, x]) => '<span>' + (ST_TXT[k] ? ST_TXT[k](x) : k) + '</span>').join('') + '</div>' + (o.p ? '<p class="tPas">' + o.p + '</p>' : '') +
+      (o.rec ? '<div class="tRec"><small>Se forja con</small><div>' + (() => {const q = [...v.inv]; return o.rec.map((r) => {const k = q.indexOf(r), ten = k >= 0; if (ten) q.splice(k, 1); return '<span class="' + (ten ? 'ten' : '') + '" data-id="' + r + '"><img src="' + ICO(OBJ[r].i) + '" alt="">' + (ten ? '<i>✓</i>' : '') + '</span>';}).join('<em>+</em>');})() + '</div></div>' : '') +
+      (usos.length ? '<div class="tRec"><small>Sirve para</small><div>' + usos.map((u) => '<span data-id="' + u + '"><img src="' + ICO(OBJ[u].i) + '" alt=""></span>').join('') + '</div></div>' : '') +
+      '<button class="tBuy" id="tComprar"' + (puede ? '' : ' disabled') + '>' + (v.oro < pr ? 'Faltan ' + (pr - v.oro) + ' de oro' : !puede ? 'No caben más' : 'Comprar') + '</button>';
+  }
+  t.innerHTML = '<div class="tCab"><button class="tX" id="tX" aria-label="Volver">←</button><b>Armería</b><div class="tInv">' + Array.from({length: 6}, (_, i) => v.inv[i] ? '<span class="tHueco lleno" data-id="' + v.inv[i] + '"><img src="' + ICO(OBJ[v.inv[i]].i) + '" alt=""></span>' : '<span class="tHueco"></span>').join('') + '</div><span class="tOro">🪙 ' + v.oro + '</span></div>' +
+    '<div class="tCuerpo"><nav class="tCats">' + T_CATS.map(([k, n, ic]) => '<button data-cat="' + k + '" class="' + (k === tCat ? 'on' : '') + '">' + (ic ? '<img src="' + ICO(ic) + '" alt="">' : '<img src="ui/enc_estasis.webp" alt="">') + '<span>' + n + '</span></button>').join('') + '</nav>' +
+    '<div class="tLista">' + centro + '</div><div class="tDet">' + det + '</div></div>';
   t.querySelectorAll('[data-id]').forEach((b) => b.onclick = () => {tSel = b.dataset.id; pintaTienda();});
+  t.querySelectorAll('[data-cat]').forEach((b) => b.onclick = () => {tCat = b.dataset.cat; const l = tCat === 'rec' ? null : tCat === 'enc' ? Object.keys(ENC) : CAT_OBJ[tCat]; if (l && !l.includes(tSel)) tSel = l[0]; pintaTienda();});
   $('tX').onclick = () => t.classList.add('hidden');
-  $('tComprar').onclick = () => {compraMia(tSel); setTimeout(pintaTienda, 150);};
+  $('tComprar').onclick = () => {compraMia(tSel); setTimeout(() => {const w = VISTA.get(YO); if (w && tCat === 'rec') {const sg = sugerencia(w); if (sg) tSel = sg;} pintaTienda();}, 150);};
 }
 
 /* ---------- horizontal ---------- */
