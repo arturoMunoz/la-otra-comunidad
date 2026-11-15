@@ -1,0 +1,31 @@
+LICENCIAS Y PROCEDENCIA — PACK VADO 13 WORK
+
+IMPORTANTE SOBRE LA PROCEDENCIA
+Las tres mallas visibles, colores y animaciones de esta entrega son nuevas, creadas específicamente para este encargo. No son modelos oficiales ni mallas publicadas por KayKit/Quaternius con otros nombres. Las referencias de rig utilizadas se detallan a continuación.
+
+huorn.glb
+Base técnica: jerarquía del esqueleto Knight de KayKit Adventurers Character Pack 1.0, adaptada con nuevas posiciones de huesos y nueva malla de árbol. No se reutiliza la malla del Knight ni sus clips.
+Autor del rig de partida: Kay Lousberg (KayKit).
+Licencia del recurso de partida: CC0 1.0 Universal.
+Origen: https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0
+Autor: https://kaylousberg.com/
+Licencia: https://creativecommons.org/publicdomain/zero/1.0/
+
+uruk_azul.glb
+Base técnica: la misma jerarquía del esqueleto Knight de KayKit Adventurers Character Pack 1.0, con proporciones nuevas. Malla, armadura, Mano Blanca, colores, emisión y clips nuevos; no se reutiliza la malla del Knight.
+Autor del rig de partida: Kay Lousberg (KayKit).
+Licencia del recurso de partida: CC0 1.0 Universal.
+Origen: https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0
+Licencia: https://creativecommons.org/publicdomain/zero/1.0/
+
+ draco.glb
+Modelo de partida: ninguno para la geometría visible. Malla reptiliana nueva y animaciones nuevas. Rig cuadrúpedo construido para este modelo, tomando como referencia técnica la nomenclatura de torso, cuello, cabeza, patas y cola del rig Triceratops de Quaternius. No se reutilizan la malla de tricerátops ni sus clips; tampoco se presenta como un Dragon original sin alas.
+Autor de la referencia de rig: Quaternius.
+Pack de referencia: Animated Dinosaur Pack, CC0 1.0 Universal.
+Fuente del autor: https://quaternius.com/packs/animateddinosaurs.html
+Copia de referencia consultada: https://github.com/trebeljahr/quaternius-showcase/blob/main/public/glb/dinosaurs_pack/Triceratops.glb
+Licencia: https://creativecommons.org/publicdomain/zero/1.0/
+
+GEOMETRÍA Y ANIMACIONES NUEVAS
+Generadas por ChatGPT/OpenAI para el usuario en este encargo. No se exige atribución adicional por las aportaciones nuevas; pueden usarse y modificarse en el proyecto. La licencia CC0 citada corresponde a los recursos de partida de terceros, no constituye una afirmación de autoría de KayKit o Quaternius sobre estas mallas nuevas.
+Los nombres y emblemas de la ambientación no están cubiertos por las licencias CC0 de los recursos técnicos y no implican afiliación oficial.

@@ -1,0 +1,48 @@
+PACK VADO 13 WORK — LA BRECHA
+
+Tres modelos nuevos, con siluetas rehechas para el encargo. No son el Walking Tree redondo ni el tricerátops del Pack 9.
+
+huorn.glb: tronco retorcido, corteza facetada, ramas como brazos, raíces articuladas, musgo y copa pequeña. Sin ojos ni boca. Altura neutral 3,5 m.
+draco.glb: reptil cuadrúpedo sin alas, cuerpo bajo, cuello y cola largos, mandíbula articulada, escamas dorsales y cuernos hacia atrás. Longitud neutral 4,5 m.
+uruk_azul.glb: capitán enorme con placas negras, pinchos, Mano Blanca en el pecho, ojos y vetas azul frío emisivos. Altura neutral 4,4 m.
+
+FORMATO
+GLB 2.0 autónomos, 1 unidad = 1 metro, +Y arriba, frente +Z. Normales unitarias en TODOS los primitives. Una malla con skin por archivo, 21 huesos por modelo. Materiales de colores sobrios; sin texturas externas. Sin compresión que requiera decodificadores adicionales.
+Los colores se encuentran en los materiales PBR. El azul usa emisión glTF y KHR_materials_emissive_strength; el halo alrededor del objeto requiere bloom en el juego, pero la emisión del material está incorporada.
+
+CLIPS
+quieto / andar / atacar / recibir_golpe / morir en los tres.
+Uruk: también correr y pisoton. Aunque el nombre solicitado es pisoton, la acción es un golpe al suelo con AMBAS MANOS: elevar brazos, anticipar, agacharse y golpear.
+Todos los clips fueron creados para este encargo y muestreados a 30 fps. La duración final se ajusta a fotogramas enteros. Los ciclos de locomoción son en el sitio; desplazar el personaje por código.
+Repetir quieto, andar y correr. Usar LoopOnce y clampWhenFinished para morir; reproducir atacar, recibir_golpe y pisoton una sola vez y volver al estado correspondiente.
+
+VALIDACIÓN
+Recarga de los archivos finales, comprobación de nombres de clips, tamaño, normales, números finitos y medidas. Importación en Blender y render de poses de reposo, locomoción, ataque, muerte y golpe de manos del jefe. glTF Validator: 0 errores en los tres archivos; 1 aviso por archivo sobre la jerarquía no raíz de la malla con skin, cuya transformación depende del esqueleto. No se ha probado dentro del proyecto del usuario.
+
+DATOS DE LOS ARCHIVOS FINALES
+
+draco.glb — 310.3 KB — 1591 triángulos
+Dimensiones X/Y/Z (m): 1.330, 1.314, 4.500
+  quieto: 2.8000 s
+  andar: 1.4000 s
+  atacar: 1.2000 s
+  recibir_golpe: 0.7333 s
+  morir: 1.8000 s
+
+huorn.glb — 360.2 KB — 2126 triángulos
+Dimensiones X/Y/Z (m): 2.921, 3.500, 1.064
+  quieto: 3.2000 s
+  andar: 1.7000 s
+  atacar: 1.8000 s
+  recibir_golpe: 0.7333 s
+  morir: 2.3000 s
+
+uruk_azul.glb — 409.2 KB — 1668 triángulos
+Dimensiones X/Y/Z (m): 2.688, 4.400, 1.008
+  quieto: 3.2000 s
+  andar: 1.3333 s
+  atacar: 1.5000 s
+  recibir_golpe: 0.7333 s
+  morir: 2.3000 s
+  correr: 0.8667 s
+  pisoton: 2.1000 s

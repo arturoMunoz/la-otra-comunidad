@@ -7,8 +7,8 @@
 <title>La Brecha</title>
 <!-- lo primero que se ve: el menú. Se pide antes que los modelos 3D -->
 <link rel="preload" href="ui/fondo_menu.webp" as="image" fetchpriority="high">
-<link rel="preload" href="../abismo/ui/boton.webp" as="image" fetchpriority="high">
-<link rel="preload" href="../abismo/ui/boton2.webp" as="image">
+<link rel="preload" href="ui/btn_jugar.webp" as="image" fetchpriority="high">
+<link rel="preload" href="ui/btn_sec.webp" as="image"><link rel="preload" href="ui/carta_duelo.webp" as="image"><link rel="preload" href="ui/carta_batalla.webp" as="image">
 <link rel="preload" href="fuentes/cinzel.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="fuentes/alegreya-Bold.woff" as="font" type="font/woff" crossorigin>
 <script>try{var hv=localStorage.getItem('vado.heroe')||'rohan',l=document.createElement('link');l.rel='preload';l.as='image';l.href='ui/splash_'+hv+'.webp';l.setAttribute('fetchpriority','high');document.head.appendChild(l);}catch(e){}</script>
@@ -300,19 +300,61 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 @keyframes numPop{0%{scale:.3}55%{scale:1.3}100%{scale:1}}
 .hb:active,#bAt:active,#bD:active,#bF:active,#bEnc:active{scale:.9}
 .hb,#bAt{transition:scale .08s}
+
+/* ===== Pack Vado 13: aros de habilidad, retrato, carteles, victoria/derrota ===== */
+.hb[data-k],.hb.hs{border:0;background:none;overflow:visible;box-shadow:none}
+.hb[data-k] img,.hb.hs img{position:absolute;inset:11%;width:78%;height:78%;border-radius:50%;object-fit:cover;background:#1d140c}
+.hb[data-k] .cd,.hb.hs .cd{inset:11%;border-radius:50%}
+.hb[data-k]::after,.hb.hs::after{content:'';position:absolute;inset:-3%;background:url(ui/aro_hab.webp) center/100% 100% no-repeat;pointer-events:none;filter:drop-shadow(0 3px 4px #000a)}
+.hb[data-k].pronta::after{background-image:url(ui/aro_hab_lista.webp);inset:-9%}
+.hb[data-k]:not(.pronta)::after{filter:brightness(.8) drop-shadow(0 3px 4px #000a)}
+.hb[data-k] .pip{bottom:-6px;z-index:2}
+#bR.pronta{animation:ultiLista 1.6s ease-in-out infinite}@keyframes ultiLista{50%{filter:drop-shadow(0 0 10px #ffb02a)}}
+#yo{position:relative}#yo img{width:46px;height:46px;border:0;margin:2px 4px}
+#yo::before{content:'';position:absolute;left:-6px;top:-7px;width:66px;height:66px;background:url(ui/marco_retrato.webp) center/100% 100% no-repeat;pointer-events:none;z-index:1}
+#anuncio .anF{width:min(440px,calc(86*var(--vw)));aspect-ratio:4/1;background:url(ui/cartel_azul.webp) center/100% 100% no-repeat;padding:0;justify-content:space-between;position:relative}
+#anuncio .anF.malo{background-image:url(ui/cartel_rojo.webp)}
+#anuncio .anF img{position:absolute;top:21%;width:18.5%;height:auto;aspect-ratio:1;border:0}#anuncio .anF img:first-of-type{left:12.5%}#anuncio .anF img:last-of-type{right:12.5%}#anuncio .anF b{display:none}
+#fin h2{width:min(460px,calc(110*var(--vh)));aspect-ratio:1024/384;display:flex;align-items:center;justify-content:center;background:url(ui/est_victoria.webp) center/100% 100% no-repeat;font-size:34px;padding-top:2%;color:#fff3c0 !important;text-shadow:0 3px 0 #000,0 0 18px #ffb02a}
+#fin h2.pierde{background-image:url(ui/est_derrota.webp);color:#ffd0c0 !important;text-shadow:0 3px 0 #000,0 0 18px #ff3a1a}
+
+/* menú con el kit del Pack 13: tarjetas ilustradas, botón JUGAR de oro, botones secundarios y redondos */
+#menu .modos button{border:0;border-image:none;padding:0 8px 7px;aspect-ratio:600/360;min-height:0;justify-content:flex-end;background:url(ui/carta_duelo.webp) center/100% 100% no-repeat;filter:brightness(.62) saturate(.7);transition:transform .15s,filter .15s}
+#menu .modos button[data-m="2v2"]{background-image:url(ui/carta_batalla.webp)}
+#menu .modos button.on{border:0;border-image:none;padding:0 8px 7px;background-image:url(ui/carta_duelo.webp);filter:drop-shadow(0 0 10px #ffb02a99);transform:translateY(-3px) scale(1.03)}
+#menu .modos button.on[data-m="2v2"]{background-image:url(ui/carta_batalla.webp)}
+#menu .modos button .mc{position:absolute;inset:-7% -5% -6%;background:url(ui/carta_marco.webp) center/100% 100% no-repeat;pointer-events:none;opacity:0;transition:opacity .15s}
+#menu .modos button.on .mc{opacity:1}
+#menu .modos button b{font-size:16px;line-height:1}#menu .modos button span{font-size:10.5px}#menu .modos button small{display:none}
+#menu .jugar{border:0;border-image:none;aspect-ratio:1200/300;min-height:0;padding:0 12%;background:url(ui/btn_jugar.webp) center/100% 100% no-repeat}
+#menu .jugar:active{background-image:url(ui/btn_jugar_on.webp)}
+#menu .jugar i{bottom:18%;left:16%;right:16%}
+.bt,#menu .mB,#tienda .tBuy{border:0 !important;border-image:none !important;background:url(ui/btn_sec.webp) center/100% 100% no-repeat !important;padding:0 18px}
+.bt:not(.s),#tienda .tBuy{background-image:url(ui/btn_jugar.webp) !important;padding:0 14%}
+.bt:not(.s):active,#tienda .tBuy:active{background-image:url(ui/btn_jugar_on.webp) !important}
+#tienda .tBuy:disabled{background-image:url(ui/btn_sec.webp) !important}
+#menu .mB{min-height:42px;padding:0 14px}
+#menu .mAtras,#bAjustes,#tienda .tX{border:0 !important;background:url(ui/btn_redondo.webp) center/100% 100% no-repeat !important;color:#ffd77a;text-shadow:0 2px 2px #000;width:46px;height:46px}
+#tienda{background:linear-gradient(#0d0805cc,#0d0805e6),url(ui/fondo_armeria.webp) center/cover}
+#tienda .tCats button img{width:38px;height:38px;filter:grayscale(.5) brightness(.75)}#tienda .tCats button.on img{filter:drop-shadow(0 0 6px #ffd24a)}
+
+#elige .bt{min-width:200px !important;padding:0 10% !important;font-size:15px}
+#menu .modos button{padding:0 6px 5px !important;gap:0}#menu .modos button b{font-size:15px}#menu .modos button span{font-size:10px;opacity:.9}
+#tienda .tCats button img{width:46px;height:46px}
+.ajSon{display:flex;gap:8px;justify-content:center;margin-top:6px}.ajSon .bt{min-width:0;font-size:13px;min-height:44px}
 </style>
 </head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando el campo de batalla</p><b>0 %</b></div>
 <div id="menu">
   <div class="mSplash"><img id="mSplash" alt="" fetchpriority="high" decoding="async"></div>
-  <button class="mAtras" id="bSalir" aria-label="Volver a La Otra Comunidad">←</button>
+  <button class="mAtras" id="bSalir" aria-label="Volver a La Otra Comunidad">←</button><button class="mAtras" id="bSon" aria-label="Sonido" style="left:auto;right:calc(10px + var(--sar))">🔊</button>
   <div class="mHeroe"><em id="mHeroRol"></em><b id="mHeroNom"></b><button id="mCambiar">⇄ Cambiar héroe</button></div>
   <div class="mPanel">
     <div class="mTit"><h1>La Brecha</h1><p class="sub">Rohan contra Isengard</p></div>
     <div class="modos">
-      <button data-m="1v1" class="on"><b>Duelo</b><span>1 contra 1 · el Abismo</span><small>2 derribos o la primera torre</small></button>
-      <button data-m="2v2"><b>Batalla</b><span>2 contra 2 · el Ojo del Vado</span><small>Espesura, bestias y Uruk</small></button>
+      <button data-m="1v1" class="on"><b>Duelo</b><span>1 contra 1 · el Abismo</span><small>2 derribos o la primera torre</small><i class="mc"></i></button>
+      <button data-m="2v2"><b>Batalla</b><span>2 contra 2 · el Ojo del Vado</span><small>Espesura, bestias y Uruk</small><i class="mc"></i></button>
     </div>
     <button class="jugar" id="bBots"><b>JUGAR</b><small id="bBotsSub">contra la máquina</small><i></i></button>
     <div class="mAmigos"><button class="mB" id="bCrear">👥 Crear sala</button><input id="codigo" maxlength="6" placeholder="CÓDIGO" autocomplete="off"><button class="mB" id="bUnir">Unirse</button></div>
