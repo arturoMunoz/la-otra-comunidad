@@ -181,6 +181,11 @@ B) INTERFAZ de partida, mismo marco de metal y oro gastado que los iconos de hab
    2. aro_habilidad: aro de botón de habilidad 256x256 hueco en el centro, en dos versiones (normal y «lista», con brillo dorado).
    3. cartel_baja: cartel horizontal 1024x256 con DOS huecos redondos para retratos (el que mata a la izquierda, el que cae a la derecha) y una espada cruzada en medio; en versión azul (mi equipo) y roja (enemigo).
    4. cartel_victoria y cartel_derrota: adornos horizontales 1024x384 (estandarte del caballo blanco de Rohan dorado / estandarte de Rohan roto y quemado) con espacio libre en el centro para escribir yo la palabra.
+C) MENÚ PRINCIPAL (que parezca el del Wild Rift pero de Rohan):
+   1. boton_jugar: botón grande 1200x300, placa de oro y madera tallada de Meduseld (Edoras) con caballos de Rohan en las esquinas, centro liso y oscuro para el texto; dos versiones: normal y pulsado (más hundido y con brillo).
+   2. boton_secundario: igual de estilo pero más sencillo y oscuro, 900x240 (para «Crear sala», «Unirse», «Volver»).
+   3. carta_duelo y carta_batalla: tarjetas 600x360 con ilustración de fondo y la parte de abajo oscura para el texto: el duelo en un puente de piedra sobre el Abismo de Helm al atardecer; la batalla en el Vado del Isen con el río, las islas y Orthanc al fondo. Una tercera versión de marco dorado brillante para la elegida (solo el marco, hueco).
+   4. boton_redondo: botón redondo 256x256 de hierro y oro, hueco en el centro (volver, ajustes).
 
 Pásamelo todo en un .zip llamado Pack_Vado_11.zip, con un nombre claro por archivo.
 ```

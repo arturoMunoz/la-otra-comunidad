@@ -188,23 +188,46 @@ const ALTO_SUBD = {m: 1.7, r: 1.6, a: 2.6, x: 2.7};
 const signo = (eq) => eq === 0 ? 1 : -1;
 const ORDA = 3;   /* cuerpo a cuerpo por oleada y camino (más 2 arqueros) */
 
+/* ---------- siempre en horizontal ----------
+   Si el móvil está en vertical (iPhone con la app instalada, que no deja girar), toda la página se gira 90° por CSS
+   y se juega en horizontal sin pedir nada. VW/VH son el ancho y alto «lógicos» (los del juego en horizontal). */
+let VW = innerWidth, VH = innerHeight, GIRO = false;
+const MEDIA0 = new Map();
+function giraMedia() {
+  for (const sh of document.styleSheets) {let rs; try {rs = sh.cssRules;} catch (e) {continue;}
+    for (const ru of rs) {if (!ru.media) continue; if (!MEDIA0.has(ru)) MEDIA0.set(ru, ru.media.mediaText); const o = MEDIA0.get(ru);
+      let t = o; if (GIRO) {if (/portrait/.test(o)) t = 'not all'; else t = o.replace(/\(orientation:\s*landscape\)/g, '(min-width: 0px)').replace(/(max|min)-height/g, '$1-QQ').replace(/(max|min)-width(?!: 0px)/g, '$1-height').replace(/-QQ/g, '-width');}
+      if (ru.media.mediaText !== t) ru.media.mediaText = t;}}
+}
+function giraPantalla() {
+  GIRO = innerHeight > innerWidth; VW = GIRO ? innerHeight : innerWidth; VH = GIRO ? innerWidth : innerHeight;
+  const b = document.body; b.classList.toggle('giro', GIRO);
+  b.style.width = GIRO ? VW + 'px' : ''; b.style.height = GIRO ? VH + 'px' : ''; b.style.transform = GIRO ? 'translateX(' + innerWidth + 'px) rotate(90deg)' : '';
+  const r = document.documentElement.style; r.setProperty('--vw', VW / 100 + 'px'); r.setProperty('--vh', VH / 100 + 'px');
+  giraMedia();
+}
+giraPantalla();
+/* coordenadas de un dedo en el juego (con la página girada, el eje X de la pantalla es el Y del juego) */
+const PX = (e) => GIRO ? e.clientY : e.clientX, PY = (e) => GIRO ? innerWidth - e.clientX : e.clientY;
+const topC = (el) => {const r = el.getBoundingClientRect(); return GIRO ? innerWidth - r.right : r.top;};
+
 /* ---------- motor ---------- */
 const renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'});
 /* resolución dinámica (como en el Abismo): si el móvil no llega a ~50 fps baja la nitidez un paso; si va sobrado, la sube */
 const PR = {max: Math.min(devicePixelRatio, 2), v: Math.min(devicePixelRatio, 2), t: 0, n: 0, acum: 0};
-renderer.setPixelRatio(PR.v); renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(PR.v); renderer.setSize(VW, VH);
 function ajustaResolucion(dt) {
   PR.acum += dt; PR.n++; PR.t += dt; if (PR.t < 1.5) return;
   const fps = PR.n / PR.acum; PR.t = PR.acum = PR.n = 0;
   const nv = fps < 48 ? Math.max(0.75, PR.v - 0.25) : fps > 58 ? Math.min(PR.max, PR.v + 0.25) : PR.v;
-  if (nv !== PR.v) {PR.v = nv; renderer.setPixelRatio(nv); renderer.setSize(innerWidth, innerHeight);}
+  if (nv !== PR.v) {PR.v = nv; renderer.setPixelRatio(nv); renderer.setSize(VW, VH);}
 }
 renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#1b2230'); scene.fog = new THREE.Fog('#1b2230', 45, 110);
-const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.5, 200);
-addEventListener('resize', () => {renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();});
+const camera = new THREE.PerspectiveCamera(42, VW / VH, 0.5, 200);
+addEventListener('resize', () => {giraPantalla(); renderer.setSize(VW, VH); camera.aspect = VW / VH; camera.updateProjectionMatrix(); APAI = VW > VH;});
 scene.add(new THREE.HemisphereLight('#c9d6ff', '#3a2a1a', 1.5));
 const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30, 10); sol.castShadow = true;
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
@@ -1116,7 +1139,7 @@ function dibuja(dt) {
     _p.set(x, altoB, z).project(camera);
     const vis = o.raiz.visible && !muerto && v.vida > 0 && _p.z < 1 && Math.abs(_p.x) < 1.2 && Math.abs(_p.y) < 1.2 && (v.k !== 'j' || v.vida < v.max || NEUTRO[v.tipo].grande);
     b.style.display = vis ? 'flex' : 'none'; if (v.k === 't' || v.k === 'n') {b.classList.toggle('prot', String(v.hk).includes('P')); b.classList.toggle('inh', String(v.hk).includes('I'));}
-    if (vis) {b.style.left = ((_p.x + 1) / 2 * innerWidth) + 'px'; b.style.top = ((1 - _p.y) / 2 * innerHeight) + 'px'; b.querySelector('u').style.width = Math.max(0, v.vida / v.max * 100) + '%'; if (v.k === 'h' && b.dataset.max !== String(v.max)) {b.dataset.max = v.max; b.querySelector('i').style.setProperty('--seg', (100 / v.max * 100) + '%');} if (v.k === 'h') b.querySelector('b').innerHTML = '<em>' + v.nivel + '</em>' + (v.nombre || '');}
+    if (vis) {b.style.left = ((_p.x + 1) / 2 * VW) + 'px'; b.style.top = ((1 - _p.y) / 2 * VH) + 'px'; b.querySelector('u').style.width = Math.max(0, v.vida / v.max * 100) + '%'; if (v.k === 'h' && b.dataset.max !== String(v.max)) {b.dataset.max = v.max; b.querySelector('i').style.setProperty('--seg', (100 / v.max * 100) + '%');} if (v.k === 'h') b.querySelector('b').innerHTML = '<em>' + v.nivel + '</em>' + (v.nombre || '');}
   }
   /* proyectiles y efectos */
   for (let i = FXP.length - 1; i >= 0; i--) {
@@ -1128,7 +1151,7 @@ function dibuja(dt) {
   }
   for (let i = NUMS.length - 1; i >= 0; i--) {
     const n = NUMS[i]; n.t += dt; if (n.t > 0.8) {n.el.remove(); NUMS.splice(i, 1); continue;}
-    _p.set(n.x, 2.2 + n.t * 1.6, n.z).project(camera); n.el.style.left = ((_p.x + 1) / 2 * innerWidth) + 'px'; n.el.style.top = ((1 - _p.y) / 2 * innerHeight) + 'px'; n.el.style.opacity = 1 - Math.max(0, n.t - 0.5) / 0.3;
+    _p.set(n.x, 2.2 + n.t * 1.6, n.z).project(camera); n.el.style.left = ((_p.x + 1) / 2 * VW) + 'px'; n.el.style.top = ((1 - _p.y) / 2 * VH) + 'px'; n.el.style.opacity = 1 - Math.max(0, n.t - 0.5) / 0.3;
   }
 }
 /* un enemigo en la hierba se ve si uno de mi equipo está a su lado o en la misma mata */
@@ -1274,8 +1297,7 @@ function aviso(txt) {const a = $('aviso'); a.textContent = txt; a.style.opacity 
 const camM = new THREE.Vector3();
 /* se juega en horizontal: «adelante» (hacia el enemigo) es la derecha de la pantalla. En vertical, hacia arriba.
    F = hacia dónde mira la cámara (arriba en pantalla), R = la derecha de la pantalla, en coordenadas del mundo. */
-let APAI = innerWidth > innerHeight;
-addEventListener('resize', () => {APAI = innerWidth > innerHeight;});
+let APAI = VW > VH;
 function ejes() {const s = signo(MI_EQ); return APAI ? {F: {x: -s, z: 0}, R: {x: 0, z: -s}} : {F: {x: 0, z: -s}, R: {x: s, z: 0}};}
 const ZOOMS = [[24, 14], [31, 18], [40, 23]]; let zoomI = +(localStorage.getItem('vado.zoom') ?? 1);
 function camara(dt) {
@@ -1292,7 +1314,7 @@ const MANDO = {mx: 0, mz: 0, ataca: false, modo: '', modoHasta: 0, fijo: 0};
 /* botón de torre (encima del ataque) y de súbditos (debajo), como en el Wild Rift: mientras los pulsas, solo atacas eso */
 const modoAtaque = () => (MANDO.modoPuls || performance.now() < MANDO.modoHasta) ? MANDO.modo : '';
 let aroFijo = null;
-function puntoPantalla(q) {_p.set(q.xi ?? q.x, 1, q.zi ?? q.z).project(camera); return {x: (_p.x + 1) / 2 * innerWidth, y: (1 - _p.y) / 2 * innerHeight, ok: _p.z < 1};}
+function puntoPantalla(q) {_p.set(q.xi ?? q.x, 1, q.zi ?? q.z).project(camera); return {x: (_p.x + 1) / 2 * VW, y: (1 - _p.y) / 2 * VH, ok: _p.z < 1};}
 /* arrastrar el botón de ataque hacia un enemigo lo fija (Wild Rift): el más cercano a la dirección del arrastre, a menos de 14 m */
 function candidatoFijo(dx, dy) {
   const v = VISTA.get(YO); if (!v) return null; const {F, R} = ejes(), wx = dx * R.x - dy * F.x, wz = dx * R.z - dy * F.z, l = Math.hypot(wx, wz) || 1;
@@ -1310,16 +1332,16 @@ const joy = {id: null, x0: 0, y0: 0};
 function preparaMandos() {
   const toca = (el, fn) => {el.addEventListener('pointerdown', (e) => {e.preventDefault(); e.stopPropagation(); fn(e);}); el.addEventListener('click', (e) => e.preventDefault());};
   const J = $('joy'), bola = J.querySelector('b'), dedo = bola.querySelector('i');
-  J.addEventListener('pointerdown', (e) => {joy.id = e.pointerId; joy.x0 = e.clientX; joy.y0 = e.clientY; bola.style.display = 'block'; bola.style.left = e.clientX + 'px'; bola.style.top = (e.clientY - J.getBoundingClientRect().top) + 'px'; J.setPointerCapture(e.pointerId);});
+  J.addEventListener('pointerdown', (e) => {joy.id = e.pointerId; joy.x0 = PX(e); joy.y0 = PY(e); bola.style.display = 'block'; bola.style.left = PX(e) + 'px'; bola.style.top = (PY(e) - topC(J)) + 'px'; J.setPointerCapture(e.pointerId);});
   J.addEventListener('pointermove', (e) => {
-    if (e.pointerId !== joy.id) return; let dx = (e.clientX - joy.x0) / 50, dy = (e.clientY - joy.y0) / 50; const l = Math.hypot(dx, dy); if (l > 1) {dx /= l; dy /= l;}
+    if (e.pointerId !== joy.id) return; let dx = (PX(e) - joy.x0) / 50, dy = (PY(e) - joy.y0) / 50; const l = Math.hypot(dx, dy); if (l > 1) {dx /= l; dy /= l;}
     dedo.style.transform = 'translate(' + dx * 35 + 'px,' + dy * 35 + 'px)'; const {F, R} = ejes(); MANDO.mx = dx * R.x - dy * F.x; MANDO.mz = dx * R.z - dy * F.z;
   });
   const suelta = (e) => {if (e.pointerId !== joy.id) return; joy.id = null; bola.style.display = 'none'; dedo.style.transform = ''; MANDO.mx = 0; MANDO.mz = 0;};
   J.addEventListener('pointerup', suelta); J.addEventListener('pointercancel', suelta);
   const at = $('bAt'); let atP = null, cand = null;
-  at.addEventListener('pointerdown', (e) => {MANDO.ataca = true; MANDO.hasta = performance.now() + 350; atP = {x: e.clientX, y: e.clientY, id: e.pointerId}; cand = null; at.setPointerCapture(e.pointerId); at.classList.add('pulsado');});
-  at.addEventListener('pointermove', (e) => {if (!atP || e.pointerId !== atP.id) return; const dx = e.clientX - atP.x, dy = e.clientY - atP.y; if (Math.hypot(dx, dy) > 24) {cand = candidatoFijo(dx, dy); MANDO.cand = cand ? cand.id : 0;}});
+  at.addEventListener('pointerdown', (e) => {MANDO.ataca = true; MANDO.hasta = performance.now() + 350; atP = {x: PX(e), y: PY(e), id: e.pointerId}; cand = null; at.setPointerCapture(e.pointerId); at.classList.add('pulsado');});
+  at.addEventListener('pointermove', (e) => {if (!atP || e.pointerId !== atP.id) return; const dx = PX(e) - atP.x, dy = PY(e) - atP.y; if (Math.hypot(dx, dy) > 24) {cand = candidatoFijo(dx, dy); MANDO.cand = cand ? cand.id : 0;}});
   for (const t of ['pointerup', 'pointercancel']) at.addEventListener(t, () => {if (cand) {fija(cand.id); MANDO.hasta = performance.now() + 700;} atP = null; cand = null; MANDO.cand = 0; MANDO.ataca = false; MANDO.hasta = Math.max(MANDO.hasta || 0, performance.now() + 120); at.classList.remove('pulsado');});
   for (const [id, modo] of [['bAtT', 't'], ['bAtS', 's']]) {
     const b = $(id);
@@ -1334,8 +1356,8 @@ function preparaMandos() {
   });
   for (const k of ['q', 'w', 'e', 'r']) {
     const b = $('b' + k.toUpperCase()); let p0 = null, apunta = null;
-    b.addEventListener('pointerdown', (e) => {p0 = {x: e.clientX, y: e.clientY, id: e.pointerId}; b.setPointerCapture(e.pointerId);});
-    b.addEventListener('pointermove', (e) => {if (!p0 || e.pointerId !== p0.id) return; const dx = e.clientX - p0.x, dy = e.clientY - p0.y; if (Math.hypot(dx, dy) > 18) {apunta = {dx, dy}; muestraMira(k, dx, dy);}});
+    b.addEventListener('pointerdown', (e) => {p0 = {x: PX(e), y: PY(e), id: e.pointerId}; b.setPointerCapture(e.pointerId);});
+    b.addEventListener('pointermove', (e) => {if (!p0 || e.pointerId !== p0.id) return; const dx = PX(e) - p0.x, dy = PY(e) - p0.y; if (Math.hypot(dx, dy) > 18) {apunta = {dx, dy}; muestraMira(k, dx, dy);}});
     b.addEventListener('pointerup', (e) => {if (!p0) return; const a = apunta; p0 = null; apunta = null; ocultaMira(); lanzaMia(k, a);});
     b.addEventListener('pointercancel', () => {p0 = null; apunta = null; ocultaMira();});
   }
@@ -1651,7 +1673,7 @@ function bucle() {
       const t1 = performance.now(); camara(dt); dibuja(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
-  const t3 = performance.now(); renderer.render(scene, camera); PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
+  const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') renderer.render(scene, camera); /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];
@@ -1746,7 +1768,7 @@ function pintaMenu() {
   $('mCambiar').onclick = () => eligeHeroe('Elige a tu héroe', () => {if (ESTADO === 'sala') NET.manda({t: 'heroe', heroe: heroeElegido});});
   $('heroes').innerHTML = Object.entries(HEROES).map(([k, h]) => '<button class="heroe' + (k === heroeElegido ? ' on' : '') + '" data-h="' + k + '"><img src="ui/splash_' + k + '.webp" alt=""><span>' + h.nombre + '</span></button>').join('');
   $('heroes').querySelectorAll('[data-h]').forEach((b) => b.onclick = () => {heroeElegido = b.dataset.h; localStorage.setItem('vado.heroe', heroeElegido); pintaMenu(); if (ESTADO === 'sala') NET.manda({t: 'heroe', heroe: heroeElegido});});
-  document.querySelectorAll('.modos button').forEach((b) => {b.classList.toggle('on', b.dataset.m === modoElegido); b.onclick = () => {modoElegido = b.dataset.m; localStorage.setItem('vado.modo', modoElegido); pintaMenu();};});
+  document.querySelectorAll('.modos button').forEach((b) => {b.classList.toggle('on', b.dataset.m === modoElegido); b.onclick = () => {modoElegido = b.dataset.m; localStorage.setItem('vado.modo', modoElegido); pintaMenu(); pintaCarga();};});
 }
 function pintaSala() {
   const s = $('sala'); s.classList.remove('hidden'); $('menu').classList.add('enSala');
@@ -1762,21 +1784,38 @@ function nombreJugador() {let n = localStorage.getItem('vado.nombre'); if (!n) {
 function preparaMenu() {
   pintaMenu();
   $('bGirar').onclick = apaisa;
-  $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);});
-  $('bCrear').onclick = () => eligeHeroe('Elige a tu héroe', () => {apaisa(); const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);});
-  $('bUnir').onclick = () => {const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} eligeHeroe('Elige a tu héroe', () => {apaisa(); conecta(c, modoElegido, nombreJugador(), heroeElegido);});};
+  $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);});});
+  $('bCrear').onclick = () => eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => {const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);});});
+  $('bUnir').onclick = () => {const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => conecta(c, modoElegido, nombreJugador(), heroeElegido));});};
   $('bSalir').onclick = () => {sueltaApaisado(); location.href = '../';};
 }
 
-/* ---------- arranque ---------- */
-(async () => {
-  $('bBots').disabled = $('bCrear').disabled = true; msg('Cargando…');
-  try {const gl = await Promise.all(NOMBRES.map(cargaModelo)); NOMBRES.forEach((n, i) => M[n] = gl[i]);
+/* ---------- arranque ----------
+   El menú sale al momento; los modelos (unos 16 MB) se cargan detrás con una barrita en JUGAR.
+   Si pulsas antes de que acabe, se espera con el porcentaje en pantalla. */
+let LISTO = null, CARGA = 0;
+function pintaCarga() {const b = $('bBots'); b.style.setProperty('--carga', Math.round(CARGA * 100) + '%'); b.classList.toggle('listo', CARGA >= 1); $('bBotsSub').textContent = CARGA >= 1 ? (modoElegido === '2v2' ? '2 contra 2 contra la máquina' : 'contra la máquina') : 'preparando el campo… ' + Math.round(CARGA * 100) + ' %';}
+function cargaTodo() {
+  if (LISTO) return LISTO;
+  LISTO = (async () => {
+    let n = 0; const gl = await Promise.all(NOMBRES.map(async (k) => {const g = await cargaModelo(k); n++; CARGA = n / NOMBRES.length * 0.95; pintaCarga(); return g;}));
+    NOMBRES.forEach((k, i) => M[k] = gl[i]);
     /* algunos modelos del Pack 9 vienen sin normales: sin ellas la luz no les da */
-    for (const n of ['huorn', 'nutria', 'crebain', 'sapo', 'draco']) M[n].scene.traverse((q) => {if (q.isMesh && !q.geometry.attributes.normal) q.geometry.computeVertexNormals();});} catch (e) {msg('No se pudo cargar: ' + e.message); return;}
-  ponMapa('2v2'); construyeMapa(); preparaMenu(); preparaMandos();
-  $('bBots').disabled = $('bCrear').disabled = false; msg('');
-  camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
-  bucle();
-})();
+    for (const k of ['huorn', 'nutria', 'crebain', 'sapo', 'draco']) M[k].scene.traverse((q) => {if (q.isMesh && !q.geometry.attributes.normal) q.geometry.computeVertexNormals();});
+    await new Promise((r) => setTimeout(r, 30));
+    ponMapa(modoElegido); construyeMapa(); CARGA = 1; pintaCarga();
+  })();
+  LISTO.catch((e) => {LISTO = null; msg('No se pudo cargar: ' + e.message + ' · toca JUGAR para reintentar');});
+  return LISTO;
+}
+/* espera a que esté todo cargado antes de empezar (con un velo y el porcentaje) */
+async function trasCarga(fn) {
+  if (CARGA < 1) {const ve = $('cargaVelo'); ve.classList.remove('hidden'); const t = setInterval(() => {ve.querySelector('b').textContent = Math.round(CARGA * 100) + ' %';}, 120);
+    try {await cargaTodo();} catch (e) {clearInterval(t); ve.classList.add('hidden'); return;} clearInterval(t); ve.classList.add('hidden');}
+  fn();
+}
+preparaMenu(); preparaMandos(); pintaCarga();
+camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
+bucle();
+cargaTodo();
 window._vado = {PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
