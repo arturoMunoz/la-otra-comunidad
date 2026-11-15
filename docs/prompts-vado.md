@@ -113,6 +113,7 @@ Pásamelo en un .zip llamado Pack_Vado_6.zip, con un nombre claro por archivo.
 ```
 
 ## Pack Vado 7 — reliquia de vida y fondo del menú (15/11)
+**Dónde: ART** (chat normal de ChatGPT: son tres imágenes, no hace falta el modo agente).
 ```
 Seguimos con «El Vado del Isen» (El Señor de los Anillos, Rohan contra Isengard, estilo League of Legends: Wild Rift). Sin texto, sin marcas de agua.
 

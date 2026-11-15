@@ -22,6 +22,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - Personajes del libro: solo en texto (bocadillos con emblema). No dibujar a Frodo, Gandalf, Bombadil ni otros personajes de Tolkien. Los hobbits del grupo son originales.
 - Textos de historia: resúmenes propios, nunca citas copiadas del libro.
 - Arte: Claude NUNCA dibuja ni genera recursos (ni SVG, ni dibujos por código). Todo se pide a ChatGPT con un prompt y Henar/Arturo pasan las imágenes.
+- Cada pedido a ChatGPT lleva SIEMPRE dónde hacerlo (pedido de Arturo, 15/11): «ART» = chat normal de ChatGPT, no gasta tokens (imágenes, iconos, hojas de animación, fondos, textos); «WORK» = modo agente, gasta tokens (modelos .glb, tocar esqueletos o animaciones, descargar recursos CC0 de internet, zips con varios archivos procesados). Si un pack mezcla, se parte en dos pedidos.
 - Prompts para ChatGPT: nombrar SIEMPRE el libro y los sitios de Tolkien (El Señor de los Anillos, Bree, el Poney Pisador, el Viejo Hombre-Sauce, las Quebradas de los Túmulos…) para que salga fiel e inspirado; son fans. Las prohibiciones de los prompts son solo técnicas (sin texto, sin marco, formato). Sigue en pie: personajes del libro sin dibujar y textos de historia propios, sin citas copiadas.
 - Henar quiere que Claude cuestione las ideas con honestidad, sin halagos.
 - Push solo cuando Henar o Arturo lo pidan («súbelo»). En esta cuenta escriben los dos.
