@@ -56,7 +56,7 @@ const OBJ = {
   hacha: {t: 'Hacha de El Sagrario', i: 'obj_11', leg: 1, rec: ['hoja', 'amuleto'], c: 450, st: {dano: 30, robo: 0.12}, p: 'Robo de vida del 12 %.'},
   mithril: {t: 'Cota de mithril', i: 'obj_14', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 500, reduc: 0.12, regen: 4}, p: 'Ligera y casi irrompible.'},
 };
-const PLAN_BOT = {rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo']};
+const PLAN_BOT = {rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};
 /* El mapa en «ojo» (dibujo de Arturo, 14/11): dos caminos curvos de la base de Rohan (abajo a la izquierda) a la de Isengard
    (arriba a la derecha), la espesura en medio con el Uruk azul en el centro y el río (el vado) cruzando por la mitad.
    Todo es simétrico girando 180° alrededor del centro. */
@@ -151,7 +151,7 @@ function camino(desde, hasta) {
 const SUBD = {m: {vida: 380, dano: 12, alcance: 1.9, vatq: 0.85, vel: 3.4, oro: 22, xp: 32}, r: {vida: 270, dano: 16, alcance: 6, vatq: 0.75, vel: 3.4, oro: 16, xp: 26}, a: {vida: 1100, dano: 30, alcance: 2.3, vatq: 0.6, vel: 3.1, oro: 60, xp: 70, muros: 3}};
 const SUBD_X = {s: 1.6, t: 2.2, n: 2.2};
 /* desde el minuto 5 las hordas pegan cada vez más fuerte a las torres, para que las partidas no se eternicen */
-const asedio = () => 1 + Math.max(0, (S.t - 300) / 240);   /* multiplicador contra súbditos y contra torres/estandarte */
+const asedio = () => (1 + Math.max(0, (S.t - 300) / 240)) * (S.crecida ? 1.5 : 1);   /* multiplicador contra súbditos y contra torres/estandarte */
 const MODELO_SUBD = [{m: 'ballestero2', r: 'arquero_rohan2', a: 'ballestero2'}, {m: 'uruk', r: 'q_arquero', a: 'uruk'}];
 const ALTO_SUBD = {m: 1.7, r: 1.6, a: 2.6};
 const signo = (eq) => eq === 0 ? 1 : -1;
@@ -320,9 +320,9 @@ function nuevaPartida(jugadores, modo) {
   }
   for (const eq of [0, 1]) {
     /* «los soles» del dibujo: una torre en cada camino y otra delante del estandarte */
-    for (const l of S.carriles) {const p = puntoCarril(l, eq ? 1 - TORRE_F : TORRE_F); const vt = modo === '2v2' ? 2000 : 1500; S.u.push({id: idSig++, k: 't', eq, n: 1, carril: l, x: p.x, z: p.z, vida: vt, max: vt, cd: 0, rad: 1.6});}
+    for (const l of S.carriles) {const p = puntoCarril(l, eq ? 1 - TORRE_F : TORRE_F); const vt = modo === '2v2' ? 2000 : 1200; S.u.push({id: idSig++, k: 't', eq, n: 1, carril: l, x: p.x, z: p.z, vida: vt, max: vt, cd: 0, rad: 1.6});}
     const b = BASES[eq];
-    const vb = modo === '2v2' ? 2600 : 1900, vn = modo === '2v2' ? 3000 : 2400;
+    const vb = modo === '2v2' ? 2600 : 1600, vn = modo === '2v2' ? 3000 : 2000;
     S.u.push({id: idSig++, k: 't', eq, n: 2, x: b.torre.x, z: b.torre.z, vida: vb, max: vb, cd: 0, rad: 1.6});
     S.u.push({id: idSig++, k: 'n', eq, x: b.nexo.x, z: b.nexo.z, vida: vn, max: vn, rad: 2});
   }
@@ -397,7 +397,7 @@ function muere(d, o) {
     else if (nd.buff && o && o.k === 'h') {o.buf[nd.buff] = 90; ev(['fx', 'onda', d.x, d.z, 5]); ev(['aviso', o.id, BUFF_TXT[nd.buff]]);}
   }
   if (d.k === 'h') {
-    d.muerto = true; d.resp = S.t + 6 + d.nivel * 2; d.buf = {}; ev(['muere', d.id]); S.muertes[1 - d.eq]++;
+    d.muerto = true; d.resp = S.t + Math.min(45, 6 + d.nivel * 2 + Math.floor(S.t / 60) * 0.8); /* como en el LoL: cuanto más avanzada la partida, más cuesta morir */ d.buf = {}; ev(['muere', d.id]); S.muertes[1 - d.eq]++;
     d.muertes++; const rachaVictima = d.racha; d.racha = 0;
     const asesino = o && o.k === 'h' ? o : S.u.find((q) => q.id === d.agresor && d.agresorT > S.t);
     let txt = '';
@@ -414,7 +414,7 @@ function muere(d, o) {
     d.danos = {};
     ev(['baja', asesino ? asesino.id : 0, d.id, txt]);
   }
-  if (d.k === 't') {ev(['fx', 'explosion', d.x, d.z, 5]); ev(['baja', o && o.k === 'h' ? o.id : 0, d.id, d.eq === 0 ? 'Torre de Rohan destruida' : 'Torre de Isengard destruida']); for (const h of heroes()) if (h.eq !== d.eq) {h.oro += 150; ganaXp(h, 80);}}
+  if (d.k === 't') {ev(['fx', 'explosion', d.x, d.z, 5]); ev(['baja', o && o.k === 'h' ? o.id : 0, d.id, d.eq === 0 ? 'Torre de Rohan destruida' : 'Torre de Isengard destruida']); for (const h of heroes()) if (h.eq !== d.eq) {h.oro += 150; ganaXp(h, 80);} if (d.n === 2) ev(['aviso', 0, (d.eq ? 'Rohan' : 'Isengard') + ': tus hordas vienen reforzadas y con ariete']);}
   if (d.k === 'n') {S.fin = 1 - d.eq; ev(['fx', 'explosion', d.x, d.z, 8]); ev(['fin', 1 - d.eq]);}
 }
 /* golpes con retraso dentro de la simulación (no con setTimeout: así va igual a cualquier velocidad) */
@@ -463,8 +463,10 @@ function oleada() {
     /* las hordas: cuerpo a cuerpo delante, arqueros detrás; desde el minuto 4 un ariete cada tercera oleada */
     const tipos = [...Array(ORDA).fill('m'), 'r', 'r']; if (S.t > 240 && S.oleadaN % 3 === 0) tipos.push('a'); if (S.t > 600) tipos.push('a');
     const furia = S.bufEq[eq].uruk > S.t;
+    /* como el inhibidor del LoL: si cayó la torre de la base enemiga, tus hordas llevan un ariete más y van reforzadas */
+    const rota = S.u.some((t) => t.k === 't' && t.n === 2 && t.eq !== eq && t.vida <= 0); if (rota) tipos.push('a');
     tipos.forEach((tipo, i) => {
-      const sd = SUBD[tipo], refuerzo = (1 + 0.06 * Math.floor(S.t / 60)) * (furia ? 1.5 : 1), atras = tipo === 'm' ? 0 : tipo === 'r' ? 2.4 : 4.4, lat = tipo === 'a' ? 0 : ((i % ORDA) - (ORDA - 1) / 2) * 1.3;
+      const sd = SUBD[tipo], refuerzo = (1 + 0.06 * Math.floor(S.t / 60)) * (furia ? 1.5 : 1) * (rota ? 1.35 : 1), atras = tipo === 'm' ? 0 : tipo === 'r' ? 2.4 : 4.4, lat = tipo === 'a' ? 0 : ((i % ORDA) - (ORDA - 1) / 2) * 1.3;
       S.u.push({id: idSig++, k: 's', eq, tipo, carril: l, wp: eq ? L.length - 2 : 1, fuerte: furia, x: ini.x - ux * atras - uz * lat, z: ini.z - uz * atras + ux * lat, vida: sd.vida * refuerzo, max: sd.vida * refuerzo, cd: 0, ac: 0, rot: Math.atan2(ux, uz), rad: tipo === 'a' ? 0.8 : 0.5});
     });
   }
@@ -473,6 +475,13 @@ function oleada() {
 function paso(dt) {
   S.t += dt; S.ola -= dt; S.porId = new Map(S.u.map((u) => [u.id, u]));
   for (let i = S.dif.length - 1; i >= 0; i--) if (S.dif[i].t <= S.t) {const f = S.dif[i].fn; S.dif.splice(i, 1); f();} if (S.ola <= 0) {S.ola = S.carriles.length > 1 ? 28 : 24; oleada();}
+  /* «La crecida del Isen»: para que en el móvil no haya partidas eternas, a partir del minuto 11 (1v1) o 15 (2v2)
+     el río se lleva las defensas: torres y estandartes pierden vida poco a poco y las hordas pegan más fuerte a las torres */
+  const tC = S.carriles.length > 1 ? 900 : 660;
+  if (S.t >= tC) {
+    if (!S.crecida) {S.crecida = 1; ev(['aviso', 0, '🌊 ¡La crecida del Isen! Las defensas empiezan a ceder']); ev(['voz', 'hordas']);}
+    for (const t of S.u) if ((t.k === 't' || t.k === 'n') && t.vida > 1) t.vida = Math.max(1, t.vida - t.max * 0.004 * dt);
+  }
   const hs = heroes();
   for (const h of hs) {
     for (const k in h.cd) h.cd[k] = Math.max(0, h.cd[k] - dt);
@@ -1260,7 +1269,7 @@ function minimapa() {
 }
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
-  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; $('buffs').innerHTML = (bu ? '<span class="azul">🔷 Furia del Uruk ' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/buff_troll.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/buff_alfa.webp" alt="">' + v.bAlfa + ' s</span>' : ''); consejos(+($('marcador').dataset.t || 0));}
+  miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); $('objetivo').textContent = objetivoTxt(); const bu = EXTRA.be[MI_EQ] || 0; const tC = MODO === '2v2' ? 900 : 660, tt = +($('marcador').dataset.t || 0); $('buffs').innerHTML = (tt >= tC ? '<span class="azul">🌊 Crecida del Isen</span>' : tt >= tC - 60 ? '<span class="azul">🌊 Crecida en ' + Math.ceil(tC - tt) + ' s</span>' : '') + (bu ? '<span class="azul">🔷 Furia del Uruk ' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/buff_troll.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/buff_alfa.webp" alt="">' + v.bAlfa + ' s</span>' : ''); consejos(+($('marcador').dataset.t || 0));}
   $('yoNv').textContent = 'Nv ' + v.nivel; $('oro').textContent = '🪙 ' + v.oro; $('xpBar').style.width = (v.nivel >= NIVEL_MAX ? 100 : (v.xpP || 0) * 100) + '%';
   if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel;
   $('kda').textContent = (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3];
