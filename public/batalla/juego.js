@@ -190,7 +190,15 @@ const ORDA = 3;   /* cuerpo a cuerpo por oleada y camino (más 2 arqueros) */
 
 /* ---------- motor ---------- */
 const renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight);
+/* resolución dinámica (como en el Abismo): si el móvil no llega a ~50 fps baja la nitidez un paso; si va sobrado, la sube */
+const PR = {max: Math.min(devicePixelRatio, 2), v: Math.min(devicePixelRatio, 2), t: 0, n: 0, acum: 0};
+renderer.setPixelRatio(PR.v); renderer.setSize(innerWidth, innerHeight);
+function ajustaResolucion(dt) {
+  PR.acum += dt; PR.n++; PR.t += dt; if (PR.t < 1.5) return;
+  const fps = PR.n / PR.acum; PR.t = PR.acum = PR.n = 0;
+  const nv = fps < 48 ? Math.max(0.75, PR.v - 0.25) : fps > 58 ? Math.min(PR.max, PR.v + 0.25) : PR.v;
+  if (nv !== PR.v) {PR.v = nv; renderer.setPixelRatio(nv); renderer.setSize(innerWidth, innerHeight);}
+}
 renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.prepend(renderer.domElement);
@@ -917,13 +925,11 @@ function animaClip(o, nombre, vel = 1) {
   a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; a.timeScale = vel; a.reset().play();
   if (o.actual && o.actual !== a) o.actual.crossFadeTo(a, 0.06, false); o.actual = a; return a.getClip().duration / vel;
 }
-function aura(o, color, dur, tam = 1.6) {const m = indicador('ind_area', color); m.visible = true; m.material.opacity = 0.75; (o.auras = o.auras || []).push({m, t: 0, dur, tam}); return m;}
+function aura(o, color, dur, tam = 1.6) {const m = indicador('ind_area', color); m.userData.tira = 1; m.visible = true; m.material.opacity = 0.75; (o.auras = o.auras || []).push({m, t: 0, dur, tam}); return m;}
 /* efecto de hoja 4x4 que sigue a alguien: aparece (fotogramas 0-6), se mantiene (6-8) y se deshace (9-15) */
 function auraFx(o, nombre, dur, tam, alto) {
-  const [f, c, r, mez] = FB[nombre]; if (!fbTex[f]) fbTex[f] = cargaTex(f);
-  const t = fbTex[f].clone(); t.needsUpdate = true; t.repeat.set(1 / c, 1 / r);
-  const mat = new THREE.MeshBasicMaterial({map: t, color: FB_TINTE[nombre] || '#ffffff', transparent: true, depthWrite: false, blending: mez === 'n' ? THREE.NormalBlending : THREE.AdditiveBlending});
-  tam *= 1.25; let m; if (alto) {m = new THREE.Sprite(mat); m.scale.setScalar(tam);} else {const g = new THREE.PlaneGeometry(tam, tam); g.rotateX(-Math.PI / 2); m = new THREE.Mesh(g, mat); m.renderOrder = 3;}
+  const [, c, r] = FB[nombre], m = fbObjeto(nombre, !alto);
+  tam *= 1.25; m.scale.setScalar(tam); if (!alto) m.renderOrder = 3;
   scene.add(m); const a = {m, t: 0, dur, tam, hoja: {c, r}, alto}; (o.auras = o.auras || []).push(a); return a;
 }
 /* la definitiva: la pantalla se oscurece un instante, sale su nombre y la cámara da un tirón */
@@ -1032,7 +1038,7 @@ function animaHabilidades(dt) {
       if (k >= 1) {const sx = o.raiz.position.x, sz = o.raiz.position.z; flip('ondaC', sx, sz, o.salto.r * 2.8, true); flip('grietas', sx, sz, o.salto.r * 2.2, true); flip('polvoA', sx, sz, o.salto.r * 2.8, true); flip('explosion', sx, sz, 2.4); if (Math.hypot(sx - camM.x, sz - camM.z) < 14) tiemblaCam = Math.max(tiemblaCam, 0.3); suena('explosion', 0.5); o.raiz.position.y = 0; o.salto = null;}
     }
     if (o.estelaTiro) {const t = o.estelaTiro; t.t += dt; const d0 = Math.min(t.alc, t.t * 26); if (Math.floor(t.t / 0.03) !== Math.floor((t.t - dt) / 0.03)) {if (t.verde) flip('estelaF', t.x + t.dx * d0, t.z + t.dz * d0, 3, true, Math.atan2(t.dx, t.dz) - Math.PI / 2, 0.9, 0.3); else flip('polvo', t.x + t.dx * d0, t.z + t.dz * d0, 0.9);} if (d0 >= t.alc) {flip('impacto', t.x + t.dx * d0, t.z + t.dz * d0, 1.8); o.estelaTiro = null;}}
-    if (o.auras) for (let i = o.auras.length - 1; i >= 0; i--) {const a = o.auras[i]; a.t += dt; const k = a.t / a.dur; if (k >= 1 || !o.raiz.visible) {scene.remove(a.m); o.auras.splice(i, 1); continue;} if (a.hoja) {
+    if (o.auras) for (let i = o.auras.length - 1; i >= 0; i--) {const a = o.auras[i]; a.t += dt; const k = a.t / a.dur; if (k >= 1 || !o.raiz.visible) {fuera(a.m); o.auras.splice(i, 1); continue;} if (a.hoja) {
         const fin = Math.min(0.45, a.dur * 0.4), f = a.t < 0.3 ? Math.floor(a.t / 0.3 * 6) : a.t > a.dur - fin ? 9 + Math.min(6, Math.floor((a.t - (a.dur - fin)) / fin * 7)) : 6 + Math.round(1 + Math.sin(a.t * 9));
         a.m.material.map.offset.set((f % a.hoja.c) / a.hoja.c, 1 - (Math.floor(f / a.hoja.c) + 1) / a.hoja.r);
         a.m.position.set(o.raiz.position.x, a.alto ? o.raiz.position.y + a.alto : 0.16, o.raiz.position.z); if (!a.alto) a.m.rotation.y += dt * 1.2; continue;
@@ -1054,7 +1060,7 @@ function golpeVisual(id, de, fuerte) {
   if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140);}
 }
 function tiñe(raiz, color, k) {const c = new THREE.Color(color); raiz.traverse((q) => {if (q.isMesh && q.material) {q.material.color.lerp(c, k * 0.6); if (q.material.emissive) {q.material.emissive.copy(c); q.material.emissiveIntensity = 0.25 * k;}}});}
-function quitaVis(id) {const o = VIS.get(id); if (!o) return; scene.remove(o.raiz); if (o.aro) scene.remove(o.aro); VIS.delete(id); const b = BARRAS.get(id); if (b) {b.remove(); BARRAS.delete(id);}}
+function quitaVis(id) {const o = VIS.get(id); if (!o) return; scene.remove(o.raiz); o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.dispose) q.material.dispose();}); if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} VIS.delete(id); const b = BARRAS.get(id); if (b) {b.remove(); BARRAS.delete(id);}}
 const BARRAS = new Map();
 const _p = new THREE.Vector3();
 function dibuja(dt) {
@@ -1079,7 +1085,8 @@ function dibuja(dt) {
         if (o.ocup <= 0) pon(o, v.flags & 2 ? 'aturdido' : corre ? 'correr' : 'quieto');
         if (o.clips.correr) o.clips.correr.timeScale = Math.max(0.6, Math.min(1.7, o.vel / (v.k === 'h' ? 4.2 : v.k === 'j' ? 4 : 2.9)));
       }
-      o.mixer.update(dt);
+      /* los que están lejos de la cámara se animan a saltos (ahorra en peleas grandes) */
+      o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0;}
       /* destello blanco y pequeño bote al recibir un golpe */
       const dorado = v.k === "h" && (v.flagsE & 1);
       if (dorado) {for (const m of materiales(o)) {m.m.emissive.setRGB(1, 0.72, 0.15); m.m.emissiveIntensity = 0.75 + 0.2 * Math.sin(performance.now() / 90);} o.doradoOn = true;}
@@ -1117,7 +1124,7 @@ function dibuja(dt) {
     if (p.tipo === 'proy') {const d = VISTA.get(p.d); const tx = d ? (d.xi ?? d.x) : p.tx, tz = d ? (d.zi ?? d.z) : p.tz; p.tx = tx; p.tz = tz; const dx = tx - p.x, dz = tz - p.z, l = Math.hypot(dx, dz); if (l < 0.5 || p.t > 2) {scene.remove(p.o); FXP.splice(i, 1); continue;} p.x += dx / l * Math.min(l, p.v * dt); p.z += dz / l * Math.min(l, p.v * dt); p.o.position.set(p.x, p.y, p.z); p.o.rotation.y = Math.atan2(dx, dz);}
     else if (p.tipo === 'cae') {p.y -= dt * 26; p.o.position.set(p.x, p.y, p.z); if (p.y <= 0.2) {scene.remove(p.o); FXP.splice(i, 1); flip('impacto', p.x, p.z, 0.9);}}
     else if (p.tipo === 'tiro') {const k = Math.min(1, p.t / p.dur); p.o.position.set(p.x + (p.tx - p.x) * k, 1.2, p.z + (p.tz - p.z) * k); if (k >= 1) {scene.remove(p.o); FXP.splice(i, 1);}}
-    else {const k = p.t / p.dur; if (k >= 1) {scene.remove(p.o); FXP.splice(i, 1); continue;} if (p.flip) {const f = Math.min(p.flip.n - 1, Math.floor(k * p.flip.n)); p.o.material.map.offset.set((f % p.flip.c) / p.flip.c, 1 - (Math.floor(f / p.flip.c) + 1) / p.flip.r);} if (p.crece) p.o.scale.setScalar(p.esc * (0.6 + 0.6 * k)); if (p.o.material) p.o.material.opacity = (p.op || 1) * (1 - k * k);}
+    else {const k = p.t / p.dur; if (k >= 1) {fuera(p.o); FXP.splice(i, 1); continue;} if (p.flip) {const f = Math.min(p.flip.n - 1, Math.floor(k * p.flip.n)); p.o.material.map.offset.set((f % p.flip.c) / p.flip.c, 1 - (Math.floor(f / p.flip.c) + 1) / p.flip.r);} if (p.crece) p.o.scale.setScalar(p.esc * (0.6 + 0.6 * k)); if (p.o.material) p.o.material.opacity = (p.op || 1) * (1 - k * k);}
   }
   for (let i = NUMS.length - 1; i >= 0; i--) {
     const n = NUMS[i]; n.t += dt; if (n.t > 0.8) {n.el.remove(); NUMS.splice(i, 1); continue;}
@@ -1136,13 +1143,36 @@ const FB_OP = {ondaC: 0.6, polvoA: 0.75, grietas: 1.2, tFuego: 1.1, hojas: 0.9, 
 const FB_DUR = {tArco: 0.5, tFuego: 0.6, ondaC: 0.7, grietas: 1.2, polvoA: 0.85, humo: 0.9, hojas: 0.9, estelaF: 0.4, suerte: 1, escudo: 0.9, piedra: 0.9, estrellas: 0.9};
 const fbTex = {};
 for (const n in FB) if (!fbTex[FB[n][0]]) fbTex[FB[n][0]] = cargaTex(FB[n][0]); /* cargadas de antemano: que el primer efecto no salga en blanco */
+/* los efectos de hoja se reciclan: cada uno tiene su copia de la textura (para su fotograma) pero comparte la imagen en la tarjeta gráfica.
+   Antes cada golpe volvía a subir la hoja entera a la GPU (needsUpdate) y creaba geometría nueva: eso calaba el juego en las peleas. */
+const FB_POOL = {}, GEO_SUELO = (() => {const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); return g;})();
+function fbObjeto(nombre, suelo, mezN) {
+  const key = nombre + (suelo ? 's' : 'a') + (mezN ? 'n' : ''), pool = FB_POOL[key] || (FB_POOL[key] = []);
+  const [f, c, r, mez] = FB[nombre]; const base = fbTex[f] || (fbTex[f] = cargaTex(f));
+  let o = pool.pop();
+  if (!o) {
+    const sv = base.source.version, t = base.clone(); base.source.version = sv; t.repeat.set(1 / c, 1 / r); /* clone() marca la imagen como cambiada y la volvería a subir: se deja como estaba */
+    const mat = new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, blending: mezN || mez === 'n' ? THREE.NormalBlending : THREE.AdditiveBlending});
+    o = suelo ? new THREE.Mesh(GEO_SUELO, mat) : new THREE.Sprite(mat); o.userData.pool = key; o.userData.base = base;
+  }
+  const t = o.material.map; if (t.version !== base.version) t.version = base.version; /* misma imagen ya subida: no se vuelve a subir */
+  o.material.color.set(FB_TINTE[nombre] || '#ffffff'); o.material.opacity = 1; o.rotation.set(0, 0, 0); o.renderOrder = suelo ? 3 : 0; o.visible = true;
+  return o;
+}
+/* quitar un efecto: los reciclables vuelven a su montón; los de un solo uso sueltan su geometría y material */
+function fuera(o) {
+  scene.remove(o);
+  if (o.userData.pool) {FB_POOL[o.userData.pool].push(o); return;}
+  if (o.userData.tira) {o.geometry.dispose(); o.material.dispose();}
+}
 function flip(nombre, x, z, tam, suelo, rot, y, dur) {
-  const [f, c, r, mez] = FB[nombre]; if (!fbTex[f]) fbTex[f] = cargaTex(f);
   if (FB_DUR[nombre]) tam *= 1.3; /* las hojas del Pack 5 llevan margen en cada fotograma */
-  const t = fbTex[f].clone(); t.needsUpdate = true; t.repeat.set(1 / c, 1 / r);
-  const mat = new THREE.MeshBasicMaterial({map: t, color: FB_TINTE[nombre] || '#ffffff', transparent: true, depthWrite: false, blending: nombre === 'polvo' || mez === 'n' ? THREE.NormalBlending : THREE.AdditiveBlending});
-  let o; if (suelo) {const g = new THREE.PlaneGeometry(tam, tam); g.rotateX(-Math.PI / 2); o = new THREE.Mesh(g, mat); o.position.set(x, y ?? 0.12, z); o.renderOrder = 3; if (rot !== undefined) o.rotation.y = rot;} else {o = new THREE.Sprite(mat); o.scale.setScalar(tam); o.position.set(x, y ?? 1.3, z);}
+  const [, c, r] = FB[nombre], o = fbObjeto(nombre, suelo, nombre === 'polvo');
+  o.scale.setScalar(tam);
+  if (suelo) {o.position.set(x, y ?? 0.12, z); if (rot !== undefined) o.rotation.y = rot;} else o.position.set(x, y ?? 1.3, z);
+  o.material.map.offset.set(0, 1 - 1 / r);
   scene.add(o); FXP.push({o, t: 0, dur: dur || FB_DUR[nombre] || (nombre === 'onda' ? 0.65 : nombre.startsWith('tajo') ? 0.5 : 0.55), flip: {c, r, n: c * r}, esc: tam, op: FB_OP[nombre] || 1});
+  if (FXP.length > 140) {const v = FXP.findIndex((p) => p.flip); if (v >= 0) {fuera(FXP[v].o); FXP.splice(v, 1);}} /* tope: en una pelea gorda no se acumulan sin fin */
   return o;
 }
 /* sonido con WebAudio: cada archivo se descodifica una vez y se reproduce sin crear reproductores nuevos */
@@ -1176,14 +1206,14 @@ function suena(n, vol = 0.5) {
     const src = AC.createBufferSource(), g = AC.createGain(); g.gain.value = vol; src.buffer = SON[f]; src.connect(g).connect(AC.destination); src.start();
   } catch (e) {}
 }
-function numero(x, z, txt, cls) {if (cls === 'v') cls = 'cur';const el = document.createElement('div'); el.className = 'num ' + (cls || ''); el.textContent = txt; $('barras').appendChild(el); NUMS.push({el, x: x + rnd(-0.3, 0.3), z, t: 0});}
+function numero(x, z, txt, cls) {if (cls === 'v') cls = 'cur'; if (NUMS.length > 24) {NUMS[0].el.remove(); NUMS.shift();}const el = document.createElement('div'); el.className = 'num ' + (cls || ''); el.textContent = txt; $('barras').appendChild(el); NUMS.push({el, x: x + rnd(-0.3, 0.3), z, t: 0});}
 function efectoLocal(e) {
   const t = e[0];
   if (t === 'num') {if (e[4] === 'o' && e[5] !== YO) return; numero(e[1], e[2], e[3], e[4]); if (e[4] === 'o') suena('moneda', 0.3);}
   if (t === 'fx') {if (e[1] === 'onda') flip('onda', e[2], e[3], e[4], true); else flip(e[1], e[2], e[3], e[4], e[1] === 'tajo'); if (e[1] === 'explosion') suena('explosion', 0.6); if (e[1] === 'onda') suena('viento', 0.4);}
   if (t === 'proy') {const o = modeloProy(e[1]); o.scale.multiplyScalar(e[6] || 1); scene.add(o); FXP.push({tipo: 'proy', o, x: e[2], z: e[3], y: e[7] || 1.2, d: e[4], v: e[5], t: 0}); suena(e[1] === 'piedra' ? 'golpe' : 'arco', 0.25);}
   if (t === 'tiro') {const o = modeloProy(e[1]); o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); suena('arco', 0.5);}
-  if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}
+  if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.userData.tira = 1; a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}
   if (t === 'muere') suena('muerte', 0.35);
   if (t === 'son') suena(e[1], 0.5);
   if (t === 'g') golpeVisual(e[1], e[2], e[3]);
@@ -1462,6 +1492,8 @@ function empieza(jugadores, modo, simulo) {
   aviso('¡Al vado! Derriba las torres y el estandarte enemigo'); suena('cuerno', 0.7);
 }
 function pantallaVS(jugadores, modo) {
+  /* calentar: durante el VS se dibuja una vez cada efecto bajo el suelo, así la textura sube y el sombreador se compila antes de la primera pelea */
+  try {for (const n in FB) {flip(n, 0, 0, 0.01, false, 0, -40, 0.3); flip(n, 0, 0, 0.01, true, 0, -40, 0.3);}} catch (e) {}
   const plazas = modo === '2v2' ? 4 : 2, el = $('vs'), lado = (eq) => {let h = ''; for (let s = eq; s < plazas; s += 2) {const j = jugadores.find((q) => q.slot === s), tipo = j ? j.heroe : Object.keys(HEROES)[(s * 3 + 1) % 4]; h += '<div class="vsH"><img class="spl" src="ui/splash_' + tipo + '.webp" alt=""><b>' + (j ? j.nombre : 'Máquina') + '</b><span>' + HEROES[tipo].nombre + '</span></div>';} return h;};
   el.innerHTML = '<div class="vsLado az"><i>Rohan</i>' + lado(0) + '</div><div class="vsX">VS</div><div class="vsLado ro"><i>Isengard</i>' + lado(1) + '</div>';
   el.classList.remove('hidden'); setTimeout(() => el.classList.add('fuera'), 2300); setTimeout(() => {el.classList.add('hidden'); el.classList.remove('fuera');}, 2900);
@@ -1596,28 +1628,30 @@ function acaba(ganador) {
 
 /* ---------- bucle ---------- */
 const reloj = new THREE.Clock(); let acum = 0, ALFA = 1;
+/* medidor para pruebas: window._vado.PERF (ms acumulados por parte) */
+const PERF = {n: 0, sim: 0, dib: 0, hud: 0, ren: 0, tot: 0, max: 0};
 function bucle() {
-  requestAnimationFrame(bucle);
-  const dt = Math.min(0.05, reloj.getDelta());
+  requestAnimationFrame(bucle); const t0b = performance.now();
+  const dtR = reloj.getDelta(), dt = Math.min(0.05, dtR); if (ESTADO === 'juego') ajustaResolucion(Math.min(0.25, dtR));
   try {
     if (ESTADO === 'juego' || ESTADO === 'fin') {
       if (S && ESTADO === 'juego') {
         const h = S.u.find((q) => q.id === YO);
         if (h) {const ac = acercaAtaque(h.x, h.z); h.mx = ac ? ac.x : MANDO.mx; h.mz = ac ? ac.z : MANDO.mz; h.ataca = atacando(); h.prioHeroe = true; h.modoAt = modoAtaque(); h.fijo = MANDO.fijo || 0;}
         if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0 && h && !h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; aviso('En la fuente: ya puedes comprar');}}
-        acum += dt; let pasos = 0; while (acum >= 1 / 30 && pasos < 4) {paso(1 / 30); acum -= 1 / 30; pasos++;} if (acum > 0.1) acum = 0; ALFA = Math.min(1, acum * 30);
+        acum += dt; let pasos = 0; const ts = performance.now(); while (acum >= 1 / 30 && pasos < 4) {paso(1 / 30); acum -= 1 / 30; pasos++;} if (acum > 0.1) acum = 0; ALFA = Math.min(1, acum * 30);
         fotoT -= dt;
-        if (pasos) {const f = foto(); recibeFotoLocal(f); if (NET.online && fotoT <= 0) {fotoT = 1 / 12; NET.manda({t: 'foto', f: {...f, ev: ENVIAR.splice(0)}});}}
+        if (pasos) {const f = foto(); recibeFotoLocal(f); PERF.sim += performance.now() - ts; if (NET.online && fotoT <= 0) {fotoT = 1 / 12; NET.manda({t: 'foto', f: {...f, ev: ENVIAR.splice(0)}});}}
       } else if (!S && ESTADO === 'juego') {
         mueveMio(dt);
         if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0) {NET.manda({t: 'volver'}); MIO.listo = false;}}
         inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
-      camara(dt); dibuja(dt); animaHabilidades(dt); hud();
+      const t1 = performance.now(); camara(dt); dibuja(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
-  renderer.render(scene, camera);
+  const t3 = performance.now(); renderer.render(scene, camera); PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];
@@ -1745,4 +1779,4 @@ function preparaMenu() {
   camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
   bucle();
 })();
-window._vado = {AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};

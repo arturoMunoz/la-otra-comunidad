@@ -163,3 +163,24 @@ Seguimos con «El Vado del Isen» (El Señor de los Anillos, estilo Wild Rift, l
    2. DRACO: el triceratops no parece un draco. Necesito un draco sin alas de las Montañas Grises: reptil largo y bajo, cuello y cola largos, cabeza con cuernos hacia atrás y escamas, 4,5 m de largo. Puede salir del «Dragon» de Quaternius (Ultimate Monsters) quitándole las alas, o del cocodrilo/lagarto de Animated Animals con cuernos añadidos.
 Pásamelo en un .zip llamado Pack_Vado_10.zip con LICENCIAS.txt.
 ```
+
+## Pack Vado 11 — que las peleas se sientan como en el Wild Rift (15/11)
+**Dónde: ART** (chat normal; solo imágenes).
+```
+Seguimos con «El Vado del Isen» (El Señor de los Anillos, Rohan contra Isengard junto al Vado del Isen, estilo League of Legends: Wild Rift, oscuro y medieval). Todo PNG con fondo transparente, sin texto, sin marcas de agua.
+
+A) EFECTOS en hojas de animación de 1024x1024 con 4x4 fotogramas (16 de 256x256, de izquierda a derecha y de arriba abajo, del principio al final), brillantes y legibles desde arriba como en el Wild Rift:
+   1. impacto_espada: chispazo blanco-dorado de un golpe de espada de Rohan (el golpe normal, rápido y seco).
+   2. impacto_critico: el mismo, más grande, con estallido rojo-dorado (golpe crítico).
+   3. muerte_subdito: el soldado cae y se deshace en polvo y ceniza (orco de Isengard o soldado de Rohan).
+   4. subir_nivel: columna de luz dorada que sube desde el suelo con runas élficas girando (como el «level up» del Wild Rift).
+   5. volver_base: círculo azul de runas de Edoras en el suelo que se llena de luz (la vuelta a la fuente), visto desde arriba, para repetirlo en bucle.
+   6. oro: un puñado de monedas de oro de la Marca que saltan y brillan (al rematar a un súbdito).
+B) INTERFAZ de partida, mismo marco de metal y oro gastado que los iconos de habilidades:
+   1. marco_retrato: retrato redondo 512x512 hueco en el centro con un anillo para el nivel abajo (la esquina de arriba a la izquierda del Wild Rift).
+   2. aro_habilidad: aro de botón de habilidad 256x256 hueco en el centro, en dos versiones (normal y «lista», con brillo dorado).
+   3. cartel_baja: cartel horizontal 1024x256 con DOS huecos redondos para retratos (el que mata a la izquierda, el que cae a la derecha) y una espada cruzada en medio; en versión azul (mi equipo) y roja (enemigo).
+   4. cartel_victoria y cartel_derrota: adornos horizontales 1024x384 (estandarte del caballo blanco de Rohan dorado / estandarte de Rohan roto y quemado) con espacio libre en el centro para escribir yo la palabra.
+
+Pásamelo todo en un .zip llamado Pack_Vado_11.zip, con un nombre claro por archivo.
+```
