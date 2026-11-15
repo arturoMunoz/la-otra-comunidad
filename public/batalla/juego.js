@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
 const $ = (id) => document.getElementById(id);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -221,9 +222,11 @@ function ajustaResolucion(dt) {
   const fps = PR.n / PR.acum; PR.t = PR.acum = PR.n = 0;
   const nv = fps < 48 ? Math.max(0.75, PR.v - 0.25) : fps > 58 ? Math.min(PR.max, PR.v + 0.25) : PR.v;
   if (nv !== PR.v) {PR.v = nv; renderer.setPixelRatio(nv); renderer.setSize(VW, VH);}
+  /* si el móvil va justo, la sombra a la mitad de resolución (4 veces menos píxeles que pintar) */
+  const ms = PR.v <= 1 ? 1024 : 2048; if (sol.shadow.mapSize.x !== ms) {sol.shadow.mapSize.set(ms, ms); if (sol.shadow.map) {sol.shadow.map.dispose(); sol.shadow.map = null;}}
 }
 renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
-renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap; /* el «suave» hace 4 veces más lecturas por píxel */
 document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#1b2230'); scene.fog = new THREE.Fog('#1b2230', 45, 110);
 const camera = new THREE.PerspectiveCamera(42, VW / VH, 0.5, 200);
@@ -254,13 +257,38 @@ function instancias(archivo, nombre, lista, sombra = true) {
     const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, malla.material, lista.length);
     lista.forEach((c, i) => {q.setFromAxisAngle(up, c.ry || 0); p.set(c.x, c.y || 0, c.z); e.setScalar(c.s || 1); m4.compose(p, q, e).multiply(rel); im.setMatrixAt(i, m4);});
     im.castShadow = sombra; im.receiveShadow = true; im.computeBoundingSphere(); (MAPA_G || scene).add(im);
+    /* el bosque son ~1.500 árboles (270.000 triángulos, el doble con la sombra): solo se dibujan los que hay cerca de la cámara */
+    const arr = im.instanceMatrix.array, n = lista.length, xs = new Float32Array(n), zs = new Float32Array(n);
+    for (let i = 0; i < n; i++) {xs[i] = arr[i * 16 + 12]; zs[i] = arr[i * 16 + 14];}
+    im.userData.cull = {todo: arr.slice(), xs, zs}; im.frustumCulled = false; BOSQUE.push(im);
   });
+}
+const BOSQUE = []; let bosqueEn = null;
+function cullBosque(cx, cz, forzar) {
+  if (!forzar && bosqueEn && Math.hypot(cx - bosqueEn.x, cz - bosqueEn.z) < 3) return; bosqueEn = {x: cx, z: cz};
+  const R2 = 40 * 40;
+  for (const im of BOSQUE) {
+    const c = im.userData.cull, dst = im.instanceMatrix.array; let k = 0;
+    for (let i = 0; i < c.xs.length; i++) {const dx = c.xs[i] - cx, dz = c.zs[i] - cz; if (dx * dx + dz * dz < R2) {if (k !== i) dst.set(c.todo.subarray(i * 16, i * 16 + 16), k * 16); k++;}}
+    im.count = k; im.instanceMatrix.clearUpdateRanges(); im.instanceMatrix.addUpdateRange(0, k * 16); im.instanceMatrix.needsUpdate = true;
+  }
 }
 const ALTO = {};
 function alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene, ['draco', 'huorn', 'crebain', 'nutria', 'sapo'].includes(n)); ALTO[n] = Math.max(0.5, b.max.y - b.min.y);} return ALTO[n];}
 function montar(n, altura) {
   const raiz = SkeletonUtils.clone(M[n].scene); raiz.scale.setScalar(altura / alto(n));
-  raiz.traverse((o) => {if (o.isMesh) {o.castShadow = true; o.material = o.material.clone(); if (o.isSkinnedMesh) o.frustumCulled = false;}});
+  /* rendimiento: las piezas que comparten los mismos huesos usan UN esqueleto (antes cada pieza recalculaba y subía el suyo),
+     y los personajes fuera de cámara no se dibujan (antes se dibujaban todos, también en la sombra) */
+  const esq = new Map();
+  raiz.traverse((o) => {
+    if (!o.isMesh) return; o.castShadow = true; o.material = o.material.clone();
+    if (o.isSkinnedMesh) {
+      const k = o.skeleton.bones.map((b) => b.uuid).join(); const ya = esq.get(k);
+      if (ya && ya.boneInverses.every((m, i) => m.equals(o.skeleton.boneInverses[i]))) o.skeleton = ya; else esq.set(k, o.skeleton);
+      const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
+      o.boundingSphere = g.boundingSphere.clone(); o.boundingSphere.radius = Math.max(o.boundingSphere.radius * 2, 1.5); o.frustumCulled = true;
+    }
+  });
   const mixer = new THREE.AnimationMixer(raiz), clips = {};
   for (const c of M[n].animations) clips[c.name] = mixer.clipAction(c);
   const alias = {atacar: ['disparar', 'atacar'], correr: ['correr', 'andar'], quieto: ['quieto'], morir: ['morir'], hab: ['golpe_cargado', 'atacar_3', 'atacar_2', 'disparar', 'atacar'], aturdido: ['aturdido', 'recibir_golpe', 'recibir', 'quieto']};
@@ -275,7 +303,7 @@ function otraVez(a, k) {const n = a.clips[k]; if (!n) return; n.reset().play(); 
 let MAPA_G = null;
 function construyeMapa() {
   if (MAPA_G) {scene.remove(MAPA_G); MAPA_G.traverse((q) => {if (q.isInstancedMesh) q.dispose();});}
-  MAPA_G = new THREE.Group(); scene.add(MAPA_G); const scene_ = MAPA_G;
+  MAPA_G = new THREE.Group(); scene.add(MAPA_G); const scene_ = MAPA_G; BOSQUE.length = 0; bosqueEn = null;
   const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('texturas/barro.webp', true);
   const g = new THREE.PlaneGeometry(110, 150, 1, 1); g.rotateX(-Math.PI / 2);
   const m = new THREE.MeshStandardMaterial({color: '#ffffff', roughness: 0.95});
@@ -353,6 +381,32 @@ function construyeMapa() {
     const s = signo(eq); pon2('tienda', b.fuente.x - 3 * s, b.fuente.z + 3.5 * s, eq ? 0 : Math.PI, 1.6);
     for (const [dx, dz] of [[4, -4], [-1, -6]]) {pon2('brasero', b.fuente.x + dx * s, b.fuente.z + dz * s, 0, 1.4); luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);}
   }
+  fusiona(MAPA_G);
+}
+/* el decorado quieto se junta por material: de ~900 mallas a unas pocas decenas (en el móvil cada malla es una llamada de dibujo, y otra más para la sombra) */
+function fusiona(raiz, quitaSombraPeq = true) {
+  const grupos = new Map(); let antes = 0; raiz.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(raiz.matrixWorld).invert();
+  raiz.traverse((o) => {
+    if (!o.isMesh || o.isSkinnedMesh || o.isInstancedMesh || !o.visible || Array.isArray(o.material) || o.userData.vivo) return;
+    const g = o.geometry; if (!g || Object.keys(g.morphAttributes || {}).length) return;
+    const k = o.material.uuid + '|' + Object.keys(g.attributes).sort().join(',') + '|' + !!g.index + '|' + o.castShadow + o.receiveShadow + '|' + o.renderOrder;
+    if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(o); antes++;
+  });
+  let despues = 0; const m4 = new THREE.Matrix4();
+  for (const lista of grupos.values()) {
+    if (lista.length < 2) {despues++; continue;}
+    const geos = lista.map((o) => {const g = o.geometry.clone(); g.applyMatrix4(m4.multiplyMatrices(inv, o.matrixWorld)); return g;});
+    let mg = null; try {mg = mergeGeometries(geos, false);} catch (e) {mg = null;}
+    geos.forEach((g) => g.dispose());
+    if (!mg) {despues += lista.length; continue;}
+    const m = new THREE.Mesh(mg, lista[0].material); m.castShadow = lista[0].castShadow; m.receiveShadow = lista[0].receiveShadow; m.renderOrder = lista[0].renderOrder;
+    m.matrixAutoUpdate = false; raiz.add(m);
+    lista.forEach((o) => o.removeFromParent()); despues++;
+  }
+  /* quita los grupos vacíos que quedan */
+  const vacios = []; raiz.traverse((o) => {if (o !== raiz && !o.isMesh && !o.isLight && !o.children.length && !o.isSprite) vacios.push(o);}); vacios.forEach((o) => o.removeFromParent());
+  console.log('decorado fusionado:', antes, '→', despues);
 }
 /* fuegos: solo 4 luces de verdad que se colocan en los fuegos más cercanos a la cámara (en el móvil, muchas luces lo hunden) */
 function luzFuego(x, z) {FUEGOS.push({x, z});}
@@ -926,12 +980,12 @@ function creaVis(v) {
   }
   else if (v.k === 'j') {o = montar(NEUTRO[v.tipo].modelo, NEUTRO[v.tipo].alto); if (NEUTRO[v.tipo].azul) tiñe(o.raiz, '#4a7dff', 0.9); if (NEUTRO[v.tipo].draco) tiñe(o.raiz, v.hk === 'h' ? '#6fb8ff' : '#e0461e', 0.85); if (v.tipo === 'huorn') o.raiz.traverse((q) => {if (q.isMesh) {q.material.map = null; q.material.color.set('#7a5c38'); q.material.emissive && q.material.emissive.set('#16240a'); q.material.needsUpdate = true;}}); if (v.tipo === 'crebain') o.raiz.traverse((q) => {if (q.isMesh) q.material.color.set('#2a2a30');});}
   else if (v.k === 't') {
-    const g = new THREE.Group(), lado = v.eq ? 'isengard' : 'rohan', est = [1, 2, 3].map((n) => {const p = pieza('vado_torres', 'torre_' + lado + '_' + n); p.visible = n === 1; g.add(p); return p;});
+    const g = new THREE.Group(), lado = v.eq ? 'isengard' : 'rohan', est = [1, 2, 3].map((n) => {const p = pieza('vado_torres', 'torre_' + lado + '_' + n); fusiona(p); p.visible = n === 1; g.add(p); return p;});
     g.rotation.y = v.eq ? 0 : Math.PI; g.scale.setScalar(0.82);
     const mats = []; g.traverse((q) => {if (q.isMesh) {q.material = q.material.clone(); q.material.transparent = true; mats.push(q.material);}});
     o = {raiz: g, est, mats}; luzFuego(1.6, v.z);
   } else if (v.k === 'n') {
-    const g = new THREE.Group(), b = pieza('vado_nexos', v.eq ? 'nexo_isengard' : 'nexo_rohan'); b.scale.setScalar(1.35); g.add(b); g.rotation.y = v.eq ? 0 : Math.PI;
+    const g = new THREE.Group(), b = pieza('vado_nexos', v.eq ? 'nexo_isengard' : 'nexo_rohan'); fusiona(b); b.scale.setScalar(1.35); g.add(b); g.rotation.y = v.eq ? 0 : Math.PI;
     o = {raiz: g}; luzFuego(0, v.z);
   }
   o.raiz.position.set(v.x, 0, v.z); scene.add(o.raiz); o.ac = v.ac; o.hc = v.hc;
@@ -1056,12 +1110,12 @@ function animaHabilidades(dt) {
   for (const [id, o] of VIS) {
     const vv = VISTA.get(id), atur = vv && (vv.flags & 2) && (vv.k !== 'h' || vv.muerto < 0);
     if (atur && !o.estr) o.estr = auraFx(o, 'estrellas', 30, 1.9, vv.k === 'h' ? 2.5 : 2.2); else if (!atur && o.estr) {o.estr.t = Math.max(o.estr.t, o.estr.dur - 0.3); o.estr = null;}
-    if (o.estela) {o.estela.t -= dt; o.estela.cada -= dt; if (o.estela.cada <= 0) {o.estela.cada = 0.045; flip(o.estela.fx, o.raiz.position.x, o.raiz.position.z, o.estela.tam);} if (o.estela.t <= 0) {flip('impacto', o.raiz.position.x, o.raiz.position.z, 2); o.estela = null;}}
+    if (o.estela) {o.estela.t -= dt; o.estela.cada -= dt; if (o.estela.cada <= 0) {o.estela.cada = 0.07; flip(o.estela.fx, o.raiz.position.x, o.raiz.position.z, o.estela.tam);} if (o.estela.t <= 0) {flip('impacto', o.raiz.position.x, o.raiz.position.z, 2); o.estela = null;}}
     if (o.salto) {
       o.salto.t += dt; const k = Math.min(1, o.salto.t / o.salto.dur); o.raiz.position.y = Math.sin(k * Math.PI) * o.salto.alto;
       if (k >= 1) {const sx = o.raiz.position.x, sz = o.raiz.position.z; flip('ondaC', sx, sz, o.salto.r * 2.8, true); flip('grietas', sx, sz, o.salto.r * 2.2, true); flip('polvoA', sx, sz, o.salto.r * 2.8, true); flip('explosion', sx, sz, 2.4); if (Math.hypot(sx - camM.x, sz - camM.z) < 14) tiemblaCam = Math.max(tiemblaCam, 0.3); suena('explosion', 0.5); o.raiz.position.y = 0; o.salto = null;}
     }
-    if (o.estelaTiro) {const t = o.estelaTiro; t.t += dt; const d0 = Math.min(t.alc, t.t * 26); if (Math.floor(t.t / 0.03) !== Math.floor((t.t - dt) / 0.03)) {if (t.verde) flip('estelaF', t.x + t.dx * d0, t.z + t.dz * d0, 3, true, Math.atan2(t.dx, t.dz) - Math.PI / 2, 0.9, 0.3); else flip('polvo', t.x + t.dx * d0, t.z + t.dz * d0, 0.9);} if (d0 >= t.alc) {flip('impacto', t.x + t.dx * d0, t.z + t.dz * d0, 1.8); o.estelaTiro = null;}}
+    if (o.estelaTiro) {const t = o.estelaTiro; t.t += dt; const d0 = Math.min(t.alc, t.t * 26); if (Math.floor(t.t / 0.06) !== Math.floor((t.t - dt) / 0.06)) {if (t.verde) flip('estelaF', t.x + t.dx * d0, t.z + t.dz * d0, 3, true, Math.atan2(t.dx, t.dz) - Math.PI / 2, 0.9, 0.3); else flip('polvo', t.x + t.dx * d0, t.z + t.dz * d0, 0.9);} if (d0 >= t.alc) {flip('impacto', t.x + t.dx * d0, t.z + t.dz * d0, 1.8); o.estelaTiro = null;}}
     if (o.auras) for (let i = o.auras.length - 1; i >= 0; i--) {const a = o.auras[i]; a.t += dt; const k = a.t / a.dur; if (k >= 1 || !o.raiz.visible) {fuera(a.m); o.auras.splice(i, 1); continue;} if (a.hoja) {
         const fin = Math.min(0.45, a.dur * 0.4), f = a.t < 0.3 ? Math.floor(a.t / 0.3 * 6) : a.t > a.dur - fin ? 9 + Math.min(6, Math.floor((a.t - (a.dur - fin)) / fin * 7)) : 6 + Math.round(1 + Math.sin(a.t * 9));
         a.m.material.map.offset.set((f % a.hoja.c) / a.hoja.c, 1 - (Math.floor(f / a.hoja.c) + 1) / a.hoja.r);
@@ -1071,14 +1125,15 @@ function animaHabilidades(dt) {
   }
   for (let i = LLUVIAS.length - 1; i >= 0; i--) {
     const l = LLUVIAS[i]; l.t += dt; l.cada -= dt; if (l.t > l.dur) {LLUVIAS.splice(i, 1); continue;}
-    if (l.cada <= 0) {l.cada = 0.045; const a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * l.r, fx = l.x + Math.cos(a) * r, fz = l.z + Math.sin(a) * r, f = modeloProy('flecha_elfica'); f.scale.multiplyScalar(1.4); f.rotation.x = Math.PI / 2; scene.add(f); FXP.push({tipo: 'cae', o: f, x: fx, z: fz, y: 9, t: 0});}
+    if (l.cada <= 0) {l.cada = 0.07; const a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * l.r, fx = l.x + Math.cos(a) * r, fz = l.z + Math.sin(a) * r, f = modeloProy('flecha_elfica'); f.scale.multiplyScalar(1.4); f.rotation.x = Math.PI / 2; scene.add(f); FXP.push({tipo: 'cae', o: f, x: fx, z: fz, y: 9, t: 0});}
   }
 }
 function golpeVisual(id, de, fuerte) {
   const o = VIS.get(id), v = VISTA.get(id); if (!o || !v) return;
   o.flash = 0.13; o.punch = fuerte ? 1 : 0.6;
   const yoPego = de === YO, meDan = id === YO;
-  if (yoPego || meDan || v.k === 'h') {flip('impacto', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2 : 1.3); suena(fuerte ? 'espada' : 'golpe', yoPego ? 0.55 : 0.3);}
+  const ahora = performance.now(); /* como mucho una chispa cada 0,18 s por personaje: en una pelea grande eran decenas a la vez */
+  if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; flip('impacto', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2 : 1.3); suena(fuerte ? 'espada' : 'golpe', yoPego ? 0.55 : 0.3);}
   if (meDan) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.35 : 0.18);
   else if (yoPego && (fuerte || v.k === 'h')) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.22 : 0.1);
   if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140);}
@@ -1139,8 +1194,16 @@ function dibuja(dt) {
     const altoB = v.k === 'h' ? 2.6 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 : v.k === 't' ? 8 : 8.4;
     _p.set(x, altoB, z).project(camera);
     const vis = o.raiz.visible && !muerto && v.vida > 0 && _p.z < 1 && Math.abs(_p.x) < 1.2 && Math.abs(_p.y) < 1.2 && (v.k !== 'j' || v.vida < v.max || NEUTRO[v.tipo].grande);
-    b.style.display = vis ? 'flex' : 'none'; if (v.k === 't' || v.k === 'n') {b.classList.toggle('prot', String(v.hk).includes('P')); b.classList.toggle('inh', String(v.hk).includes('I'));}
-    if (vis) {b.style.left = ((_p.x + 1) / 2 * VW) + 'px'; b.style.top = ((1 - _p.y) / 2 * VH) + 'px'; b.querySelector('u').style.width = Math.max(0, v.vida / v.max * 100) + '%'; if (v.k === 'h' && b.dataset.max !== String(v.max)) {b.dataset.max = v.max; b.querySelector('i').style.setProperty('--seg', (100 / v.max * 100) + '%');} if (v.k === 'h') b.querySelector('b').innerHTML = '<em>' + v.nivel + '</em>' + (v.nombre || '');}
+    /* barras: solo se toca el DOM cuando algo cambia, y se mueven con transform (no recalcula la página entera en cada fotograma) */
+    if (!b._u) {b._u = b.querySelector('u'); b._i = b.querySelector('i'); b._b = b.querySelector('b');}
+    if (b._vis !== vis) {b._vis = vis; b.style.display = vis ? 'flex' : 'none';}
+    if (v.k === 't' || v.k === 'n') {const hk = String(v.hk); if (b._hk !== hk) {b._hk = hk; b.classList.toggle('prot', hk.includes('P')); b.classList.toggle('inh', hk.includes('I'));}}
+    if (vis) {
+      b.style.transform = 'translate3d(' + ((_p.x + 1) / 2 * VW).toFixed(1) + 'px,' + ((1 - _p.y) / 2 * VH).toFixed(1) + 'px,0) translate(-50%,-100%)';
+      const w = Math.max(0, v.vida / v.max * 100).toFixed(1); if (b._w !== w) {b._w = w; b._u.style.width = w + '%';}
+      if (v.k === 'h' && b.dataset.max !== String(v.max)) {b.dataset.max = v.max; b._i.style.setProperty('--seg', (100 / v.max * 100) + '%');}
+      if (v.k === 'h') {const t = v.nivel + '|' + (v.nombre || ''); if (b._t !== t) {b._t = t; b._b.innerHTML = '<em>' + v.nivel + '</em>' + (v.nombre || '');}}
+    }
   }
   /* proyectiles y efectos */
   for (let i = FXP.length - 1; i >= 0; i--) {
@@ -1152,7 +1215,7 @@ function dibuja(dt) {
   }
   for (let i = NUMS.length - 1; i >= 0; i--) {
     const n = NUMS[i]; n.t += dt; if (n.t > 0.8) {n.el.remove(); NUMS.splice(i, 1); continue;}
-    _p.set(n.x, 2.2 + n.t * 1.6, n.z).project(camera); n.el.style.left = ((_p.x + 1) / 2 * VW) + 'px'; n.el.style.top = ((1 - _p.y) / 2 * VH) + 'px'; n.el.style.opacity = 1 - Math.max(0, n.t - 0.5) / 0.3;
+    _p.set(n.x, 2.2 + n.t * 1.6, n.z).project(camera); n.el.style.transform = 'translate3d(' + ((_p.x + 1) / 2 * VW).toFixed(1) + 'px,' + ((1 - _p.y) / 2 * VH).toFixed(1) + 'px,0) translate(-50%,-50%)'; n.el.style.opacity = 1 - Math.max(0, n.t - 0.5) / 0.3;
   }
 }
 /* un enemigo en la hierba se ve si uno de mi equipo está a su lado o en la misma mata */
@@ -1688,14 +1751,14 @@ function bucle() {
         inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
-      const t1 = performance.now(); camara(dt); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
+      const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
   const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') renderer.render(scene, camera); /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];
-function recibeFotoLocal(f) {ENVIAR.push(...f.ev); f.ev = []; for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} marcador(f.m, f.t); EXTRA.be = f.be; EXTRA.cp = f.cp; EXTRA.an = f.an || 0; EXTRA.rl = f.rl || []; EXTRA.dr = f.dr || [[0, 0, 0], [0, 0, 0]]; EXTRA.pl = f.pl || []; EXTRA.sa = f.sa || [];}
+function recibeFotoLocal(f) {if (NET.online) ENVIAR.push(...f.ev); f.ev = []; /* contra la máquina no se manda nada: antes se acumulaban sin fin */ for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} marcador(f.m, f.t); EXTRA.be = f.be; EXTRA.cp = f.cp; EXTRA.an = f.an || 0; EXTRA.rl = f.rl || []; EXTRA.dr = f.dr || [[0, 0, 0], [0, 0, 0]]; EXTRA.pl = f.pl || []; EXTRA.sa = f.sa || [];}
 const EXTRA = {be: [0, 0], cp: []};
 
 /* ---------- tienda (en la fuente) ---------- */
@@ -1835,5 +1898,7 @@ async function trasCarga(fn) {
 preparaMenu(); preparaMandos(); pintaCarga();
 camera.position.set(0, 19, 60); camera.lookAt(0, 0, 46);
 bucle();
-cargaTodo();
-window._vado = {PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+/* primero que se vea el menú (retrato, fondo y letras) y después, los modelos: si no, los 16 MB se comen la conexión y el retrato tarda */
+{const img = $('mSplash'); const listo = () => new Promise((r) => {if (img.complete && img.naturalWidth) r(); else {img.addEventListener('load', r, {once: true}); img.addEventListener('error', r, {once: true});}});
+ Promise.race([Promise.all([listo(), document.fonts ? document.fonts.ready : 0]), new Promise((r) => setTimeout(r, 2500))]).then(() => cargaTodo());}
+window._vado = {renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
