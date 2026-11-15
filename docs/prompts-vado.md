@@ -87,3 +87,27 @@ B) EFECTOS DE HABILIDADES en hojas de animación (sprite sheets) de 1024x1024 co
 
 Pásamelo todo en un .zip llamado Pack_Vado_5.zip, con un nombre claro por archivo.
 ```
+
+## Pack Vado 6 — selección de héroe, supersúbditos, encantamientos y botones de objetivo (15/11)
+```
+Seguimos con «El Vado del Isen» (El Señor de los Anillos: Rohan contra Isengard junto al Vado del Isen, estilo League of Legends: Wild Rift, oscuro y medieval). Necesito cuatro cosas. Sin texto, sin marcas de agua.
+
+A) RETRATOS GRANDES para la pantalla de elegir héroe (como el «splash» del Wild Rift): 4 imágenes verticales 768x1024, cuerpo entero en pose de batalla, fondo de su tierra:
+   1. Jinete de Rohan con lanza y escudo verde con el caballo blanco, de fondo las llanuras de Rohan y Edoras.
+   2. Enano de Erebor con hacha de doble filo y armadura de runas, de fondo la Montaña Solitaria.
+   3. Arquero de Lórien con arco élfico y capa gris-verde, de fondo los mallorn dorados de Lothlórien.
+   4. Hobbit de la Comarca con honda y espada corta, de fondo las colinas y agujeros redondos de la Comarca.
+   (Son héroes originales del juego, no personajes concretos del libro.)
+
+B) SUPERSÚBDITOS en 3D (.glb con el MISMO esqueleto y los mismos clips que «ballestero2» y «uruk» del Abismo: quieto, correr, atacar, morir): un guerrero de Rohan acorazado y enorme con mazo y escudo de la Marca, y un Uruk-hai de asalto de Isengard con armadura negra, la Mano Blanca pintada y una gran hacha. Más grandes y anchos que los súbditos normales.
+
+C) 4 ICONOS redondos 256x256 de ENCANTAMIENTOS DE BOTAS (marco de metal y oro igual que los de habilidades), PNG transparente:
+   1. Estasis: un héroe convertido en estatua de oro dentro de un reloj de arena.
+   2. Gárgola: una gárgola de piedra de Isengard con la piel agrietada.
+   3. Azogue: una gota de plata líquida con alas, rompiendo una cadena.
+   4. Medallón: un medallón élfico de Lórien emitiendo un escudo de luz.
+
+D) 2 BOTONES pequeños redondos 128x128 para junto al ataque, mismo marco: uno con una TORRE de piedra de Rohan (atacar torre) y otro con un pequeño orco con casco (atacar súbditos).
+
+Pásamelo en un .zip llamado Pack_Vado_6.zip, con un nombre claro por archivo.
+```

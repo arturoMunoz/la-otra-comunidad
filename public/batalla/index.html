@@ -50,7 +50,20 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 .hb img{width:100%;height:100%;display:block}.hb .cd{position:absolute;inset:0;background:#000b;color:#fff;font:900 20px system-ui;display:flex;align-items:center;justify-content:center}
 .hb .k{position:absolute;bottom:0;left:0;right:0;font:900 10px system-ui;background:#000a;color:#ffd24a;text-align:center}.hb.bloq{filter:grayscale(1) brightness(.5)}
 #bAt{right:0;bottom:0;width:92px;height:92px;border:0;background:none;box-shadow:none;transition:transform .06s}#bAt.arma{border:4px solid #e2b04a;background:radial-gradient(#3a2410,#1a0f06);box-shadow:0 0 0 3px #5a3a0a,0 4px 10px #000a}#bAt.arma img{width:78%;height:78%;margin:11%}
-#bAt.pulsado{transform:scale(.9);filter:brightness(1.25)}#bQ{right:96px;bottom:0}#bW{right:84px;bottom:68px}#bE{right:40px;bottom:120px}#bR{right:-4px;bottom:100px;border-color:#ff7a2a}
+#bAt.pulsado{transform:scale(.9);filter:brightness(1.25)}#bQ{right:104px;bottom:0}#bW{right:84px;bottom:68px}#bE{right:40px;bottom:120px}#bR{right:-6px;bottom:128px;border-color:#ff7a2a}
+.ap{width:36px;height:36px;border-width:2px;border-color:#9a8a6a;background:#1d140ce8}.ap img{width:80%;height:80%;margin:10%}.ap.pulsado{transform:scale(.9);border-color:#ffd24a;filter:brightness(1.3)}
+#bAtT{right:-6px;bottom:90px}#bAtS{right:68px;bottom:-6px}
+#retratos{position:absolute;right:96px;bottom:150px;display:flex;flex-direction:column;gap:6px}#retratos button{width:40px;height:40px;border-radius:50%;border:2px solid #ff5a4a;background:#000;padding:0;overflow:hidden;box-shadow:0 2px 6px #000a}#retratos button img{width:100%;height:100%;object-fit:cover}#retratos button.on{border:3px solid #ffd24a;box-shadow:0 0 12px #ffb02a}
+#bEnc{right:178px;bottom:108px;border-color:#e2b04a}
+.bv.prot::before{content:'🛡';position:absolute;left:-17px;top:-6px;font-size:13px;filter:drop-shadow(0 1px 1px #000)}.bv.inh u{background:#9a9a9a!important}
+#elige{position:fixed;inset:0;z-index:60;background:radial-gradient(ellipse at center,#2a1c0e,#0b0704);color:#f2e3c0;display:flex;flex-direction:column;padding:calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));gap:8px;overflow:auto}
+#elige .eTit{font:900 20px Georgia,serif;text-align:center;color:#ffd98a;letter-spacing:.5px}
+#elige .eLista{display:flex;gap:8px;justify-content:center}#elige .eH{width:70px;padding:4px;border-radius:10px;border:2px solid #5a4020;background:#1d140c;color:#d9c49a;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}#elige .eH img{width:56px;height:56px;border-radius:50%;object-fit:cover}#elige .eH.on{border-color:#ffd24a;box-shadow:0 0 14px #ffb02a;color:#fff}
+#elige .eFicha{display:flex;gap:12px;align-items:flex-start;justify-content:center;flex-wrap:wrap}#elige .eRet{display:flex;flex-direction:column;align-items:center;gap:3px}#elige .eRet img{width:130px;height:130px;border-radius:14px;border:3px solid #c99a3a;object-fit:cover;box-shadow:0 0 24px #000}#elige .eRet b{font:900 16px Georgia,serif}#elige .eRet em{font-size:12px;color:#ffb02a;font-style:normal;border:1px solid #ffb02a;border-radius:8px;padding:1px 8px}
+#elige .eDatos{flex:1;min-width:250px;max-width:430px;display:flex;flex-direction:column;gap:4px}#elige .eB{display:flex;align-items:center;gap:6px;font-size:11px}#elige .eB span{width:62px}#elige .eB i{flex:1;height:7px;background:#000a;border-radius:4px;overflow:hidden}#elige .eB u{display:block;height:100%;background:linear-gradient(90deg,#c99a3a,#ffd24a)}
+#elige .eHabs{display:flex;flex-direction:column;gap:4px;margin-top:4px}#elige .eHab{display:flex;gap:7px;align-items:center;background:#0006;border-radius:8px;padding:3px 6px}#elige .eHab img{width:34px;height:34px;border-radius:50%;border:2px solid #c99a3a}#elige .eHab.ult img{border-color:#ff7a2a}#elige .eHab b{font-size:12px;display:block}#elige .eHab small{font-size:11px;color:#d9c49a}
+#elige .eBot{display:flex;gap:10px;justify-content:center;margin-top:auto}#elige #eOk{min-width:180px;font-size:17px}
+@media (orientation:landscape) and (max-height:520px){#elige{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr auto;gap:6px 12px}#elige .eTit{grid-column:1/3;font-size:17px}#elige .eLista{flex-direction:column;grid-row:2/4;justify-content:flex-start}#elige .eH{width:62px;flex-direction:row;font-size:0}#elige .eH img{width:46px;height:46px}#elige .eFicha{flex-wrap:nowrap;justify-content:flex-start}#elige .eRet img{width:92px;height:92px}#elige .eRet b{font-size:13px;max-width:110px;text-align:center}#elige .eDatos{max-width:none}#elige .eB{font-size:10px}#elige .eHabs{gap:3px}#elige .eHab{padding:2px 6px}#elige .eHab img{width:28px;height:28px}#elige .eHab small{font-size:10px}#elige .eBot{grid-column:2;justify-content:flex-end;margin:0}#elige .bt{padding:7px 14px}}
 #bTienda{position:fixed;left:6px;top:calc(64px + env(safe-area-inset-top));z-index:7;width:58px;height:58px;border-radius:50%;border:0;background:url(ui/b_armeria.webp) center/contain no-repeat}
 #bBase{position:fixed;right:228px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:7;width:54px;height:54px;border-radius:50%;border:0;background:url(ui/b_volver.webp) center/contain no-repeat;color:transparent;--p:0%}
 #bBase.cargando{box-shadow:0 0 0 4px #0008,0 0 0 4px #ffd24a inset;background-image:conic-gradient(#ffd24acc var(--p),#0000 var(--p)),url(ui/b_volver.webp);background-size:contain;border-radius:50%}
@@ -67,7 +80,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 .mas{position:absolute;width:38px;height:38px;border-radius:50%;border:2.5px solid #fff;background:radial-gradient(#7dff6a,#2a9a1f);color:#fff;font:900 27px/30px system-ui;padding:0;z-index:3;touch-action:none;box-shadow:0 0 12px #7dff6a;animation:late 0.9s infinite alternate}
 @keyframes late{to{transform:scale(1.15)}}
 .mas::before{content:'';position:absolute;inset:-9px;border-radius:50%}
-#mq{right:128px;bottom:40px}#mw{right:122px;bottom:106px}#me{right:52px;bottom:164px}#mr{right:8px;bottom:144px}
+#mq{right:136px;bottom:40px}#mw{right:122px;bottom:106px}#me{right:52px;bottom:164px}#mr{right:8px;bottom:144px}
 .hb.subida{animation:subida .5s ease-out}@keyframes subida{0%{box-shadow:0 0 0 0 #7dff6a,0 0 30px 12px #7dff6a;filter:brightness(1.8)}100%{box-shadow:0 0 0 22px #7dff6a00,0 3px 8px #000a}}
 #bAt img{width:100%;height:100%}
 #ulti{position:fixed;inset:0;z-index:8;pointer-events:none;opacity:0}
@@ -79,7 +92,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 #ulti .uF b{font:italic 900 25px Georgia,serif;color:#ffe9a8;text-shadow:0 2px 0 #000,0 0 16px #ff9a2a;letter-spacing:.5px}
 #ulti.ro .uF img{border-color:#ff5a4a;box-shadow:0 0 18px #ff3a2a}#ulti.ro .uF b{color:#ffc0b0;text-shadow:0 2px 0 #000,0 0 16px #ff3a2a}
 #ulti:not(.mia) .uF{top:17%;transform:translateX(-50%) scale(.8)}
-.hs{width:46px;height:46px;border-color:#7aa0c9}#bD{right:162px;bottom:4px}#bF{right:154px;bottom:56px}
+.hs{width:46px;height:46px;border-color:#7aa0c9}#bD{right:172px;bottom:4px}#bF{right:166px;bottom:56px}
 #compraRapida{position:fixed;left:8px;top:calc(186px + env(safe-area-inset-top));z-index:7;width:70px;background:#1d140ce8;border:2px solid #7dff6a;border-radius:12px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;color:#f2e3c0;box-shadow:0 0 12px #7dff6a66}
 #compraRapida img{width:44px;height:44px}#compraRapida span{font:600 9.5px Georgia,serif;text-align:center;line-height:1.05}#compraRapida b{font:800 13px system-ui;color:#ffd24a}#compraRapida.caro{border-color:#6b5236;box-shadow:none;opacity:.75}#compraRapida.caro b{color:#c88}
 #kda{font:700 11px system-ui;color:#d9c49a}
@@ -183,7 +196,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
   <h1>El Vado del Isen</h1>
   <p class="sub">Duelo de héroes: derriba las torres y el estandarte del otro bando. Súbditos de Rohan contra los de Isengard.</p>
   <div class="fila" id="heroes"></div>
-  <div class="modos"><button data-m="1v1" class="on">1 contra 1</button><button data-m="2v2">2 contra 2</button></div>
+  <div class="modos"><button data-m="1v1" class="on">Duelo 1 contra 1</button><button data-m="2v2">2 contra 2</button></div>
   <button class="bt" id="bBots">⚔ Contra la máquina</button>
   <button class="bt v" id="bCrear">Crear sala con amigos</button>
   <div class="fila"><input id="codigo" maxlength="6" placeholder="CÓDIGO"><button class="bt s" id="bUnir" style="min-width:0">Unirse</button></div>
@@ -206,6 +219,10 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
   <button class="hb" id="bE" data-k="e"><img alt=""><span class="pip" id="pe"></span><span class="cd hidden"></span></button>
   <button class="hb" id="bR" data-k="r"><img alt=""><span class="pip" id="pr"></span><span class="cd hidden"></span></button>
   <button class="mas hidden" id="mq">+</button><button class="mas hidden" id="mw">+</button><button class="mas hidden" id="me">+</button><button class="mas hidden" id="mr">+</button>
+  <button class="hb ap" id="bAtT" aria-label="Atacar torre"><img src="../abismo/iconos/torre.webp" alt=""></button>
+  <button class="hb ap" id="bAtS" aria-label="Atacar súbditos"><img src="../abismo/iconos/uruk_acorazado.webp" alt=""></button>
+  <div id="retratos"></div>
+  <button class="hb hs hidden" id="bEnc" aria-label="Encantamiento de botas"><img alt=""><span class="cd hidden"></span></button>
   <button class="hb hs" id="bD" aria-label="Destello"><img src="../abismo/iconos/estrella.webp" alt=""><span class="cd hidden"></span></button>
   <button class="hb hs" id="bF" aria-label="Curar"><img src="../abismo/iconos/corazon.webp" alt=""><span class="cd hidden"></span></button>
 </div>
@@ -225,6 +242,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 <div id="muerto" class="hidden"></div>
 <div id="tienda" class="hidden"></div>
 <div id="fin" class="hidden"></div>
+<div id="elige" class="hidden"></div>
 <div id="girar"><div class="giraMovil">📱</div><b>Gira el móvil</b><p>El Vado del Isen se juega en horizontal.<br>En iPhone, quita el bloqueo de rotación si no gira.</p><button class="bt s" id="bGirar">Pantalla completa</button></div>
 <script type="module" src="juego.js"></script>
 </body>
