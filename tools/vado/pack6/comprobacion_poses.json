@@ -1,0 +1,14 @@
+[
+  {
+    "model": "rohan",
+    "bones": 17,
+    "sampled_clips": 10,
+    "sampled_poses": "finite, bounded"
+  },
+  {
+    "model": "isengard",
+    "bones": 17,
+    "sampled_clips": 5,
+    "sampled_poses": "finite, bounded"
+  }
+]

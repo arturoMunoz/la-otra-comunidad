@@ -111,3 +111,14 @@ D) 2 BOTONES pequeños redondos 128x128 para junto al ataque, mismo marco: uno c
 
 Pásamelo en un .zip llamado Pack_Vado_6.zip, con un nombre claro por archivo.
 ```
+
+## Pack Vado 7 — reliquia de vida y fondo del menú (15/11)
+```
+Seguimos con «El Vado del Isen» (El Señor de los Anillos, Rohan contra Isengard, estilo League of Legends: Wild Rift). Sin texto, sin marcas de agua.
+
+A) RELIQUIA DE VIDA (como las del ARAM del Abismo de los Lamentos): hoja de animación 1024x1024 con 4x4 fotogramas de 256x256 sobre fondo transparente: un pan de lembas envuelto en una hoja de mallorn de Lothlórien flotando y girando despacio sobre un pequeño círculo de luz verde, en bucle.
+B) FONDO DEL MENÚ, horizontal 1920x1080: el Vado del Isen al anochecer visto desde la orilla de Rohan, el río con piedras para vadear, estandartes de Rohan clavados en la orilla y a lo lejos Orthanc e Isengard con humo; la mitad izquierda más oscura y despejada (ahí va el retrato del héroe).
+C) FONDO DE LA PANTALLA DE CARGA (VS), horizontal 1920x1080: mitad izquierda tonos verdes y dorados de Rohan, mitad derecha negro y rojo de Isengard con la Mano Blanca, fundidas en el centro por el río Isen.
+
+Pásamelo en un .zip llamado Pack_Vado_7.zip.
+```

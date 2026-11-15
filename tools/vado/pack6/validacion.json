@@ -1,0 +1,37 @@
+[
+  {
+    "model": "rohan",
+    "source": "ballestero.glb",
+    "original_bones": 17,
+    "rest_transforms_preserved": true,
+    "original_animation_bytes_preserved": true,
+    "clips": [
+      "andar",
+      "morir",
+      "correr",
+      "recibir_golpe",
+      "quieto",
+      "atacar",
+      "trepar",
+      "saltar",
+      "golpear_puerta",
+      "disparar"
+    ],
+    "bytes": 491196
+  },
+  {
+    "model": "isengard",
+    "source": "uruk.glb",
+    "original_bones": 17,
+    "rest_transforms_preserved": true,
+    "original_animation_bytes_preserved": true,
+    "clips": [
+      "andar",
+      "atacar",
+      "morir",
+      "correr",
+      "quieto"
+    ],
+    "bytes": 397476
+  }
+]

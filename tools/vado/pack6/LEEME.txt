@@ -1,0 +1,39 @@
+PACK VADO 6 — EL VADO DEL ISEN
+
+CONTENIDO
+retratos/: 4 PNG de 768x1024, cuerpo entero, fondo de su tierra.
+encantamientos/: estasis, gargola, azogue, medallon: PNG RGBA 256x256.
+botones/: atacar_torre, atacar_subditos: PNG RGBA 128x128.
+modelos/: supersubdito_rohan.glb y supersubdito_isengard.glb.
+
+REFERENCIAS Y COMPATIBILIDAD
+IMPORTANTE: no se encontro ballestero2. La variante de Rohan utiliza
+ballestero.glb de /ESDLA, disponible en esta cuenta. No se ha verificado
+la compatibilidad con otro archivo llamado ballestero2.
+Isengard utiliza uruk.glb de /ESDLA.
+
+Se conservan los 17 huesos originales, sus nombres, transformaciones de
+reposo, inverse bind matrices y los canales y datos de los clips originales.
+La geometria de equipo se conecta como nodos hijos de los huesos originales.
+La armadura, extremidades y armas se han reconstruido con formas low-poly.
+Escala conjunta 1,48 respecto al origen: mas grandes y con hombreras anchas.
+Y arriba, unidades glTF en metros. Un nodo padre super_rohan/super_isengard
+contiene el conjunto. Mantenerlo al clonar/cargar el modelo para conservar
+la escala y las animaciones. No reaplicar la escala a cada hueso.
+
+Rohan conserva todos los clips de ballestero.glb:
+andar, morir, correr, recibir_golpe, quieto, atacar, trepar, saltar,
+golpear_puerta, disparar.
+Para supersubdito cuerpo a cuerpo utilizar quieto, correr, atacar y morir.
+Los clips extra se conservan por compatibilidad, aunque ya no hay ballesta.
+
+Uruk original solo contenia andar, atacar y morir. Se conservan sin cambios.
+Se anaden correr (andar acelerado a 65% de duracion) y quieto (reposo estatico).
+No son clips originales de uruk.glb. Para morir usar LoopOnce y clampWhenFinished.
+
+validacion.json: verificacion de huesos, transformaciones, clips y bytes
+originales de animacion. Todos los recursos GLB estan embebidos.
+
+Los retratos e iconos son ilustraciones generadas para este encargo.
+Los supersubditos son adaptaciones locales de los archivos del usuario,
+con geometria adicional. No se atribuye licencia CC0 a los archivos fuente.

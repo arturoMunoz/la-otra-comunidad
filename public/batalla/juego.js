@@ -66,7 +66,7 @@ const PLAN_BOT = {rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo',
    · «LÍNEA» (1 contra 1): un solo camino recto de abajo arriba, espesura a los dos lados, el río por la mitad y el Uruk a un lado del vado;
      simétrico como en un espejo (cada bando su mitad). */
 const gira = (p) => ({x: -p.x, z: -p.z}), refleja = (p) => ({x: p.x, z: -p.z});
-let MAPA, CARRILES, LARGOS, OJO, EJE, BASES, HIERBAS, CAMPOS, PIT, TIPO_MAPA = '', SIM, ORILLA;
+let MAPA, CARRILES, LARGOS, OJO, EJE, BASES, HIERBAS, CAMPOS, PIT, TIPO_MAPA = '', SIM, ORILLA, RELIQ = [];
 function puntoCarril(l, f) {const L = CARRILES[l], c = LARGOS[l], d = f * c[c.length - 1]; for (let i = 1; i < L.length; i++) if (d <= c[i]) {const k = (d - c[i - 1]) / (c[i] - c[i - 1]); return {x: L[i - 1].x + (L[i].x - L[i - 1].x) * k, z: L[i - 1].z + (L[i].z - L[i - 1].z) * k};} return {...L[L.length - 1]};}
 function distSeg(px, pz, a, b) {const vx = b.x - a.x, vz = b.z - a.z, l2 = vx * vx + vz * vz, t = Math.max(0, Math.min(1, ((px - a.x) * vx + (pz - a.z) * vz) / l2)); return Math.hypot(px - a.x - vx * t, pz - a.z - vz * t);}
 function distCarril(x, z, l) {let m = 1e9; for (const k of l === undefined ? (TIPO_MAPA === 'ojo' ? [0, 1] : [0]) : [l]) {const L = CARRILES[k]; for (let i = 1; i < L.length; i++) m = Math.min(m, distSeg(x, z, L[i - 1], L[i]));} return m;}
@@ -88,14 +88,16 @@ function ponMapa(modo) {
     CAMPOS = [...C, ...C.map((c) => ({...c, ...gira(c)})), {x: 0, z: 0, tipo: 'uruk', n: 1}];
     ORILLA = [{x: 7, z: 3.2}, {x: -7, z: -3.2}];
   } else {
-    MAPA = {ancho: 27, largo: 58}; SIM = refleja; EJE = {x: 0, z: -1}; PIT = {x: 17, z: 0};
+    /* 1 contra 1 en «el Abismo», como el Abismo de los Lamentos del ARAM (donde el Wild Rift juega su Duelo):
+       un único puente recto, sin espesura ni bestias, matorrales a los lados y 4 reliquias de vida */
+    MAPA = {ancho: 10.5, largo: 58}; SIM = refleja; EJE = {x: 0, z: -1}; PIT = {x: 400, z: 400};
     const A = [{x: 0, z: 46}, {x: 0, z: 31}, {x: 0, z: 15}, {x: 0, z: 0}, {x: 0, z: -15}, {x: 0, z: -31}, {x: 0, z: -46}];
     CARRILES = [A, A];
     const R = {fuente: {x: 0, z: 55}, nexo: {x: 0, z: 49.5}, torre: {x: 0, z: 41}};
     BASES = [R, {fuente: refleja(R.fuente), nexo: refleja(R.nexo), torre: refleja(R.torre)}];
     const C = [{x: -12, z: 18, tipo: 'warg', n: 2}, {x: 12, z: 26, tipo: 'warg', n: 2}, {x: -13, z: 35, tipo: 'orco', n: 3}, {x: 14, z: 13, tipo: 'troll', n: 1}, {x: -15, z: 7, tipo: 'alfa', n: 1}];
-    CAMPOS = [...C, ...C.map((c) => ({...c, ...refleja(c)})), {x: PIT.x, z: 0, tipo: 'uruk', n: 1}];
-    ORILLA = [{x: -6, z: 2.8}, {x: -6, z: -2.8}, {x: 6.5, z: 0}];
+    CAMPOS = [];
+    ORILLA = [];
   }
   LARGOS = CARRILES.map((L) => {const c = [0]; for (let i = 1; i < L.length; i++) c.push(c[i - 1] + Math.hypot(L[i].x - L[i - 1].x, L[i].z - L[i - 1].z)); return c;});
   OJO = tipo === 'ojo' ? [...CARRILES[0], ...CARRILES[1].slice().reverse()] : null;
@@ -103,10 +105,13 @@ function ponMapa(modo) {
   HIERBAS = [];
   for (const l of tipo === 'ojo' ? [0, 1] : [0]) for (const [f, lado] of [[0.36, 1], [0.5, -1], [0.64, 1]]) for (const sgn of tipo === 'ojo' ? [0] : [1, -1]) {
     const p = puntoCarril(l, f), q = puntoCarril(l, Math.min(1, f + 0.01)), tx = q.x - p.x, tz = q.z - p.z, tl = Math.hypot(tx, tz) || 1, nx = -tz / tl, nz = tx / tl;
-    const haciaDentro = Math.sign((PIT.x - p.x) * nx + (PIT.z - p.z) * nz) || 1, s2 = sgn || lado * haciaDentro, d = tipo === 'ojo' ? (lado > 0 ? 6.2 : 5.6) : 6;
+    const haciaDentro = Math.sign((PIT.x - p.x) * nx + (PIT.z - p.z) * nz) || 1, s2 = sgn || lado * haciaDentro, d = tipo === 'ojo' ? (lado > 0 ? 6.2 : 5.6) : 7.2;
     HIERBAS.push({x: p.x + nx * s2 * d, z: p.z + nz * s2 * d, r: 2.4});
   }
   for (const q of ORILLA) HIERBAS.push({...q, r: 2.4});
+  /* reliquias de vida del ARAM: dos por lado, una delante de la torre de camino y otra detrás; salen a 1:45 y 2:30 y vuelven 90 s después de cogerlas */
+  RELIQ = [];
+  if (tipo === 'linea') {const t = puntoCarril(0, TORRE_F).z; for (const [z, t0] of [[t - 7, 105], [t + 8, 150]]) for (const sg of [1, -1]) RELIQ.push({x: -6.8, z: z * sg, t0});}
   ARB.clear(); FUEGOS.length = 0;
   NAV = haceNav();
   return true;
@@ -155,10 +160,10 @@ const SUBD_X = {s: 1.6, t: 2.2, n: 2.2};
 SUBD.x = {vida: 1500, dano: 40, alcance: 2.2, vatq: 0.85, vel: 3.3, oro: 60, xp: 90, muros: 1.1};
 /* encantamientos de botas (Wild Rift): mejoran las botas y dan un botón propio; uno a la vez (se puede cambiar) */
 const ENC = {
-  estasis: {t: 'Estasis', i: '../abismo/iconos/gema.webp', c: 400, cd: 120, d: 'Te vuelves invulnerable 2,5 s, pero no puedes moverte ni atacar.'},
-  gargola: {t: 'Gárgola', i: '../abismo/iconos/escudo.webp', c: 200, cd: 45, d: '+40 % de vida durante 4 s, pero haces un 60 % menos de daño.'},
-  azogue: {t: 'Azogue', i: '../abismo/iconos/botas.webp', c: 320, cd: 70, d: 'Te quita aturdimientos y frenos y corres un 50 % más 1,5 s.'},
-  medallon: {t: 'Medallón', i: '../abismo/iconos/cuerno.webp', c: 200, cd: 90, d: 'Escudo para ti y los aliados cercanos durante 2,5 s.'},
+  estasis: {t: 'Estasis', i: 'ui/enc_estasis.webp', c: 400, cd: 120, d: 'Te vuelves invulnerable 2,5 s, pero no puedes moverte ni atacar.'},
+  gargola: {t: 'Gárgola', i: 'ui/enc_gargola.webp', c: 200, cd: 45, d: '+40 % de vida durante 4 s, pero haces un 60 % menos de daño.'},
+  azogue: {t: 'Azogue', i: 'ui/enc_azogue.webp', c: 320, cd: 70, d: 'Te quita aturdimientos y frenos y corres un 50 % más 1,5 s.'},
+  medallon: {t: 'Medallón', i: 'ui/enc_medallon.webp', c: 200, cd: 90, d: 'Escudo para ti y los aliados cercanos durante 2,5 s.'},
 };
 const tieneBotas = (inv) => inv.includes('botas') || inv.includes('capa');
 /* Duelo (modo 1 contra 1 del Wild Rift): gana quien derriba 2 veces al rival o tira la primera torre; en el minuto 8 aparece
@@ -168,8 +173,8 @@ const DUELO = {anillo: 480, cierra: 30, dura: 90, r0: 62, r1: 5, quema: 0.06, bo
 const radioAnillo = (t) => t < DUELO.anillo ? 0 : t < DUELO.anillo + DUELO.cierra ? DUELO.r0 : DUELO.r0 + (DUELO.r1 - DUELO.r0) * Math.min(1, (t - DUELO.anillo - DUELO.cierra) / DUELO.dura);
 /* desde el minuto 5 las hordas pegan cada vez más fuerte a las torres, para que las partidas no se eternicen */
 const asedio = () => 1 + Math.max(0, (S.t - 300) / 240);   /* multiplicador contra súbditos y contra torres/estandarte */
-const MODELO_SUBD = [{m: 'ballestero2', r: 'arquero_rohan2', a: 'ballestero2', x: 'ballestero2'}, {m: 'uruk', r: 'q_arquero', a: 'uruk', x: 'uruk'}];
-const ALTO_SUBD = {m: 1.7, r: 1.6, a: 2.6, x: 2.9};
+const MODELO_SUBD = [{m: 'ballestero2', r: 'arquero_rohan2', a: 'ballestero2', x: 'super_rohan'}, {m: 'uruk', r: 'q_arquero', a: 'uruk', x: 'super_isengard'}];
+const ALTO_SUBD = {m: 1.7, r: 1.6, a: 2.6, x: 2.7};
 const signo = (eq) => eq === 0 ? 1 : -1;
 const ORDA = 3;   /* cuerpo a cuerpo por oleada y camino (más 2 arqueros) */
 
@@ -187,7 +192,7 @@ const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30,
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes'];
+const VADO = ['vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard'];
 const NOMBRES = [...VADO, 'warg', 'huargo_alfa', 'troll', 'orco', 'capitan', 'carro_k', 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles', 'torre_k', 'estandarte_muro', 'estandarte_patio', 'brasero', 'tienda', 'empalizada', 'barril_1', 'barril_2', 'caja_1', 'heno', 'sacos_terreros', 'antorcha_pie'];
 async function cargaModelo(n) {
   const r = await fetch((VADO.includes(n) ? 'modelos/' : '../abismo/modelos/') + n + '.glb'); if (!r.ok) throw new Error(n);
@@ -262,7 +267,7 @@ function construyeMapa() {
       float rio=1.-smoothstep(1.9,3.3,abs(dot(w,uEje)+sin(dot(w,vec2(-uEje.y,uEje.x))*.22)*.9)+fbm(w*.4)*.8);
       vec3 agua=mix(vec3(.004,.016,.026),vec3(.012,.04,.05),fbm(w*.5));
       col=mix(col,agua,rio*.9*(1.-(1.-smoothstep(5.,7.5,length(w-uPit)))));
-      float borde=smoothstep(.0,1.,max(abs(w.x)-${MAPA.ancho}.,abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;
+      float borde=smoothstep(.0,1.,max(abs(w.x)-${MAPA.ancho.toFixed(1)},abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;
       diffuseColor.rgb*=col;`);
   };
   const suelo = new THREE.Mesh(g, m); suelo.receiveShadow = true; scene_.add(suelo);
@@ -278,7 +283,7 @@ function construyeMapa() {
     if (dc < 4.7 || enBase(px, pz)) continue;
     if (juego) {
       if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
-      if (dentroOjo(px, pz) && al() < 0.3) continue;
+      if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.3) continue;
     }
     const isen = ladoDe({x: px, z: pz}) > 0, r = al();
     const n = isen ? (r < 0.3 ? 'arbol_muerto_0' + (1 + (r < 0.12 ? 1 : 0)) : 'pino_0' + (1 + Math.floor(al() * 4))) : (r < 0.45 ? 'roble_0' + (1 + Math.floor(al() * 3)) : 'pino_0' + (1 + Math.floor(al() * 4)));
@@ -290,7 +295,7 @@ function construyeMapa() {
   for (const b of HIERBAS) for (let i = 0; i < 9; i++) {const a = al() * 6.28, d = Math.sqrt(al()) * b.r * 0.85; mata('arbusto_0' + (1 + i % 4), b.x + Math.cos(a) * d, b.z + Math.sin(a) * d, 1.3 + al() * 0.5);}
   for (let i = 0; i < 90; i++) {const t = (al() - 0.5) * 70, o = (al() < 0.5 ? -1 : 1) * (2.4 + al() * 1.8), x = -t * EJE.z + o * EJE.x, z = t * EJE.x + o * EJE.z; if (Math.hypot(x - PIT.x, z - PIT.z) < 8 || distCarril(x, z) < 3 || Math.abs(x) > 33 || Math.abs(z) > 57) continue; mata('juncos_0' + (1 + i % 3), x, z, 0.9 + al() * 0.6);}
   for (const l of TIPO_MAPA === 'ojo' ? [0, 1] : [0]) {const L = CARRILES[l]; let mejor = 0; for (let f = 0; f <= 1; f += 0.01) {const p = puntoCarril(l, f); if (Math.abs(ladoDe(p)) < Math.abs(ladoDe(puntoCarril(l, mejor)))) mejor = f;} const c = puntoCarril(l, mejor); for (let i = 0; i < 8; i++) mata('piedra_vado_0' + (1 + i % 6), c.x + (al() - 0.5) * 5, c.z + (al() - 0.5) * 3, 0.5 + al() * 0.3);}
-  for (let i = 0; i < 40; i++) {const x = (al() - 0.5) * 60, z = (al() - 0.5) * 100; if (!dentroOjo(x, z) || distCarril(x, z) < 5 || CAMPOS.some((c) => Math.hypot(c.x - x, c.z - z) < 4) || sendas.some(([a, b]) => distSeg(x, z, a, b) < 2.4)) continue; mata('roca_0' + (1 + i % 6), x, z, 0.35 + al() * 0.5);}
+  for (let i = 0; i < 40; i++) {const x = (al() - 0.5) * 60, z = (al() - 0.5) * 100; if (!dentroOjo(x, z) || (TIPO_MAPA === 'linea' && Math.abs(x) < 9) || distCarril(x, z) < 5 || CAMPOS.some((c) => Math.hypot(c.x - x, c.z - z) < 4) || sendas.some(([a, b]) => distSeg(x, z, a, b) < 2.4)) continue; mata('roca_0' + (1 + i % 6), x, z, 0.35 + al() * 0.5);}
   for (const n in matas) instancias('vado_rocas', n, matas[n], !n.startsWith('juncos'));
   /* cubiles de las bestias, braseros y fuentes */
   for (const c of CAMPOS) {
@@ -298,7 +303,9 @@ function construyeMapa() {
     o.position.set(c.x + (nd.grande ? c.x / d * 3.4 : 0), 0, c.z + (nd.grande ? c.z / d * 3.4 : 0)); o.rotation.y = Math.atan2(-c.x, -c.z); if (nd.jefe) {o.position.set(PIT.x + (TIPO_MAPA === 'ojo' ? 0 : 4.5), 0, PIT.z + (TIPO_MAPA === 'ojo' ? 4.5 : 0)); o.scale.setScalar(1.5);} scene_.add(o);
     const bx = c.x + (c.x / d) * 3 + 2.4, bz = c.z + (c.z / d) * 3; if (!nd.jefe) {pon2('brasero', bx, bz, 0, nd.grande ? 1.6 : 1.2); luzFuego(bx, bz);}
   }
-  for (const x of [-5.5, 5.5]) {pon2('brasero', PIT.x + x, PIT.z - 4.5, 0, 1.8); luzFuego(PIT.x + x, PIT.z - 4.5);}
+  if (CAMPOS.some((c) => NEUTRO[c.tipo].jefe)) for (const x of [-5.5, 5.5]) {pon2('brasero', PIT.x + x, PIT.z - 4.5, 0, 1.8); luzFuego(PIT.x + x, PIT.z - 4.5);}
+  /* braseros a lo largo del puente del Abismo */
+  if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-9.4, 9.4]) {pon2('brasero', x, z, 0, 1.5); luzFuego(x, z);}
   for (const eq of [0, 1]) {
     const b = BASES[eq], o = pieza('vado_fuentes', eq ? 'fuente_isengard' : 'fuente_rohan'); o.position.set(b.fuente.x, 0, b.fuente.z); o.scale.setScalar(1.3); scene_.add(o);
     const s = signo(eq); pon2('tienda', b.fuente.x - 3 * s, b.fuente.z + 3.5 * s, eq ? 0 : Math.PI, 1.6);
@@ -323,7 +330,7 @@ let ESTADO = 'menu';   /* menu, sala, juego, fin */
 let idSig = 1;
 
 function nuevaPartida(jugadores, modo) {
-  S = {t: 0, u: [], proy: [], zonas: [], dif: [], bufEq: [{}, {}], campos: CAMPOS.map((c) => ({...c, resp: NEUTRO[c.tipo].jefe ? 180 : NEUTRO[c.tipo].grande ? 75 : 30, vivos: 0})), ev: [], ola: 5, oleadaN: 0, muertes: [0, 0], fin: -1, modo};
+  S = {t: 0, u: [], proy: [], zonas: [], dif: [], reliq: RELIQ.map((r) => ({...r, listo: r.t0})), bufEq: [{}, {}], campos: CAMPOS.map((c) => ({...c, resp: NEUTRO[c.tipo].jefe ? 180 : NEUTRO[c.tipo].grande ? 75 : 30, vivos: 0})), ev: [], ola: 5, oleadaN: 0, muertes: [0, 0], fin: -1, modo};
   idSig = 1;
   const plazas = modo === '2v2' ? 4 : 2; S.carriles = modo === '2v2' ? [0, 1] : [0];
   for (let slot = 0; slot < plazas; slot++) {
@@ -513,6 +520,8 @@ function oleada() {
 function paso(dt) {
   S.t += dt; S.ola -= dt; S.porId = new Map(S.u.map((u) => [u.id, u]));
   for (let i = S.dif.length - 1; i >= 0; i--) if (S.dif[i].t <= S.t) {const f = S.dif[i].fn; S.dif.splice(i, 1); f();} if (S.ola <= 0) {S.ola = S.carriles.length > 1 ? 28 : 24; oleada();}
+  /* reliquias de vida: cura un 20 % + 30 por nivel al que pasa por encima */
+  for (const r of S.reliq) if (S.t >= r.listo) for (const h of heroes()) if (!h.muerto && dist(h, r) < 1.6) {const st = stats(h); const n = Math.min(st.vida - h.vida, st.vida * 0.2 + 30 * h.nivel); h.vida += n; r.listo = S.t + 90; ev(['num', h.x, h.z, '+' + Math.round(n), 'v']); ev(['fx', 'onda', r.x, r.z, 3]); ev(['son', 'magia']); break;}
   /* anillo de fuego del Duelo */
   if (S.modo === '1v1') {
     const r = radioAnillo(S.t);
@@ -691,6 +700,7 @@ function heroeEn0(h, en) {return en.filter((e) => e.k === 'h').sort((a, b) => di
 function ia(h, dt, st) {
   const en = enemigosDe(h.eq, h), F = BASES[h.eq].fuente, avanza = h.eq ? -1 : 1;
   h.iaT = (h.iaT || 0) - dt; h.mx = 0; h.mz = 0; h.ataca = false;
+  {const rl = S.reliq.find((r) => S.t >= r.listo && dist(h, r) < 18); if (rl && h.vida < stats(h).vida * 0.6) {ve(h, rl.x, rl.z); return;}}
   if (S.modo === '1v1') {const r = radioAnillo(S.t); if (r && Math.hypot(h.x, h.z) > r - 3) {ve(h, 0, 0); h.ataca = true; return;}}
   if (h.enc === '' && tieneBotas(h.inv) && dist(h, F) < 8 && h.oro > 420) compra(h, ['gargola', 'estasis', 'azogue', 'medallon'][h.slot % 4]);
   if (h.enc && !(h.cd.enc > 0) && h.vida < stats(h).vida * 0.3 && en.some((e) => e.k === 'h' && dist(e, h) < 8)) usaEnc(h);
@@ -806,7 +816,7 @@ function foto() {
     : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
   const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t)));
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
-  return {t: +S.t.toFixed(2), u, m: S.muertes, be, cp, an: S.modo === '1v1' ? +radioAnillo(S.t).toFixed(1) : 0, ev: S.ev.splice(0)};
+  return {t: +S.t.toFixed(2), u, m: S.muertes, be, cp, an: S.modo === '1v1' ? +radioAnillo(S.t).toFixed(1) : 0, rl: S.reliq.map((r) => S.t >= r.listo ? 1 : 0), ev: S.ev.splice(0)};
 }
 function aplicaFila(f, t) {
   const [id, k, eq, x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo] = f;
@@ -821,7 +831,7 @@ function recibeFoto(o) {
   for (const v of VISTA.values()) v.visto = false;
   for (const f of o.u) aplicaFila(f, o.t);
   for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);}
-  marcador(o.m, o.t); EXTRA.be = o.be; EXTRA.cp = o.cp; EXTRA.an = o.an || 0;
+  marcador(o.m, o.t); EXTRA.be = o.be; EXTRA.cp = o.cp; EXTRA.an = o.an || 0; EXTRA.rl = o.rl || [];
   for (const e of o.ev || []) efectoLocal(e);
 }
 
@@ -936,7 +946,15 @@ function habVisual(e) {
 /* lluvia de flechas: caen flechas de verdad sobre la zona */
 const LLUVIAS = [];
 let ANILLO = null, anilloFx = 0;
+const RELIQ_V = [];
+function pintaReliquias() {
+  if (RELIQ_V.length !== RELIQ.length) {for (const o of RELIQ_V) {scene.remove(o.sp); scene.remove(o.aro);} RELIQ_V.length = 0;
+    for (const r of RELIQ) {const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: cargaTex('../abismo/iconos/lembas.webp'), transparent: true})); sp.scale.setScalar(1.3); scene.add(sp); const a = aro('#5aff6a', 1.1); a.material.opacity = 0.8; scene.add(a); RELIQ_V.push({sp, aro: a, r});}}
+  const t = performance.now() / 1000;
+  RELIQ_V.forEach((o, i) => {const on = !!(EXTRA.rl && EXTRA.rl[i]); o.sp.visible = o.aro.visible = on; if (on) {o.sp.position.set(o.r.x, 1.1 + 0.18 * Math.sin(t * 2.4 + i), o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t;}});
+}
 function pintaAnillo(dt) {
+  pintaReliquias();
   const r = MODO === '1v1' ? EXTRA.an || 0 : 0;
   if (!r) {if (ANILLO) ANILLO.visible = false; return;}
   if (!ANILLO) {
@@ -1388,7 +1406,7 @@ function empieza(jugadores, modo, simulo) {
   aviso('¡Al vado! Derriba las torres y el estandarte enemigo'); suena('cuerno', 0.7);
 }
 function pantallaVS(jugadores, modo) {
-  const plazas = modo === '2v2' ? 4 : 2, el = $('vs'), lado = (eq) => {let h = ''; for (let s = eq; s < plazas; s += 2) {const j = jugadores.find((q) => q.slot === s), tipo = j ? j.heroe : Object.keys(HEROES)[(s * 3 + 1) % 4]; h += '<div class="vsH"><img src="../abismo/ui/' + HEROES[tipo].retrato + '.webp" alt=""><b>' + (j ? j.nombre : 'Máquina') + '</b><span>' + HEROES[tipo].nombre + '</span></div>';} return h;};
+  const plazas = modo === '2v2' ? 4 : 2, el = $('vs'), lado = (eq) => {let h = ''; for (let s = eq; s < plazas; s += 2) {const j = jugadores.find((q) => q.slot === s), tipo = j ? j.heroe : Object.keys(HEROES)[(s * 3 + 1) % 4]; h += '<div class="vsH"><img class="spl" src="ui/splash_' + tipo + '.webp" alt=""><b>' + (j ? j.nombre : 'Máquina') + '</b><span>' + HEROES[tipo].nombre + '</span></div>';} return h;};
   el.innerHTML = '<div class="vsLado az"><i>Rohan</i>' + lado(0) + '</div><div class="vsX">VS</div><div class="vsLado ro"><i>Isengard</i>' + lado(1) + '</div>';
   el.classList.remove('hidden'); setTimeout(() => el.classList.add('fuera'), 2300); setTimeout(() => {el.classList.add('hidden'); el.classList.remove('fuera');}, 2900);
 }
@@ -1419,14 +1437,15 @@ function minimapa() {
   const c = $('mini'); if (APAI !== (c.width > c.height)) {c.width = APAI ? 196 : 96; c.height = APAI ? 96 : 196;}
   const W = 96, H = 196, g = c.getContext('2d'), s = signo(MI_EQ);
   g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); if (APAI) g.setTransform(0, 1, -1, 0, 196, 0);
-  const px = (x) => W / 2 + s * x / 34 * (W / 2), pz = (z) => H / 2 + s * z / 59 * (H / 2);
+  const KX = TIPO_MAPA === 'linea' ? 16 : 34, px = (x) => W / 2 + s * x / KX * (W / 2), pz = (z) => H / 2 + s * z / 59 * (H / 2);
   g.clearRect(0, 0, W, H); g.fillStyle = '#16210f'; g.fillRect(0, 0, W, H);
   g.strokeStyle = '#2b4a5a'; g.lineWidth = 5; g.beginPath(); if (TIPO_MAPA === 'linea') {g.moveTo(px(-40), pz(0)); g.lineTo(px(40), pz(0));} else {g.moveTo(px(-40 * 0.906), pz(-40 * 0.423)); g.lineTo(px(40 * 0.906), pz(40 * 0.423));} g.stroke();
   g.strokeStyle = '#7a5a36'; g.lineWidth = 6; g.lineCap = g.lineJoin = 'round';
   CARRILES.forEach((L, l) => {g.globalAlpha = MODO === '2v2' || l === 0 ? 1 : 0.3; g.beginPath(); L.forEach((p, i) => i ? g.lineTo(px(p.x), pz(p.z)) : g.moveTo(px(p.x), pz(p.z))); g.stroke();}); g.globalAlpha = 1;
   for (const b of BASES) {g.fillStyle = b === BASES[0] ? '#35552a' : '#4a2220'; g.beginPath(); g.arc(px(b.nexo.x), pz(b.nexo.z), 11, 0, 7); g.fill();}
   CAMPOS.forEach((cp, i) => {const t = EXTRA.cp[i]; if (t === -1 && !NEUTRO[cp.tipo].jefe && marca(g, NEUTRO[cp.tipo].grande ? 'm_troll' : 'm_huargo', px(cp.x), pz(cp.z), NEUTRO[cp.tipo].grande ? 16 : 12)) return; g.fillStyle = t === -1 ? (NEUTRO[cp.tipo].jefe ? '#4aa8ff' : NEUTRO[cp.tipo].grande ? '#ffb02e' : '#e8d27a') : '#555'; g.beginPath(); g.arc(px(cp.x), pz(cp.z), NEUTRO[cp.tipo].jefe ? 6 : NEUTRO[cp.tipo].grande ? 4.5 : 3, 0, 7); g.fill(); if (t > 0 && NEUTRO[cp.tipo].grande) {g.fillStyle = '#bbb'; g.font = '8px system-ui'; g.textAlign = 'center'; g.fillText(t, px(cp.x), pz(cp.z) - 6);}});
-  if (MODO === '1v1' && EXTRA.an) {g.strokeStyle = '#ff6a1a'; g.lineWidth = 2; g.beginPath(); g.ellipse(px(0), pz(0), EXTRA.an / 34 * W / 2, EXTRA.an / 59 * H / 2, 0, 0, 7); g.stroke();}
+  RELIQ.forEach((r, i) => {if (EXTRA.rl && EXTRA.rl[i]) {g.fillStyle = '#5aff6a'; g.beginPath(); g.arc(px(r.x), pz(r.z), 2.6, 0, 7); g.fill();}});
+  if (MODO === '1v1' && EXTRA.an) {g.strokeStyle = '#ff6a1a'; g.lineWidth = 2; g.beginPath(); g.ellipse(px(0), pz(0), EXTRA.an / KX * W / 2, EXTRA.an / 59 * H / 2, 0, 0, 7); g.stroke();}
   for (const q of VISTA.values()) {
     if (q.k === 'j') continue;
     const mio = q.eq === MI_EQ, col = mio ? '#5fb6ff' : '#ff5a4a', x = px(q.xi ?? q.x), z = pz(q.zi ?? q.z);
@@ -1503,7 +1522,8 @@ function acaba(ganador) {
   if (ESTADO === 'fin') return; ESTADO = 'fin'; if (ganador >= 0) voz(ganador === MI_EQ ? 'victoria' : 'derrota');
   const f = $('fin'); f.classList.remove('hidden');
   pintaTabla(); const resumen = $('tabla').innerHTML.replace('<small>Toca para cerrar</small>', '');
-  f.innerHTML = '<h2>' + (ganador === MI_EQ ? '¡Victoria!' : ganador === -1 ? 'Partida terminada' : 'Derrota') + '</h2><p>' + (ganador === MI_EQ ? 'El estandarte enemigo ha caído.' : ganador === -1 ? '' : 'Han derribado vuestro estandarte.') + '</p>' + resumen + '<button class="bt" id="bOtra">Volver al menú</button>';
+  const yo = VISTA.get(YO), duelo = MODO === '1v1';
+  f.innerHTML = (yo ? '<img class="finSpl" src="ui/splash_' + yo.tipo + '.webp" alt="">' : '') + '<h2 class="' + (ganador === MI_EQ ? 'gana' : 'pierde') + '">' + (ganador === MI_EQ ? '¡VICTORIA!' : ganador === -1 ? 'Partida terminada' : 'DERROTA') + '</h2><p>' + (ganador === -1 ? '' : duelo ? (ganador === MI_EQ ? 'Has ganado el duelo.' : 'Has perdido el duelo.') : ganador === MI_EQ ? 'El estandarte enemigo ha caído.' : 'Han derribado vuestro estandarte.') + '</p>' + resumen + '<button class="bt" id="bOtra">Volver al menú</button>';
   $('bOtra').onclick = () => location.reload();
   document.body.classList.remove('jugando');
   suena('cuerno', 0.8);
@@ -1536,7 +1556,7 @@ function bucle() {
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];
-function recibeFotoLocal(f) {ENVIAR.push(...f.ev); f.ev = []; for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} marcador(f.m, f.t); EXTRA.be = f.be; EXTRA.cp = f.cp; EXTRA.an = f.an || 0;}
+function recibeFotoLocal(f) {ENVIAR.push(...f.ev); f.ev = []; for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} marcador(f.m, f.t); EXTRA.be = f.be; EXTRA.cp = f.cp; EXTRA.an = f.an || 0; EXTRA.rl = f.rl || [];}
 const EXTRA = {be: [0, 0], cp: []};
 
 /* ---------- tienda (en la fuente) ---------- */
@@ -1598,7 +1618,7 @@ async function apaisa() {
 function sueltaApaisado() {try {if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();} catch (e) {} try {if (document.fullscreenElement) document.exitFullscreen();} catch (e) {}}
 
 /* ---------- menú y sala ---------- */
-let heroeElegido = localStorage.getItem('vado.heroe') || 'rohan', modoElegido = '1v1';
+let heroeElegido = localStorage.getItem('vado.heroe') || 'rohan', modoElegido = localStorage.getItem('vado.modo') || '1v1';
 const ROL_H = {rohan: 'Luchador', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Asesino'};
 let eligeSel = null;
 function eligeHeroe(titulo, listo) {
@@ -1607,8 +1627,8 @@ function eligeHeroe(titulo, listo) {
     const H = HEROES[eligeSel], max = {vida: 740, dano: 62, alcance: 7, vel: 5.8};
     const barra = (n, v, m) => '<div class="eB"><span>' + n + '</span><i><u style="width:' + Math.round(v / m * 100) + '%"></u></i></div>';
     el.innerHTML = '<div class="eTit">' + titulo + '</div>' +
-      '<div class="eLista">' + Object.entries(HEROES).map(([k, h]) => '<button class="eH' + (k === eligeSel ? ' on' : '') + '" data-h="' + k + '"><img src="../abismo/ui/' + h.retrato + '.webp" alt=""><span>' + h.nombre.split(' ')[0] + '</span></button>').join('') + '</div>' +
-      '<div class="eFicha"><div class="eRet"><img src="../abismo/ui/' + H.retrato + '.webp" alt=""><b>' + H.nombre + '</b><em>' + ROL_H[eligeSel] + '</em></div>' +
+      '<div class="eLista">' + Object.entries(HEROES).map(([k, h]) => '<button class="eH' + (k === eligeSel ? ' on' : '') + '" data-h="' + k + '"><img src="ui/splash_' + k + '.webp" alt=""><span>' + h.nombre.split(' ')[0] + '</span></button>').join('') + '</div>' +
+      '<div class="eFicha"><div class="eRet"><img src="ui/splash_' + eligeSel + '.webp" alt=""><b>' + H.nombre + '</b><em>' + ROL_H[eligeSel] + '</em></div>' +
       '<div class="eDatos">' + barra('Vida', H.vida, max.vida) + barra('Daño', H.dano, max.dano) + barra('Alcance', H.alcance, max.alcance) + barra('Velocidad', H.vel, max.vel) +
       '<div class="eHabs">' + ['q', 'w', 'e', 'r'].map((k) => '<div class="eHab' + (k === 'r' ? ' ult' : '') + '"><img src="ui/h_' + eligeSel + '_' + k + '.webp" alt=""><div><b>' + H.hab[k].n + (k === 'r' ? ' · definitiva' : '') + '</b><small>' + H.hab[k].d + '</small></div></div>').join('') + '</div></div></div>' +
       '<div class="eBot"><button class="bt s" id="eVolver">← Volver</button><button class="bt" id="eOk">¡Confirmar!</button></div>';
@@ -1620,18 +1640,23 @@ function eligeHeroe(titulo, listo) {
 }
 function msg(t) {$('msg').textContent = t || '';}
 function pintaMenu() {
-  $('heroes').style.display = ESTADO === 'sala' ? '' : 'none';
-  $('heroes').innerHTML = Object.entries(HEROES).map(([k, h]) => '<button class="heroe' + (k === heroeElegido ? ' on' : '') + '" data-h="' + k + '"><img src="../abismo/ui/' + h.retrato + '.webp" alt=""><span>' + h.nombre + '</span></button>').join('');
+  $('heroes').style.display = 'none'; $('menu').classList.toggle('enSala', ESTADO === 'sala');
+  const sp = 'ui/splash_' + heroeElegido + '.webp'; if (!$('mSplash').src.endsWith(sp)) $('mSplash').src = sp;
+  $('mHeroNom').textContent = HEROES[heroeElegido].nombre; $('mHeroRol').textContent = ROL_H[heroeElegido];
+  $('mCambiar').onclick = () => eligeHeroe('Elige a tu héroe', () => {if (ESTADO === 'sala') NET.manda({t: 'heroe', heroe: heroeElegido});});
+  $('heroes').innerHTML = Object.entries(HEROES).map(([k, h]) => '<button class="heroe' + (k === heroeElegido ? ' on' : '') + '" data-h="' + k + '"><img src="ui/splash_' + k + '.webp" alt=""><span>' + h.nombre + '</span></button>').join('');
   $('heroes').querySelectorAll('[data-h]').forEach((b) => b.onclick = () => {heroeElegido = b.dataset.h; localStorage.setItem('vado.heroe', heroeElegido); pintaMenu(); if (ESTADO === 'sala') NET.manda({t: 'heroe', heroe: heroeElegido});});
-  document.querySelectorAll('.modos button').forEach((b) => {b.classList.toggle('on', b.dataset.m === modoElegido); b.onclick = () => {modoElegido = b.dataset.m; pintaMenu();};});
+  document.querySelectorAll('.modos button').forEach((b) => {b.classList.toggle('on', b.dataset.m === modoElegido); b.onclick = () => {modoElegido = b.dataset.m; localStorage.setItem('vado.modo', modoElegido); pintaMenu();};});
 }
 function pintaSala() {
-  const s = $('sala'); s.classList.remove('hidden'); $('heroes').style.display = '';
+  const s = $('sala'); s.classList.remove('hidden'); $('menu').classList.add('enSala');
   const plazas = NET.modo === '2v2' ? 4 : 2, soyAnf = NET.soy === NET.anf;
-  let html = '<div>Código de la sala</div><div class="cod">' + NET.codigo + '</div><div style="font-size:12px;color:#d9c49a">Pásaselo a tus amigos · ' + (NET.modo === '2v2' ? '2 contra 2' : '1 contra 1') + '</div>';
-  for (let i = 0; i < plazas; i++) {const j = NET.jugadores.find((q) => q.slot === i); html += '<div class="jug eq' + (i % 2) + '">' + (i % 2 ? 'Isengard' : 'Rohan') + ' · ' + (j ? '<img src="../abismo/ui/' + HEROES[j.heroe].retrato + '.webp" alt="">' + j.nombre + (j.slot === NET.anf ? ' (anfitrión)' : '') : '<i>libre (lo llevará la máquina)</i>') + '</div>';}
-  html += soyAnf ? '<button class="bt v" id="bEmpezar">Empezar</button>' : '<div style="font-size:13px">Esperando a que el anfitrión empiece…</div>';
-  s.innerHTML = html; if (soyAnf) $('bEmpezar').onclick = () => NET.manda({t: 'empezar'});
+  const plaza = (i) => {const j = NET.jugadores.find((q) => q.slot === i); return '<div class="jug eq' + (i % 2) + '">' + (j ? '<img src="ui/splash_' + j.heroe + '.webp" alt=""><div>' + j.nombre + (j.slot === NET.anf ? ' 👑' : '') + '<small>' + HEROES[j.heroe].nombre + '</small></div>' : '<i>Libre · la máquina</i>') + '</div>';};
+  let col = (eq) => {let h = ''; for (let i = eq; i < plazas; i += 2) h += plaza(i); return '<div style="display:flex;flex-direction:column;gap:5px">' + h + '</div>';};
+  s.innerHTML = '<div class="cab"><span>Código de la sala · ' + (NET.modo === '2v2' ? 'Batalla 2 contra 2' : 'Duelo') + '</span><div class="cod">' + NET.codigo + '</div></div>' +
+    '<div class="bandos">' + col(0) + col(1) + '</div>' +
+    (soyAnf ? '<button class="bt v" id="bEmpezar">⚔ Empezar</button>' : '<div style="font-size:13px;text-align:center;color:#d9c49a">Esperando a que el anfitrión empiece…</div>');
+  if (soyAnf) $('bEmpezar').onclick = () => NET.manda({t: 'empezar'});
 }
 function nombreJugador() {let n = localStorage.getItem('vado.nombre'); if (!n) {try {const a = JSON.parse(localStorage.getItem('loc.yo') || 'null'); n = a && a.nombre;} catch (e) {} } return n || 'Hobbit' + Math.floor(Math.random() * 90 + 10);}
 function preparaMenu() {
