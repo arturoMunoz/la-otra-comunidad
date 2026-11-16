@@ -246,3 +246,17 @@ Pásamelo en Pack_Vado_16.zip (almenara.png, almenara_apagada.png).
 
 ## Pack Vado 18 — 4 héroes nuevos (16/11, pedido de Arturo: mago, orco, uruk y una criatura de las cuevas; cada uno calcado de un campeón del LoL)
 Ver el chat del 16/11. ART = retratos grandes, iconos de habilidades y botón de ataque; WORK = modelos 3D con el mismo esqueleto y clips de los KayKit.
+
+## Pack Vado 19 · ART (16/11) — marcas de apuntado propias de cada héroe (como los indicadores del Wild Rift)
+```
+Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard junto al Vado del Isen; aspecto de League of Legends: Wild Rift). Te adjunto las marcas de apuntado que usamos ahora (ind_flecha, ind_cono, ind_area, ind_alcance): son blancas y genéricas. Quiero que cada héroe tenga las suyas, con su material y su color, como en el Wild Rift cada campeón tiene su propio indicador. Vista cenital (se pintan planas en el suelo), sobre fondo TRANSPARENTE (PNG RGBA), semitransparentes por dentro y con el borde más marcado, sin texto, sin sombras, sin perspectiva. Respeta EXACTAMENTE la forma y el encuadre de las adjuntas: la flecha apunta a la derecha y ocupa todo el ancho; el cono abre hacia arriba con la punta en el centro de la parte de abajo; el círculo centrado ocupando todo. 512x512 cada una (la flecha 1024x256). Todo en Pack_Vado_19_ART.zip.
+Héroes y estilo:
+- rohan (Jinete de Rohan): verde y oro de Rohan, con caballos y crines estilizados en el borde. Q flecha (embestida), E círculo (grito), R flecha ancha (carga de los Rohirrim, con huellas de cascos).
+- enano (Enano de Erebor): piedra y runas enanas color fuego. Q cono (hachazo), E círculo (salto), R círculo (Furia de Durin, grietas).
+- elfo (Arquero de Lórien): plata y hojas de mallorn, verde claro. Q flecha (flecha de Lórien), E flecha corta (paso élfico), R círculo (lluvia de flechas).
+- hobbit (Hobbit de la Comarca): madera y cuerda, tonos tierra y verde de la Comarca. Q flecha (piedra de honda), E cono (puñado de piedras).
+- gandalf (Gandalf el Gris): luz blanca y dorada, runas élficas brillantes. Q flecha (luz que ata), E círculo (esfera de luz), R flecha muy larga y ancha (¡No puedes pasar!).
+- orco (Orco de Mordor): hierro oxidado, rojo brasa, Ojo de Sauron estilizado. W cono (golpe que aplasta), E flecha con eslabones de cadena (cadena de Mordor), R círculo pequeño (guillotina).
+- Para cada héroe, además, ind_<id>_alcance: el aro de alcance a su estilo.
+Nombres: ind_<id>_<tecla>.png (ej. ind_gandalf_q.png) e ind_<id>_alcance.png. (<id> = rohan, enano, elfo, hobbit, gandalf, orco)
+```

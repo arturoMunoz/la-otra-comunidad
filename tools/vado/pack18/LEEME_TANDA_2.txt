@@ -1,0 +1,17 @@
+PACK VADO 18 ART — TANDA 2 — ORCO DE MORDOR
+Juego: La Brecha. Rohan contra Isengard, Vado del Isen.
+
+splash_orco.png   — 1024 x 1536 px, PNG RGB, con fondo ilustrado.
+h_orco_q.png      — 512 x 512 px, PNG RGBA, giro con hacha.
+h_orco_w.png      — 512 x 512 px, PNG RGBA, golpe aplastante.
+h_orco_e.png      — 512 x 512 px, PNG RGBA, cadena de arrastre.
+h_orco_r.png      — 512 x 512 px, PNG RGBA, guillotina del hacha.
+at_orco.png       — 512 x 512 px, PNG RGBA, hacha para ataque basico.
+
+Los iconos provienen de una composición conjunta: se han recortado y ampliado
+al tamaño de entrega, por lo que su detalle de origen es inferior al de una
+generación independiente a 512 px. Fuera del medallón hay canal alfa transparente.
+Los medallones presentan aro de metal/bronce y oro gastado, fondos rojos,
+formas grandes y alta saturación. Sin rótulos ni marcas de agua.
+
+Tanda 1: Gandalf; Tanda 2: Orco; por elaborar: Uruk y Gollum.

@@ -35,7 +35,20 @@ const HEROES = {
       w: {n: 'Desapercibido', cd: 16, tipo: 'invis', dur: 3, vel: 0.35, icono: 'i_humo', d: 'Desapareces 3 s y corres más: ni torres ni enemigos te ven.'},
       e: {n: 'Puñado de piedras', cd: 6, tipo: 'cono', alc: 5.2, ang: 1.0, dano: 90, icono: 'i_piedras', d: 'Un puñado de piedras en abanico.'},
       r: {n: 'Suerte de Bolsón', cd: 45, tipo: 'suerte', cura: 0.4, vel: 0.5, dur: 5, icono: 'h_hobbit', d: 'Te curas un 40 %, corres más y pegas más fuerte 5 s.'}}},
+  /* Pack Vado 18 (16/11). Gandalf = Lux (maga a distancia: atrapa, escudo a aliados, zona que frena, gran rayo).
+     Orco = Darius (luchador: giro que cura por héroe golpeado, golpe que frena, cadena que arrastra, ejecución con poca vida). */
+  gandalf: {nombre: 'Gandalf el Gris', modelo: 'gandalf_kk', ret: 'ui/r_gandalf.webp', vida: 530, dano: 50, vatq: 0.88, alcance: 6.8, vel: 5.1, crecV: 76, crecD: 4.3, proy: 'luz',
+    hab: {q: {n: 'Luz que ata', cd: 8, tipo: 'linea', alc: 11.5, ancho: 0.85, dano: 115, aturde: 1.3, proy: 'luz', icono: 'h_gandalf_q', d: 'Un rayo de luz que atrapa 1,3 s al primero que toca.'},
+      w: {n: 'Escudo de Mithrandir', cd: 13, tipo: 'escudo', val: 120, dur: 3, aliados: 7, icono: 'h_gandalf_w', d: 'Un escudo de luz para ti y los aliados a 7 m durante 3 s.'},
+      e: {n: 'Esfera de luz', cd: 10, tipo: 'zona', alc: 10, radio: 3, dur: 1.5, dps: 100, lento: 0.45, icono: 'h_gandalf_e', d: 'Luz en el suelo que hiere y frena un 45 % a los que la pisan.'},
+      r: {n: '¡No puedes pasar!', cd: 50, tipo: 'linea', alc: 16, ancho: 1.4, dano: 250, perfora: true, proy: 'luz', icono: 'h_gandalf_r', d: 'Un gran rayo de luz que hiere a todos en una línea muy larga.'}}},
+  orco: {nombre: 'Orco de Mordor', modelo: 'orco_kk', ret: 'ui/r_orco.webp', vida: 760, dano: 65, vatq: 0.85, alcance: 2.7, vel: 5.1, crecV: 92, crecD: 4.8,
+    hab: {q: {n: 'Giro del hacha', cd: 7, tipo: 'area', radio: 3.6, dano: 115, curaH: 0.15, icono: 'h_orco_q', d: 'Giras el hacha: hieres a los de alrededor y te curas un 15 % de la vida que te falta por cada héroe que tocas.'},
+      w: {n: 'Golpe que aplasta', cd: 6, tipo: 'cono', alc: 3.4, ang: 1.2, dano: 100, lento: 0.5, durL: 1.2, icono: 'h_orco_w', d: 'Un hachazo delante que frena un 50 % 1,2 s.'},
+      e: {n: 'Cadena de Mordor', cd: 14, tipo: 'linea', alc: 6.5, ancho: 0.9, dano: 60, tira: true, lento: 0.4, durL: 1, proy: 'hacha_arrojadiza', icono: 'h_orco_e', d: 'Lanzas la cadena y arrastras hasta ti al primero que toca.'},
+      r: {n: 'Guillotina', cd: 45, tipo: 'ejecuta', alc: 3.6, dano: 200, falta: 0.45, icono: 'h_orco_r', d: 'Hachazo al héroe más cercano: más daño cuanta menos vida le quede. Si lo derriba, se recarga al momento.'}}},
 };
+const RET = (t) => {const h = HEROES[t] || HEROES.rohan; return h.ret || '../abismo/ui/' + h.retrato + '.webp';};
 const NIVEL_R = 4, NIVEL_MAX = 9;
 /* rango máximo de cada habilidad según el nivel (Q/W/E hasta 4, R a nivel 4 y 8) */
 const rangoMax = (nivel, k) => k === 'r' ? (nivel >= 8 ? 2 : nivel >= 4 ? 1 : 0) : Math.min(4, Math.ceil(nivel / 2));
@@ -58,7 +71,7 @@ const OBJ = {
   hacha: {t: 'Hacha de El Sagrario', i: 'obj_11', leg: 1, rec: ['hoja', 'amuleto'], c: 450, st: {dano: 30, robo: 0.12}, p: 'Robo de vida del 12 %.'},
   mithril: {t: 'Cota de mithril', i: 'obj_14', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 500, reduc: 0.12, regen: 4}, p: 'Ligera y casi irrompible.'},
 };
-const PLAN_BOT = {rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};
+const PLAN_BOT = {gandalf: ['amuleto', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};
 /* El mapa en «ojo» (dibujo de Arturo, 14/11): dos caminos curvos de la base de Rohan (abajo a la izquierda) a la de Isengard
    (arriba a la derecha), la espesura en medio con el Uruk azul en el centro y el río (el vado) cruzando por la mitad.
    Todo es simétrico girando 180° alrededor del centro. */
@@ -258,7 +271,7 @@ const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30,
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard', 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'palantir'];
+const VADO = ['vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard', 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'palantir', 'gandalf_kk', 'orco_kk'];
 /* modelos: los de la jungla solo hacen falta en la Batalla (2 contra 2) y se bajan después; los que no se usaban (capitán, estandartes, barriles…: casi 3 MB) ya no se bajan.
    Los del Abismo van adelgazados en modelos_l/ (sin los clips que aquí no se usan y con las texturas en WebP: tools/vado/adelgaza.py). */
 const JUNGLA = ['huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'warg', 'huargo_alfa', 'troll', 'orco'];
@@ -617,7 +630,7 @@ function nuevaPartida(jugadores, modo) {
   const plazas = modo === '2v2' ? 4 : 2; S.carriles = modo === '2v2' ? [0, 1] : [0];
   for (let slot = 0; slot < plazas; slot++) {
     const j = jugadores.find((q) => q.slot === slot);
-    const tipo = j ? j.heroe : Object.keys(HEROES)[(slot * 3 + 1) % 4];
+    const tipo = j ? j.heroe : Object.keys(HEROES)[(slot * 5 + 1) % 6];
     const eq = slot % 2, f = BASES[eq].fuente, x = f.x + (slot >= 2 ? 1.5 : -1.5), z0 = f.z - signo(eq) * 2.5;
     const b = HEROES[tipo] || HEROES.rohan;
     S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: !j, nombre: j ? j.nombre : 'Bot ' + b.nombre.split(' ')[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
@@ -986,6 +999,7 @@ function paso(dt) {
 }
 
 /* habilidades: las resuelve quien simula. dx,dz: dirección; px,pz: punto */
+function frena(e, v, d) {if (e.k === 't' || e.k === 'n') return; if (e.buf) {e.buf.lento = d; e.buf.lentoV = v;} else e.lento = S.t + d;}
 function usaHab(h, k, dx, dz, px, pz) {
   if (!h || h.muerto || h.aturd > S.t || h.cd[k] > 0 || !(h.rk[k] > 0)) return false;
   const H = HEROES[h.tipo].hab[k], st = stats(h), escala = 1 + 0.22 * (h.rk[k] - 1) + 0.03 * (h.nivel - 1) + (st.dano - HEROES[h.tipo].dano) / 150;
@@ -994,18 +1008,22 @@ function usaHab(h, k, dx, dz, px, pz) {
   const n = (H.dano || 0) * escala, en = () => enemigosDe(h.eq).filter((e) => e.k !== 'n' && (e.k !== 't' || atacable(e)));
   if (H.tipo === 'dash') {const v = H.dist / 0.28; h.dash = {vx: dx * v, vz: dz * v, t: 0.28, n, aturde: H.aturde, toc: new Set()}; ev(['fx', 'polvo', h.x, h.z, 1.5]);}
   if (H.tipo === 'salto') {const d0 = Math.min(H.dist, Math.hypot(px - h.x, pz - h.z) || H.dist), v = d0 / 0.45; h.dash = {vx: dx * v, vz: dz * v, t: 0.45, salto: true, toc: new Set(), cae: {x: h.x + dx * d0, z: h.z + dz * d0, r: H.radio, n, l: H.lento, dur: H.durL}};}
-  if (H.tipo === 'escudo') {h.buf.escudo = H.dur; h.buf.escudoV = H.val * escala; ev(['fx', 'onda', h.x, h.z, 2.5]);}
+  if (H.tipo === 'escudo') {for (const a of H.aliados ? heroes().filter((a) => a.eq === h.eq && !a.muerto && (a === h || dist(a, h) < H.aliados)) : [h]) {a.buf.escudo = H.dur; a.buf.escudoV = H.val * escala; ev(['fx', 'onda', a.x, a.z, 2.5]);}}
   if (H.tipo === 'reduce') {h.buf.reduce = H.dur; ev(['fx', 'onda', h.x, h.z, 2.5]);}
   if (H.tipo === 'rafaga') h.buf.rafaga = H.dur;
   if (H.tipo === 'invis') h.buf.invis = H.dur;
   if (H.tipo === 'suerte') {h.buf.suerte = H.dur; h.vida = Math.min(st.vida, h.vida + st.vida * H.cura); ev(['fx', 'onda', h.x, h.z, 3]);}
-  if (H.tipo === 'area') {for (const e of en()) if (dist(e, h) < H.radio + radio(e)) {dana(h, e, n, 'hab'); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) {if (e.buf) {e.buf.lento = H.durL; e.buf.lentoV = H.lento;} else e.lento = S.t + H.durL;}} ev(['fx', 'onda', h.x, h.z, H.radio * 1.8]); ev(['fx', 'explosion', h.x, h.z, H.radio * 0.6]);}
-  if (H.tipo === 'cono') {for (const e of en()) {const ex = e.x - h.x, ez = e.z - h.z, d0 = Math.hypot(ex, ez); if (d0 < H.alc + radio(e) && (ex * dx + ez * dz) / (d0 || 1) > Math.cos(H.ang / 2)) dana(h, e, n, 'hab');} ev(['fx', 'tajo', h.x + dx * 1.8, h.z + dz * 1.8, H.alc]);}
+  if (H.tipo === 'area') {for (const e of en()) if (dist(e, h) < H.radio + radio(e)) {dana(h, e, n, 'hab'); if (H.curaH && e.k === 'h') {const mx = st.vida, c = (mx - h.vida) * H.curaH + 15; h.vida = Math.min(mx, h.vida + c); ev(['num', h.x, h.z, '+' + Math.round(c), 'v']);} if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) {if (e.buf) {e.buf.lento = H.durL; e.buf.lentoV = H.lento;} else e.lento = S.t + H.durL;}} ev(['fx', 'onda', h.x, h.z, H.radio * 1.8]); ev(['fx', 'explosion', h.x, h.z, H.radio * 0.6]);}
+  if (H.tipo === 'cono') {for (const e of en()) {const ex = e.x - h.x, ez = e.z - h.z, d0 = Math.hypot(ex, ez); if (d0 < H.alc + radio(e) && (ex * dx + ez * dz) / (d0 || 1) > Math.cos(H.ang / 2)) {dana(h, e, n, 'hab'); if (H.lento) frena(e, H.lento, H.durL);}} ev(['fx', 'tajo', h.x + dx * 1.8, h.z + dz * 1.8, H.alc]);}
   if (H.tipo === 'linea') {
     const ex0 = h.x, ez0 = h.z; let golpeados = 0;
     const lista = en().map((e) => ({e, t: (e.x - ex0) * dx + (e.z - ez0) * dz})).filter((o) => o.t > 0 && o.t < H.alc).sort((a, b) => a.t - b.t);
-    for (const o of lista) {const px0 = ex0 + dx * o.t, pz0 = ez0 + dz * o.t; if (Math.hypot(o.e.x - px0, o.e.z - pz0) < H.ancho + radio(o.e)) {const e = o.e; luego(o.t / 26, () => {dana(h, e, n, 'hab'); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde;}); golpeados++; if (!H.perfora) break;}}
+    for (const o of lista) {const px0 = ex0 + dx * o.t, pz0 = ez0 + dz * o.t; if (Math.hypot(o.e.x - px0, o.e.z - pz0) < H.ancho + radio(o.e)) {const e = o.e; luego(o.t / 26, () => {dana(h, e, n, 'hab'); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}); golpeados++; if (!H.perfora) break;}}
     ev(['tiro', H.proy, ex0, ez0, ex0 + dx * H.alc, ez0 + dz * H.alc, 26]);
+  }
+  if (H.tipo === 'ejecuta') {/* la Guillotina de Darius: daño más el que le falta; si derriba, se recarga */
+    const t = masCercano(h, en().filter((e) => e.k === 'h'), H.alc + 0.6); if (!t) {h.cd[k] = 0; h.hc--; return false;}
+    h.rot = Math.atan2(t.x - h.x, t.z - h.z); const mx = stats(t).vida; luego(0.35, () => {if (t.vida <= 0 || h.muerto) return; dana(h, t, n + (mx - t.vida) * H.falta, 'hab'); if (t.vida <= 0 || t.muerto) {h.cd[k] = 0; ev(['num', h.x, h.z, '¡Otra vez!', 'v']);} ev(['fx', 'explosion', t.x, t.z, 1.6]);});
   }
   ev(['hb', h.id, k, +dx.toFixed(2), +dz.toFixed(2), +(px || 0).toFixed(1), +(pz || 0).toFixed(1)]);
   if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - h.x, pz - h.z)), x = h.x + dx * d0, z = h.z + dz * d0; S.zonas.push({x, z, r: H.radio, t: H.dur, tick: 0, dps: H.dps * escala, l: H.lento, eq: h.eq, o: h}); ev(['zona', x, z, H.radio, H.dur]);}
@@ -1221,7 +1239,7 @@ function recibeFoto(o) {
 /* ---------- dibujo ---------- */
 const VIS = new Map();
 const PROY_MODELOS = {};
-function modeloProy(n) {if (!PROY_MODELOS[n]) {const o = M.proyectiles.scene.getObjectByName(n); PROY_MODELOS[n] = o ? o.clone(true) : new THREE.Object3D(); PROY_MODELOS[n].position.set(0, 0, 0);} return PROY_MODELOS[n].clone(true);}
+function modeloProy(n) {if (n === 'luz' && !PROY_MODELOS.luz) {const g = new THREE.Group(), m = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), new THREE.MeshBasicMaterial({color: '#fffbe8'})), h = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 8), new THREE.MeshBasicMaterial({color: '#ffe9a8', transparent: true, opacity: 0.35, depthWrite: false})); g.add(m, h); PROY_MODELOS.luz = g;} if (!PROY_MODELOS[n]) {const o = M.proyectiles.scene.getObjectByName(n); PROY_MODELOS[n] = o ? o.clone(true) : new THREE.Object3D(); PROY_MODELOS[n].position.set(0, 0, 0);} return PROY_MODELOS[n].clone(true);}
 const texAro = cargaTex('ui/aro_heroe.webp');
 function aro(color, r) {const g = new THREE.PlaneGeometry(r * 2, r * 2); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: texAro, color, transparent: true, depthWrite: false, opacity: 0.85})); m.renderOrder = 2; return m;}
 function creaVis(v) {
@@ -1250,10 +1268,11 @@ function materiales(o) {if (!o.mats) {o.mats = []; o.raiz.traverse((q) => {if (q
 let tiemblaCam = 0;
 /* ---------- habilidades: cada una con su animación y su efecto (lo que en el LoL hace que «se note») ---------- */
 const HAB_ANIM = {rohan: {q: 'atacar_3', w: 'celebrar', e: 'giro', r: 'golpe_cargado'}, enano: {q: 'giro', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'},
-  elfo: {q: 'atacar_2', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'}, hobbit: {q: 'atacar_2', w: 'esquivar', e: 'atacar_3', r: 'celebrar'}};
+  elfo: {q: 'atacar_2', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'}, hobbit: {q: 'atacar_2', w: 'esquivar', e: 'atacar_3', r: 'celebrar'},
+  gandalf: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'golpe_cargado'}, orco: {q: 'atacar_3', w: 'atacar_2', e: 'atacar', r: 'golpe_cargado'}};
 const AURA_COL = {escudo: '#6fc8ff', reduce: '#c9b48a', rafaga: '#7dff6a', suerte: '#ffd24a'};
 /* golpe básico que alterna dos movimientos, como en el Wild Rift (el enano: tajo por arriba y tajo de lado; antes el suyo apenas se veía) */
-const BASICOS = {rohan: ['atacar', 'atacar_2'], enano: ['atacar_2', 'atacar_3'], elfo: ['atacar'], hobbit: ['atacar', 'atacar_2']};
+const BASICOS = {rohan: ['atacar', 'atacar_2'], enano: ['atacar_2', 'atacar_3'], elfo: ['atacar'], hobbit: ['atacar', 'atacar_2'], gandalf: ['atacar', 'atacar_2'], orco: ['atacar', 'atacar_2']};
 function animaClip(o, nombre, vel = 1) {
   const a = o.todos && o.todos[nombre]; if (!a) return 0;
   a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; a.timeScale = vel; a.reset().play();
@@ -1279,6 +1298,7 @@ function ultiFx(v, H, k, mio, cerca) {
 function habVisual(e) {
   const [, id, k, dx, dz, px, pz] = e, o = VIS.get(id), v = VISTA.get(id); if (!o || !v) return;
   const H = HEROES[v.tipo].hab[k], x = v.xi ?? v.x, z = v.zi ?? v.z, rot = Math.atan2(dx, dz), mio = id === YO;
+  o.encara = {r: rot, hasta: performance.now() + 550};
   /* animación del héroe */
   const d = animaClip(o, HAB_ANIM[v.tipo][k], H.tipo === 'dash' || H.tipo === 'salto' ? 1.3 : 1.15); o.ocup = Math.min(0.9, d * 0.85); o.habYa = true;
   const cerca = mio || Math.hypot(x - camM.x, z - camM.z) < 16, temb = (n) => {if (cerca) tiemblaCam = Math.max(tiemblaCam, n);};
@@ -1313,7 +1333,8 @@ function habVisual(e) {
     temb(k === 'r' ? 0.75 : 0.22); suena(k === 'r' ? 'fuego' : 'cuerno', 0.6, x, z);
   }
   if (H.tipo === 'linea') {o.estelaTiro = {x, z, dx, dz, t: 0, alc: H.alc, verde: v.tipo === 'elfo'}; flip('impacto', x + dx * 1.2, z + dz * 1.2, 1.8); suena('arco', 0.6, x, z);}
-  if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - x, pz - z)), cx = x + dx * d0, cz = z + dz * d0; LLUVIAS.push({x: cx, z: cz, r: H.radio, t: 0, dur: H.dur, cada: 0}); flip('ondaC', cx, cz, H.radio * 2.6, true); flip('hojas', cx, cz, H.radio * 2.5, true, 0, 0.13, H.dur); luego2(H.dur * 500, () => flip('hojas', cx, cz, H.radio * 2, true, 1, 0.13, H.dur * 0.5)); temb(0.3);}
+  if (H.tipo === 'zona' && v.tipo === 'gandalf') {const d0 = Math.min(H.alc, Math.hypot(px - x, pz - z)), cx = x + dx * d0, cz = z + dz * d0; flip('ondaC', cx, cz, H.radio * 2.6, true); flip('suerte', cx, cz, H.radio * 2.2, true); flip('estrellas', cx, cz, H.radio * 2, true); luego2(H.dur * 1000, () => {flip('explosion', cx, cz, H.radio * 1.2); flip('ondaC', cx, cz, H.radio * 3, true);}); temb(0.2);}
+  else if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - x, pz - z)), cx = x + dx * d0, cz = z + dz * d0; LLUVIAS.push({x: cx, z: cz, r: H.radio, t: 0, dur: H.dur, cada: 0}); flip('ondaC', cx, cz, H.radio * 2.6, true); flip('hojas', cx, cz, H.radio * 2.5, true, 0, 0.13, H.dur); luego2(H.dur * 500, () => flip('hojas', cx, cz, H.radio * 2, true, 1, 0.13, H.dur * 0.5)); temb(0.3);}
   if (AURA_COL[H.tipo]) {
     const du = H.dur || 3; flip('onda', x, z, 3.2, true);
     if (H.tipo === 'escudo') auraFx(o, 'escudo', du, 3.8);
@@ -1428,6 +1449,7 @@ function dibuja(dt) {
       else {const j = i + 4, k = Math.max(0, Math.min(1, (T - b[i]) / Math.max(1, b[j] - b[i]))); x = b[i + 1] + (b[j + 1] - b[i + 1]) * k; z = b[i + 2] + (b[j + 2] - b[i + 2]) * k; let dr = b[j + 3] - b[i + 3]; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = b[i + 3] + dr * k;}
       if (Math.hypot(x - v.x, z - v.z) > 8) {x = v.x; z = v.z; b.length = 0;} /* reaparición o salto: sin deslizarse por el mapa */
     } else if (!(v.id === YO && !S)) {const k = S ? ALFA : Math.min(1, (ahora - v.t0) / 72); x = v.x0 + (v.x - v.x0) * k; z = v.z0 + (v.z - v.z0) * k; let dr = v.rot - v.r0; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = v.r0 + dr * k;}
+    if (o.encara && o.encara.hasta > ahora) r = o.encara.r; /* al lanzar, mira hacia donde lanza (como en el Wild Rift) aunque corras hacia otro lado */
     v.xi = x; v.zi = z; v.ri = r;
     const muerto = v.k === 'h' ? v.muerto >= 0 : v.muerto === 0;
     o.raiz.position.set(x, o.salto ? o.raiz.position.y : 0, z);
@@ -1683,7 +1705,7 @@ function efectoLocal(e) {
 let avisoT = 0;
 /* cartel de baja al estilo Wild Rift: retrato del que derriba ⚔ retrato del derribado, y el grito si lo hay */
 let anuncioT = 0;
-function retratoDe(id) {const q = VISTA.get(id); if (!q) return ''; if (q.k === 'h') return '../abismo/ui/' + HEROES[q.tipo].retrato + '.webp'; return q.eq === 0 ? 'ui/b_armeria.webp' : 'ui/buff_troll.webp';}
+function retratoDe(id) {const q = VISTA.get(id); if (!q) return ''; if (q.k === 'h') return RET(q.tipo); return q.eq === 0 ? 'ui/b_armeria.webp' : 'ui/buff_troll.webp';}
 let ULTIMA_BAJA = 0;
 function anuncio(a, d, txt) {
   if (d === YO) ULTIMA_BAJA = a || 0;
@@ -1815,9 +1837,14 @@ function preparaMandos() {
     const b = $('b' + k.toUpperCase()); let p0 = null, apunta = null;
     /* como en el Wild Rift: al pulsar ya se ve el alcance y hacia dónde irá; arrastrando apuntas tú; la mira va pegada al héroe aunque te muevas */
     b.addEventListener('pointerdown', (e) => {p0 = {x: PX(e), y: PY(e), id: e.pointerId}; try {b.setPointerCapture(e.pointerId);} catch (er) {} MIRA_ACT = {k, dx: null, dy: null}; muestraMira(k, null, null);});
-    b.addEventListener('pointermove', (e) => {if (!p0 || e.pointerId !== p0.id) return; const dx = PX(e) - p0.x, dy = PY(e) - p0.y; if (Math.hypot(dx, dy) > 18) {apunta = {dx, dy}; MIRA_ACT = {k, dx, dy}; muestraMira(k, dx, dy);}});
-    b.addEventListener('pointerup', (e) => {if (!p0) return; const a = apunta; if (MIRA_ACT) muestraMira(k, a ? a.dx : null, a ? a.dy : null); p0 = null; apunta = null; MIRA_ACT = null; lanzaMia(k, a); ocultaMira();});
-    b.addEventListener('pointercancel', () => {p0 = null; apunta = null; MIRA_ACT = null; ocultaMira();});
+    /* cancelar como en el Wild Rift: si has arrastrado para apuntar y vuelves el dedo al botón, no se lanza */
+    b.addEventListener('pointermove', (e) => {if (!p0 || e.pointerId !== p0.id) return; const dx = PX(e) - p0.x, dy = PY(e) - p0.y, d = Math.hypot(dx, dy); if (d > 55) p0.salio = true;
+      const cancela = p0.salio && d < 30; b.classList.toggle('cancela', cancela); document.body.classList.toggle('cancelando', cancela);
+      if (cancela) {apunta = null; MIRA_ACT = null; ocultaMira(); return;}
+      if (d > 18) {apunta = {dx, dy}; MIRA_ACT = {k, dx, dy}; muestraMira(k, dx, dy);}});
+    b.addEventListener('pointerup', (e) => {if (!p0) return; const a = apunta; b.classList.remove('cancela'); document.body.classList.remove('cancelando');
+      if (p0.salio && Math.hypot(PX(e) - p0.x, PY(e) - p0.y) < 30) {p0 = null; apunta = null; MIRA_ACT = null; ocultaMira(); return;} if (MIRA_ACT) muestraMira(k, a ? a.dx : null, a ? a.dy : null); p0 = null; apunta = null; MIRA_ACT = null; lanzaMia(k, a); ocultaMira();});
+    b.addEventListener('pointercancel', () => {b.classList.remove('cancela'); document.body.classList.remove('cancelando'); p0 = null; apunta = null; MIRA_ACT = null; ocultaMira();});
   }
   toca($('bTienda'), abreTienda);
   toca($('bAjustes'), abreAjustes);
@@ -1998,7 +2025,7 @@ function empieza(jugadores, modo, simulo) {
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; h.hf = hechElegido; recibeFoto(foto());}
   else {S = null; YO = null; const pide = setInterval(() => {const v = [...VISTA.values()].find((q) => q.k === 'h' && q.slot === yo.slot); if (v) {YO = v.id; MIO.listo = false; clearInterval(pide); iconosHab(v.tipo); NET.manda({t: 'hech1', v: hechElegido});}}, 100);}
   if (simulo) iconosHab(yo.heroe);
-  $('yoImg').src = '../abismo/ui/' + HEROES[yo.heroe].retrato + '.webp';
+  $('yoImg').src = RET(yo.heroe);
   camM.set(BASES[MI_EQ].fuente.x, 0, BASES[MI_EQ].fuente.z); reloj0 = performance.now();
   pantallaVS(jugadores, modo);
   $('pings').classList.toggle('hidden', !(NET.online && modo === '2v2'));
@@ -2015,11 +2042,11 @@ function pantallaVS(jugadores, modo) {
     renderer.compile(scene, camera);
     setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400); /* sin dispose: si se tirara el material, el sombreador compilado se borraría y volvería el tirón */
   } catch (e) {}
-  const plazas = modo === '2v2' ? 4 : 2, el = $('vs'), lado = (eq) => {let h = ''; for (let s = eq; s < plazas; s += 2) {const j = jugadores.find((q) => q.slot === s), tipo = j ? j.heroe : Object.keys(HEROES)[(s * 3 + 1) % 4]; h += '<div class="vsH"><img class="spl" src="ui/splash_' + tipo + '.webp" alt=""><b>' + (j ? j.nombre : 'Máquina') + '</b><span>' + HEROES[tipo].nombre + '</span></div>';} return h;};
+  const plazas = modo === '2v2' ? 4 : 2, el = $('vs'), lado = (eq) => {let h = ''; for (let s = eq; s < plazas; s += 2) {const j = jugadores.find((q) => q.slot === s), tipo = j ? j.heroe : Object.keys(HEROES)[(s * 5 + 1) % 6]; h += '<div class="vsH"><img class="spl" src="ui/splash_' + tipo + '.webp" alt=""><b>' + (j ? j.nombre : 'Máquina') + '</b><span>' + HEROES[tipo].nombre + '</span></div>';} return h;};
   el.innerHTML = '<div class="vsLado az"><i>Rohan</i>' + lado(0) + '</div><div class="vsX">VS</div><div class="vsLado ro"><i>Isengard</i>' + lado(1) + '</div>';
   el.classList.remove('hidden'); setTimeout(() => el.classList.add('fuera'), 2300); setTimeout(() => {el.classList.add('hidden'); el.classList.remove('fuera');}, 2900);
 }
-const ARMA = {rohan: 'lanza', enano: 'hacha', elfo: 'arco', hobbit: 'honda'};
+const ARMA = {rohan: 'lanza', enano: 'hacha', elfo: 'arco', hobbit: 'honda', gandalf: 'baston', orco: 'hacha'};
 function iconosHab(tipo) {
   $('bAt').querySelector('img').src = 'ui/at_' + tipo + '.webp'; $('bAt').classList.remove('arma');for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = 'ui/h_' + tipo + '_' + k + '.webp'; b.title = HEROES[tipo].hab[k].n;}}
 function subeNivelFx(v) {
@@ -2089,7 +2116,7 @@ function hud() {
     const c = ba.querySelector('.cd'), ver = n < 1 && v.vgT > 0; if (c._v !== ver) {c._v = ver; c.classList.toggle('hidden', !ver);} if (ver) pon_(c, 'textContent', String(v.vgT));}
   {const be = $('bEnc'), e = ENC[v.enc]; be.classList.toggle('hidden', !e); if (e) {if (be.dataset.e !== v.enc) {be.dataset.e = v.enc; be.querySelector('img').src = e.i;} const c = be.querySelector('.cd'), cd = v.cdEnc; c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / e.cd * 100) + '%' : '0%');}}
   {const r = $('retratos'), cerca = [...VISTA.values()].filter((q) => q.k === 'h' && q.eq !== MI_EQ && q.muerto < 0 && !q.escondido && Math.hypot(q.x - v.x, q.z - v.z) < 13).slice(0, 2);
-   const key = cerca.map((q) => q.id + (q.id === MANDO.fijo ? 'f' : '')).join(','); if (r.dataset.k !== key) {r.dataset.k = key; pon_(r, 'innerHTML', cerca.map((q) => '<button data-id="' + q.id + '"' + (q.id === MANDO.fijo ? ' class="on"' : '') + '><img src="../abismo/ui/' + HEROES[q.tipo].retrato + '.webp" alt=""></button>').join(''));}
+   const key = cerca.map((q) => q.id + (q.id === MANDO.fijo ? 'f' : '')).join(','); if (r.dataset.k !== key) {r.dataset.k = key; pon_(r, 'innerHTML', cerca.map((q) => '<button data-id="' + q.id + '"' + (q.id === MANDO.fijo ? ' class="on"' : '') + '><img src="' + RET(q.tipo) + '" alt=""></button>').join(''));}
    if (MANDO.fijo) {const f = VISTA.get(MANDO.fijo); if (!f || f.vida <= 0 || (f.k === 'h' && (f.muerto >= 0 || f.escondido)) || Math.hypot(f.x - v.x, f.z - v.z) > 16) MANDO.fijo = 0;}
    if (!aroFijo) {aroFijo = indicador('ind_alcance', '#ffd24a'); aroFijo.renderOrder = 6;}
    const af = VISTA.get(MANDO.cand || MANDO.fijo); aroFijo.visible = !!af && v.muerto < 0;
@@ -2139,7 +2166,7 @@ function aroTorre(v) {
 }
 function pintaTabla() {
   const fil = [...VISTA.values()].filter((q) => q.k === 'h').sort((a, b) => (a.eq !== MI_EQ) - (b.eq !== MI_EQ) || a.slot - b.slot);
-  $('tabla').innerHTML = '<div class="tbCaja"><b>Marcador</b>' + fil.map((q) => {const [k, d, a, cs] = (q.kda || '0/0/0/0').split('/'); return '<div class="tbFila ' + (q.eq === MI_EQ ? 'az' : 'ro') + '"><img src="../abismo/ui/' + HEROES[q.tipo].retrato + '.webp" alt=""><span class="n">' + q.nombre + '<small>Nv ' + q.nivel + '</small></span><span class="k">' + k + '/' + d + '/' + a + '</span><span class="c">🗡 ' + cs + '</span><span class="o">' + q.inv.map((i) => '<img src="' + ICO(OBJ[i].i) + '" alt="">').join('') + '</span></div>';}).join('') + '<small>Toca para cerrar</small></div>';
+  $('tabla').innerHTML = '<div class="tbCaja"><b>Marcador</b>' + fil.map((q) => {const [k, d, a, cs] = (q.kda || '0/0/0/0').split('/'); return '<div class="tbFila ' + (q.eq === MI_EQ ? 'az' : 'ro') + '"><img src="' + RET(q.tipo) + '" alt=""><span class="n">' + q.nombre + '<small>Nv ' + q.nivel + '</small></span><span class="k">' + k + '/' + d + '/' + a + '</span><span class="c">🗡 ' + cs + '</span><span class="o">' + q.inv.map((i) => '<img src="' + ICO(OBJ[i].i) + '" alt="">').join('') + '</span></div>';}).join('') + '<small>Toca para cerrar</small></div>';
 }
 function acaba(ganador) {
   if (ESTADO === 'fin') return;
@@ -2264,12 +2291,12 @@ function sueltaApaisado() {try {if (screen.orientation && screen.orientation.unl
 
 /* ---------- menú y sala ---------- */
 let hechElegido = localStorage.getItem('vado.hech') || 'f', heroeElegido = localStorage.getItem('vado.heroe') || 'rohan', modoElegido = localStorage.getItem('vado.modo') || '1v1';
-const ROL_H = {rohan: 'Luchador', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Asesino'};
+const ROL_H = {rohan: 'Luchador', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Asesino', gandalf: 'Mago', orco: 'Luchador'};
 let eligeSel = null;
 function eligeHeroe(titulo, listo) {
   const el = $('elige'); eligeSel = heroeElegido; el.classList.remove('hidden');
   const pinta = () => {
-    const H = HEROES[eligeSel], max = {vida: 740, dano: 62, alcance: 7, vel: 5.8};
+    const H = HEROES[eligeSel], max = {vida: 760, dano: 65, alcance: 7, vel: 5.8};
     const barra = (n, v, m) => '<div class="eB"><span>' + n + '</span><i><u style="width:' + Math.round(v / m * 100) + '%"></u></i></div>';
     el.innerHTML = '<div class="eTit">' + titulo + '</div>' +
       '<div class="eLista">' + Object.entries(HEROES).map(([k, h]) => '<button class="eH' + (k === eligeSel ? ' on' : '') + '" data-h="' + k + '"><img src="ui/splash_' + k + '.webp" alt=""><span>' + h.nombre.split(' ')[0] + '</span></button>').join('') + '</div>' +

@@ -1,0 +1,18 @@
+PACK VADO 18 WORK — LA BRECHA
+
+Gandalf: Mage KayKit con paleta gris azulada, sombrero original, barba blanca añadida, bastón original con luz blanca emisiva añadida a handslot.r y espada nueva en handslot.l.
+Orco: Barbarian KayKit con piel verde grisácea, cuerpo ensanchado un 10 %, placas de metal oscuro, cadena, colmillos y hacha dentada nueva en handslot.r.
+
+REFERENCIA Y COMPATIBILIDAD
+No se recibió elfo_kk.glb. Se han utilizado los rigs originales KayKit Adventurers 1.0, que tienen 41 huesos y los enganches head, chest, handslot.l y handslot.r. Las transformaciones de reposo y los nombres de todos los huesos se conservaron exactamente respecto a Mage y Barbarian.
+Los clips proceden del rohan_kk (1).glb aportado anteriormente, remapeando canales por nombre de hueso sin remuestrear. En el orco, quieto y los ataques se sustituyeron por originales KayKit de arma a dos manos con los mismos nombres de destino. La compatibilidad exacta con un elfo_kk no recibido no se ha podido comparar.
+
+12 CLIPS EN CADA ARCHIVO
+andar, atacar, atacar_2, atacar_3, aturdido, celebrar, correr, esquivar, golpe_cargado, morir, quieto, recibir_golpe. Duraciones en VALIDACION.json.
+
+FORMATO
+GLB autónomos, metros, +Y arriba, frente +Z; mallas y atlas de los personajes originales conservados y recoloreados. Accesorios rígidos parentados a huesos, normales presentes. Cada archivo pesa menos de 3 MB. La emisión blanca está en el material luz_blanca; para halo exterior activar bloom en el juego.
+
+REVISIÓN
+Recarga glTF y comprobación de 41 huesos, poses de reposo idénticas y 12 clips. Capturas de reposo, correr, atacar y morir incluidas. Las piezas añadidas se fijan mediante transformación inversa de reposo al hueso de destino, de modo que siguen su movimiento. Se han revisado poses de los clips, no todas las posibles mezclas de animación dentro del juego. Las armas conservan su agarre derecho/izquierdo; la mano secundaria del orco sigue las poses originales KayKit de dos manos y puede requerir ajuste de contacto según la mezcla usada por el juego.
+No se ha añadido una deformación permanente de encorvamiento al rig: se conserva su postura de reposo para compatibilidad.

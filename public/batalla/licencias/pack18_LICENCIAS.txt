@@ -1,0 +1,13 @@
+RECURSOS DE PARTIDA
+
+gandalf_kk.glb: Mage, KayKit Adventurers Character Pack 1.0.
+orco_kk.glb: Barbarian, KayKit Adventurers Character Pack 1.0.
+Autor: Kay Lousberg (KayKit), https://kaylousberg.com/
+Licencia: Creative Commons Zero / CC0 1.0 Universal.
+Fuente: https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0
+Licencia: https://creativecommons.org/publicdomain/zero/1.0/
+
+Ambos usan modelos, rigs y atlas originales del pack. Se adjunta la licencia original de KayKit.
+Animaciones españolas de referencia: rohan_kk (1).glb, aportado por el usuario; este archivo deriva del rig KayKit. Las animaciones de arma a dos manos del orco son originales del pack KayKit. La autoría adicional de posibles modificaciones del archivo rohan de referencia no consta.
+Accesorios nuevos y cambios de color creados por ChatGPT/OpenAI para este encargo; sin requisito adicional de atribución por esas aportaciones.
+Los nombres Gandalf/Glamdring y la ambientación de Tolkien no forman parte de la licencia CC0 de KayKit ni implican afiliación oficial.

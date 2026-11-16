@@ -1,0 +1,40 @@
+[
+  {
+    "archivo": "gandalf_kk.glb",
+    "bytes": 997484,
+    "huesos": 41,
+    "clips": {
+      "atacar": 0.55,
+      "atacar_2": 0.55,
+      "atacar_3": 0.5,
+      "golpe_cargado": 0.8,
+      "celebrar": 1.6667,
+      "morir": 0.8,
+      "esquivar": 0.5,
+      "recibir_golpe": 0.45,
+      "aturdido": 0.5,
+      "quieto": 0.55,
+      "correr": 0.8,
+      "andar": 0.55
+    }
+  },
+  {
+    "archivo": "orco_kk.glb",
+    "bytes": 970544,
+    "huesos": 41,
+    "clips": {
+      "atacar": 1.6333,
+      "atacar_2": 1.1,
+      "atacar_3": 2.4,
+      "golpe_cargado": 1.6333,
+      "celebrar": 1.6667,
+      "morir": 0.8,
+      "esquivar": 0.5,
+      "recibir_golpe": 0.45,
+      "aturdido": 0.5,
+      "quieto": 1.0667,
+      "correr": 0.8,
+      "andar": 0.55
+    }
+  }
+]
