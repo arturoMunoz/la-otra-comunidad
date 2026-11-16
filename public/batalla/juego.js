@@ -1200,7 +1200,17 @@ function aplicaFila(f, t) {
   Object.assign(v, {x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo, visto: true, llega: performance.now()});
   if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30], enc: f[31] || '', cdEnc: f[32] || 0, flagsE: f[33] || 0, fijo: f[34] || 0, hf: f[35] || 'f', vg: f[36] ?? 0, vgT: f[37] || 0});
 }
+/* indicador de conexión como el del Wild Rift: ping en verde/amarillo/rojo y aviso si se pierden fotos (huecos de más de 0,3 s) */
+const CONEX = {ult: 0, huecos: [], aviso: 0};
+function pintaConexion() {
+  const el = $('ping'); if (!el || !NET.online) return; const ahora = performance.now();
+  CONEX.huecos = CONEX.huecos.filter((t) => ahora - t < 10000);
+  const p = NET.ping || 0, mal = CONEX.huecos.length >= 3, col = p > 150 || mal ? '#ff5a4a' : p > 80 ? '#ffd24a' : '#6fe07a', barras = p > 150 || mal ? 1 : p > 80 ? 2 : 3;
+  el.innerHTML = '<span style="color:' + col + ';letter-spacing:-1px">' + '▮'.repeat(barras) + '<span style="opacity:.25">' + '▮'.repeat(3 - barras) + '</span></span> ' + p + ' ms' + (mal ? ' ⚠' : '');
+  if (mal && ahora - CONEX.aviso > 20000 && ESTADO === 'juego') {CONEX.aviso = ahora; aviso('⚠ Conexión inestable: se están perdiendo datos');}
+}
 function recibeFoto(o) {
+  {const ahora = performance.now(); if (CONEX.ult && ahora - CONEX.ult > 300) CONEX.huecos.push(ahora); CONEX.ult = ahora;}
   for (const v of VISTA.values()) v.visto = false;
   for (const f of o.u) aplicaFila(f, o.t);
   for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);}
@@ -1964,7 +1974,7 @@ function recibe(o) {
   if (o.t === 'error') msg(o.txt);
   if (o.t === 'sala') {NET.jugadores = o.jugadores; NET.anf = o.anfitrion; NET.modo = o.modo; NET.srv = !!o.srv; pintaSala();}
   if (o.t === 'empieza') {NET.jugadores = o.jugadores; NET.modo = o.modo; EN_SERVIDOR = !!o.srv; empieza(o.jugadores, o.modo, !o.srv && NET.soy === NET.anf);}
-  if (o.t === 'pong') {NET.ping = Math.round(performance.now() - o.c); $('ping').textContent = NET.ping + ' ms';}
+  if (o.t === 'pong') {NET.ping = Math.round(performance.now() - o.c); pintaConexion();}
   if (o.t === 'foto' && !S) recibeFoto(o.f);
   if (S) {/* soy el anfitrión: mandos de los demás */
     const h = S.u.find((q) => q.k === 'h' && q.slot === o.de); if (!h) return;
