@@ -183,13 +183,13 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 }
 
 /* ===== menú al estilo del Wild Rift: el héroe en grande a la izquierda, modos y JUGAR a la derecha ===== */
-#cargaVelo{position:fixed;inset:0;z-index:70;background:#0c0806ee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#d9c49a;font:15px 'Alegreya Sans',system-ui,sans-serif}#cargaVelo b{color:#ffd77a;font:900 23.9px 'Cinzel',Georgia,serif}#cargaVelo .cvR{width:44px;height:44px;border-radius:50%;border:4px solid #ffd24a33;border-top-color:#ffd24a;animation:gira 0.9s linear infinite}@keyframes gira{to{transform:rotate(360deg)}}
+#cargaVelo{position:fixed;inset:0;z-index:70;background:linear-gradient(#0000 55%,#000c),url(ui/carga.webp) center/cover #0c0806;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:calc(18px + var(--sab));text-shadow:0 2px 3px #000;gap:8px;color:#d9c49a;font:15px 'Alegreya Sans',system-ui,sans-serif}#cargaVelo b{color:#ffd77a;font:900 23.9px 'Cinzel',Georgia,serif}#cargaVelo .cvR{width:44px;height:44px;border-radius:50%;border:4px solid #ffd24a33;border-top-color:#ffd24a;animation:gira 0.9s linear infinite}@keyframes gira{to{transform:rotate(360deg)}}
 #menu{position:fixed;inset:0;z-index:30;overflow:hidden;background:radial-gradient(ellipse at 70% 40%,#3a2611 0%,#140c06 55%,#070403 100%);color:#f2e3c0}
 #menu::before{content:'';position:absolute;inset:0;background:url(ui/fondo_menu.webp) 70% center/cover;opacity:.85}#menu::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#0000 40%,#0c0806aa 62%,#0c0806dd);pointer-events:none}
 #menu .mSplash{position:absolute;left:0;top:0;bottom:0;width:54%;pointer-events:none}
 #menu .mSplash img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;-webkit-mask-image:linear-gradient(90deg,#000 55%,transparent 98%);mask-image:linear-gradient(90deg,#000 55%,transparent 98%);animation:mEntra .6s ease-out}
 @keyframes mEntra{from{opacity:0;transform:translateX(-24px)}}
-#menu .mAtras{position:absolute;z-index:2;left:calc(10px + var(--sal));top:calc(10px + var(--sat));width:40px;height:40px;border-radius:50%;border:2px solid #c99a3a;background:#0c0806cc;color:#ffd77a;font-size:20px;padding:0}
+#menu .mAtras{position:absolute;z-index:5;left:calc(10px + var(--sal));top:calc(10px + var(--sat));width:40px;height:40px;border-radius:50%;border:2px solid #c99a3a;background:#0c0806cc;color:#ffd77a;font-size:20px;padding:0}
 #menu .mHeroe{position:absolute;z-index:2;left:calc(14px + var(--sal));bottom:calc(12px + var(--sab));display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-shadow:0 2px 6px #000}
 #menu .mHeroe em{font:700 11px 'Alegreya Sans',system-ui,sans-serif;font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:#1a0f06;background:#ffb02a;border-radius:4px;padding:2px 7px}
 #menu .mHeroe b{font:900 22.1px 'Cinzel',Georgia,serif;color:#fff}
@@ -342,6 +342,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 #menu .modos button{padding:0 6px 5px !important;gap:0}#menu .modos button b{font-size:15px}#menu .modos button span{font-size:10px;opacity:.9}
 #tienda .tCats button img{width:46px;height:46px}
 .ajSon{display:flex;gap:8px;justify-content:center;margin-top:6px}.ajSon .bt{min-width:0;font-size:13px;min-height:44px}
+.ajSon .bt[data-g]{filter:grayscale(.7) brightness(.62)}.ajSon .bt.on{filter:none}#ajustes .ajC>b{color:#ffd77a;font:700 17px Cinzel,serif}.ajT{margin:8px 0 0;color:#ffd77a;font:600 13px Cinzel,serif;letter-spacing:.06em;text-align:center}#ajustes{z-index:80}#ajustes .ajC{max-height:calc(var(--vh) * 100 - 20px);overflow:auto}
 
 /* rendimiento (16/11): los brillos que laten ya no animan «filter» (repinta todo el botón en cada fotograma);
    se anima la opacidad de un halo aparte, que la tarjeta gráfica mueve sola */
@@ -366,7 +367,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando el campo de batalla</p><b>0 %</b></div>
 <div id="menu">
   <div class="mSplash"><img id="mSplash" alt="" fetchpriority="high" decoding="async"></div>
-  <button class="mAtras" id="bSalir" aria-label="Volver a La Otra Comunidad">←</button><button class="mAtras" id="bSon" aria-label="Sonido" style="left:auto;right:calc(10px + var(--sar))">🔊</button>
+  <button class="mAtras" id="bSalir" aria-label="Volver a La Otra Comunidad">←</button><button class="mAtras" id="bSon" aria-label="Ajustes" style="left:auto;right:calc(10px + var(--sar))">⚙</button>
   <div class="mHeroe"><em id="mHeroRol"></em><b id="mHeroNom"></b><button id="mCambiar">⇄ Cambiar héroe</button></div>
   <div class="mPanel">
     <div class="mTit"><h1>La Brecha</h1><p class="sub">Rohan contra Isengard</p></div>

@@ -215,15 +215,17 @@ const topC = (el) => {const r = el.getBoundingClientRect(); return GIRO ? innerW
 /* ---------- motor ---------- */
 const renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'});
 /* resolución dinámica (como en el Abismo): si el móvil no llega a ~50 fps baja la nitidez un paso; si va sobrado, la sube */
-const PR = {max: Math.min(devicePixelRatio, 2), v: Math.min(devicePixelRatio, 2), t: 0, n: 0, acum: 0};
+/* ajustes de gráficos como en el Wild Rift: calidad (baja/media/alta) y 30 o 60 fotogramas por segundo */
+const GRAF = {cal: localStorage.getItem('vado.cal') || (() => {const n = navigator.hardwareConcurrency || 4, m = navigator.deviceMemory || 4; return n >= 8 && m >= 6 ? 'alta' : n <= 4 || m <= 3 ? 'baja' : 'media';})(), fps: +(localStorage.getItem('vado.fps') || 60), ult: 0};
+const PR = {max: Math.min(devicePixelRatio, {baja: 1, media: 1.5, alta: 2}[GRAF.cal] || 1.5), min: 0.75, t: 0, n: 0, acum: 0}; PR.v = PR.max;
 renderer.setPixelRatio(PR.v); renderer.setSize(VW, VH);
 function ajustaResolucion(dt) {
   PR.acum += dt; PR.n++; PR.t += dt; if (PR.t < 1.5) return;
   const fps = PR.n / PR.acum; PR.t = PR.acum = PR.n = 0;
-  const nv = fps < 48 ? Math.max(0.75, PR.v - 0.25) : fps > 58 ? Math.min(PR.max, PR.v + 0.25) : PR.v;
+  const nv = fps < GRAF.fps * 0.8 ? Math.max(PR.min, PR.v - 0.25) : fps > GRAF.fps * 0.96 ? Math.min(PR.max, PR.v + 0.25) : PR.v;
   if (nv !== PR.v) {PR.v = nv; renderer.setPixelRatio(nv); renderer.setSize(VW, VH);}
   /* si el móvil va justo, la sombra a la mitad de resolución (4 veces menos píxeles que pintar) */
-  const ms = PR.v <= 1 ? 1024 : 2048; if (sol.shadow.mapSize.x !== ms) {sol.shadow.mapSize.set(ms, ms); if (sol.shadow.map) {sol.shadow.map.dispose(); sol.shadow.map = null;}}
+  const ms = PR.v <= 1 || GRAF.cal !== 'alta' ? 1024 : 2048; if (sol.shadow.mapSize.x !== ms) {sol.shadow.mapSize.set(ms, ms); if (sol.shadow.map) {sol.shadow.map.dispose(); sol.shadow.map = null;}}
 }
 renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18; /* más luz y color: estilo Supercell, menos oscuro */
 renderer.debug.checkShaderErrors = false; /* comprobar los sombreadores obliga a esperar a que compilen: tirón */
@@ -233,16 +235,16 @@ const scene = new THREE.Scene(); scene.background = new THREE.Color('#14201a'); 
 const camera = new THREE.PerspectiveCamera(42, VW / VH, 0.5, 200);
 addEventListener('resize', () => {giraPantalla(); renderer.setSize(VW, VH); camera.aspect = VW / VH; camera.updateProjectionMatrix(); APAI = VW > VH;});
 scene.add(new THREE.HemisphereLight('#d6e2ff', '#4a3620', 1.85));
-const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30, 10); sol.castShadow = true;
+const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30, 10); sol.castShadow = GRAF.cal !== 'baja';
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard', 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul'];
+const VADO = ['vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard', 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'palantir'];
 /* modelos: los de la jungla solo hacen falta en la Batalla (2 contra 2) y se bajan después; los que no se usaban (capitán, estandartes, barriles…: casi 3 MB) ya no se bajan.
    Los del Abismo van adelgazados en modelos_l/ (sin los clips que aquí no se usan y con las texturas en WebP: tools/vado/adelgaza.py). */
 const JUNGLA = ['huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'warg', 'huargo_alfa', 'troll', 'orco'];
 const LIGEROS = ['warg', 'huargo_alfa', 'troll', 'orco', 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'brasero', 'tienda'];
-const NOMBRES = [...VADO.filter((n) => !JUNGLA.includes(n)), 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles', 'brasero', 'tienda'];
+const NOMBRES = [...VADO.filter((n) => !JUNGLA.includes(n) && n !== 'palantir'), 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles', 'brasero', 'tienda'];
 async function cargaModelo(n) {
   const r = await fetch((VADO.includes(n) ? 'modelos/' : LIGEROS.includes(n) ? 'modelos_l/' : '../abismo/modelos/') + n + '.glb'); if (!r.ok) throw new Error(n);
   return new Promise(async (res, rej) => loader.parse(await r.arrayBuffer(), '', res, rej));
@@ -422,22 +424,24 @@ function construyeMapa() {
   vidaMapa(scene_); PALANTIR = null; ponPalantir();
 }
 /* el palantír junto al estandarte de Isengard: el Ojo late y mira al héroe más cercano */
-let PALANTIR = null; const HAY_PALANTIR = false; /* poner a true cuando llegue modelos/palantir.glb (Pack Vado 14) */
+let PALANTIR = null; const HAY_PALANTIR = true; /* poner a true cuando llegue modelos/palantir.glb (Pack Vado 14) */
 function ponPalantir() {
   if (!M.palantir || !MAPA_G || PALANTIR) return;
   const b = BASES[1], o = M.palantir.scene.clone(true), dx = b.nexo.x - b.fuente.x, dz = b.nexo.z - b.fuente.z, l = Math.hypot(dx, dz) || 1;
-  o.position.set(b.nexo.x + dz / l * 4.5, 0, b.nexo.z - dx / l * 4.5); o.traverse((q) => {if (q.isMesh) q.castShadow = true;}); MAPA_G.add(o);
-  const ojo = o.getObjectByName('ojo'); const mats = []; if (ojo) ojo.traverse((q) => {if (q.isMesh) {q.material = q.material.clone(); q.material.fog = false; mats.push(q.material);}});
+  o.position.set(b.nexo.x + dz / l * 4.8, 0, b.nexo.z - dx / l * 4.8); o.scale.setScalar(1.75); o.traverse((q) => {if (q.isMesh) q.castShadow = true;}); MAPA_G.add(o);
+  /* el cristal venía con «transmisión» (obliga a dibujar la escena dos veces): cristal oscuro semitransparente de toda la vida */
+  const cr = o.getObjectByName('cristal'); if (cr) cr.traverse((q) => {if (q.isMesh) {q.material = new THREE.MeshStandardMaterial({color: '#1b1f2a', emissive: '#3a0a02', emissiveIntensity: 0.6, roughness: 0.08, metalness: 0.3, transparent: true, opacity: 0.5, depthWrite: false}); q.renderOrder = 3; q.castShadow = false;}});
+  const ojo = o.getObjectByName('ojo'); if (ojo) ojo.rotation.order = 'YXZ'; const mats = []; if (ojo) ojo.traverse((q) => {if (q.isMesh) {q.material = q.material.clone(); q.material.fog = false; mats.push(q.material);}});
   PALANTIR = {o, ojo, mats}; luzFuego(o.position.x, o.position.z);
 }
 function animaPalantir() {
   if (!PALANTIR || !PALANTIR.ojo) return; const t = UT.value, P = PALANTIR;
   for (const m of P.mats) if (m.emissive) m.emissiveIntensity = 2.2 + Math.sin(t * 2.4) * 0.8;
   let mejor = null, md = 30; for (const v of VISTA.values()) if (v.k === 'h' && v.muerto < 0) {const d = Math.hypot(v.x - P.o.position.x, v.z - P.o.position.z); if (d < md) {md = d; mejor = v;}}
-  const obj = mejor ? Math.atan2(mejor.x - P.o.position.x, mejor.z - P.o.position.z) : Math.sin(t * 0.3) * 1.2; let d = obj - P.ojo.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); P.ojo.rotation.y += d * 0.04;
+  const obj = mejor ? Math.atan2(mejor.x - P.o.position.x, mejor.z - P.o.position.z) : Math.sin(t * 0.3) * 1.2; let d = obj - P.ojo.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); P.ojo.rotation.y += d * 0.04; P.ojo.rotation.x = -0.55; /* un poco hacia arriba: la cámara del juego mira desde lo alto */
 }
 /* ---------- vida del mapa (estilo Supercell): agua que corre, aros de las fuentes, luciérnagas y árboles que se mecen ---------- */
-const UT = {value: 0}, FUENTE_AROS = [];
+const UT = {value: 0}, FUENTE_AROS = []; let LUCES_AIRE = null;
 /* el aro de tu fuente, azul; el del enemigo, rojo (se llama al saber de qué bando eres) */
 function colorFuentes() {for (const a of FUENTE_AROS) a.material.color.set(a.userData.eq === MI_EQ ? '#4fb6ff' : '#ff5a4a');}
 const GLSL_RUIDO = `float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
@@ -484,7 +488,7 @@ function vidaMapa(g) {
         vI=smoothstep(-4.,4.,dot(p.xz,uEje)); vA=(.55+.45*sin(uT*2.3+fase*5.))*smoothstep(25.,15.,length(p.xz-uC.xz));
         vec4 mv=modelViewMatrix*vec4(p,1.); gl_PointSize=22.*(30./-mv.z); gl_Position=projectionMatrix*mv;}`,
     fragmentShader: `varying float vA; varying float vI; void main(){float d=length(gl_PointCoord-.5); float a=smoothstep(.5,.0,d); a=a*a*vA; vec3 c=mix(vec3(1.,.95,.45),vec3(1.,.45,.12),vI); gl_FragColor=vec4(c*a,a);}`});
-  const pts = new THREE.Points(pg, pm); pts.frustumCulled = false; pts.renderOrder = 6; pts.userData.vivo = 1; g.add(pts);
+  const pts = new THREE.Points(pg, pm); pts.frustumCulled = false; pts.renderOrder = 6; pts.userData.vivo = 1; pts.name = 'luciernagas'; pts.visible = GRAF.cal !== 'baja'; LUCES_AIRE = pts; g.add(pts);
   /* los árboles se mecen con el viento (solo en el sombreador: no cuesta nada al procesador) */
   const vistos = new Set();
   for (const im of BOSQUE) {const m = im.material; if (vistos.has(m)) continue; vistos.add(m);
@@ -495,6 +499,12 @@ function vidaMapa(g) {
     m.customProgramCacheKey = () => 'mecer'; m.needsUpdate = true;}
 }
 /* el decorado quieto se junta por material: de ~900 mallas a unas pocas decenas (en el móvil cada malla es una llamada de dibujo, y otra más para la sombra) */
+/* los modelos del Pack 14 vienen cuantizados (enteros de 16 bits): para moverlos y juntarlos hay que pasarlos a decimales */
+function flota(g) {
+  for (const k of Object.keys(g.attributes)) {const a = g.attributes[k]; if (a.array instanceof Float32Array) continue; const n = a.count, c = a.itemSize, f = new Float32Array(n * c);
+    for (let i = 0; i < n; i++) for (let j = 0; j < c; j++) f[i * c + j] = a.getComponent(i, j); g.setAttribute(k, new THREE.BufferAttribute(f, c));}
+  return g;
+}
 function fusiona(raiz, quitaSombraPeq = true) {
   const grupos = new Map(); let antes = 0; raiz.updateMatrixWorld(true);
   const inv = new THREE.Matrix4().copy(raiz.matrixWorld).invert();
@@ -507,7 +517,7 @@ function fusiona(raiz, quitaSombraPeq = true) {
   let despues = 0; const m4 = new THREE.Matrix4();
   for (const lista of grupos.values()) {
     if (lista.length < 2) {despues++; continue;}
-    const geos = lista.map((o) => {const g = o.geometry.clone(); g.applyMatrix4(m4.multiplyMatrices(inv, o.matrixWorld)); return g;});
+    const geos = lista.map((o) => {const g = flota(o.geometry.clone()); g.applyMatrix4(m4.multiplyMatrices(inv, o.matrixWorld)); return g;});
     let mg = null; try {mg = mergeGeometries(geos, false);} catch (e) {mg = null;}
     geos.forEach((g) => g.dispose());
     if (!mg) {despues += lista.length; continue;}
@@ -1464,6 +1474,16 @@ function musica(k) {
 function agacha(seg) {if (!AUD.mus || !AUD.musOn) return; const t = AC.currentTime, g = AUD.mus.gain; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0.22, t + 0.15); g.setValueAtTime(0.22, t + seg); g.linearRampToValueAtTime(0.55, t + seg + 0.6);}
 /* clic suave en los botones de los menús */
 addEventListener('pointerdown', (e) => {const b = e.target.closest && e.target.closest('#menu button, #elige button, #tienda button, #ajustes button, #fin button, #sala button'); if (b && !b.disabled) {audio(); suena('gema', 0.18);}});
+function botonesGraf() {
+  const b = (k, v, t) => '<button class="bt s' + (GRAF[k] === v ? ' on' : '') + '" data-g="' + k + '" data-v="' + v + '">' + t + '</button>';
+  return '<p class="ajT">Gráficos</p><div class="ajSon">' + b('cal', 'baja', 'Baja') + b('cal', 'media', 'Media') + b('cal', 'alta', 'Alta') + '</div><div class="ajSon">' + b('fps', 30, '30 fps') + b('fps', 60, '60 fps') + '</div>';
+}
+function ponGraf(k, v) {
+  GRAF[k] = v; localStorage.setItem('vado.' + k, v);
+  if (k === 'cal') {PR.max = Math.min(devicePixelRatio, {baja: 1, media: 1.5, alta: 2}[v]); PR.min = v === 'baja' ? 0.6 : 0.75; PR.v = PR.max; renderer.setPixelRatio(PR.v); renderer.setSize(VW, VH);
+    sol.castShadow = v !== 'baja'; if (LUCES_AIRE) LUCES_AIRE.visible = v !== 'baja'; const ms = v === 'alta' && PR.v > 1 ? 2048 : 1024; sol.shadow.mapSize.set(ms, ms); if (sol.shadow.map) {sol.shadow.map.dispose(); sol.shadow.map = null;}}
+}
+function enlazaGraf(el, repinta) {for (const bt of el.querySelectorAll('[data-g]')) bt.onclick = () => {const k = bt.dataset.g; ponGraf(k, k === 'fps' ? +bt.dataset.v : bt.dataset.v); repinta();};}
 function botonesSonido() {return '<div class="ajSon"><button class="bt s" id="ajMus">' + (AUD.musOn ? '🎵 Música: sí' : '🎵 Música: no') + '</button><button class="bt s" id="ajFx">' + (AUD.fxOn ? '🔊 Efectos: sí' : '🔈 Efectos: no') + '</button></div>';}
 function enlazaSonido(repinta) {$('ajMus').onclick = () => {ponSonido('mus', !AUD.musOn); if (AUD.musOn && !AUD.pista) musica(ESTADO === 'juego' ? 'batalla' : 'menu'); repinta();}; $('ajFx').onclick = () => {ponSonido('fx', !AUD.fxOn); repinta();};}
 function ponSonido(cual, on) {
@@ -1520,8 +1540,8 @@ function votaMio(si) {if (S) rinde(S.u.find((q) => q.id === YO), si); else NET.m
 function abreAjustes() {
   const t = +($('marcador').dataset.t || 0), a = $('ajustes'), falta = Math.ceil(RINDE_T - t);
   a.innerHTML = '<div class="ajC"><b>Partida</b><button class="bt" id="ajSeguir">Seguir jugando</button><button class="bt s" id="ajRinde"' + (falta > 0 ? ' disabled' : '') + '>🏳 Rendirse' + (falta > 0 ? ' (en ' + Math.floor(falta / 60) + ':' + String(falta % 60).padStart(2, '0') + ')' : '') + '</button>' +
-    '<p>' + (MODO === '2v2' ? 'Hasta el minuto 9 hace falta que votéis sí los dos.' : 'Te rindes y gana el rival.') + '</p>' + botonesSonido() + '</div>';
-  a.classList.remove('hidden'); enlazaSonido(abreAjustes);
+    '<p>' + (MODO === '2v2' ? 'Hasta el minuto 9 hace falta que votéis sí los dos.' : 'Te rindes y gana el rival.') + '</p>' + botonesSonido() + botonesGraf() + '</div>';
+  a.classList.remove('hidden'); enlazaSonido(abreAjustes); enlazaGraf(a, abreAjustes);
   $('ajSeguir').onclick = () => a.classList.add('hidden');
   $('ajRinde').onclick = () => {a.classList.add('hidden'); votaMio(true);};
 }
@@ -1954,6 +1974,7 @@ const reloj = new THREE.Clock(); let acum = 0, ALFA = 1;
 const PERF = {n: 0, sim: 0, dib: 0, hud: 0, ren: 0, tot: 0, max: 0};
 function bucle() {
   requestAnimationFrame(bucle); const t0b = performance.now();
+  if (GRAF.fps === 30 && ESTADO === 'juego') {if (t0b - GRAF.ult < 1000 / 30 - 4) return; GRAF.ult = t0b;} /* a 30 fps se salta un fotograma de cada dos: menos calor y batería */
   const dtR = reloj.getDelta(), dt = Math.min(0.05, dtR); if (ESTADO === 'juego') ajustaResolucion(Math.min(0.25, dtR));
   try {
     if (ESTADO === 'juego' || ESTADO === 'fin') {
@@ -2095,13 +2116,14 @@ function pintaSala() {
 }
 function nombreJugador() {let n = localStorage.getItem('vado.nombre'); if (!n) {try {const a = JSON.parse(localStorage.getItem('loc.yo') || 'null'); n = a && a.nombre;} catch (e) {} } return n || 'Hobbit' + Math.floor(Math.random() * 90 + 10);}
 function preparaMenu() {
-  {const bs = $('bSon'), pinta = () => {bs.textContent = AUD.musOn || AUD.fxOn ? '🔊' : '🔇';}; pinta(); bs.onclick = () => {const on = !(AUD.musOn || AUD.fxOn); ponSonido('mus', on); ponSonido('fx', on); if (on) musica('menu'); pinta();};}
+  /* ⚙ del menú: sonido y gráficos (como los ajustes del Wild Rift) */
+  {const abre = () => {const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Ajustes</b>' + botonesSonido() + botonesGraf() + '<button class="bt" id="ajCierra">Listo</button></div>'; a.classList.remove('hidden'); enlazaSonido(abre); enlazaGraf(a, abre); $('ajCierra').onclick = () => a.classList.add('hidden');}; $('bSon').onclick = abre;}
   pintaMenu();
   $('bGirar').onclick = apaisa;
   $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);}, modoElegido === '2v2');});
   $('bCrear').onclick = () => eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => {const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);}, true);});
   $('bUnir').onclick = () => {const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => conecta(c, modoElegido, nombreJugador(), heroeElegido), true);});};
-  $('bSalir').onclick = () => {sueltaApaisado(); location.href = '../';};
+  $('bSalir').onclick = () => {if (window.BrechaAndroid) {BrechaAndroid.salir(); return;} sueltaApaisado(); location.href = '../';};
 }
 
 /* ---------- arranque ----------

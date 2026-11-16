@@ -1,0 +1,38 @@
+PACK VADO 14 — LA BRECHA
+
+ARCHIVOS
+vado_torres.glb: torre_rohan_1, torre_rohan_2, torre_rohan_3, torre_isengard_1, torre_isengard_2, torre_isengard_3.
+vado_nexos.glb: nexo_rohan, nexo_isengard.
+palantir.glb: pedestal, cristal, ojo.
+
+COMPATIBILIDAD
+Se conservan TODOS los nombres de nodo y las relaciones padre/hijo de los dos archivos aportados, incluidos los subobjetos con sufijos .001, etc. Sus nombres históricos se mantienen aunque la arquitectura y la distribución de geometría entre subobjetos han cambiado. No se conservan necesariamente los transforms internos de las piezas; los nodos principales conservan origen de colocación en el suelo.
+Las variantes y los nexos se superponen en el origen, igual que en los originales. Seleccionar/clonar el nodo principal adecuado para el juego; no mostrar simultáneamente todos los estados.
+Se igualaron las dimensiones exteriores de cada nodo principal a las del original, incluido el alcance de los escombros. Frente +Z, arriba +Y, metros, pie de cada conjunto en Y=0. Torres enteras de 7 m; Rohan dañada de 6,669 m; ruinas de 2,5 m; nexos de 6 m.
+
+MATERIALES Y GEOMETRÍA
+Colores PBR en materiales; sin texturas, imágenes ni archivos externos. Normales presentes en todas las primitivas. Ventanas, llamas y Ojo emisivos.
+Las torres utilizan KHR_mesh_quantization para mantener el tamaño bajo sin compresión Draco/Meshopt ni descargas de decodificadores. Se conservan las normales cuantizadas; la precisión espacial comprobada es inferior a 2 mm respecto a las dimensiones de referencia.
+El cristal del palantír usa transparencia y transmisión glTF. La esfera mide 1,2 m de diámetro y su centro está en (0, 1,9, 0). El conjunto mide 2,5 m de alto. El objeto ojo tiene su origen en ese centro: permite rotar y escalar el Ojo sin afectar a cristal ni pedestal. El Ojo incluye la pupila oscura y las superficies emisivas naranja-rojo en un único objeto con varios materiales. La emisión está incorporada; el halo exterior depende del bloom del juego.
+
+VERIFICACIÓN
+Recarga de los tres GLB finales. Comprobación de conjuntos de nombres, jerarquías, dimensiones, normales finitas, recursos incrustados y tamaño inferior a 400.000 bytes por archivo. glTF Validator: 0 errores y 0 advertencias en los tres. Renders de revisión incluidos. No se ha ejecutado dentro del proyecto Three.js del usuario.
+
+TAMAÑOS Y MEDIDAS (XYZ, metros)
+
+vado_torres.glb: 245604 bytes
+torre_rohan_1: 3.900, 7.000, 3.900; 1654 triángulos
+torre_rohan_2: 5.341, 6.669, 4.445; 1810 triángulos
+torre_rohan_3: 4.801, 2.500, 4.922; 752 triángulos
+torre_isengard_1: 3.400, 7.000, 3.400; 332 triángulos
+torre_isengard_2: 5.165, 7.000, 5.290; 612 triángulos
+torre_isengard_3: 4.844, 2.500, 4.226; 504 triángulos
+
+vado_nexos.glb: 189388 bytes
+nexo_rohan: 4.000, 6.000, 3.880; 900 triángulos
+nexo_isengard: 4.000, 6.000, 3.880; 2004 triángulos
+
+palantir.glb: 48216 bytes
+pedestal: 1.240, 2.031, 1.240; 288 triángulos
+cristal: 1.200, 1.200, 1.200; 440 triángulos
+ojo: 0.960, 0.644, 0.038; 326 triángulos

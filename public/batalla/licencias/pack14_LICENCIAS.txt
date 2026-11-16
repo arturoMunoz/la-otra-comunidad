@@ -1,0 +1,12 @@
+PACK VADO 14 — PROCEDENCIA Y USO
+
+vado_torres.glb, vado_nexos.glb y palantir.glb:
+Geometría y materiales nuevos creados por ChatGPT/OpenAI para este encargo. No se han incorporado mallas, texturas ni emblemas descargados de packs de terceros. Los emblemas están construidos como geometría de colores.
+No se exige atribución adicional por estas aportaciones nuevas; pueden utilizarse y modificarse en el proyecto del usuario.
+
+Referencias técnicas aportadas por el usuario:
+- vado_torres.glb: nombres de nodos, relaciones padre/hijo, dimensiones y convenciones.
+- vado_nexos.glb: nombres de nodos, relaciones padre/hijo, dimensiones y convenciones.
+Autor y licencia de esos originales: no especificados en los archivos recibidos. No se atribuye CC0 a los originales ni se presupone una licencia de terceros. No se ha copiado su geometría visible en los reemplazos.
+
+Los nombres, lugares y emblemas de la ambientación de El Señor de los Anillos no se presentan como recursos oficiales ni como propiedad de KayKit, Quaternius o Kenney. Este archivo documenta la procedencia de los assets, no concede derechos sobre la franquicia.

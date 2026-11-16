@@ -1,0 +1,166 @@
+{
+  "vado_torres": {
+    "bytes": 245604,
+    "normales": true,
+    "nodos": 136,
+    "objetos": {
+      "torre_rohan_1": {
+        "min_xyz": [
+          -1.95,
+          0.0,
+          -1.95
+        ],
+        "max_xyz": [
+          1.95,
+          7.0,
+          1.95
+        ],
+        "triangulos": 1654
+      },
+      "torre_rohan_2": {
+        "min_xyz": [
+          -2.67054,
+          -0.0,
+          -2.22239
+        ],
+        "max_xyz": [
+          2.67056,
+          6.66945,
+          2.2224
+        ],
+        "triangulos": 1810
+      },
+      "torre_rohan_3": {
+        "min_xyz": [
+          -2.40065,
+          -0.0,
+          -2.46118
+        ],
+        "max_xyz": [
+          2.40065,
+          2.5,
+          2.46118
+        ],
+        "triangulos": 752
+      },
+      "torre_isengard_1": {
+        "min_xyz": [
+          -1.7,
+          -1e-05,
+          -1.69999
+        ],
+        "max_xyz": [
+          1.7,
+          7.0,
+          1.70001
+        ],
+        "triangulos": 332
+      },
+      "torre_isengard_2": {
+        "min_xyz": [
+          -2.58229,
+          -0.0,
+          -2.6449
+        ],
+        "max_xyz": [
+          2.58228,
+          7.0,
+          2.6449
+        ],
+        "triangulos": 612
+      },
+      "torre_isengard_3": {
+        "min_xyz": [
+          -2.42207,
+          0.0,
+          -2.11324
+        ],
+        "max_xyz": [
+          2.42207,
+          2.5,
+          2.11323
+        ],
+        "triangulos": 504
+      }
+    }
+  },
+  "vado_nexos": {
+    "bytes": 189388,
+    "normales": true,
+    "nodos": 56,
+    "objetos": {
+      "nexo_rohan": {
+        "min_xyz": [
+          -2.0,
+          0.0,
+          -1.94
+        ],
+        "max_xyz": [
+          2.0,
+          6.0,
+          1.94
+        ],
+        "triangulos": 900
+      },
+      "nexo_isengard": {
+        "min_xyz": [
+          -2.0,
+          0.0,
+          -1.94
+        ],
+        "max_xyz": [
+          2.0,
+          6.0,
+          1.94
+        ],
+        "triangulos": 2004
+      }
+    }
+  },
+  "palantir": {
+    "bytes": 48216,
+    "normales": true,
+    "nodos": 3,
+    "objetos": {
+      "pedestal": {
+        "min_xyz": [
+          -0.62,
+          0.0,
+          -0.62
+        ],
+        "max_xyz": [
+          0.62,
+          2.03128,
+          0.62
+        ],
+        "triangulos": 288
+      },
+      "cristal": {
+        "min_xyz": [
+          -0.6,
+          1.3,
+          -0.6
+        ],
+        "max_xyz": [
+          0.6,
+          2.5,
+          0.6
+        ],
+        "triangulos": 440
+      },
+      "ojo": {
+        "min_xyz": [
+          -0.48,
+          1.57806,
+          0.102
+        ],
+        "max_xyz": [
+          0.48,
+          2.22194,
+          0.14
+        ],
+        "triangulos": 326
+      }
+    }
+  }
+}
