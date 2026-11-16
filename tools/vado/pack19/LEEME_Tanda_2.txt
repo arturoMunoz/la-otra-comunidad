@@ -1,0 +1,22 @@
+PACK VADO 19 ART — TANDA 2 DE 3
+Juego: La Brecha · Marcadores de apuntado
+
+Formato: PNG RGBA con transparencia real.
+Todos los indicadores tienen vista cenital, sin sombras ni perspectiva.
+Interiores semitransparentes y bordes de mayor opacidad.
+
+ARQUERO DE LÓRIEN
+- ind_elfo_q.png       1024 x 256  flecha derecha, plata y mallorn
+- ind_elfo_e.png       1024 x 256  flecha corta / paso élfico, punta derecha
+- ind_elfo_r.png        512 x 512  círculo, lluvia de flechas
+- ind_elfo_alcance.png  512 x 512  aro circular, verde claro plateado
+
+HOBBIT DE LA COMARCA
+- ind_hobbit_q.png       1024 x 256  flecha derecha, madera, cuerda y piedra
+- ind_hobbit_e.png        512 x 512  cono con vértice inferior central, abre hacia arriba
+- ind_hobbit_alcance.png  512 x 512  aro circular, cuerda y madera
+
+Imágenes diseñadas como indicadores planos de juego y no como arte conceptual.
+El cono ocupa el encuadre cuadrado. Los bordes exterior del canvas tienen alfa cero.
+Para controlar visualmente el resultado use el JPG de vista previa aparte.
+La entrega definitiva Pack_Vado_19_ART.zip necesita también las tandas 1 y 3.

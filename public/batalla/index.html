@@ -16,6 +16,8 @@
 <style>
 /* iPhone: sin zoom al tocar dos veces rápido (atacar) ni al pellizcar */
 html,body,button,input,#mandos,#mandos *,#hud,#hud *{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#joy,canvas,#bAt,#bAt *{touch-action:none}
+/* los botones que se arrastran (habilidades, almenara) se quedan siempre con el dedo: con manipulation el navegador cancelaba el arrastre */
+#mandos button,#mandos button *,#bAlm,#bAlm *{touch-action:none}#mandos img{-webkit-user-drag:none;user-drag:none;pointer-events:none}
 
 @font-face{font-family:'Cinzel';src:url(fuentes/cinzel.woff) format('woff');font-weight:400 900;font-display:swap}
 @font-face{font-family:'Alegreya Sans';src:url(fuentes/alegreya-Medium.woff) format('woff');font-weight:400 600;font-display:swap}

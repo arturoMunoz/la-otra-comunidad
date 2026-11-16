@@ -60,8 +60,8 @@ const OBJ = {
   daga: {t: 'Daga de Bree', i: 'obj_02', c: 300, st: {vatq: 0.2}},
   cota: {t: 'Cota de anillas', i: 'obj_03', c: 350, st: {vida: 160, arm: 10}},
   yelmo: {t: 'Yelmo de hierro', i: 'obj_04', c: 350, st: {arm: 25}},
-  manto: {t: 'Manto de Lórien', i: 'ui/h_gandalf_w.webp', c: 350, st: {rm: 25}},
-  tomo: {t: 'Tomo de Rivendel', i: 'ui/h_gandalf_e.webp', c: 350, st: {poder: 30}},
+  manto: {t: 'Manto de Lórien', i: '../batalla/ui/obj_manto.webp', c: 350, st: {rm: 25}},
+  tomo: {t: 'Tomo de Rivendel', i: '../batalla/ui/obj_tomo.webp', c: 350, st: {poder: 30}},
   botas: {t: 'Botas de cuero', i: 'obj_05', c: 300, st: {vel: 0.12}},
   amuleto: {t: 'Amuleto de Lórien', i: 'obj_06', c: 300, st: {regen: 3}},
   herugrim: {t: 'Herugrim', i: 'obj_07', leg: 1, rec: ['hoja', 'hoja'], c: 500, st: {dano: 50, crit: 0.2}, p: 'Un 20 % de golpes críticos (doble daño).'},
@@ -69,9 +69,9 @@ const OBJ = {
   escudo: {t: 'Escudo de la Marca', i: 'obj_09', leg: 1, rec: ['cota', 'yelmo'], c: 500, st: {vida: 300, arm: 45, espinas: 0.15}, p: 'Quien te pega cuerpo a cuerpo se lleva un 15 %.'},
   capa: {t: 'Capa élfica', i: 'obj_10', leg: 1, rec: ['botas', 'amuleto'], c: 400, st: {vel: 0.18, regen: 5, esquiva: 0.12}, p: 'Un 12 % de golpes no te tocan.'},
   hacha: {t: 'Hacha de El Sagrario', i: 'obj_11', leg: 1, rec: ['hoja', 'amuleto'], c: 450, st: {dano: 30, robo: 0.12}, p: 'Robo de vida del 12 %.'},
-  baculo: {t: 'Báculo de los Istari', i: 'ui/at_gandalf.webp', leg: 1, rec: ['tomo', 'tomo'], c: 500, st: {poder: 90}, p: 'Mucho poder mágico: las habilidades mágicas pegan bastante más.'},
-  narya: {t: 'Narya, el Anillo de Fuego', i: 'ui/h_gandalf_q.webp', leg: 1, rec: ['tomo', 'manto'], c: 450, st: {poder: 50, rm: 30, vida: 150}, p: 'Poder mágico y protección contra la magia.'},
-  velo: {t: 'Velo de Galadriel', i: 'ui/h_gandalf_w.webp', leg: 1, rec: ['manto', 'cota'], c: 450, st: {vida: 300, rm: 50, regen: 3}, p: 'Mucha resistencia mágica: contra magos.'},
+  baculo: {t: 'Báculo de los Istari', i: '../batalla/ui/obj_baculo.webp', leg: 1, rec: ['tomo', 'tomo'], c: 500, st: {poder: 90}, p: 'Mucho poder mágico: las habilidades mágicas pegan bastante más.'},
+  narya: {t: 'Narya, el Anillo de Fuego', i: '../batalla/ui/obj_narya.webp', leg: 1, rec: ['tomo', 'manto'], c: 450, st: {poder: 50, rm: 30, vida: 150}, p: 'Poder mágico y protección contra la magia.'},
+  velo: {t: 'Velo de Galadriel', i: '../batalla/ui/obj_velo.webp', leg: 1, rec: ['manto', 'cota'], c: 450, st: {vida: 300, rm: 50, regen: 3}, p: 'Mucha resistencia mágica: contra magos.'},
   mithril: {t: 'Cota de mithril', i: 'obj_14', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 450, arm: 30, rm: 30, regen: 4}, p: 'Ligera y casi irrompible: protege del acero y de la magia.'},
 };
 const PLAN_BOT = {gandalf: ['tomo', 'tomo', 'baculo', 'botas', 'manto', 'tomo', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'cota', 'manto', 'velo'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};

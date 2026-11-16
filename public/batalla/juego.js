@@ -62,8 +62,8 @@ const OBJ = {
   daga: {t: 'Daga de Bree', i: 'obj_02', c: 300, st: {vatq: 0.2}},
   cota: {t: 'Cota de anillas', i: 'obj_03', c: 350, st: {vida: 160, arm: 10}},
   yelmo: {t: 'Yelmo de hierro', i: 'obj_04', c: 350, st: {arm: 25}},
-  manto: {t: 'Manto de Lórien', i: 'ui/h_gandalf_w.webp', c: 350, st: {rm: 25}},
-  tomo: {t: 'Tomo de Rivendel', i: 'ui/h_gandalf_e.webp', c: 350, st: {poder: 30}},
+  manto: {t: 'Manto de Lórien', i: '../batalla/ui/obj_manto.webp', c: 350, st: {rm: 25}},
+  tomo: {t: 'Tomo de Rivendel', i: '../batalla/ui/obj_tomo.webp', c: 350, st: {poder: 30}},
   botas: {t: 'Botas de cuero', i: 'obj_05', c: 300, st: {vel: 0.12}},
   amuleto: {t: 'Amuleto de Lórien', i: 'obj_06', c: 300, st: {regen: 3}},
   herugrim: {t: 'Herugrim', i: 'obj_07', leg: 1, rec: ['hoja', 'hoja'], c: 500, st: {dano: 50, crit: 0.2}, p: 'Un 20 % de golpes críticos (doble daño).'},
@@ -71,9 +71,9 @@ const OBJ = {
   escudo: {t: 'Escudo de la Marca', i: 'obj_09', leg: 1, rec: ['cota', 'yelmo'], c: 500, st: {vida: 300, arm: 45, espinas: 0.15}, p: 'Quien te pega cuerpo a cuerpo se lleva un 15 %.'},
   capa: {t: 'Capa élfica', i: 'obj_10', leg: 1, rec: ['botas', 'amuleto'], c: 400, st: {vel: 0.18, regen: 5, esquiva: 0.12}, p: 'Un 12 % de golpes no te tocan.'},
   hacha: {t: 'Hacha de El Sagrario', i: 'obj_11', leg: 1, rec: ['hoja', 'amuleto'], c: 450, st: {dano: 30, robo: 0.12}, p: 'Robo de vida del 12 %.'},
-  baculo: {t: 'Báculo de los Istari', i: 'ui/at_gandalf.webp', leg: 1, rec: ['tomo', 'tomo'], c: 500, st: {poder: 90}, p: 'Mucho poder mágico: las habilidades mágicas pegan bastante más.'},
-  narya: {t: 'Narya, el Anillo de Fuego', i: 'ui/h_gandalf_q.webp', leg: 1, rec: ['tomo', 'manto'], c: 450, st: {poder: 50, rm: 30, vida: 150}, p: 'Poder mágico y protección contra la magia.'},
-  velo: {t: 'Velo de Galadriel', i: 'ui/h_gandalf_w.webp', leg: 1, rec: ['manto', 'cota'], c: 450, st: {vida: 300, rm: 50, regen: 3}, p: 'Mucha resistencia mágica: contra magos.'},
+  baculo: {t: 'Báculo de los Istari', i: '../batalla/ui/obj_baculo.webp', leg: 1, rec: ['tomo', 'tomo'], c: 500, st: {poder: 90}, p: 'Mucho poder mágico: las habilidades mágicas pegan bastante más.'},
+  narya: {t: 'Narya, el Anillo de Fuego', i: '../batalla/ui/obj_narya.webp', leg: 1, rec: ['tomo', 'manto'], c: 450, st: {poder: 50, rm: 30, vida: 150}, p: 'Poder mágico y protección contra la magia.'},
+  velo: {t: 'Velo de Galadriel', i: '../batalla/ui/obj_velo.webp', leg: 1, rec: ['manto', 'cota'], c: 450, st: {vida: 300, rm: 50, regen: 3}, p: 'Mucha resistencia mágica: contra magos.'},
   mithril: {t: 'Cota de mithril', i: 'obj_14', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 450, arm: 30, rm: 30, regen: 4}, p: 'Ligera y casi irrompible: protege del acero y de la magia.'},
 };
 const PLAN_BOT = {gandalf: ['tomo', 'tomo', 'baculo', 'botas', 'manto', 'tomo', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'cota', 'manto', 'velo'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};
@@ -1895,7 +1895,17 @@ function indicador(n, color) {
   m.renderOrder = 4; m.visible = false; scene.add(m); return m;
 }
 /* habilidades que se apuntan (las demás se lanzan sobre ti, como en el Wild Rift: sin mira) */
-const APUNTABLE = {dash: 1, linea: 1, cono: 1, zona: 1, salto: 1, area: 1};
+const APUNTABLE = {dash: 1, linea: 1, cono: 1, zona: 1, salto: 1, area: 1, ejecuta: 1};
+/* Pack Vado 19 (16/11): marcas de apuntado propias de cada héroe (como los indicadores de cada campeón del Wild Rift).
+   Recortadas al borde del dibujo: el aro y el círculo llenan el cuadro, el cono tiene la punta abajo en el centro y la flecha apunta a la derecha. */
+const IND_HEROE = {rohan: 'q r e alcance', enano: 'q e r alcance', elfo: 'q e r alcance', hobbit: 'q e alcance', gandalf: 'q e r alcance', orco: 'w e r alcance'};
+const MIRA_H = {};
+function marcaH(tipo, k, forma) {
+  if (!(IND_HEROE[tipo] || '').split(' ').includes(k)) return null; const n = 'ind_' + tipo + '_' + k;
+  if (!MIRA_H[n]) {const t = cargaTex('../batalla/ui/' + n + '.webp'), g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); if (forma === 'cono') g.translate(0, 0, -0.5);
+    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, opacity: 0.8})); m.renderOrder = 4; m.visible = false; scene.add(m); MIRA_H[n] = m;}
+  return MIRA_H[n];
+}
 /* objetivo automático al tocar sin arrastrar: el héroe enemigo más cercano a tiro (o lo que tengas delante) */
 function autoObjetivo(H, x, z) {
   let mejor = null, md = (H.alc || H.dist || 6) + 4; for (const q of VISTA.values()) if (q.eq !== MI_EQ && (q.k === 'h' ? q.muerto < 0 && !q.escondido : (q.k === 's' || q.k === 'j') && q.muerto !== 0)) {const d0 = Math.hypot((q.xi ?? q.x) - x, (q.zi ?? q.z) - z) - (q.k === 'h' ? 0 : 3); if (d0 < md) {md = d0; mejor = q;}}
@@ -1913,16 +1923,16 @@ function muestraMira(k, dx, dy) {
     const la = Math.hypot(ax, az) || 1; wx = ax / la; wz = az / la; l = ob ? Math.min(90, la / alc * 90) : 90;
   } else {l = Math.hypot(dx, dy); wx = (dx * R.x - dy * F.x) / l; wz = (dx * R.z - dy * F.z) / l;}
   if (!mira) mira = {alc: indicador('ind_alcance', '#ffffff'), area: indicador('ind_area', '#ffe9a8'), flecha: indicador('ind_flecha', '#ffe9a8'), cono: indicador('ind_cono', '#ffe9a8')};
-  const x = x0, z = z0, k2 = Math.min(1, l / 90);
-  for (const n of ['area', 'flecha', 'cono']) mira[n].visible = false;
-  mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * (H.tipo === 'area' ? H.radio : alc) * 256 / 235);
-  if (H.tipo === 'zona' || H.tipo === 'salto') {const a = mira.area; a.visible = true; a.scale.setScalar(2 * H.radio * 256 / 231); a.position.set(x + wx * alc * k2, 0.11, z + wz * alc * k2);}
-  else if (H.tipo === 'area') {const a = mira.area; a.visible = true; a.scale.setScalar(2 * H.radio * 256 / 231); a.position.set(x, 0.11, z);}
-  else if (H.tipo === 'cono') {const c = mira.cono, tam = H.alc * 512 / 325; c.visible = true; c.scale.set(tam * Math.min(1.2, H.ang / (Math.PI / 2)), 1, tam); c.position.set(x, 0.11, z); c.rotation.y = Math.atan2(-wx, -wz);}
-  else {const f = mira.flecha; f.visible = true; f.scale.set(alc, 1, (H.ancho ? H.ancho * 2 : H.tipo === 'dash' ? (H.dano ? 3.2 : 1.1) : 1.4) * 2); /* ancho real de lo que golpea: la carga hiere a 1,6 m de cada lado; el paso élfico no hiere */ f.position.set(x + wx * alc / 2, 0.11, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);}
+  const x = x0, z = z0, k2 = Math.min(1, l / 90), t = v.tipo;
+  for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false; for (const n in MIRA_H) MIRA_H[n].visible = false;
+  const forma = H.tipo === 'cono' ? 'cono' : ['zona', 'salto', 'area', 'ejecuta'].includes(H.tipo) ? 'area' : 'flecha', propia = marcaH(t, k, forma);
+  {const ra = H.tipo === 'area' ? H.radio : alc, a = marcaH(t, 'alcance', 'area'); if (a) {a.visible = true; a.position.set(x, 0.09, z); a.scale.setScalar(2 * ra);} else {mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * ra * 256 / 235);}}
+  if (forma === 'area') {const a = propia || mira.area, r = H.tipo === 'ejecuta' ? H.alc : H.radio, lejos = H.tipo === 'zona' || H.tipo === 'salto'; a.visible = true; a.scale.setScalar(2 * r * (propia ? 1 : 256 / 231)); a.position.set(lejos ? x + wx * alc * k2 : x, 0.11, lejos ? z + wz * alc * k2 : z);}
+  else if (forma === 'cono') {if (propia) {const d = H.alc * 1.05; propia.visible = true; propia.scale.set(d * Math.min(1.25, H.ang / (Math.PI / 2) + 0.2), 1, d); propia.position.set(x, 0.11, z); propia.rotation.y = Math.atan2(-wx, -wz);} else {const c = mira.cono, tam = H.alc * 512 / 325; c.visible = true; c.scale.set(tam * Math.min(1.2, H.ang / (Math.PI / 2)), 1, tam); c.position.set(x, 0.11, z); c.rotation.y = Math.atan2(-wx, -wz);}}
+  else {const f = propia || mira.flecha, an = (H.ancho ? H.ancho * 2 : H.tipo === 'dash' ? (H.dano ? 3.2 : 1.1) : 1.4) * 2 * (propia ? 1.25 : 1); /* ancho real de lo que golpea: la carga hiere a 1,6 m de cada lado; el paso élfico no hiere */ f.visible = true; f.scale.set(alc, 1, an); f.position.set(x + wx * alc / 2, 0.11, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);}
   mira.dir = {wx, wz, px: x + wx * alc * k2, pz: z + wz * alc * k2};
 }
-function ocultaMira() {if (mira) {for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false; mira.dir = null;}}
+function ocultaMira() {for (const n in MIRA_H) MIRA_H[n].visible = false; if (mira) {for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false; mira.dir = null;}}
 function lanzaMia(k, apunta) {
   const v = VISTA.get(YO); if (!v || v.muerto >= 0) return;
   const i = 'qwer'.indexOf(k); if (v.cds && v.cds[i] > 0) return; if (!(v.rk && v.rk[i] > 0)) {if (subeMia(k)) return; aviso(v.pts > 0 ? 'Pulsa el + de encima para aprender esta habilidad' : k === 'r' ? 'La definitiva se aprende a nivel 4' : 'Aún no la has aprendido: sube de nivel'); return;}
@@ -2453,4 +2463,4 @@ bucle();
 /* primero que se vea el menú (retrato, fondo y letras) y después, los modelos: si no, los 16 MB se comen la conexión y el retrato tarda */
 {const img = $('mSplash'); const listo = () => new Promise((r) => {if (img.complete && img.naturalWidth) r(); else {img.addEventListener('load', r, {once: true}); img.addEventListener('error', r, {once: true});}});
  Promise.race([Promise.all([listo(), document.fonts ? document.fonts.ready : 0]), new Promise((r) => setTimeout(r, 2500))]).then(() => cargaTodo());}
-window._vado = {get MIO() {return MIO;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {get MIO() {return MIO;}, MIRA_H, get MIRA_ACT() {return MIRA_ACT;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
