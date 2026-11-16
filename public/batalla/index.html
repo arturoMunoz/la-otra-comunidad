@@ -14,6 +14,9 @@
 <script>try{var hv=localStorage.getItem('vado.heroe')||'rohan',l=document.createElement('link');l.rel='preload';l.as='image';l.href='ui/splash_'+hv+'.webp';l.setAttribute('fetchpriority','high');document.head.appendChild(l);}catch(e){}</script>
 <script type="importmap">{"imports":{"three":"../abismo/three/three.module.js","three/addons/":"../abismo/three/addons/"}}</script>
 <style>
+/* iPhone: sin zoom al tocar dos veces rápido (atacar) ni al pellizcar */
+html,body,button,input,#mandos,#mandos *,#hud,#hud *{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#joy,canvas,#bAt,#bAt *{touch-action:none}
+
 @font-face{font-family:'Cinzel';src:url(fuentes/cinzel.woff) format('woff');font-weight:400 900;font-display:swap}
 @font-face{font-family:'Alegreya Sans';src:url(fuentes/alegreya-Medium.woff) format('woff');font-weight:400 600;font-display:swap}
 @font-face{font-family:'Alegreya Sans';src:url(fuentes/alegreya-Bold.woff) format('woff');font-weight:700;font-display:swap}

@@ -591,6 +591,9 @@ let YO = null;         /* id de mi héroe */
 let MI_EQ = 0;
 let EN_SERVIDOR = false; /* la partida la calcula el servidor de Cloudflare */
 const NET = {ws: null, soy: -1, anf: -1, online: false, jugadores: [], modo: '1v1', ping: 0};
+/* iPhone ignora user-scalable=no: se cortan a mano el doble toque y el pellizco */
+{let ult = 0; document.addEventListener('touchend', (e) => {const t = Date.now(); if (t - ult < 350 && !(e.target.closest && e.target.closest('input'))) e.preventDefault(); ult = t;}, {passive: false});
+  for (const ev of ['gesturestart', 'gesturechange', 'dblclick']) document.addEventListener(ev, (e) => e.preventDefault(), {passive: false});}
 let ESTADO = 'menu';   /* menu, sala, juego, fin */
 /* «atrás» del móvil (botón o gesto) durante la partida: no te saca sin preguntar */
 let ATRAS_ON = false;
