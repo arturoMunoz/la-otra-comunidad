@@ -2136,7 +2136,7 @@ function minimapa() {
 /* escribe en la página solo si cambia (cada escritura obliga al móvil a recolocar y repintar) */
 function pon_(el, p, v) {if (el['_' + p] !== v) {el['_' + p] = v; el[p] = v;}}
 /* botella de maná (Pack Vado 22): poner true cuando lleguen ui/mana_vacia.webp y ui/mana_llena.webp; BOT_Y0/BOT_Y1 = % de la altura donde empieza y acaba el líquido */
-const HAY_BOTELLA = false, BOT_Y0 = 30, BOT_Y1 = 92;
+const HAY_BOTELLA = true, BOT_Y0 = 39.7, BOT_Y1 = 87;
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
   miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); pon_($('objetivo'), 'textContent', objetivoTxt()); const bu = EXTRA.be[MI_EQ] || 0; pon_($('buffs'), 'innerHTML', (bu ? '<span class="azul"><img src="ui/bend_furia.webp" alt="">' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/bend_brasa.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/bend_savia.webp" alt="">' + v.bAlfa + ' s</span>' : '') + (() => {const d = (EXTRA.dr || [])[MI_EQ] || [0, 0, 0]; return d[2] ? '<span><img src="ui/bend_alma.webp" alt="">Alma</span>' : (d[0] ? '<span><img src="ui/bend_fuego.webp" alt="">×' + d[0] + '</span>' : '') + (d[1] ? '<span><img src="ui/bend_hielo.webp" alt="">×' + d[1] + '</span>' : '');})()); consejos(+($('marcador').dataset.t || 0));}
