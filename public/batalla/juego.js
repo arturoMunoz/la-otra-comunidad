@@ -691,7 +691,17 @@ function muere(d, o) {
   if (d.k === 'n' && S.fin < 0) {S.fin = 1 - d.eq; ev(['fx', 'explosion', d.x, d.z, 8]); ev(['fin', 1 - d.eq]);}
 }
 /* golpes con retraso dentro de la simulación (no con setTimeout: así va igual a cualquier velocidad) */
-function luego(seg, fn) {S.dif.push({t: S.t + seg, fn});}
+function luego(seg, fn) {const r = REBOBINA; S.dif.push({t: S.t + seg, fn: r ? () => rebobinado(r, fn) : fn});}
+/* compensación del retraso para las habilidades de un invitado: mientras se resuelven (y sus golpes con retraso), los héroes enemigos
+   están donde él los veía en su pantalla; al acabar vuelven a su sitio */
+let REBOBINA = null;
+function rebobinado(h, fn) {
+  if (!h.lat || REBOBINA) return fn();
+  const t = S.t - h.lat, mov = [];
+  for (const e of S.u) if (e.k === 'h' && e.eq !== h.eq && !e.muerto) {const p = posAt(e, t); mov.push([e, e.x, e.z]); e.x = p.x; e.z = p.z;}
+  REBOBINA = h;
+  try {return fn();} finally {REBOBINA = null; for (const [e, x, z] of mov) {const dx = e.x - posAt(e, t).x, dz = e.z - posAt(e, t).z; e.x = x + dx; e.z = z + dz;}}
+}
 function posAt(e, t) {
   const hs = e.hist; if (!hs || hs.length < 3) return e;
   for (let i = hs.length - 3; i >= 0; i -= 3) if (hs[i] <= t) {const j = i + 3; if (j >= hs.length) return {x: hs[i + 1], z: hs[i + 2]}; const k = (t - hs[i]) / Math.max(1e-4, hs[j] - hs[i]); return {x: hs[i + 1] + (hs[j + 1] - hs[i + 1]) * k, z: hs[i + 2] + (hs[j + 2] - hs[i + 2]) * k};}
@@ -1848,7 +1858,7 @@ function recibe(o) {
   if (S) {/* soy el anfitrión: mandos de los demás */
     const h = S.u.find((q) => q.k === 'h' && q.slot === o.de); if (!h) return;
     if (o.t === 'in') {h.lat = Math.min(0.35, (o.rt || 0) / 1000 + 0.07 + 1 / 30); /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
-    if (o.t === 'hab') {h.x = o.x; h.z = o.z; usaHab(h, o.k, o.dx, o.dz, o.px, o.pz);}
+    if (o.t === 'hab') {h.x = o.x; h.z = o.z; rebobinado(h, () => usaHab(h, o.k, o.dx, o.dz, o.px, o.pz));}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
     if (o.t === 'rinde') rinde(h, !!o.si);
