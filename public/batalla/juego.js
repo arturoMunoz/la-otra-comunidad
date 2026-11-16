@@ -11,42 +11,42 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 const $ = (id) => document.getElementById(id);
 const rnd = (a, b) => a + Math.random() * (b - a);
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
-const ICO = (n) => '../abismo/iconos/' + n + '.webp';
+const ICO = (n) => n.includes('/') ? n : '../abismo/iconos/' + n + '.webp';
 
 /* ---------- datos ---------- */
 const HEROES = {
-  rohan: {nombre: 'Jinete de Rohan', modelo: 'rohan_kk', retrato: 'r_rohan', vida: 650, dano: 62, vatq: 0.9, alcance: 2.5, vel: 5.2, crecV: 85, crecD: 4.5,
+  rohan: {nombre: 'Jinete de Rohan', modelo: 'rohan_kk', retrato: 'r_rohan', vida: 650, dano: 62, vatq: 0.9, alcance: 2.5, vel: 5.2, crecV: 85, crecD: 4.5, arm: 32, rm: 30,
     hab: {q: {n: 'Estocada', cd: 6, tipo: 'dash', dist: 5.5, dano: 95, icono: 'lanza', d: 'Te lanzas hacia delante y hieres a todos los que atraviesas.'},
       w: {n: 'Escudo de Edoras', cd: 12, tipo: 'escudo', val: 170, dur: 3, icono: 'escudo', d: 'Un escudo que absorbe daño durante 3 s.'},
       e: {n: 'Grito de la Marca', cd: 10, tipo: 'area', radio: 4, dano: 55, lento: 0.4, durL: 2, icono: 'cuerno', d: 'Hiere y frena a los que te rodean.'},
       r: {n: 'Carga de los Rohirrim', cd: 45, tipo: 'dash', dist: 11, dano: 230, aturde: 1, icono: 'h_rohan', d: 'Gran carga que derriba y aturde 1 s a todos a tu paso.'}}},
-  enano: {nombre: 'Enano de Erebor', modelo: 'enano_kk', retrato: 'r_enano', vida: 740, dano: 58, vatq: 0.8, alcance: 2.3, vel: 4.9, crecV: 95, crecD: 4,
+  enano: {nombre: 'Enano de Erebor', modelo: 'enano_kk', retrato: 'r_enano', vida: 740, dano: 58, vatq: 0.8, alcance: 2.3, vel: 4.9, crecV: 95, crecD: 4, arm: 38, rm: 32,
     hab: {q: {n: 'Hachazo', cd: 5, tipo: 'cono', alc: 3.8, ang: 1.5, dano: 115, icono: 'hacha', d: 'Un tajo en abanico delante de ti.'},
       w: {n: 'Piedra de la Montaña', cd: 14, tipo: 'reduce', val: 0.45, dur: 3, icono: 'escudo', d: 'Recibes un 45 % menos de daño durante 3 s.'},
       e: {n: 'Salto de Erebor', cd: 10, tipo: 'salto', dist: 7, radio: 2.6, dano: 85, lento: 0.35, durL: 1.5, icono: 'botas', d: 'Saltas a un punto, hieres y frenas al caer.'},
       r: {n: 'Furia de Durin', cd: 50, tipo: 'area', radio: 4.6, dano: 240, aturde: 1.25, icono: 'h_enano', d: 'El suelo tiembla: daño enorme y aturde a todos alrededor.'}}},
-  elfo: {nombre: 'Arquero de Lórien', modelo: 'elfo_kk', retrato: 'r_elfo', vida: 520, dano: 50, vatq: 0.95, alcance: 7, vel: 5.3, crecV: 75, crecD: 4.5, proy: 'flecha_elfica',
+  elfo: {nombre: 'Arquero de Lórien', modelo: 'elfo_kk', retrato: 'r_elfo', vida: 520, dano: 50, vatq: 0.95, alcance: 7, vel: 5.3, crecV: 75, crecD: 4.5, arm: 22, rm: 28, proy: 'flecha_elfica',
     hab: {q: {n: 'Flecha de Lórien', cd: 6, tipo: 'linea', alc: 13, ancho: 0.9, dano: 125, perfora: true, proy: 'flecha_elfica', icono: 'arco', d: 'Flecha larga que atraviesa a todos en su línea.'},
       w: {n: 'Ráfaga', cd: 12, tipo: 'rafaga', val: 0.6, dur: 4, icono: 'i_abanico', d: 'Disparas un 60 % más rápido durante 4 s.'},
       e: {n: 'Paso élfico', cd: 9, tipo: 'dash', dist: 5, dano: 0, icono: 'i_esquivar', d: 'Saltas ágil hacia donde apuntes.'},
       r: {n: 'Lluvia de flechas', cd: 45, tipo: 'zona', alc: 10, radio: 3.6, dur: 3, dps: 80, lento: 0.3, icono: 'h_elfo', d: 'Durante 3 s llueven flechas sobre la zona: hieren y frenan.'}}},
-  hobbit: {nombre: 'Hobbit de la Comarca', modelo: 'hobbit_kk', retrato: 'r_hobbit', vida: 560, dano: 50, vatq: 1.0, alcance: 6.5, vel: 5.8, crecV: 78, crecD: 4, proy: 'piedra',
+  hobbit: {nombre: 'Hobbit de la Comarca', modelo: 'hobbit_kk', retrato: 'r_hobbit', vida: 560, dano: 50, vatq: 1.0, alcance: 6.5, vel: 5.8, crecV: 78, crecD: 4, arm: 24, rm: 28, proy: 'piedra',
     hab: {q: {n: 'Piedra certera', cd: 7, tipo: 'linea', alc: 11, ancho: 0.8, dano: 100, aturde: 0.9, proy: 'piedra', icono: 'honda', d: 'Una piedra que aturde al primero que toca.'},
       w: {n: 'Desapercibido', cd: 16, tipo: 'invis', dur: 3, vel: 0.35, icono: 'i_humo', d: 'Desapareces 3 s y corres más: ni torres ni enemigos te ven.'},
       e: {n: 'Puñado de piedras', cd: 6, tipo: 'cono', alc: 5.2, ang: 1.0, dano: 90, icono: 'i_piedras', d: 'Un puñado de piedras en abanico.'},
       r: {n: 'Suerte de Bolsón', cd: 45, tipo: 'suerte', cura: 0.4, vel: 0.5, dur: 5, icono: 'h_hobbit', d: 'Te curas un 40 %, corres más y pegas más fuerte 5 s.'}}},
   /* Pack Vado 18 (16/11). Gandalf = Lux (maga a distancia: atrapa, escudo a aliados, zona que frena, gran rayo).
      Orco = Darius (luchador: giro que cura por héroe golpeado, golpe que frena, cadena que arrastra, ejecución con poca vida). */
-  gandalf: {nombre: 'Gandalf el Gris', modelo: 'gandalf_kk', ret: 'ui/r_gandalf.webp', vida: 530, dano: 50, vatq: 0.88, alcance: 6.8, vel: 5.1, crecV: 76, crecD: 4.3, proy: 'luz',
-    hab: {q: {n: 'Luz que ata', cd: 8, tipo: 'linea', alc: 11.5, ancho: 0.85, dano: 115, aturde: 1.3, proy: 'luz', icono: 'h_gandalf_q', d: 'Un rayo de luz que atrapa 1,3 s al primero que toca.'},
-      w: {n: 'Escudo de Mithrandir', cd: 13, tipo: 'escudo', val: 120, dur: 3, aliados: 7, icono: 'h_gandalf_w', d: 'Un escudo de luz para ti y los aliados a 7 m durante 3 s.'},
-      e: {n: 'Esfera de luz', cd: 10, tipo: 'zona', alc: 10, radio: 3, dur: 1.5, dps: 100, lento: 0.45, icono: 'h_gandalf_e', d: 'Luz en el suelo que hiere y frena un 45 % a los que la pisan.'},
-      r: {n: '¡No puedes pasar!', cd: 50, tipo: 'linea', alc: 16, ancho: 1.4, dano: 250, perfora: true, proy: 'luz', icono: 'h_gandalf_r', d: 'Un gran rayo de luz que hiere a todos en una línea muy larga.'}}},
-  orco: {nombre: 'Orco de Mordor', modelo: 'orco_kk', ret: 'ui/r_orco.webp', vida: 760, dano: 65, vatq: 0.85, alcance: 2.7, vel: 5.1, crecV: 92, crecD: 4.8,
-    hab: {q: {n: 'Giro del hacha', cd: 7, tipo: 'area', radio: 3.6, dano: 115, curaH: 0.15, icono: 'h_orco_q', d: 'Giras el hacha: hieres a los de alrededor y te curas un 15 % de la vida que te falta por cada héroe que tocas.'},
-      w: {n: 'Golpe que aplasta', cd: 6, tipo: 'cono', alc: 3.4, ang: 1.2, dano: 100, lento: 0.5, durL: 1.2, icono: 'h_orco_w', d: 'Un hachazo delante que frena un 50 % 1,2 s.'},
+  gandalf: {nombre: 'Gandalf el Gris', modelo: 'gandalf_kk', ret: 'ui/r_gandalf.webp', vida: 540, dano: 50, vatq: 0.88, alcance: 6.8, vel: 5.1, crecV: 78, crecD: 4.3, mag: true, arm: 20, rm: 32, proy: 'luz',
+    hab: {q: {n: 'Luz que ata', cd: 8, tipo: 'linea', mag: true, alc: 11.5, ancho: 0.9, dano: 110, aturde: 1.3, proy: 'luz', icono: 'h_gandalf_q', d: 'Un rayo de luz que atrapa 1,3 s al primero que toca.'},
+      w: {n: 'Escudo de Mithrandir', cd: 13, tipo: 'escudo', mag: true, val: 140, dur: 3, aliados: 7, icono: 'h_gandalf_w', d: 'Un escudo de luz para ti y los aliados a 7 m durante 3 s.'},
+      e: {n: 'Esfera de luz', cd: 9, tipo: 'zona', mag: true, alc: 10, radio: 3.2, dur: 1.5, dps: 100, lento: 0.45, icono: 'h_gandalf_e', d: 'Luz en el suelo que hiere y frena un 45 % a los que la pisan.'},
+      r: {n: '¡No puedes pasar!', cd: 45, tipo: 'linea', mag: true, alc: 16, ancho: 1.5, dano: 250, perfora: true, proy: 'luz', icono: 'h_gandalf_r', d: 'Un gran rayo de luz que hiere a todos en una línea muy larga.'}}},
+  orco: {nombre: 'Orco de Mordor', modelo: 'orco_kk', ret: 'ui/r_orco.webp', vida: 730, dano: 63, vatq: 0.84, alcance: 2.7, vel: 5.0, crecV: 88, crecD: 4.4, arm: 34, rm: 30,
+    hab: {q: {n: 'Giro del hacha', cd: 8, tipo: 'area', radio: 3.5, dano: 100, curaH: 0.1, icono: 'h_orco_q', d: 'Giras el hacha: hieres a los de alrededor y te curas un 10 % de la vida que te falta por cada héroe que tocas.'},
+      w: {n: 'Golpe que aplasta', cd: 7, tipo: 'cono', alc: 3.4, ang: 1.2, dano: 90, lento: 0.5, durL: 1.2, icono: 'h_orco_w', d: 'Un hachazo delante que frena un 50 % 1,2 s.'},
       e: {n: 'Cadena de Mordor', cd: 14, tipo: 'linea', alc: 6.5, ancho: 0.9, dano: 60, tira: true, lento: 0.4, durL: 1, proy: 'hacha_arrojadiza', icono: 'h_orco_e', d: 'Lanzas la cadena y arrastras hasta ti al primero que toca.'},
-      r: {n: 'Guillotina', cd: 45, tipo: 'ejecuta', alc: 3.6, dano: 200, falta: 0.45, icono: 'h_orco_r', d: 'Hachazo al héroe más cercano: más daño cuanta menos vida le quede. Si lo derriba, se recarga al momento.'}}},
+      r: {n: 'Guillotina', cd: 45, tipo: 'ejecuta', alc: 3.6, dano: 170, falta: 0.35, icono: 'h_orco_r', d: 'Hachazo al héroe más cercano: más daño cuanta menos vida le quede (35 % de la que le falta). Si lo derriba, se recarga al momento.'}}},
 };
 const RET = (t) => {const h = HEROES[t] || HEROES.rohan; return h.ret || '../abismo/ui/' + h.retrato + '.webp';};
 const NIVEL_R = 4, NIVEL_MAX = 9;
@@ -60,18 +60,23 @@ const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/hz_destello.webp'}, f: 
 const OBJ = {
   hoja: {t: 'Hoja larga', i: 'obj_01', c: 350, st: {dano: 18}},
   daga: {t: 'Daga de Bree', i: 'obj_02', c: 300, st: {vatq: 0.2}},
-  cota: {t: 'Cota de anillas', i: 'obj_03', c: 350, st: {vida: 180}},
-  yelmo: {t: 'Yelmo de hierro', i: 'obj_04', c: 400, st: {reduc: 0.1}},
+  cota: {t: 'Cota de anillas', i: 'obj_03', c: 350, st: {vida: 160, arm: 10}},
+  yelmo: {t: 'Yelmo de hierro', i: 'obj_04', c: 350, st: {arm: 25}},
+  manto: {t: 'Manto de Lórien', i: 'ui/h_gandalf_w.webp', c: 350, st: {rm: 25}},
+  tomo: {t: 'Tomo de Rivendel', i: 'ui/h_gandalf_e.webp', c: 350, st: {poder: 30}},
   botas: {t: 'Botas de cuero', i: 'obj_05', c: 300, st: {vel: 0.12}},
   amuleto: {t: 'Amuleto de Lórien', i: 'obj_06', c: 300, st: {regen: 3}},
   herugrim: {t: 'Herugrim', i: 'obj_07', leg: 1, rec: ['hoja', 'hoja'], c: 500, st: {dano: 50, crit: 0.2}, p: 'Un 20 % de golpes críticos (doble daño).'},
   guthwine: {t: 'Guthwinë', i: 'obj_08', leg: 1, rec: ['hoja', 'daga'], c: 450, st: {dano: 28, vatq: 0.35}, p: 'Daño y velocidad de ataque.'},
-  escudo: {t: 'Escudo de la Marca', i: 'obj_09', leg: 1, rec: ['cota', 'yelmo'], c: 500, st: {vida: 350, reduc: 0.18, espinas: 0.15}, p: 'Quien te pega cuerpo a cuerpo se lleva un 15 %.'},
+  escudo: {t: 'Escudo de la Marca', i: 'obj_09', leg: 1, rec: ['cota', 'yelmo'], c: 500, st: {vida: 300, arm: 45, espinas: 0.15}, p: 'Quien te pega cuerpo a cuerpo se lleva un 15 %.'},
   capa: {t: 'Capa élfica', i: 'obj_10', leg: 1, rec: ['botas', 'amuleto'], c: 400, st: {vel: 0.18, regen: 5, esquiva: 0.12}, p: 'Un 12 % de golpes no te tocan.'},
   hacha: {t: 'Hacha de El Sagrario', i: 'obj_11', leg: 1, rec: ['hoja', 'amuleto'], c: 450, st: {dano: 30, robo: 0.12}, p: 'Robo de vida del 12 %.'},
-  mithril: {t: 'Cota de mithril', i: 'obj_14', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 500, reduc: 0.12, regen: 4}, p: 'Ligera y casi irrompible.'},
+  baculo: {t: 'Báculo de los Istari', i: 'ui/at_gandalf.webp', leg: 1, rec: ['tomo', 'tomo'], c: 500, st: {poder: 90}, p: 'Mucho poder mágico: las habilidades mágicas pegan bastante más.'},
+  narya: {t: 'Narya, el Anillo de Fuego', i: 'ui/h_gandalf_q.webp', leg: 1, rec: ['tomo', 'manto'], c: 450, st: {poder: 50, rm: 30, vida: 150}, p: 'Poder mágico y protección contra la magia.'},
+  velo: {t: 'Velo de Galadriel', i: 'ui/h_gandalf_w.webp', leg: 1, rec: ['manto', 'cota'], c: 450, st: {vida: 300, rm: 50, regen: 3}, p: 'Mucha resistencia mágica: contra magos.'},
+  mithril: {t: 'Cota de mithril', i: 'obj_14', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 450, arm: 30, rm: 30, regen: 4}, p: 'Ligera y casi irrompible: protege del acero y de la magia.'},
 };
-const PLAN_BOT = {gandalf: ['amuleto', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};
+const PLAN_BOT = {gandalf: ['tomo', 'tomo', 'baculo', 'botas', 'manto', 'tomo', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'cota', 'manto', 'velo'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};
 /* El mapa en «ojo» (dibujo de Arturo, 14/11): dos caminos curvos de la base de Rohan (abajo a la izquierda) a la de Isengard
    (arriba a la derecha), la espesura en medio con el Uruk azul en el centro y el río (el vado) cruzando por la mitad.
    Todo es simétrico girando 180° alrededor del centro. */
@@ -656,9 +661,9 @@ function nuevaPartida(jugadores, modo) {
 }
 const heroes = () => S.u.filter((u) => u.k === 'h');
 function stats(h) {
-  const b = HEROES[h.tipo], n = h.nivel - 1, st = {vida: b.vida + b.crecV * n, dano: b.dano + b.crecD * n, vatq: b.vatq, alcance: b.alcance, vel: b.vel, reduc: 0, regen: 1.5, crit: 0, robo: 0, espinas: 0, esquiva: 0};
+  const b = HEROES[h.tipo], n = h.nivel - 1, st = {vida: b.vida + b.crecV * n, dano: b.dano + b.crecD * n, vatq: b.vatq, alcance: b.alcance, vel: b.vel, reduc: 0, regen: 1.5, crit: 0, robo: 0, espinas: 0, esquiva: 0, arm: (b.arm || 25) + 3 * n, rm: (b.rm || 25) + 1.5 * n, poder: 0};
   let va = 0, ve = 0;
-  for (const id of h.inv) {const o = OBJ[id].st; st.vida += o.vida || 0; st.dano += o.dano || 0; va += o.vatq || 0; ve += o.vel || 0; st.reduc += o.reduc || 0; st.regen += o.regen || 0; st.crit += o.crit || 0; st.robo += o.robo || 0; st.espinas += o.espinas || 0; st.esquiva += o.esquiva || 0;}
+  for (const id of h.inv) {const o = OBJ[id].st; st.vida += o.vida || 0; st.dano += o.dano || 0; va += o.vatq || 0; ve += o.vel || 0; st.reduc += o.reduc || 0; st.arm += o.arm || 0; st.rm += o.rm || 0; st.poder += o.poder || 0; st.regen += o.regen || 0; st.crit += o.crit || 0; st.robo += o.robo || 0; st.espinas += o.espinas || 0; st.esquiva += o.esquiva || 0;}
   const be = S && S.bufEq[h.eq] || {};
   if (be.drF) st.dano *= 1 + 0.06 * be.drF; if (be.drH) st.vida *= 1 + 0.06 * be.drH; if (be.alma) {st.dano *= 1.1; st.vida *= 1.1;}
   if (h.buf.huorn > 0) st.regen += 4;
@@ -713,16 +718,16 @@ function dana(o, d, n, tipo) {
   if (d.k === 'h') {
     if (d.buf.estasis > 0) return;
     const st = stats(d);
-    if (tipo !== 'hab' && st.esquiva && Math.random() < st.esquiva) {ev(['num', d.x, d.z, '¡esquiva!', 'r']); return;}
-    n *= 1 - st.reduc;
+    if (tipo !== 'hab' && tipo !== 'mag' && st.esquiva && Math.random() < st.esquiva) {ev(['num', d.x, d.z, '¡esquiva!', 'r']); return;}
+    {const res = tipo === 'mag' ? st.rm : tipo === 'pura' ? 0 : st.arm; n *= 100 / (100 + Math.max(0, res)) * (1 - st.reduc);} /* físico contra armadura, mágico contra resistencia mágica (como el LoL) */
     if (d.buf.escudo > 0) {const a = Math.min(d.buf.escudoV || 0, n); d.buf.escudoV -= a; n -= a;}
     if (o && o.k === 'h') {d.agresor = o.id; d.agresorT = S.t + 3; o.atacoHeroeT = S.t + 2.5; d.danos[o.id] = S.t;}
-    if (st.espinas && o && o.k !== 't' && tipo !== 'hab' && dist(o, d) < 3) dana(null, o, n * st.espinas, 'hab');
+    if (st.espinas && o && o.k !== 't' && tipo !== 'hab' && tipo !== 'mag' && dist(o, d) < 3) dana(null, o, n * st.espinas, 'pura');
   }
   if (d.k === 'j' && o && o.k === 'h') {d.agro = o.id; d.agroT = S.t + 6;}
   if (o) {o.atacaA = d.id; o.atacaT = S.t + 2;}
   d.vida -= n; ev(['num', d.x, d.z, Math.round(n), tipo === 'crit' ? 'c' : '', o ? o.id : 0, d.id]);
-  if (d.k === 'h' || (o && o.k === 'h') || (o && o.k === 't')) ev(['g', d.id, o ? o.id : 0, tipo === 'crit' || tipo === 'hab' || n > 150 ? 1 : 0]);
+  if (d.k === 'h' || (o && o.k === 'h') || (o && o.k === 't')) ev(['g', d.id, o ? o.id : 0, tipo === 'crit' || tipo === 'hab' || tipo === 'mag' || n > 150 ? 1 : 0]);
   if (o && o.k === 'h' && o.vida > 0) {const r = stats(o).robo; if (r) o.vida = Math.min(stats(o).vida, o.vida + n * r);}
   if (d.vida <= 0) muere(d, o);
 }
@@ -1001,7 +1006,7 @@ function paso(dt) {
   /* zonas (lluvia de flechas) */
   for (let i = S.zonas.length - 1; i >= 0; i--) {
     const z = S.zonas[i]; z.t -= dt; z.tick -= dt;
-    if (z.tick <= 0) {z.tick = 0.5; for (const e of enemigosDe(z.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, z) < z.r + radio(e)) {dana(z.o, e, z.dps * 0.5, 'hab'); if (e.buf) {e.buf.lento = 0.8; e.buf.lentoV = z.l;} else e.lento = S.t + 0.8;}}
+    if (z.tick <= 0) {z.tick = 0.5; for (const e of enemigosDe(z.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, z) < z.r + radio(e)) {dana(z.o, e, z.dps * 0.5, z.mag ? 'mag' : 'hab'); if (e.buf) {e.buf.lento = 0.8; e.buf.lentoV = z.l;} else e.lento = S.t + 0.8;}}
     if (z.t <= 0) S.zonas.splice(i, 1);
   }
   S.u = S.u.filter((u) => !((u.k === 's' || u.k === 'j') && u.muerto && S.t > u.quitar));
@@ -1011,7 +1016,7 @@ function paso(dt) {
 function frena(e, v, d) {if (e.k === 't' || e.k === 'n') return; if (e.buf) {e.buf.lento = d; e.buf.lentoV = v;} else e.lento = S.t + d;}
 function usaHab(h, k, dx, dz, px, pz) {
   if (!h || h.muerto || h.aturd > S.t || h.cd[k] > 0 || !(h.rk[k] > 0)) return false;
-  const H = HEROES[h.tipo].hab[k], st = stats(h), escala = 1 + 0.22 * (h.rk[k] - 1) + 0.03 * (h.nivel - 1) + (st.dano - HEROES[h.tipo].dano) / 150;
+  const H = HEROES[h.tipo].hab[k], st = stats(h), escala = 1 + 0.22 * (h.rk[k] - 1) + 0.03 * (h.nivel - 1) + (H.mag ? st.poder / 160 : (st.dano - HEROES[h.tipo].dano) / 150), T = H.mag ? 'mag' : 'hab'; /* las mágicas crecen con el poder mágico; las físicas, con el daño */
   const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l; h.rot = Math.atan2(dx, dz);
   h.cd[k] = H.cd * (1 - 0.08 * (h.rk[k] - 1)) * (h.buf.huorn > 0 ? 0.8 : 1); h.hc++; h.hk = k; h.revela = S.t + 1.2; if (h.buf.invis && H.tipo !== 'invis') h.buf.invis = 0;
   const n = (H.dano || 0) * escala, en = () => enemigosDe(h.eq).filter((e) => e.k !== 'n' && (e.k !== 't' || atacable(e)));
@@ -1022,20 +1027,20 @@ function usaHab(h, k, dx, dz, px, pz) {
   if (H.tipo === 'rafaga') h.buf.rafaga = H.dur;
   if (H.tipo === 'invis') h.buf.invis = H.dur;
   if (H.tipo === 'suerte') {h.buf.suerte = H.dur; h.vida = Math.min(st.vida, h.vida + st.vida * H.cura); ev(['fx', 'onda', h.x, h.z, 3]);}
-  if (H.tipo === 'area') {for (const e of en()) if (dist(e, h) < H.radio + radio(e)) {dana(h, e, n, 'hab'); if (H.curaH && e.k === 'h') {const mx = st.vida, c = (mx - h.vida) * H.curaH + 15; h.vida = Math.min(mx, h.vida + c); ev(['num', h.x, h.z, '+' + Math.round(c), 'v']);} if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) {if (e.buf) {e.buf.lento = H.durL; e.buf.lentoV = H.lento;} else e.lento = S.t + H.durL;}} ev(['fx', 'onda', h.x, h.z, H.radio * 1.8]); ev(['fx', 'explosion', h.x, h.z, H.radio * 0.6]);}
-  if (H.tipo === 'cono') {for (const e of en()) {const ex = e.x - h.x, ez = e.z - h.z, d0 = Math.hypot(ex, ez); if (d0 < H.alc + radio(e) && (ex * dx + ez * dz) / (d0 || 1) > Math.cos(H.ang / 2)) {dana(h, e, n, 'hab'); if (H.lento) frena(e, H.lento, H.durL);}} ev(['fx', 'tajo', h.x + dx * 1.8, h.z + dz * 1.8, H.alc]);}
+  if (H.tipo === 'area') {for (const e of en()) if (dist(e, h) < H.radio + radio(e)) {dana(h, e, n, T); if (H.curaH && e.k === 'h') {const mx = st.vida, c = (mx - h.vida) * H.curaH + 15; h.vida = Math.min(mx, h.vida + c); ev(['num', h.x, h.z, '+' + Math.round(c), 'v']);} if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) {if (e.buf) {e.buf.lento = H.durL; e.buf.lentoV = H.lento;} else e.lento = S.t + H.durL;}} ev(['fx', 'onda', h.x, h.z, H.radio * 1.8]); ev(['fx', 'explosion', h.x, h.z, H.radio * 0.6]);}
+  if (H.tipo === 'cono') {for (const e of en()) {const ex = e.x - h.x, ez = e.z - h.z, d0 = Math.hypot(ex, ez); if (d0 < H.alc + radio(e) && (ex * dx + ez * dz) / (d0 || 1) > Math.cos(H.ang / 2)) {dana(h, e, n, T); if (H.lento) frena(e, H.lento, H.durL);}} ev(['fx', 'tajo', h.x + dx * 1.8, h.z + dz * 1.8, H.alc]);}
   if (H.tipo === 'linea') {
     const ex0 = h.x, ez0 = h.z; let golpeados = 0;
     const lista = en().map((e) => ({e, t: (e.x - ex0) * dx + (e.z - ez0) * dz})).filter((o) => o.t > 0 && o.t < H.alc).sort((a, b) => a.t - b.t);
-    for (const o of lista) {const px0 = ex0 + dx * o.t, pz0 = ez0 + dz * o.t; if (Math.hypot(o.e.x - px0, o.e.z - pz0) < H.ancho + radio(o.e)) {const e = o.e; luego(o.t / 26, () => {dana(h, e, n, 'hab'); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}); golpeados++; if (!H.perfora) break;}}
+    for (const o of lista) {const px0 = ex0 + dx * o.t, pz0 = ez0 + dz * o.t; if (Math.hypot(o.e.x - px0, o.e.z - pz0) < H.ancho + radio(o.e)) {const e = o.e; luego(o.t / 26, () => {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}); golpeados++; if (!H.perfora) break;}}
     ev(['tiro', H.proy, ex0, ez0, ex0 + dx * H.alc, ez0 + dz * H.alc, 26]);
   }
   if (H.tipo === 'ejecuta') {/* la Guillotina de Darius: daño más el que le falta; si derriba, se recarga */
     const t = masCercano(h, en().filter((e) => e.k === 'h'), H.alc + 0.6); if (!t) {h.cd[k] = 0; h.hc--; return false;}
-    h.rot = Math.atan2(t.x - h.x, t.z - h.z); const mx = stats(t).vida; luego(0.35, () => {if (t.vida <= 0 || h.muerto) return; dana(h, t, n + (mx - t.vida) * H.falta, 'hab'); if (t.vida <= 0 || t.muerto) {h.cd[k] = 0; ev(['num', h.x, h.z, '¡Otra vez!', 'v']);} ev(['fx', 'explosion', t.x, t.z, 1.6]);});
+    h.rot = Math.atan2(t.x - h.x, t.z - h.z); const mx = stats(t).vida; luego(0.35, () => {if (t.vida <= 0 || h.muerto) return; dana(h, t, n + (mx - t.vida) * H.falta, T); if (t.vida <= 0 || t.muerto) {h.cd[k] = 0; ev(['num', h.x, h.z, '¡Otra vez!', 'v']);} ev(['fx', 'explosion', t.x, t.z, 1.6]);});
   }
   ev(['hb', h.id, k, +dx.toFixed(2), +dz.toFixed(2), +(px || 0).toFixed(1), +(pz || 0).toFixed(1)]);
-  if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - h.x, pz - h.z)), x = h.x + dx * d0, z = h.z + dz * d0; S.zonas.push({x, z, r: H.radio, t: H.dur, tick: 0, dps: H.dps * escala, l: H.lento, eq: h.eq, o: h}); ev(['zona', x, z, H.radio, H.dur]);}
+  if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - h.x, pz - h.z)), x = h.x + dx * d0, z = h.z + dz * d0; S.zonas.push({x, z, r: H.radio, t: H.dur, tick: 0, dps: H.dps * escala, mag: H.mag, l: H.lento, eq: h.eq, o: h}); ev(['zona', x, z, H.radio, H.dur]);}
   return true;
 }
 
@@ -2244,8 +2249,8 @@ function sugerencia(v) {
    arriba: volver, tus 6 huecos y tu oro · izquierda: pestañas · centro: ruta recomendada + rejilla de iconos · derecha: ficha con receta y COMPRAR */
 let tCat = 'rec';
 const T_CATS = [['rec', 'Recomendado', 'obj_07'], ['atq', 'Ataque', 'obj_01'], ['def', 'Defensa', 'obj_03'], ['mov', 'Movilidad', 'obj_05'], ['enc', 'Encantamientos', null]];
-const CAT_OBJ = {atq: ['hoja', 'daga', 'herugrim', 'guthwine', 'hacha'], def: ['cota', 'yelmo', 'escudo', 'mithril'], mov: ['botas', 'amuleto', 'capa']};
-const ST_TXT = {dano: (v) => '+' + v + ' daño', vatq: (v) => '+' + Math.round(v * 100) + ' % vel. ataque', vida: (v) => '+' + v + ' vida', reduc: (v) => '−' + Math.round(v * 100) + ' % daño recibido', vel: (v) => '+' + Math.round(v * 100) + ' % velocidad', regen: (v) => '+' + v + ' vida/s', crit: (v) => Math.round(v * 100) + ' % crítico', espinas: (v) => Math.round(v * 100) + ' % espinas', esquiva: (v) => Math.round(v * 100) + ' % esquiva', robo: (v) => Math.round(v * 100) + ' % robo de vida'};
+const CAT_OBJ = {atq: ['hoja', 'daga', 'herugrim', 'guthwine', 'hacha', 'tomo', 'baculo', 'narya'], def: ['cota', 'yelmo', 'manto', 'escudo', 'velo', 'mithril'], mov: ['botas', 'amuleto', 'capa']};
+const ST_TXT = {dano: (v) => '+' + v + ' daño', vatq: (v) => '+' + Math.round(v * 100) + ' % vel. ataque', vida: (v) => '+' + v + ' vida', reduc: (v) => '−' + Math.round(v * 100) + ' % daño recibido', arm: (v) => '+' + v + ' armadura', rm: (v) => '+' + v + ' resist. mágica', poder: (v) => '+' + v + ' poder mágico', vel: (v) => '+' + Math.round(v * 100) + ' % velocidad', regen: (v) => '+' + v + ' vida/s', crit: (v) => Math.round(v * 100) + ' % crítico', espinas: (v) => Math.round(v * 100) + ' % espinas', esquiva: (v) => Math.round(v * 100) + ' % esquiva', robo: (v) => Math.round(v * 100) + ' % robo de vida'};
 function abreTienda() {
   const v = VISTA.get(YO); if (!v) return;
   if (!(Math.hypot(v.x - BASES[MI_EQ].fuente.x, v.z - BASES[MI_EQ].fuente.z) < 9 || v.muerto >= 0)) {aviso('La armería está en tu fuente (botón ⌂ para volver)'); return;}
