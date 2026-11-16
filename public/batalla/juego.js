@@ -50,6 +50,8 @@ const HEROES = {
 };
 const RET = (t) => {const h = HEROES[t] || HEROES.rohan; return h.ret || '../abismo/ui/' + h.retrato + '.webp';};
 const NIVEL_R = 4, NIVEL_MAX = 9;
+/* maná que cuesta una habilidad: como en el LoL, las básicas cuestan un 10 % más por rango; la definitiva, siempre lo mismo */
+const costeMn = (tipo, k, rk) => {const m = HEROES[tipo].hab[k].mn; return k === 'r' ? m : Math.round(m * (1 + 0.1 * Math.max(0, (rk || 1) - 1)));};
 /* rango máximo de cada habilidad según el nivel (Q/W/E hasta 4, R a nivel 4 y 8) */
 const rangoMax = (nivel, k) => k === 'r' ? (nivel >= 8 ? 2 : nivel >= 4 ? 1 : 0) : Math.min(4, Math.ceil(nivel / 2));
 function puedeSubir(h, k) {return h.pts > 0 && h.rk[k] < rangoMax(h.nivel, k);}
@@ -1017,10 +1019,10 @@ function paso(dt) {
 function frena(e, v, d) {if (e.k === 't' || e.k === 'n') return; if (e.buf) {e.buf.lento = d; e.buf.lentoV = v;} else e.lento = S.t + d;}
 function usaHab(h, k, dx, dz, px, pz) {
   if (!h || h.muerto || h.aturd > S.t || h.cd[k] > 0 || !(h.rk[k] > 0)) return false;
-  const H = HEROES[h.tipo].hab[k]; if (h.mana < H.mn) return false; /* sin maná no se lanza */
+  const H = HEROES[h.tipo].hab[k], cm = costeMn(h.tipo, k, h.rk[k]); if (h.mana < cm) return false; /* sin maná no se lanza */
   const st = stats(h), escala = 1 + 0.22 * (h.rk[k] - 1) + 0.03 * (h.nivel - 1) + (H.mag ? st.poder / 160 : (st.dano - HEROES[h.tipo].dano) / 150), T = H.mag ? 'mag' : 'hab'; /* las mágicas crecen con el poder mágico; las físicas, con el daño */
   const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l; h.rot = Math.atan2(dx, dz);
-  h.cd[k] = H.cd * (1 - 0.08 * (h.rk[k] - 1)) * (h.buf.huorn > 0 ? 0.8 : 1); h.mana -= H.mn; h.hc++; h.hk = k; h.revela = S.t + 1.2; if (h.buf.invis && H.tipo !== 'invis') h.buf.invis = 0;
+  h.cd[k] = H.cd * (1 - 0.08 * (h.rk[k] - 1)) * (h.buf.huorn > 0 ? 0.8 : 1); h.mana -= cm; h.hc++; h.hk = k; h.revela = S.t + 1.2; if (h.buf.invis && H.tipo !== 'invis') h.buf.invis = 0;
   const n = (H.dano || 0) * escala, en = () => enemigosDe(h.eq).filter((e) => e.k !== 'n' && (e.k !== 't' || atacable(e)));
   if (H.tipo === 'dash') {const v = H.dist / 0.28; h.dash = {vx: dx * v, vz: dz * v, t: 0.28, n, aturde: H.aturde, toc: new Set()}; ev(['fx', 'polvo', h.x, h.z, 1.5]);}
   if (H.tipo === 'salto') {const d0 = Math.min(H.dist, Math.hypot(px - h.x, pz - h.z) || H.dist), v = d0 / 0.45; h.dash = {vx: dx * v, vz: dz * v, t: 0.45, salto: true, toc: new Set(), cae: {x: h.x + dx * d0, z: h.z + dz * d0, r: H.radio, n, l: H.lento, dur: H.durL}};}
@@ -1038,7 +1040,7 @@ function usaHab(h, k, dx, dz, px, pz) {
     ev(['tiro', H.proy, ex0, ez0, ex0 + dx * H.alc, ez0 + dz * H.alc, 26]);
   }
   if (H.tipo === 'ejecuta') {/* la Guillotina de Darius: daño más el que le falta; si derriba, se recarga */
-    const t = masCercano(h, en().filter((e) => e.k === 'h'), H.alc + 0.6); if (!t) {h.cd[k] = 0; h.hc--; h.mana += H.mn; return false;}
+    const t = masCercano(h, en().filter((e) => e.k === 'h'), H.alc + 0.6); if (!t) {h.cd[k] = 0; h.hc--; h.mana += cm; return false;}
     h.rot = Math.atan2(t.x - h.x, t.z - h.z); const mx = stats(t).vida; luego(0.35, () => {if (t.vida <= 0 || h.muerto) return; dana(h, t, n + (mx - t.vida) * H.falta, T); if (t.vida <= 0 || t.muerto) {h.cd[k] = 0; ev(['num', h.x, h.z, '¡Otra vez!', 'v']);} ev(['fx', 'explosion', t.x, t.z, 1.6]);});
   }
   ev(['hb', h.id, k, +dx.toFixed(2), +dz.toFixed(2), +(px || 0).toFixed(1), +(pz || 0).toFixed(1)]);
@@ -1105,7 +1107,7 @@ function ia(h, dt, st) {
   if (heroeEn && dist(h, heroeEn) < 9 && h.iaT <= 0) {
     h.iaT = 0.6;
     for (const k of ['r', 'q', 'e', 'w']) {
-      const H = HEROES[h.tipo].hab[k]; if (h.cd[k] > 0 || !(h.rk[k] > 0) || h.mana < H.mn) continue;
+      const H = HEROES[h.tipo].hab[k]; if (h.cd[k] > 0 || !(h.rk[k] > 0) || h.mana < costeMn(h.tipo, k, h.rk[k])) continue;
       const d0 = dist(h, heroeEn), alc = H.alc || H.dist || H.radio || 4;
       if (['escudo', 'reduce', 'rafaga', 'suerte', 'invis'].includes(H.tipo)) {if (d0 < 6) {usaHab(h, k, heroeEn.x - h.x, heroeEn.z - h.z, heroeEn.x, heroeEn.z); break;} continue;}
       if (d0 < alc + 0.5) {usaHab(h, k, heroeEn.x - h.x, heroeEn.z - h.z, heroeEn.x, heroeEn.z); break;}
@@ -1918,7 +1920,7 @@ function autoObjetivo(H, x, z) {
 let MIRA_ACT = null;
 function muestraMira(k, dx, dy) {
   const v = VISTA.get(YO); if (!v) return; const H = HEROES[v.tipo].hab[k];
-  const iq = 'qwer'.indexOf(k); if (!APUNTABLE[H.tipo] || (v.cds && v.cds[iq] > 0) || v.mana < H.mn || !(v.rk && v.rk[iq] > 0) || v.muerto >= 0) {ocultaMira(); return;}
+  const iq = 'qwer'.indexOf(k); if (!APUNTABLE[H.tipo] || (v.cds && v.cds[iq] > 0) || v.mana < costeMn(v.tipo, k, v.rk && v.rk[iq]) || !(v.rk && v.rk[iq] > 0) || v.muerto >= 0) {ocultaMira(); return;}
   const {F, R} = ejes(), x0 = v.xi ?? v.x, z0 = v.zi ?? v.z, alc = H.alc || H.dist || H.radio || 4;
   let wx, wz, l;
   if (dx === null) {/* sin arrastrar: hacia el objetivo automático, a su distancia */
@@ -1940,7 +1942,7 @@ function lanzaMia(k, apunta) {
   const v = VISTA.get(YO); if (!v || v.muerto >= 0) return;
   const i = 'qwer'.indexOf(k); if (v.cds && v.cds[i] > 0) return; if (!(v.rk && v.rk[i] > 0)) {if (subeMia(k)) return; aviso(v.pts > 0 ? 'Pulsa el + de encima para aprender esta habilidad' : k === 'r' ? 'La definitiva se aprende a nivel 4' : 'Aún no la has aprendido: sube de nivel'); return;}
   const H = HEROES[v.tipo].hab[k], x = v.xi ?? v.x, z = v.zi ?? v.z; let dx, dz, px, pz;
-  if (v.mana < H.mn) {aviso('No tienes maná suficiente (' + H.mn + ')'); return;}
+  {const cm = costeMn(v.tipo, k, v.rk[i]); if (v.mana < cm) {aviso('No tienes maná suficiente (' + cm + ')'); return;}}
   if (apunta && mira && mira.dir) {dx = mira.dir.wx; dz = mira.dir.wz; px = mira.dir.px; pz = mira.dir.pz;}
   else {/* toque: apunta solo al héroe enemigo más cercano (o a lo que tengas delante) */
     const mejor = autoObjetivo(H, x, z);
@@ -2047,7 +2049,7 @@ let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 let MODO = '1v1';
 function empieza(jugadores, modo, simulo) {
   MODO = modo; if (ponMapa(modo)) construyeMapa();
-  precargaVoces(); musica('batalla'); colorFuentes(); document.body.classList.add('jugando'); ESTADO = 'juego'; guardaAtras(); precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
+  precargaVoces(); musica('batalla'); colorFuentes(); document.body.classList.add('jugando'); ESTADO = 'juego'; guardaAtras(); precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo', 'vital'].forEach((i) => $(i).classList.remove('hidden')); if (HAY_BOTELLA && !$('vital').classList.contains('conBotella')) {$('vital').classList.add('conBotella'); $('vVac').src = 'ui/mana_vacia.webp'; $('vLle').src = 'ui/mana_llena.webp';}
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; h.hf = hechElegido; recibeFoto(foto());}
@@ -2133,9 +2135,17 @@ function minimapa() {
 }
 /* escribe en la página solo si cambia (cada escritura obliga al móvil a recolocar y repintar) */
 function pon_(el, p, v) {if (el['_' + p] !== v) {el['_' + p] = v; el[p] = v;}}
+/* botella de maná (Pack Vado 22): poner true cuando lleguen ui/mana_vacia.webp y ui/mana_llena.webp; BOT_Y0/BOT_Y1 = % de la altura donde empieza y acaba el líquido */
+const HAY_BOTELLA = false, BOT_Y0 = 30, BOT_Y1 = 92;
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
   miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); pon_($('objetivo'), 'textContent', objetivoTxt()); const bu = EXTRA.be[MI_EQ] || 0; pon_($('buffs'), 'innerHTML', (bu ? '<span class="azul"><img src="ui/bend_furia.webp" alt="">' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/bend_brasa.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/bend_savia.webp" alt="">' + v.bAlfa + ' s</span>' : '') + (() => {const d = (EXTRA.dr || [])[MI_EQ] || [0, 0, 0]; return d[2] ? '<span><img src="ui/bend_alma.webp" alt="">Alma</span>' : (d[0] ? '<span><img src="ui/bend_fuego.webp" alt="">×' + d[0] + '</span>' : '') + (d[1] ? '<span><img src="ui/bend_hielo.webp" alt="">×' + d[1] + '</span>' : '');})()); consejos(+($('marcador').dataset.t || 0));}
+  {const vt = $('vital'), pv = Math.max(0, Math.min(100, v.vida / v.max * 100)), pm = Math.max(0, Math.min(100, (v.mana || 0) / (v.manaMax || 1) * 100));
+   pon_($('vVi').style, 'width', pv.toFixed(1) + '%'); pon_($('vViS').style, 'width', pv.toFixed(1) + '%'); pon_($('vViT'), 'textContent', Math.max(0, Math.round(v.vida)) + ' / ' + v.max);
+   pon_($('vMn').style, 'width', pm.toFixed(1) + '%'); pon_($('vMnT'), 'textContent', String(v.mana || 0)); pon_($('vMnT2'), 'textContent', (v.mana || 0) + ' / ' + (v.manaMax || 0));
+   /* la botella llena se destapa de abajo arriba: el líquido ocupa del BOT_Y0 al BOT_Y1 de la altura del dibujo */
+   if (HAY_BOTELLA) pon_($('vLle').style, 'clipPath', 'inset(' + (BOT_Y0 + (BOT_Y1 - BOT_Y0) * (1 - pm / 100)).toFixed(1) + '% 0 0 0)');
+   const bj = pv < 30; if (vt._bj !== bj) {vt._bj = bj; vt.classList.toggle('poca', bj);} const sm = pm < 12; if (vt._sm !== sm) {vt._sm = sm; vt.classList.toggle('seca', sm);}}
   pon_($('yoNv'), 'textContent', 'Nv ' + v.nivel); pon_($('oro'), 'textContent', '🪙 ' + v.oro); pon_($('xpBar').style, 'width', (v.nivel >= NIVEL_MAX ? 100 : Math.round((v.xpP || 0) * 100)) + '%');
   if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel; rotuloZona(v);
   pon_($('kda'), 'textContent', (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3]);
@@ -2167,7 +2177,7 @@ function hud() {
   ['q', 'w', 'e', 'r'].forEach((k, i) => {
     const b = $('b' + k.toUpperCase()), c = b.querySelector('.cd'), cd = v.cds ? v.cds[i] : 0, rk = v.rk ? v.rk[i] : 1, tot = HEROES[v.tipo].hab[k].cd * (1 - 0.08 * Math.max(0, rk - 1));
     c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? (cd < 1 ? cd.toFixed(1) : Math.ceil(cd)) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / tot * 100) + '%' : '0%');
-    if (b._cd > 0 && !(cd > 0)) {b.classList.remove('lista'); void b.offsetWidth; b.classList.add('lista');} b._cd = cd; const sm = rk > 0 && v.mana < HEROES[v.tipo].hab[k].mn; if (b._sm !== sm) {b._sm = sm; b.classList.toggle('sinMana', sm);}
+    if (b._cd > 0 && !(cd > 0)) {b.classList.remove('lista'); void b.offsetWidth; b.classList.add('lista');} b._cd = cd; const sm = rk > 0 && v.mana < costeMn(v.tipo, k, rk); if (b._sm !== sm) {b._sm = sm; b.classList.toggle('sinMana', sm);}
     const pr = !(cd > 0) && rk > 0 && v.muerto < 0 && !sm; if (b._pr !== pr) {b._pr = pr; b.classList.toggle('pronta', pr);}
   });;
   const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); pon_(m, 'innerHTML', (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en la armería</small>');} else m.classList.add('hidden');

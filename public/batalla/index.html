@@ -389,11 +389,33 @@ body.cine #mandos,body.cine #joy,body.cine #hud,body.cine #barras,body.cine #mm{
 @keyframes mfFrente{from{transform:scale(1.03) translateX(-1.2%)}to{transform:scale(1.06) translateX(1.2%)}}
 @media (prefers-reduced-motion:reduce){#mFondo i{animation:none!important}}
 
-/* maná (16/11): barra azul bajo la vida y botones apagados en azul si no llega */
-.bv .mn{display:block;width:74px;height:5px;margin-top:-1px;background:#06101f;border:1.5px solid #0b0705;border-radius:0 0 4px 4px;overflow:hidden}
-.bv .mn u{display:block;height:100%;background:linear-gradient(#7fd0ff,#2a6cf0);transition:width .15s linear}
-.hb.sinMana img{filter:grayscale(.7) brightness(.55) sepia(1) hue-rotate(185deg) saturate(2.2)}
-.cMn{font-style:normal;color:#7fc4ff;white-space:nowrap}
+/* maná (16/11): fucsia (pedido de Arturo); barra bajo la vida de cada héroe y botones apagados si no llega */
+.bv .mn{display:block;width:74px;height:5px;margin-top:-1px;background:#1a0614;border:1.5px solid #0b0705;border-radius:0 0 4px 4px;overflow:hidden}
+.bv .mn u{display:block;height:100%;background:linear-gradient(#ff8fe6,#e0189a);transition:width .15s linear}
+.hb.sinMana img{filter:grayscale(.7) brightness(.55) sepia(1) hue-rotate(275deg) saturate(2.4)}
+.cMn{font-style:normal;color:#ff7ad9;white-space:nowrap}
+/* tu barra sobre la cabeza: más grande y con filo dorado, para encontrarte en la pelea */
+.bv.yo i{width:86px;height:12px;border-color:#0b0705;box-shadow:0 0 0 1.5px #e2b04a,0 2px 0 #0008}.bv.yo .mn{width:86px;height:6px;box-shadow:0 0 0 1.5px #e2b04a}
+.bv.yo b{font-size:12.5px;color:#ffe3a0}
+/* TUS CONSTANTES abajo en el centro: vida con números y maná (botella de ChatGPT cuando llegue: clase conBotella) */
+#vital{position:fixed;left:calc(50% - 30px);bottom:calc(8px + var(--sab));transform:translateX(-50%);z-index:6;display:flex;align-items:flex-end;gap:6px;pointer-events:none}
+#vital .vCol{display:flex;flex-direction:column;gap:3px}
+#vital .vV,#vital .vM{position:relative;width:calc(min(230px,26 * var(--vw)));border:2.5px solid #0b0705;border-radius:7px;background:#160d08;overflow:hidden;box-shadow:0 0 0 1.5px #b88a2e,0 3px 0 #0009,0 5px 10px #000a}
+#vital .vV{height:19px}#vital .vM{height:11px;border-radius:5px}
+#vital u,#vital s{position:absolute;left:0;top:0;bottom:0;display:block;text-decoration:none}
+#vital .vV u{background:linear-gradient(#b6ff7a 0,#4fd13f 38%,#1f8f2a 100%);box-shadow:inset 0 2px 0 #ffffff66,inset 0 -3px 0 #0003}
+#vital .vV s{background:#ffe6a6;transition:width .45s ease-out .28s}
+#vital.poca .vV u{background:linear-gradient(#ff9a7a 0,#e5483a 40%,#8f1f1f 100%)}#vital.poca .vV{animation:vPoca .7s ease-in-out infinite}
+@keyframes vPoca{50%{box-shadow:0 0 0 1.5px #ff5a4a,0 0 12px #ff3b30}}
+#vital .vM u{background:linear-gradient(#ffa6ee 0,#f02ab0 45%,#a00f78 100%);box-shadow:inset 0 2px 0 #ffffff66;transition:width .15s linear}
+#vital b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 12px 'Cinzel',Georgia,serif;color:#fff;-webkit-text-stroke:3px #0b0705;paint-order:stroke fill;letter-spacing:.02em}
+#vital .vM b{font-size:9px;-webkit-text-stroke:2.5px #0b0705}
+#vital .vBot{display:none;position:relative;width:46px;height:58px;filter:drop-shadow(0 3px 4px #000a)}
+#vital .vBot img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#vital .vBot b{inset:auto 0 -2px 0;font-size:11px}
+#vital.conBotella .vBot{display:block}#vital.conBotella .vM{display:none}
+#vital.seca .vBot{animation:vSeca 1s ease-in-out infinite}@keyframes vSeca{50%{filter:drop-shadow(0 0 8px #ff2ab0)}}
+body.cine #vital{visibility:hidden}
 </style>
 </head>
 <body>
@@ -438,6 +460,7 @@ body.cine #mandos,body.cine #joy,body.cine #hud,body.cine #barras,body.cine #mm{
   <button class="hb hs" id="bD" aria-label="Destello"><img src="ui/hz_destello.webp" alt=""><span class="cd hidden"></span></button>
   <button class="hb hs" id="bF" aria-label="Curar"><img src="ui/hz_curar.webp" alt=""><span class="cd hidden"></span></button>
 </div>
+<div id="vital" class="hidden"><div class="vBot"><img id="vVac" alt=""><img id="vLle" alt=""><i class="vBri"></i><b id="vMnT"></b></div><div class="vCol"><div class="vV"><s id="vViS"></s><u id="vVi"></u><b id="vViT"></b></div><div class="vM"><u id="vMn"></u><b id="vMnT2"></b></div></div></div>
 <button id="bTienda" class="hidden" aria-label="Armería"></button>
 <button id="bBase" class="hidden" aria-label="Volver a la base"><span>BASE</span></button>
 <div id="canal" class="hidden"></div>

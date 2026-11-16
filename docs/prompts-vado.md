@@ -260,3 +260,16 @@ Héroes y estilo:
 - Para cada héroe, además, ind_<id>_alcance: el aro de alcance a su estilo.
 Nombres: ind_<id>_<tecla>.png (ej. ind_gandalf_q.png) e ind_<id>_alcance.png. (<id> = rohan, enano, elfo, hobbit, gandalf, orco)
 ```
+
+
+## Pack Vado 22 · ART (16/11): botella de maná fucsia y marco de la barra de vida
+
+```
+Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard junto al Vado del Isen). Estilo: Supercell oscuro (Clash Royale / Brawl Stars: formas gordas y redondeadas, contorno oscuro grueso, brillos limpios) con hierro negro forjado y oro viejo de Rohan e Isengard. Tres imágenes sueltas, todas con FONDO TRANSPARENTE de verdad, sin texto, vistas DE FRENTE y centradas:
+
+1. mana_vacia.png (768x1024): un frasquito de cristal VACÍO, panzudo, con tapón de corcho y herrajes de hierro negro y oro (un nudo de Rohan en el cuello). Cristal oscuro casi transparente con un reflejo blanco a la izquierda. Ocupa casi toda la altura.
+
+2. mana_llena.png (768x1024): EL MISMO frasco exacto, mismo tamaño, misma posición y mismo encuadre (tienen que encajar uno encima del otro), pero LLENO hasta el cuello de un líquido ROSA FUCSIA espeso y brillante, como miel luminosa: remolinos más claros, burbujas lentas, destellos y un resplandor fucsia que sale del cristal. Recuerda a la luz de la redoma de Galadriel, pero en fucsia.
+
+3. vida_marco.png (1024x192): marco horizontal para una barra de vida: hierro negro forjado con filo de oro viejo, remaches y una cabeza de caballo de Rohan pequeña en cada extremo. El HUECO del centro (donde va la barra) completamente transparente y recto, de unos 880x90 px.
+```
