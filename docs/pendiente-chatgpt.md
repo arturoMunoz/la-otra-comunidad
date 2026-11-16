@@ -30,4 +30,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 
 - [x] ~~Pack Vado 19 · ART~~ (HECHO 16/11): marcas de apuntado propias de cada héroe (prompt en `docs/prompts-vado.md`).
 - [x] ~~La Brecha · ART: iconos de 5 objetos~~ (HECHO 16/11, Pack 20) (Manto de Lórien, Tomo de Rivendel, Báculo de los Istari, Narya, Velo de Galadriel), mismo estilo que `public/abismo/iconos/obj_*.webp`.
-- [ ] Pack Vado 21 · ART: fondo del menú de La Brecha en 6 capas para animarlo (cielo, fondo con Orthanc, medio con el vado y estandartes, frente, niebla, pavesas). Prompt dado el 16/11.
+- [x] ~~Pack Vado 21 · ART~~ (HECHO 16/11): fondo del menú de La Brecha en 6 capas para animarlo (cielo, fondo con Orthanc, medio con el vado y estandartes, frente, niebla, pavesas). Prompt dado el 16/11.

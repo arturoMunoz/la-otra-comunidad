@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#120c07">
 <title>La Brecha</title>
 <!-- lo primero que se ve: el menú. Se pide antes que los modelos 3D -->
-<link rel="preload" href="ui/fondo_menu.webp" as="image" fetchpriority="high">
+<link rel="preload" href="ui/menu_cielo.webp" as="image" fetchpriority="high">
 <link rel="preload" href="ui/btn_jugar.webp" as="image" fetchpriority="high">
 <link rel="preload" href="ui/btn_sec.webp" as="image"><link rel="preload" href="ui/carta_duelo.webp" as="image"><link rel="preload" href="ui/carta_batalla.webp" as="image">
 <link rel="preload" href="fuentes/cinzel.woff" as="font" type="font/woff" crossorigin>
@@ -367,11 +367,33 @@ body.cine #mandos,body.cine #joy,body.cine #hud,body.cine #barras,body.cine #mm{
 #rotulo.ver{animation:rotulo 2.6s ease-out}@keyframes rotulo{0%{opacity:0;translate:0 8px}15%{opacity:1;translate:0 0}75%{opacity:1}100%{opacity:0}}
 #menu .mPanel{padding-top:46px !important}
 #ajustes .cuenta{min-width:280px;max-width:340px}.cuT{margin:0;color:#e9dcc0;font:15px 'Alegreya Sans',sans-serif;text-align:center}.cuF{font:16px 'Alegreya Sans',sans-serif;padding:10px 12px;border-radius:9px;border:1px solid #8a6a32;background:#0d0906;color:#f3e6c4;outline:none}.cuF:focus{border-color:#ffd27a}.cuL{background:none;border:0;color:#e8c886;font:15px 'Alegreya Sans',sans-serif;text-decoration:underline;padding:4px;cursor:pointer}.cuMsg{margin:0;min-height:1em;color:#ff9a7a;font:14px 'Alegreya Sans',sans-serif;text-align:center}.cuMsg.ok,.cuMsg:not(:empty):first-letter{}.cuMsg.ok{color:#9fe08a}.cuYo{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#f3e6c4;font:14px 'Alegreya Sans',sans-serif}.cuYo span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Pack Vado 21 (16/11): fondo del menú en capas que se mueven (paralaje). Solo transform/opacity: barato en el móvil. */
+#menu::before{display:none}
+#menu{isolation:isolate}#mFondo{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+#mFondo i{position:absolute;inset:-6%;background:center/cover no-repeat;will-change:transform}
+#mFondo .fc{background-image:url(ui/menu_cielo.webp);animation:mfCielo 48s ease-in-out infinite alternate}
+#mFondo .ff{background-image:url(ui/menu_fondo.webp);animation:mfFondo 36s ease-in-out infinite alternate}
+#mFondo .fm{background-image:url(ui/menu_medio.webp);animation:mfMedio 26s ease-in-out infinite alternate}
+#mFondo .fn{inset:auto;left:0;width:200%;height:60%;background:url(ui/menu_niebla.webp) left center/50% 100% repeat-x;opacity:.32;animation:mfNiebla 70s linear infinite}
+#mFondo .n1{top:38%}#mFondo .n2{top:52%;opacity:.22;animation-duration:110s;animation-direction:reverse}
+#mFondo .fp{inset:auto;bottom:-4%;width:42%;aspect-ratio:1;background:url(ui/menu_pavesas.webp) 0 0/1600% 100% no-repeat;mix-blend-mode:screen;opacity:.85;animation:mfPav 1.9s steps(15) infinite,mfSube 9s ease-in-out infinite alternate}
+#mFondo .p1{left:6%}#mFondo .p2{right:2%;width:34%;animation-delay:-.9s,-4s;opacity:.7}
+#mFondo .fr{background-image:url(ui/menu_frente.webp);animation:mfFrente 9s ease-in-out infinite alternate;transform-origin:20% 100%}
+@keyframes mfCielo{from{transform:scale(1.08) translateX(-2%)}to{transform:scale(1.14) translateX(2%)}}
+@keyframes mfFondo{from{transform:translateX(-1.6%)}to{transform:translateX(1.6%)}}
+@keyframes mfMedio{from{transform:translateX(-2.6%) scale(1.01)}to{transform:translateX(2.6%) scale(1.03)}}
+@keyframes mfNiebla{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes mfPav{from{background-position:0 0}to{background-position:100% 0}}
+@keyframes mfSube{from{transform:translateY(0)}to{transform:translateY(-6%)}}
+@keyframes mfFrente{from{transform:scale(1.03) translateX(-1.2%)}to{transform:scale(1.06) translateX(1.2%)}}
+@media (prefers-reduced-motion:reduce){#mFondo i{animation:none!important}}
 </style>
 </head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando el campo de batalla</p><b>0 %</b></div>
 <div id="menu">
+  <div id="mFondo" aria-hidden="true"><i class="fc"></i><i class="ff"></i><i class="fm"></i><i class="fn n1"></i><i class="fn n2"></i><i class="fp p1"></i><i class="fp p2"></i><i class="fr"></i></div>
   <div class="mSplash"><img id="mSplash" alt="" fetchpriority="high" decoding="async"></div>
   <button class="mAtras" id="bSalir" aria-label="Volver a La Otra Comunidad">←</button><button class="mAtras" id="bSon" aria-label="Ajustes" style="left:auto;right:calc(10px + var(--sar))">⚙</button>
   <div class="mHeroe"><em id="mHeroRol"></em><b id="mHeroNom"></b><button id="mCambiar">⇄ Cambiar héroe</button></div>
