@@ -7,6 +7,7 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 ## La Brecha (antes El Vado del Isen) — prompts en `docs/prompts-vado.md`
 - [x] ~~**Pack Vado 11 · ART**~~ (llegó como Pack 13, 16/11) — efectos de golpe normal y crítico, muerte de súbdito, subir de nivel, volver a la base, monedas; marcos del retrato y de los botones de habilidad; cartel de baja con dos retratos; adornos de victoria y derrota; kit del menú (JUGAR, botón secundario, tarjetas de Duelo y Batalla, botón redondo); iconos de las pestañas de la Armería y fondo de la Armería.
 - [ ] **Pack Vado 14 · WORK** — las Dos Torres (Orthanc y la Torre del Cuerno, 3 estados), estandartes de Edoras y de la Mano Blanca, y el palantír de Orthanc con el Ojo dentro.
+- [ ] **Pack Vado 15 · ART** — icono y pantalla de carga de la app Android de La Brecha.
 - [ ] **Pack Vado 12 · Meshy** — las 4 fichas ya están (`tools/vado/pack13/fichas`): falta pasarlas a 3D con esqueleto y animaciones en meshy.ai (empezar por una).
 - [x] ~~**Pack Vado 10 · WORK**~~ (llegó como Pack 13, 16/11) — rehacer el Huorn (ahora es una bola-monstruo) y el draco (ahora es un triceratops teñido).
 - [x] ~~**Uruk Azul · WORK**~~ (Pack 13) — modelo propio (ahora es el capitán teñido de azul).

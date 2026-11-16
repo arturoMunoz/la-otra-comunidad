@@ -223,3 +223,12 @@ Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard j
 Pásamelo en Pack_Vado_14.zip con LICENCIAS.txt.
 ```
 Por qué el palantír y no Barad-dûr de fondo: con la cámara desde arriba del juego, una torre lejana no se vería nunca; el palantír está dentro del mapa y además es fiel al libro (Saruman habla con Sauron por el palantír de Orthanc). Ojo con la regla del proyecto: el Ojo es Sauron, y la regla dice que no se dibujan personajes del libro; aquí es solo un ojo de fuego dentro de una piedra. Si preferís no saltaros la regla, se quita el punto 3.
+
+## Pack Vado 15 — icono y pantalla de carga de la app de La Brecha (16/11)
+**Dónde: ART**.
+```
+Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard junto al Vado del Isen; aspecto como los juegos de Supercell: colores vivos, formas claras, metal y oro gastado). Necesito la imagen de la app para Android. Sin texto, sin marcas de agua.
+1. icono_app: 1024x1024, cuadrado, fondo de color (no transparente): el escudo redondo de Rohan con el caballo blanco, partido en diagonal por una grieta de luz dorada (la brecha), y detrás la Mano Blanca de Isengard en sombra. Que se lea bien en pequeño (48 px): pocas formas y grandes, contorno grueso, nada pegado a los bordes (deja un 15 % de margen porque Android lo recorta en círculo).
+2. carga_app: 1920x1080 horizontal, pantalla de carga: la muralla del Abismo de Helm al atardecer con una brecha abierta en el muro, humo y antorchas, estandartes verdes de Rohan a un lado y la Mano Blanca al otro; el centro más oscuro y despejado para poner encima el título y la barra de carga.
+Pásamelo en Pack_Vado_15.zip.
+```
