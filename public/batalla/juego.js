@@ -1117,7 +1117,7 @@ function aplicaFila(f, t) {
   let v = VISTA.get(id);
   if (!v) {v = {id, k, eq, x, z, rot, x0: x, z0: z, r0: rot, t0: t, t1: t}; VISTA.set(id, v);}
   else if (S) {v.x0 = v.x; v.z0 = v.z; v.r0 = v.rot;}   /* anfitrión: de un paso de la simulación al siguiente */
-  else {v.x0 = v.xi ?? v.x; v.z0 = v.zi ?? v.z; v.r0 = v.ri ?? v.rot; v.t0 = performance.now();}
+  else {v.x0 = v.xi ?? v.x; v.z0 = v.zi ?? v.z; v.r0 = v.ri ?? v.rot; v.t0 = performance.now(); const b = v.buf || (v.buf = []); b.push(v.t0, x, z, rot); if (b.length > 32) b.splice(0, 4);}
   Object.assign(v, {x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo, visto: true, llega: performance.now()});
   if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30], enc: f[31] || '', cdEnc: f[32] || 0, flagsE: f[33] || 0, fijo: f[34] || 0, hf: f[35] || 'f', vg: f[36] ?? 0, vgT: f[37] || 0});
 }
@@ -1305,6 +1305,9 @@ function animaHabilidades(dt) {
 function golpeVisual(id, de, fuerte) {
   const o = VIS.get(id), v = VISTA.get(id); if (!o || !v) return;
   o.flash = 0.13; o.punch = fuerte ? 1 : 0.6; o.sqA = -(fuerte ? 0.2 : 0.12); o.sqT = o.sqD = 0.24;
+  /* que se note el golpe sin parar la pantalla: el que recibe recula un palmo y vuelve, y el que pega se echa hacia delante */
+  {const va = VISTA.get(de); if (va) {const dx = (v.xi ?? v.x) - (va.xi ?? va.x), dz = (v.zi ?? v.z) - (va.zi ?? va.z), l = Math.hypot(dx, dz) || 1, f = v.k === 't' || v.k === 'n' ? 0 : (fuerte ? 0.55 : 0.32) * (v.k === 'h' ? 1 : 1.3);
+    if (f) o.kb = {x: dx / l * f, z: dz / l * f, t: 0.17, d: 0.17}; const oa = VIS.get(de); if (oa && va.k === 'h' && !(HEROES[va.tipo] || {}).proy) oa.kb = {x: dx / l * 0.22, z: dz / l * 0.22, t: 0.12, d: 0.12};}}
   const yoPego = de === YO, meDan = id === YO;
   const ahora = performance.now(); /* como mucho una chispa cada 0,18 s por personaje: en una pelea grande eran decenas a la vez */
   if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2 : 1.3); suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}
@@ -1329,15 +1332,23 @@ function dibuja(dt) {
     let o = VIS.get(v.id); if (!o) o = creaVis(v);
     /* interpolación: de la posición anterior a la nueva en el tiempo entre fotos */
     let x = v.x, z = v.z, r = v.rot;
-    if (!(v.id === YO && !S)) {const k = S ? ALFA : Math.min(1, (ahora - v.t0) / 72); x = v.x0 + (v.x - v.x0) * k; z = v.z0 + (v.z - v.z0) * k; let dr = v.rot - v.r0; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = v.r0 + dr * k;}
+    if (!(v.id === YO && !S) && !S && v.buf && v.buf.length >= 8) {
+      /* invitado: se pinta 100 ms por detrás con un colchón de fotos (como los juegos en línea): si una foto llega tarde o a trompicones, no da tirones */
+      const b = v.buf, T = ahora - INTERP_MS; let i = b.length - 8; while (i > 0 && b[i] > T) i -= 4;
+      if (T >= b[b.length - 4]) {const n = b.length - 4, p = n - 4, dt2 = Math.max(1, b[n] - b[p]), e2 = Math.min(T - b[n], 90) / dt2; x = b[n + 1] + (b[n + 1] - b[p + 1]) * e2; z = b[n + 2] + (b[n + 2] - b[p + 2]) * e2; r = b[n + 3];}
+      else {const j = i + 4, k = Math.max(0, Math.min(1, (T - b[i]) / Math.max(1, b[j] - b[i]))); x = b[i + 1] + (b[j + 1] - b[i + 1]) * k; z = b[i + 2] + (b[j + 2] - b[i + 2]) * k; let dr = b[j + 3] - b[i + 3]; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = b[i + 3] + dr * k;}
+      if (Math.hypot(x - v.x, z - v.z) > 8) {x = v.x; z = v.z; b.length = 0;} /* reaparición o salto: sin deslizarse por el mapa */
+    } else if (!(v.id === YO && !S)) {const k = S ? ALFA : Math.min(1, (ahora - v.t0) / 72); x = v.x0 + (v.x - v.x0) * k; z = v.z0 + (v.z - v.z0) * k; let dr = v.rot - v.r0; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = v.r0 + dr * k;}
     v.xi = x; v.zi = z; v.ri = r;
     const muerto = v.k === 'h' ? v.muerto >= 0 : v.muerto === 0;
     o.raiz.position.set(x, o.salto ? o.raiz.position.y : 0, z);
+    if (o.kb && o.kb.t > 0) {o.kb.t -= dt; const q = Math.sin(Math.PI * Math.max(0, 1 - o.kb.t / o.kb.d)); o.raiz.position.x += o.kb.x * q; o.raiz.position.z += o.kb.z * q;}
     if (o.clips) {
       let dr = r - (o.rv ?? r); dr = Math.atan2(Math.sin(dr), Math.cos(dr)); o.rv = (o.rv ?? r) + dr * Math.min(1, dt * 14); o.raiz.rotation.y = o.rv;
       if (muerto) pon(o, 'morir', 0.1);
       else {
         if (v.hc !== o.hc) {o.hc = v.hc; if (!o.habYa) {otraVez(o, 'hab'); o.ocup = 0.45;} o.habYa = false;}
+        else if (v.ac !== o.ac && v.id === YO && !S && o.predAc > 0) {o.ac = v.ac; o.predAc--;}
         else if (v.ac !== o.ac) {o.ac = v.ac; if (v.k === 'j' && NEUTRO[v.tipo].jefe && v.ac % 3 === 0 && o.todos && o.todos.pisoton) {o.ocup = animaClip(o, 'pisoton', 1.6); suena('grito', 0.7, v.x, v.z); setTimeout(() => {tiemblaCam = Math.max(tiemblaCam, 0.35); suena('explosion', 0.8, v.x, v.z); flip('grietas', v.xi ?? v.x, v.zi ?? v.z, 8, true);}, 650);} else if (v.k === 'h' && BASICOS[v.tipo] && o.todos) {const lista = BASICOS[v.tipo], n = lista[v.ac % lista.length], H = HEROES[v.tipo]; o.ocup = animaClip(o, n, Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9;} else otraVez(o, 'atacar'); o.ocup = o.ocup || 0.35; if (v.k === 'h') {o.sqA = 0.1; o.sqT = o.sqD = 0.22;} if (v.id === YO && !HEROES[v.tipo].proy) suena('espada', 0.25);}
         o.ocup = (o.ocup || 0) - dt;
         const vel = o.lx === undefined ? 0 : Math.hypot(x - o.lx, z - o.lz) / Math.max(dt, 0.001); o.lx = x; o.lz = z; o.vel = (o.vel || 0) + (Math.min(vel, 12) - (o.vel || 0)) * Math.min(1, dt * 10);
@@ -1557,7 +1568,7 @@ function efectoLocal(e) {
   if (t === 'alm') {if (e[1] === MI_EQ) {flip('ondaC', e[2], e[3], 2.2, true); suena('gema', 0.5, e[2], e[3]);}}
   if (t === 'vive') {const o = VIS.get(e[1]); if (o) {o.sqA = 0.3; o.sqT = o.sqD = 0.45;} const v = VISTA.get(e[1]); if (v) {const f = BASES[v.eq].fuente; flip('ondaC', f.x, f.z, 4, true);}}
   if (t === 'son') suena(e[1], 0.5, e[2], e[3]);
-  if (t === 'g') golpeVisual(e[1], e[2], e[3]);
+  if (t === 'g') {if (!S && e[2] === YO && PRED.hit.has(e[1]) && performance.now() - PRED.hit.get(e[1]) < 700) {PRED.hit.delete(e[1]); if (e[3]) golpeVisual(e[1], e[2], e[3]);} else golpeVisual(e[1], e[2], e[3]);}
   if (t === 'hb') habVisual(e);
   if (t === 'planta') {const [, tp, x, z] = e; if (tp === 'seta') {flip('humo', x, z, 6, false, undefined, 1.2); flip('ondaC', x, z, 7, true); flip('explosion', x, z, 3); suena('explosion', 0.6); if (Math.hypot(x - camM.x, z - camM.z) < 16) tiemblaCam = Math.max(tiemblaCam, 0.5);} if (tp === 'baya') {flip('hojas', x, z, 3, true); suena('magia', 0.4);} if (tp === 'flor') {flip('ondaC', x, z, 22, true, 0, 0.13, 1.4); flip('suerte', x, z, 3); suena('magia', 0.5);}}
   if (t === 'castigo') {const [, x, z] = e; flip('ondaC', x, z, 4, true); flip('explosion', x, z, 2.6); flip('impacto', x, z, 2.2); suena('explosion', 0.5); if (Math.hypot(x - camM.x, z - camM.z) < 16) tiemblaCam = Math.max(tiemblaCam, 0.35);}
@@ -1640,6 +1651,7 @@ const camM = new THREE.Vector3();
 let APAI = VW > VH;
 function ejes() {const s = signo(MI_EQ); return APAI ? {F: {x: -s, z: 0}, R: {x: 0, z: -s}} : {F: {x: 0, z: -s}, R: {x: s, z: 0}};}
 const ZOOMS = [[24, 14], [31, 18], [40, 23]]; let zoomI = +(localStorage.getItem('vado.zoom') ?? 1);
+const INTERP_MS = 100;
 let CAM_FIN = null; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
 function camara(dt) {
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
@@ -1823,7 +1835,23 @@ function acercaAtaque(px, pz) {
   if (enAlcance || !mejor) return null;
   return {x: mejor.x - px, z: mejor.z - pz};
 }
+/* el invitado ve su golpe al momento (predicción): la animación y el impacto salen en su móvil sin esperar al anfitrión;
+   cuando llega la confirmación no se repiten. Si el anfitrión dice que no entró, solo se ha visto un golpe de más */
+const PRED = {g: 0, lista: 0, hit: new Map()};
+function prediceGolpe() {
+  if (S || !NET.online) return; const v = VISTA.get(YO), o = VIS.get(YO); if (!v || !o || !o.todos || v.muerto >= 0 || (v.flags & 2)) return;
+  const H = HEROES[v.tipo], ahora = performance.now(), tap = (MANDO.golpes || 0) > PRED.g; PRED.g = MANDO.golpes || 0;
+  if (o.predAc > 0 && ahora - (o.predT || 0) > 900) o.predAc = 0;
+  if (!(tap || atacando()) || ahora < PRED.lista) return;
+  const alc = H.alcance + 0.6; let obj = null, md = 1e9;
+  for (const q of VISTA.values()) {if (q.eq === MI_EQ || q.vida <= 0 || (q.k === 'h' && (q.muerto >= 0 || q.escondido)) || q.k === 'p') continue; const d = Math.hypot((q.xi ?? q.x) - MIO.x, (q.zi ?? q.z) - MIO.z) - (RADIO_V[q.k] || 0.6); if (d < alc && (d < md || (q.k === 'h' && obj && obj.k !== 'h'))) {md = d; obj = q;}}
+  if (!obj && !(tap && !(MANDO.mx || MANDO.mz))) return;
+  PRED.lista = ahora + 1000 / (H.vatq * 1.05);
+  const lista = BASICOS[v.tipo] || ['atacar']; o.ocup = animaClip(o, lista[((v.ac || 0) + 1 + (o.predAc || 0)) % lista.length], Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9; o.predAc = (o.predAc || 0) + 1; o.predT = ahora; o.sqA = 0.1; o.sqT = o.sqD = 0.22;
+  if (obj) {MIO.rot = Math.atan2((obj.xi ?? obj.x) - MIO.x, (obj.zi ?? obj.z) - MIO.z); v.rot = MIO.rot; if (!H.proy) {const id = obj.id; setTimeout(() => {PRED.hit.set(id, performance.now()); golpeVisual(id, YO, false);}, 170);}}
+}
 function mueveMio(dt) {
+  prediceGolpe();
   const v = VISTA.get(YO); if (!v) return; if (!S) estructuras(VISTA.values());
   if (v.flagsE & 1) {MIO.x = v.x; MIO.z = v.z; return;}
   if (!MIO.listo || v.muerto >= 0) {MIO.x = v.x; MIO.z = v.z; MIO.listo = v.muerto < 0; return;}
@@ -1857,7 +1885,7 @@ function recibe(o) {
   if (o.t === 'foto' && !S) recibeFoto(o.f);
   if (S) {/* soy el anfitrión: mandos de los demás */
     const h = S.u.find((q) => q.k === 'h' && q.slot === o.de); if (!h) return;
-    if (o.t === 'in') {h.lat = Math.min(0.35, (o.rt || 0) / 1000 + 0.07 + 1 / 30); /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
+    if (o.t === 'in') {h.lat = Math.min(0.4, (o.rt || 0) / 1000 + INTERP_MS / 1000 + 1 / 30); /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; rebobinado(h, () => usaHab(h, o.k, o.dx, o.dz, o.px, o.pz));}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
