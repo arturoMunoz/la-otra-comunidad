@@ -2195,7 +2195,16 @@ function pintaSala() {
 function nombreJugador() {let n = localStorage.getItem('vado.nombre'); if (!n) {try {const a = JSON.parse(localStorage.getItem('loc.yo') || 'null'); n = a && a.nombre;} catch (e) {} } return n || 'Hobbit' + Math.floor(Math.random() * 90 + 10);}
 function preparaMenu() {
   /* ⚙ del menú: sonido y gráficos (como los ajustes del Wild Rift) */
-  {const abre = () => {const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Ajustes</b>' + botonesSonido() + botonesGraf() + '<button class="bt" id="ajCierra">Listo</button></div>'; a.classList.remove('hidden'); enlazaSonido(abre); enlazaGraf(a, abre); $('ajCierra').onclick = () => a.classList.add('hidden');}; $('bSon').onclick = abre;}
+  /* La Brecha también para quien no es de La Otra Comunidad (16/11): sin cuenta, solo se pide un nombre la primera vez */
+  const deLaComunidad = (() => {try {return !!JSON.parse(localStorage.getItem('loc.yo') || 'null');} catch (e) {return false;}})() || !!localStorage.getItem('loc.auth');
+  if (!deLaComunidad && !window.BrechaAndroid) $('bSalir').style.display = 'none';
+  const campoNombre = () => '<p class="ajT">Tu nombre</p><input id="ajNombre" maxlength="14" autocomplete="nickname" value="' + (localStorage.getItem('vado.nombre') || '').replace(/[<>"&]/g, '') + '" placeholder="Cómo te verán los demás">';
+  const guardaNombre = () => {const i = $('ajNombre'); if (!i) return true; const n = i.value.trim().replace(/[<>"&]/g, '').slice(0, 14); if (n.length < 2) {i.focus(); i.classList.add('mal'); return false;} localStorage.setItem('vado.nombre', n); return true;};
+  if (!localStorage.getItem('vado.nombre') && !deLaComunidad) {
+    const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Bienvenido a La Brecha</b><p class="ajT" style="color:#e9dcc0;font:15px Alegreya Sans,sans-serif">Duelos de héroes en el Vado del Isen. ¿Cómo quieres llamarte?</p>' + campoNombre().replace('<p class="ajT">Tu nombre</p>', '') + '<button class="bt" id="ajCierra">Entrar</button></div>';
+    a.classList.remove('hidden'); $('ajCierra').onclick = () => {if (guardaNombre()) {a.classList.add('hidden'); pintaMenu();}};
+  }
+  {const abre = () => {{const i = $('ajNombre'); if (i && i.value.trim().length >= 2) guardaNombre();} const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Ajustes</b>' + campoNombre() + botonesSonido() + botonesGraf() + '<button class="bt" id="ajCierra">Listo</button></div>'; a.classList.remove('hidden'); enlazaSonido(abre); enlazaGraf(a, abre); $('ajCierra').onclick = () => {if (guardaNombre()) {a.classList.add('hidden'); pintaMenu();}};}; $('bSon').onclick = abre;}
   pintaMenu();
   $('bGirar').onclick = apaisa;
   $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);}, modoElegido === '2v2');});
