@@ -20,6 +20,7 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - No tocar las tablas de Stadada. Todo lo de este juego lleva prefijo `loc_`.
 - Cuentas con correo y contraseña (pedido de Henar: nada de códigos de acceso). Al crear la cuenta se elige uno de los 7 hobbits libres (`loc_reclamar`, una vez por cuenta). La `clave_atajo` solo la usa el atajo del iPhone; se copia desde Comunidad.
 - Personajes del libro: solo en texto (bocadillos con emblema). No dibujar a Frodo, Gandalf, Bombadil ni otros personajes de Tolkien. Los hobbits del grupo son originales.
+- EXCEPCIÓN (16/11, decisión de Arturo/Henar: «las normas son mías»): en La Brecha SÍ puede haber héroes que son personajes del libro (Gandalf, Gollum…), dibujados y en 3D. En La Otra Comunidad sigue la norma de arriba.
 - Textos de historia: resúmenes propios, nunca citas copiadas del libro.
 - Arte: Claude NUNCA dibuja ni genera recursos (ni SVG, ni dibujos por código). Todo se pide a ChatGPT con un prompt y Henar/Arturo pasan las imágenes.
 - Cada pedido a ChatGPT lleva SIEMPRE dónde hacerlo (pedido de Arturo, 15/11): «ART» = chat normal de ChatGPT, no gasta tokens (imágenes, iconos, hojas de animación, fondos, textos); «WORK» = modo agente, gasta tokens (modelos .glb, tocar esqueletos o animaciones, descargar recursos CC0 de internet, zips con varios archivos procesados). Si un pack mezcla, se parte en dos pedidos.

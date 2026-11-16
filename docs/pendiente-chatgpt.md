@@ -12,8 +12,8 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] **Pack Vado 17 · WORK** (metido el 16/11) (sustituye al 12b: piezas sueltas por héroe enganchadas a los huesos, como el Pack 27 del Abismo). ~~Pack Vado 12b · WORK~~ — ChatGPT viste de nuevo los 4 héroes (mismo esqueleto y animaciones de KayKit) siguiendo las fichas de `tools/vado/pack13/fichas`. Empezar por el Jinete de Rohan. (Meshy descartado el 16/11.)
 - [x] ~~**Pack Vado 10 · WORK**~~ (llegó como Pack 13, 16/11) — rehacer el Huorn (ahora es una bola-monstruo) y el draco (ahora es un triceratops teñido).
 - [x] ~~**Uruk Azul · WORK**~~ (Pack 13) — modelo propio (ahora es el capitán teñido de azul).
-- [ ] **Pack Vado 18 · ART** — 4 héroes nuevos: retratos grandes, 16 iconos de habilidades y 4 botones de ataque. Prompt en el chat del 16/11.
-- [ ] **Pack Vado 18 · WORK** — modelos 3D de los 4 héroes nuevos (mago KayKit CC0 + criatura de las cuevas; orco y uruk se reutilizan del Abismo). Hacer después del ART.
+- [ ] **Pack Vado 18 · ART** — 4 héroes nuevos (Gandalf, orco de Mordor, Uruk-hai, Gollum): retratos grandes, 16 iconos de habilidades y 4 botones de ataque. Prompt en el chat del 16/11.
+- [ ] **Pack Vado 18 · WORK** — modelos 3D de los 4 héroes nuevos (Gandalf a partir del mago KayKit CC0 + Gollum; orco y uruk se reutilizan del Abismo). Hacer después del ART.
 - [ ] Minimapa del mapa del ojo (el de ChatGPT era del mapa recto; ahora se pinta por código) · ART.
 
 ## La Otra Comunidad
