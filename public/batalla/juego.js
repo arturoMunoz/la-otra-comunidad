@@ -619,6 +619,15 @@ addEventListener('popstate', () => {
   if (!c) {c = document.createElement('div'); c.id = 'salirC'; c.innerHTML = '<div class="ajC"><b>¿Salir de la partida?</b><p class="ajT" style="color:#e9dcc0;font:15px Alegreya Sans,sans-serif">' + (NET.online ? 'Tu héroe lo llevará la máquina y no podrás volver a esta partida.' : 'Perderás la partida.') + '</p><div class="ajSon"><button class="bt" id="salirNo">Seguir jugando</button><button class="bt" id="salirSi">Salir</button></div></div>'; document.body.appendChild(c);
     c.querySelector('#salirNo').onclick = () => c.remove(); c.querySelector('#salirSi').onclick = () => {ATRAS_ON = false; removeEventListener('beforeunload', avisaCierre); location.reload();};}
 });
+/* la app de Android pregunta aquí qué hacer con «atrás»: 'si' = lo hemos resuelto nosotros, 'no' = que cierre la app */
+window.brechaAtras = () => {
+  if (document.getElementById('salirC')) {document.getElementById('salirC').remove(); return 'si';}
+  for (const id of ['tienda', 'tabla', 'elige', 'ajustes']) {const e = document.getElementById(id); if (e && !e.classList.contains('hidden') && !(id === 'ajustes' && e.dataset.cuenta)) {if (id === 'elige' || id === 'ajustes') {e.classList.add('hidden'); return 'si';}}}
+  if (ESTADO === 'juego' || ESTADO === 'sala') {ATRAS_ON = true; dispatchEvent(new PopStateEvent('popstate')); return 'si';}
+  const c = document.createElement('div'); c.id = 'salirC'; c.innerHTML = '<div class="ajC"><b>¿Salir de La Brecha?</b><div class="ajSon"><button class="bt" id="salirNo">Quedarme</button><button class="bt" id="salirSi">Salir</button></div></div>'; document.body.appendChild(c);
+  c.querySelector('#salirNo').onclick = () => c.remove(); c.querySelector('#salirSi').onclick = () => {try {BrechaAndroid.salir();} catch (e) {}};
+  return 'si';
+};
 function avisaCierre(e) {if (ESTADO === 'juego') {e.preventDefault(); e.returnValue = '';}}
 addEventListener('beforeunload', avisaCierre);
 /*SIM{*/

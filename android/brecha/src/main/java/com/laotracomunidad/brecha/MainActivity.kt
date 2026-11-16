@@ -65,7 +65,14 @@ class MainActivity : Activity() {
     override fun onWindowFocusChanged(f: Boolean) { super.onWindowFocusChanged(f); if (f) pantallaCompleta() }
     override fun onResume() { super.onResume(); web?.onResume(); web?.resumeTimers() }
     override fun onPause() { web?.onPause(); web?.pauseTimers(); super.onPause() }
-    @Deprecated("") override fun onBackPressed() { val w = web; if (w != null && w.canGoBack()) w.goBack() else super.onBackPressed() }
+    /* atrás (botón o gesto): lo decide siempre el juego; en partida pregunta, en el menú pregunta si quieres salir de la app */
+    private fun atras() { val w = web ?: return finish(); w.evaluateJavascript("window.brechaAtras?brechaAtras():'no'") { r -> if (r == null || r.contains("no")) finish() } }
+    private var cbAtras: Any? = null
+    override fun onStart() {
+        super.onStart()
+        if (android.os.Build.VERSION.SDK_INT >= 33 && cbAtras == null) { val cb = android.window.OnBackInvokedCallback { atras() }; onBackInvokedDispatcher.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, cb); cbAtras = cb }
+    }
+    @Deprecated("") override fun onBackPressed() { atras() }
 
     inner class Puente {
         @JavascriptInterface fun salir() { runOnUiThread { finish() } }
