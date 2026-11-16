@@ -388,6 +388,12 @@ body.cine #mandos,body.cine #joy,body.cine #hud,body.cine #barras,body.cine #mm{
 @keyframes mfSube{from{transform:translateY(0)}to{transform:translateY(-6%)}}
 @keyframes mfFrente{from{transform:scale(1.03) translateX(-1.2%)}to{transform:scale(1.06) translateX(1.2%)}}
 @media (prefers-reduced-motion:reduce){#mFondo i{animation:none!important}}
+
+/* maná (16/11): barra azul bajo la vida y botones apagados en azul si no llega */
+.bv .mn{display:block;width:74px;height:5px;margin-top:-1px;background:#06101f;border:1.5px solid #0b0705;border-radius:0 0 4px 4px;overflow:hidden}
+.bv .mn u{display:block;height:100%;background:linear-gradient(#7fd0ff,#2a6cf0);transition:width .15s linear}
+.hb.sinMana img{filter:grayscale(.7) brightness(.55) sepia(1) hue-rotate(185deg) saturate(2.2)}
+.cMn{font-style:normal;color:#7fc4ff;white-space:nowrap}
 </style>
 </head>
 <body>
