@@ -1,0 +1,13 @@
+RASTRERO DE LAS CIÉNAGAS — PROCEDENCIA
+
+Malla visible, atlas de color y anzuelo: modelado nuevo creado por ChatGPT/OpenAI para este encargo a partir de la descripción y la imagen aportadas por el usuario. No se ha usado una malla de criatura descargada de terceros. Sin requisito adicional de atribución por estas aportaciones nuevas.
+
+Esqueleto y animaciones de partida: hobbit_kk.glb, proporcionado por el usuario, derivado de KayKit Adventurers Character Pack 1.0 (Rogue).
+Autor original: Kay Lousberg / KayKit, https://kaylousberg.com/
+Licencia del pack original: CC0 1.0 Universal.
+Fuente: https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0
+Licencia: https://creativecommons.org/publicdomain/zero/1.0/
+Se conserva la jerarquía y las transformaciones locales de reposo de sus 41 huesos. Se ha sustituido la geometría y se han adaptado las poses de los clips con flexión de torso, cabeza y piernas. Se ha incorporado corrección del suelo muestreada a 30 fps en un nodo de ajuste externo.
+La autoría de posibles modificaciones previas de los clips del hobbit aportado no consta; la licencia CC0 citada corresponde al recurso KayKit original.
+
+Referencia visual: 1000095989.png, aportada por el usuario. No se incluye como textura. La imagen y los nombres de ambientación no se presentan como recursos CC0 de KayKit ni implican afiliación oficial.

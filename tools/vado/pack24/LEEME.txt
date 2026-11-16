@@ -1,0 +1,21 @@
+RASTRERO DE LAS CIÉNAGAS
+
+gollum.glb — GLB 2.0 autónomo, metros, +Y arriba, mirando a +Z. Criatura nueva con piel musgo, manchas, algas, grandes ojos verdes emisivos, orejas de hoja y anzuelo de hueso integrado con peso al hueso handslot.r.
+41 huesos con exactamente los nombres y transformaciones locales de reposo de hobbit_kk.glb. Conserva head, chest, handslot.l y handslot.r. El ajuste de escala y suelo se encuentra en el nodo externo escala_140cm; debe conservarse al instanciar el GLB.
+Altura medida en el primer fotograma de quieto: 1,4 m. Una malla con skin, 2.908 triángulos, normales, un atlas PNG de 256x256 incrustado. Dos materiales comparten el atlas: piel y ojos emisivos. No hay recursos externos.
+Los nueve clips se adaptaron a una postura baja, con corrección de contacto del suelo muestreada a 30 fps. Para morir usar LoopOnce y clampWhenFinished. La emisión se encuentra en ojos_verdes_emisivos; el halo exterior depende del bloom del juego.
+
+Validación: recarga de GLB, 41 huesos y reposo comparados con el original, 9 nombres de clips, un atlas incrustado y tamaño inferior a 2 MB. glTF Validator: 0 errores; aviso por malla con skin bajo nodo de ajuste. Poses de quieto, correr, atacar y morir revisadas en Blender. No se ha probado dentro del juego ni en todas las mezclas de animación.
+
+DURACIONES (segundos)
+atacar_3: 0.5
+atacar_2: 0.55
+celebrar: 1.6667
+morir: 0.8
+esquivar: 0.5
+quieto: 1.0667
+correr: 0.8
+atacar: 0.6
+andar: 1.0667
+
+Tamaño GLB: 917824 bytes.
