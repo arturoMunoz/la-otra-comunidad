@@ -692,6 +692,11 @@ function muere(d, o) {
 }
 /* golpes con retraso dentro de la simulación (no con setTimeout: así va igual a cualquier velocidad) */
 function luego(seg, fn) {S.dif.push({t: S.t + seg, fn});}
+function posAt(e, t) {
+  const hs = e.hist; if (!hs || hs.length < 3) return e;
+  for (let i = hs.length - 3; i >= 0; i -= 3) if (hs[i] <= t) {const j = i + 3; if (j >= hs.length) return {x: hs[i + 1], z: hs[i + 2]}; const k = (t - hs[i]) / Math.max(1e-4, hs[j] - hs[i]); return {x: hs[i + 1] + (hs[j + 1] - hs[i + 1]) * k, z: hs[i + 2] + (hs[j + 2] - hs[i + 2]) * k};}
+  return {x: hs[1], z: hs[2]};
+}
 function golpea(o, d) {
   if (o.k === 'h') {
     if (o.buf.troll > 0 && d.k !== 't' && d.k !== 'n') {d.quema = {dps: 10 + 3 * o.nivel, hasta: S.t + 3, o: o.id, tick: 0}; if (d.k === 'h') {d.buf.lento = 1; d.buf.lentoV = 0.2;} else d.lento = S.t + 1;}
@@ -752,6 +757,8 @@ function oleada() {
 
 function paso(dt) {
   S.t += dt; S.ola -= dt; S.porId = new Map(S.u.map((u) => [u.id, u])); estructuras(S.u);
+  /* historial de posiciones de los héroes (0,6 s) para compensar el retraso de los que juegan a distancia */
+  for (const u of S.u) if (u.k === 'h') {const hs = u.hist || (u.hist = []); hs.push(S.t, u.x, u.z); while (hs.length > 3 && hs[0] < S.t - 0.6) hs.splice(0, 3);}
   for (let i = S.dif.length - 1; i >= 0; i--) if (S.dif[i].t <= S.t) {const f = S.dif[i].fn; S.dif.splice(i, 1); f();} if (S.ola <= 0) {S.ola = S.carriles.length > 1 ? 28 : 24; oleada();}
   /* quemadura de la brasa del troll */
   for (const u of S.u) if (u.quema) {if (S.t > u.quema.hasta || u.vida <= 0 || u.muerto) {u.quema = null; continue;} u.quema.tick -= dt; if (u.quema.tick <= 0) {u.quema.tick = 0.5; dana(S.porId.get(u.quema.o) || null, u, u.quema.dps * 0.5, 'hab');}}
@@ -796,7 +803,10 @@ function paso(dt) {
     /* ataque básico */
     if (h.fijo) {const f = S.porId.get(h.fijo); if (!f || f.vida <= 0 || f.muerto || dist(h, f) > 16 || (f.k === 'h' && oculto(f, h))) h.fijo = 0;}
     if ((h.ataca || h.tap > S.t) && !h.dash && !(h.aturd > S.t) && !(h.buf.estasis > 0) && h.cd.a <= 0) {
-      const en = enemigosDe(h.eq, h).filter(atacable), r = st.alcance + 0.6, aTiro = (e) => dist(h, e) - radio(e) < r;
+      /* compensación del retraso (como los shooters y el Wild Rift): a un jugador a distancia se le mira el alcance contra donde ÉL veía
+         al héroe enemigo en su pantalla (hace su ping/2 + la interpolación), no contra donde está ahora en el anfitrión */
+      const atras = h.lat ? S.t - h.lat : 0, pos = (e) => (atras && e.k === 'h' ? posAt(e, atras) : e);
+      const en = enemigosDe(h.eq, h).filter(atacable), r = st.alcance + 0.6, aTiro = (e) => {const p = pos(e); return Math.min(dist(h, e), Math.hypot(p.x - h.x, p.z - h.z)) - radio(e) < r;};
       let obj = null; const hh = en.filter((e) => e.k === 'h' && aTiro(e)), f = h.fijo && en.find((e) => e.id === h.fijo);
       /* como en el Wild Rift: objetivo fijado (arrastrando el ataque o tocando su retrato), botón de torre (solo estructuras),
          botón de súbditos (el de menos vida, para rematar) y, si no, prioridad normal (héroes primero) */
@@ -1309,7 +1319,7 @@ function dibuja(dt) {
     let o = VIS.get(v.id); if (!o) o = creaVis(v);
     /* interpolación: de la posición anterior a la nueva en el tiempo entre fotos */
     let x = v.x, z = v.z, r = v.rot;
-    if (!(v.id === YO && !S)) {const k = S ? ALFA : Math.min(1, (ahora - v.t0) / 90); x = v.x0 + (v.x - v.x0) * k; z = v.z0 + (v.z - v.z0) * k; let dr = v.rot - v.r0; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = v.r0 + dr * k;}
+    if (!(v.id === YO && !S)) {const k = S ? ALFA : Math.min(1, (ahora - v.t0) / 72); x = v.x0 + (v.x - v.x0) * k; z = v.z0 + (v.z - v.z0) * k; let dr = v.rot - v.r0; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = v.r0 + dr * k;}
     v.xi = x; v.zi = z; v.ri = r;
     const muerto = v.k === 'h' ? v.muerto >= 0 : v.muerto === 0;
     o.raiz.position.set(x, o.salto ? o.raiz.position.y : 0, z);
@@ -1703,7 +1713,7 @@ function preparaMandos() {
     if (S) usaHechizo(S.u.find((q) => q.id === YO), k, dx, dz);
     else {NET.manda({t: 'hech', k, dx, dz, x: MIO.x, z: MIO.z}); if (k === 'd') {const l = Math.hypot(dx, dz) || 1; MIO.x += dx / l * 4.5; MIO.z += dz / l * 4.5; MIO.px = undefined; limita(MIO);}}
   });
-  for (const b of document.querySelectorAll('#pings button[data-p]')) toca(b, () => {$('pings').classList.remove('abierto'); const v = VISTA.get(YO); if (!v) return; const k = b.dataset.p; if (S) {S.ev.push(['ping', MI_EQ, YO, k, v.x, v.z]); efectoLocal(['ping', MI_EQ, YO, k, v.x, v.z]);} else NET.manda({t: 'ping', k, x: v.x, z: v.z});});
+  for (const b of document.querySelectorAll('#pings button[data-p]')) toca(b, () => {$('pings').classList.remove('abierto'); const v = VISTA.get(YO); if (!v) return; const k = b.dataset.p; if (S) {S.ev.push(['ping', MI_EQ, YO, k, v.x, v.z]); efectoLocal(['ping', MI_EQ, YO, k, v.x, v.z]);} else NET.manda({t: 'avisoEq', k, x: v.x, z: v.z});});
   toca($('bPing'), () => $('pings').classList.toggle('abierto'));
   toca($('compraRapida'), () => {const id = $('compraRapida').dataset.id; if (id) compraMia(id);});
   $('marcador').onclick = () => {$('tabla').classList.toggle('hidden'); pintaTabla();};
@@ -1837,14 +1847,14 @@ function recibe(o) {
   if (o.t === 'foto' && !S) recibeFoto(o.f);
   if (S) {/* soy el anfitrión: mandos de los demás */
     const h = S.u.find((q) => q.k === 'h' && q.slot === o.de); if (!h) return;
-    if (o.t === 'in') {if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
+    if (o.t === 'in') {h.lat = Math.min(0.35, (o.rt || 0) / 1000 + 0.07 + 1 / 30); /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; usaHab(h, o.k, o.dx, o.dz, o.px, o.pz);}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
     if (o.t === 'rinde') rinde(h, !!o.si);
     if (o.t === 'enc') usaEnc(h);
     if (o.t === 'hech1') h.hf = o.v === 'c' ? 'c' : 'f';
-    if (o.t === 'ping') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; S.ev.push(e); efectoLocal(e);}
+    if (o.t === 'avisoEq') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; S.ev.push(e); efectoLocal(e);}
     if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
     if (o.t === 'alm') {h.x = o.x; h.z = o.z; ponAlmenara(h, o.px, o.pz);}
     if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined;}}
@@ -2042,11 +2052,11 @@ function bucle() {
         if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0 && h && !h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; aviso('En la fuente: ya puedes comprar');}}
         acum += dt; let pasos = 0; const ts = performance.now(); while (acum >= 1 / 30 && pasos < 4) {paso(1 / 30); acum -= 1 / 30; pasos++;} if (acum > 0.1) acum = 0; ALFA = Math.min(1, acum * 30);
         fotoT -= dt;
-        if (pasos) {const f = foto(); recibeFotoLocal(f); PERF.sim += performance.now() - ts; if (NET.online && fotoT <= 0) {fotoT = 1 / 12; NET.manda({t: 'foto', f: {...f, ev: ENVIAR.splice(0)}});}}
+        if (pasos) {const f = foto(); recibeFotoLocal(f); PERF.sim += performance.now() - ts; if (NET.online && fotoT <= 0) {fotoT = 1 / 15; NET.manda({t: 'foto', f: {...f, ev: ENVIAR.splice(0)}});}}
       } else if (!S && ESTADO === 'juego') {
         mueveMio(dt);
         if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0) {NET.manda({t: 'volver'}); MIO.listo = false;}}
-        inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0});}
+        inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0, rt: NET.ping || 0});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
       UT.value += dt; animaPalantir(); const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
