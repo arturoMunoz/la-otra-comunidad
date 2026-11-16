@@ -1,0 +1,7 @@
+PACK VADO 17 WORK — PROCEDENCIA
+
+Las 16 mallas, materiales y maniquíes de prueba son modelado nuevo creado por ChatGPT/OpenAI para este encargo. No se han incorporado modelos de terceros ni texturas descargadas de packs KayKit, Quaternius o Kenney. Los nombres de esos packs describen el estilo y el destino de uso, no la autoría de estos accesorios.
+No se exige atribución adicional por las aportaciones nuevas; pueden utilizarse y modificarse en el proyecto del usuario.
+
+Referencias visuales: cuatro hojas de equipo de Rohan, enano, elfo y hobbit, aportadas por el usuario en esta conversación. No se han incrustado sus imágenes como texturas. Autor y licencia externa de esas hojas: no especificados; no se les atribuye una licencia CC0.
+Los nombres y emblemas de la ambientación de El Señor de los Anillos no implican afiliación oficial ni quedan licenciados por una licencia CC0 de un tercero.

@@ -1,0 +1,42 @@
+PACK VADO 17 WORK — ACCESORIOS DE LA BRECHA
+
+16 GLB individuales, sin esqueleto ni animaciones, modelados a partir de las cuatro hojas de equipo recibidas. Cada archivo contiene una malla cuyo nodo se llama como el archivo, sin extensión.
+
+La hoja del hobbit contiene CAPA, CHALECO, BOLSA y HONDA; por ello se entrega hobbit_capa.glb. No aparece sombrero en esa hoja. Los dos iconos de almenara no forman parte de este encargo de accesorios 3D.
+La honda reproduce la horquilla y la bolsa de cuero de la referencia (tirachinas).
+
+FORMATO
+1 unidad = 1 metro. +Y arriba, frente +Z. Normales presentes y normalizadas. Colores en materiales PBR; sin texturas ni recursos externos. Sin compresión ni decodificadores externos. Escala 1.
+Cada pieza está por debajo de 1.500 triángulos y 150.000 bytes. Cotas exactas en VALIDACION.json.
+
+ORÍGENES Y ENCAJE
+Yelmos, barba y capucha: origen en el centro de la cabeza.
+Capas, hombreras, chaleco y carcaj: origen en el centro del pecho.
+Espada, hacha, arco, escudo, honda y bolsa: origen en su agarre. En la bolsa, el agarre está en el centro superior de la correa.
+Las armas se entregan erguidas en +Y; su cara decorada apunta a +Z. El escudo se mira desde +Z y el agarre queda detrás.
+ENGANCHES.json documenta los puntos usados en el maniquí, expresados en coordenadas globales Y-arriba. Son referencias de encaje de un maniquí chibi de 2 m, no offsets universales de todos los rigs KayKit. Al parentar a un hueso, su orientación local debe alinear +Y y +Z con las convenciones indicadas. La escala del accesorio es 1 cuando el personaje tiene estas proporciones.
+Las capas y hombreras son accesorios rígidos tal como se pidió: no siguen por separado cada brazo o pierna. Las capturas comprueban el encaje neutral, no ciclos de animación de los personajes del juego.
+
+CAPTURAS
+rohan_maniqui.png, enano_maniqui.png, elfo_maniqui.png, hobbit_maniqui.png: frente en tres cuartos y espalda, para revisar volumen, capa y carcaj. Los maniquíes tienen 2 m de altura sin equipo; son figuras neutras creadas para la prueba, no personajes KayKit incluidos.
+
+VALIDACIÓN
+Los 16 GLB se han recargado y comprobado: un nodo/malla por archivo, cero skins, cero animaciones, cero imágenes, origen en (0,0,0), normales unitarias y límites de triángulos/tamaño. glTF Validator sin errores ni advertencias.
+
+PIEZAS
+rohan_yelmo.glb — head — 1232 triángulos — 28572 bytes
+rohan_capa.glb — chest — 588 triángulos — 27728 bytes
+rohan_escudo.glb — hand_L — 656 triángulos — 30784 bytes
+rohan_espada.glb — hand_R — 166 triángulos — 8420 bytes
+enano_yelmo.glb — head — 562 triángulos — 21576 bytes
+enano_barba.glb — head — 1012 triángulos — 34808 bytes
+enano_hombreras.glb — chest — 400 triángulos — 16948 bytes
+enano_hacha.glb — hand_R — 356 triángulos — 15668 bytes
+elfo_capucha.glb — head — 187 triángulos — 9820 bytes
+elfo_capa.glb — chest — 448 triángulos — 19200 bytes
+elfo_arco.glb — hand_L — 448 triángulos — 11712 bytes
+elfo_carcaj.glb — chest — 412 triángulos — 15964 bytes
+hobbit_capa.glb — chest — 464 triángulos — 20108 bytes
+hobbit_chaleco.glb — chest — 230 triángulos — 12808 bytes
+hobbit_bolsa.glb — hand_L — 352 triángulos — 14704 bytes
+hobbit_honda.glb — hand_R — 294 triángulos — 8788 bytes

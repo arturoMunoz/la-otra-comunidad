@@ -1,0 +1,191 @@
+{
+  "unidad": "metro",
+  "arriba": "+Y",
+  "frente": "+Z",
+  "escala_piezas": 1,
+  "altura_maniqui_sin_equipo": 2,
+  "puntos_en_maniqui_xyz": {
+    "head": [
+      0,
+      1.65,
+      0
+    ],
+    "chest": [
+      0,
+      1.15,
+      0
+    ],
+    "hand_L": [
+      0.51,
+      0.9,
+      0.12
+    ],
+    "hand_R": [
+      -0.51,
+      0.9,
+      0.12
+    ]
+  },
+  "piezas": [
+    {
+      "archivo": "rohan_yelmo.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "head",
+      "hueso_sugerido": "head"
+    },
+    {
+      "archivo": "rohan_capa.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "chest",
+      "hueso_sugerido": "chest"
+    },
+    {
+      "archivo": "rohan_escudo.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "hand_L",
+      "hueso_sugerido": "handslot.l"
+    },
+    {
+      "archivo": "rohan_espada.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "hand_R",
+      "hueso_sugerido": "handslot.r"
+    },
+    {
+      "archivo": "enano_yelmo.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "head",
+      "hueso_sugerido": "head"
+    },
+    {
+      "archivo": "enano_barba.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "head",
+      "hueso_sugerido": "head"
+    },
+    {
+      "archivo": "enano_hombreras.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "chest",
+      "hueso_sugerido": "chest"
+    },
+    {
+      "archivo": "enano_hacha.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "hand_R",
+      "hueso_sugerido": "handslot.r"
+    },
+    {
+      "archivo": "elfo_capucha.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "head",
+      "hueso_sugerido": "head"
+    },
+    {
+      "archivo": "elfo_capa.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "chest",
+      "hueso_sugerido": "chest"
+    },
+    {
+      "archivo": "elfo_arco.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "hand_L",
+      "hueso_sugerido": "handslot.l"
+    },
+    {
+      "archivo": "elfo_carcaj.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "chest",
+      "hueso_sugerido": "chest"
+    },
+    {
+      "archivo": "hobbit_capa.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "chest",
+      "hueso_sugerido": "chest"
+    },
+    {
+      "archivo": "hobbit_chaleco.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "chest",
+      "hueso_sugerido": "chest"
+    },
+    {
+      "archivo": "hobbit_bolsa.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "hand_L",
+      "hueso_sugerido": "handslot.l"
+    },
+    {
+      "archivo": "hobbit_honda.glb",
+      "origen_local": [
+        0,
+        0,
+        0
+      ],
+      "enganche": "hand_R",
+      "hueso_sugerido": "handslot.r"
+    }
+  ]
+}

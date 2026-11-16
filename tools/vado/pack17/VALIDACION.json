@@ -1,0 +1,178 @@
+[
+  {
+    "nombre": "rohan_yelmo",
+    "enganche": "head",
+    "triangulos": 1232,
+    "bytes": 28572,
+    "dimensiones_xyz_m": [
+      0.7250000238418579,
+      0.8162999749183655,
+      0.8870999813079834
+    ]
+  },
+  {
+    "nombre": "rohan_capa",
+    "enganche": "chest",
+    "triangulos": 588,
+    "bytes": 27728,
+    "dimensiones_xyz_m": [
+      1.1723999977111816,
+      1.1130000352859497,
+      0.6880000233650208
+    ]
+  },
+  {
+    "nombre": "rohan_escudo",
+    "enganche": "hand_L",
+    "triangulos": 656,
+    "bytes": 30784,
+    "dimensiones_xyz_m": [
+      0.7714999914169312,
+      0.7720000147819519,
+      0.26669999957084656
+    ]
+  },
+  {
+    "nombre": "rohan_espada",
+    "enganche": "hand_R",
+    "triangulos": 166,
+    "bytes": 8420,
+    "dimensiones_xyz_m": [
+      0.3646000027656555,
+      1.1449999809265137,
+      0.07999999821186066
+    ]
+  },
+  {
+    "nombre": "enano_yelmo",
+    "enganche": "head",
+    "triangulos": 562,
+    "bytes": 21576,
+    "dimensiones_xyz_m": [
+      0.7250000238418579,
+      0.6345000267028809,
+      0.7260000109672546
+    ]
+  },
+  {
+    "nombre": "enano_barba",
+    "enganche": "head",
+    "triangulos": 1012,
+    "bytes": 34808,
+    "dimensiones_xyz_m": [
+      0.5471000075340271,
+      0.5383999943733215,
+      0.2110999971628189
+    ]
+  },
+  {
+    "nombre": "enano_hombreras",
+    "enganche": "chest",
+    "triangulos": 400,
+    "bytes": 16948,
+    "dimensiones_xyz_m": [
+      1.2165000438690186,
+      0.39469999074935913,
+      0.5264000296592712
+    ]
+  },
+  {
+    "nombre": "enano_hacha",
+    "enganche": "hand_R",
+    "triangulos": 356,
+    "bytes": 15668,
+    "dimensiones_xyz_m": [
+      0.7400000095367432,
+      1.0449999570846558,
+      0.12200000137090683
+    ]
+  },
+  {
+    "nombre": "elfo_capucha",
+    "enganche": "head",
+    "triangulos": 187,
+    "bytes": 9820,
+    "dimensiones_xyz_m": [
+      0.6942999958992004,
+      0.6901999711990356,
+      0.512499988079071
+    ]
+  },
+  {
+    "nombre": "elfo_capa",
+    "enganche": "chest",
+    "triangulos": 448,
+    "bytes": 19200,
+    "dimensiones_xyz_m": [
+      1.1723999977111816,
+      1.1075999736785889,
+      0.7055000066757202
+    ]
+  },
+  {
+    "nombre": "elfo_arco",
+    "enganche": "hand_L",
+    "triangulos": 448,
+    "bytes": 11712,
+    "dimensiones_xyz_m": [
+      0.2689000070095062,
+      1.531999945640564,
+      0.08869999647140503
+    ]
+  },
+  {
+    "nombre": "elfo_carcaj",
+    "enganche": "chest",
+    "triangulos": 412,
+    "bytes": 15964,
+    "dimensiones_xyz_m": [
+      0.6139000058174133,
+      1.0155999660491943,
+      0.7397000193595886
+    ]
+  },
+  {
+    "nombre": "hobbit_capa",
+    "enganche": "chest",
+    "triangulos": 464,
+    "bytes": 20108,
+    "dimensiones_xyz_m": [
+      1.1723999977111816,
+      0.9276000261306763,
+      0.6880000233650208
+    ]
+  },
+  {
+    "nombre": "hobbit_chaleco",
+    "enganche": "chest",
+    "triangulos": 230,
+    "bytes": 12808,
+    "dimensiones_xyz_m": [
+      0.6866999864578247,
+      0.6991999745368958,
+      0.5145000219345093
+    ]
+  },
+  {
+    "nombre": "hobbit_bolsa",
+    "enganche": "hand_L",
+    "triangulos": 352,
+    "bytes": 14704,
+    "dimensiones_xyz_m": [
+      0.33980000019073486,
+      0.5760999917984009,
+      0.29589998722076416
+    ]
+  },
+  {
+    "nombre": "hobbit_honda",
+    "enganche": "hand_R",
+    "triangulos": 294,
+    "bytes": 8788,
+    "dimensiones_xyz_m": [
+      0.4648999869823456,
+      0.6256999969482422,
+      0.1143999993801117
+    ]
+  }
+]

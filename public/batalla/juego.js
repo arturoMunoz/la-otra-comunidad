@@ -304,6 +304,43 @@ function cullBosque(cx, cz, forzar) {
 }
 const ALTO = {};
 function alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene, ['draco', 'huorn', 'crebain', 'nutria', 'sapo', 'uruk_azul'].includes(n)); ALTO[n] = Math.max(0.5, b.max.y - b.min.y);} return ALTO[n];}
+/* Pack Vado 17: equipo de cada héroe (piezas sueltas de ChatGPT hechas para un maniquí de 2 m) enganchado a los huesos de KayKit.
+   Cabeza: al centro de la cabeza, del ancho de la cabeza; pecho: al hueso chest; armas: en el sitio del arma original (que se esconde). */
+const VESTIR = {
+  rohan: {head: ['yelmo'], chest: ['capa'], 'handslot.l': [['escudo', 'Round_Shield']], 'handslot.r': [['espada', '1H_Sword']], oculta: ['Knight_Helmet', 'Knight_Cape', 'Round_Shield', '1H_Sword']},
+  enano: {head: ['yelmo', 'barba'], chest: ['hombreras'], 'handslot.r': [['hacha', '2H_Axe']], oculta: ['2H_Axe']},
+  elfo: {head: ['capucha'], chest: ['capa', 'carcaj'], 'handslot.l': [['arco', null]], oculta: ['2H_Crossbow', 'Rogue_Cape']},
+  hobbit: {chest: ['capa', 'chaleco'], 'handslot.l': [['bolsa', null]], 'handslot.r': [['honda', 'Throwable']], oculta: ['Throwable', 'Rogue_Cape']},
+};
+const PIEZAS = {};
+const AJ_CAB = {elfo_capucha: [-0.06, 0.86], rohan_yelmo: [-0.05, 1]}; /* [subir/bajar en anchos de cabeza, escala] */
+function cargaPiezas() {const ps = []; for (const t in VESTIR) for (const k in VESTIR[t]) if (k !== 'oculta') for (const x of VESTIR[t][k]) {const n = t + '_' + (Array.isArray(x) ? x[0] : x); if (!PIEZAS[n]) ps.push(new Promise((ok) => new GLTFLoader().load('modelos/piezas/' + n + '.glb', (g) => {PIEZAS[n] = g.scene; ok();}, undefined, () => ok())));} return Promise.all(ps);}
+function vistePiezas(raiz, tipo) {
+  const V = VESTIR[tipo]; if (!V || !Object.keys(PIEZAS).length) return;
+  raiz.updateMatrixWorld(true);
+  const cabeza = (() => {let m = null; raiz.traverse((o) => {if (o.isSkinnedMesh && /_Head/.test(o.name)) m = o;}); if (!m) return null; const b = new THREE.Box3().setFromObject(m, true); return {c: b.getCenter(new THREE.Vector3()), w: b.max.x - b.min.x};})();
+  const caja = new THREE.Box3().setFromObject(raiz, true), alto = cabeza ? (cabeza.c.y - caja.min.y) / 1.65 * 2 : caja.max.y - caja.min.y, qR = raiz.getWorldQuaternion(new THREE.Quaternion());
+  const engancha = (hueso, pieza, pos, esc, quat) => {
+    const p = pieza.clone(true); p.traverse((o) => {if (o.isMesh) {o.castShadow = true; o.material = o.material.clone(); o.material.roughness = Math.max(0.55, o.material.roughness);}});
+    const mW = new THREE.Matrix4().compose(pos, quat || qR, new THREE.Vector3(esc, esc, esc)), loc = new THREE.Matrix4().copy(hueso.matrixWorld).invert().multiply(mW);
+    loc.decompose(p.position, p.quaternion, p.scale); p.userData.pieza = 1; hueso.add(p);
+  };
+  for (const hk in V) {
+    if (hk === 'oculta') continue; const hueso = raiz.getObjectByName(hk.replace('.', '')) || raiz.getObjectByName(hk); if (!hueso) continue;
+    for (const x of V[hk]) {
+      const [nom, orig] = Array.isArray(x) ? x : [x, null], pieza = PIEZAS[tipo + '_' + nom]; if (!pieza) continue;
+      if (hk === 'head' && cabeza) engancha(hueso, pieza, cabeza.c.clone().add(new THREE.Vector3(0, (AJ_CAB[tipo + '_' + nom] || [0, 1])[0] * cabeza.w, 0)), cabeza.w * 1.15 / 0.725 * (AJ_CAB[tipo + '_' + nom] || [0, 1])[1]);
+      else if (hk === 'chest') engancha(hueso, pieza, hueso.getWorldPosition(new THREE.Vector3()), alto / 2);
+      else {
+        const o = orig && raiz.getObjectByName(orig);
+        if (o) {const b = new THREE.Box3().setFromObject(o), pz = new THREE.Box3().setFromObject(pieza), largo = Math.max(...b.getSize(new THREE.Vector3()).toArray()), largoP = Math.max(...pz.getSize(new THREE.Vector3()).toArray()) || 1;
+          engancha(hueso, pieza, hueso.getWorldPosition(new THREE.Vector3()), largo / largoP * 1.05, hueso.getWorldQuaternion(new THREE.Quaternion()));}
+        else engancha(hueso, pieza, hueso.getWorldPosition(new THREE.Vector3()), alto / 2 * 0.8, hueso.getWorldQuaternion(new THREE.Quaternion()));
+      }
+    }
+  }
+  for (const n of V.oculta) {const o = raiz.getObjectByName(n); if (o) o.visible = false;}
+}
 function montar(n, altura) {
   const raiz = SkeletonUtils.clone(M[n].scene); raiz.scale.setScalar(altura / alto(n));
   /* rendimiento: las piezas que comparten los mismos huesos usan UN esqueleto (antes cada pieza recalculaba y subía el suyo),
@@ -318,6 +355,7 @@ function montar(n, altura) {
       o.boundingSphere = g.boundingSphere.clone(); o.boundingSphere.radius = Math.max(o.boundingSphere.radius * 2, 1.5); o.frustumCulled = true;
     }
   });
+  {const t = n.replace('_kk', ''); if (VESTIR[t]) vistePiezas(raiz, t);}
   const mixer = new THREE.AnimationMixer(raiz), clips = {};
   for (const c of M[n].animations) clips[c.name] = mixer.clipAction(c);
   const alias = {atacar: ['disparar', 'atacar'], correr: ['correr', 'andar'], quieto: ['quieto'], morir: ['morir'], hab: ['golpe_cargado', 'atacar_3', 'atacar_2', 'disparar', 'atacar'], aturdido: ['aturdido', 'recibir_golpe', 'recibir', 'quieto']};
@@ -2282,6 +2320,7 @@ function pintaCarga() {const b = $('bBots'); b.style.setProperty('--carga', Math
 function cargaTodo() {
   if (LISTO) return LISTO;
   LISTO = (async () => {
+    await cargaPiezas().catch(() => {});
     let n = 0; const gl = await Promise.all(NOMBRES.map(async (k) => {const g = await cargaModelo(k); n++; CARGA = n / NOMBRES.length * 0.95; pintaCarga(); return g;}));
     NOMBRES.forEach((k, i) => M[k] = gl[i]);
     await new Promise((r) => setTimeout(r, 30));
