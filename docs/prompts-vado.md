@@ -243,3 +243,6 @@ Ver el prompt en la respuesta del 16/11 (copiado abajo).
 Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard junto al Vado del Isen; aspecto de Supercell: colores vivos, formas claras, metal y oro gastado). Necesito el icono del botón «Almenara»: una de las almenaras de Gondor/Rohan de El Señor de los Anillos en pequeño, un montón de leña con fuego encendido sobre un pie de piedra, vista de frente, dentro de un medallón redondo de bronce con borde dorado (mismo estilo que los botones de habilidades del juego). 512x512, fondo transparente, sin texto. Y una segunda versión igual pero apagada (leña sin fuego, colores grises) para cuando no quedan cargas.
 Pásamelo en Pack_Vado_16.zip (almenara.png, almenara_apagada.png).
 ```
+
+## Pack Vado 18 — 4 héroes nuevos (16/11, pedido de Arturo: mago, orco, uruk y una criatura de las cuevas; cada uno calcado de un campeón del LoL)
+Ver el chat del 16/11. ART = retratos grandes, iconos de habilidades y botón de ataque; WORK = modelos 3D con el mismo esqueleto y clips de los KayKit.
