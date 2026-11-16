@@ -2332,18 +2332,58 @@ function pintaSala() {
   if (soyAnf) $('bEmpezar').onclick = () => NET.manda({t: 'empezar'});
 }
 function nombreJugador() {let n = localStorage.getItem('vado.nombre'); if (!n) {try {const a = JSON.parse(localStorage.getItem('loc.yo') || 'null'); n = a && a.nombre;} catch (e) {} } return n || 'Hobbit' + Math.floor(Math.random() * 90 + 10);}
+/* ---------- cuentas (16/11): las MISMAS que La Otra Comunidad (Supabase Auth, clave pública), con la sesión en loc.auth.
+   Entrar / Crear cuenta (correo, contraseña y nombre; sin hobbit) / He olvidado la contraseña. El nombre va en la cuenta (user_metadata.nombre). */
+const SB_URL = 'https://egdnytvckttgvybdbvmw.supabase.co', SB_KEY = 'sb_publishable_1-eGqPkYOPKsW-ZEtUBo7A_16RQQGdK';
+const AUTH_B = {
+  yo() {try {const a = JSON.parse(localStorage.getItem('loc.auth') || 'null'); return a && a.at ? a : null;} catch (e) {return null;}},
+  guarda(j) {const a = {at: j.access_token, rt: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000, em: (j.user && j.user.email) || ''}; localStorage.setItem('loc.auth', JSON.stringify(a)); const n = j.user && j.user.user_metadata && j.user.user_metadata.nombre; if (n) localStorage.setItem('vado.nombre', String(n).replace(/[<>"&]/g, '').slice(0, 14));},
+  sal() {localStorage.removeItem('loc.auth'); localStorage.removeItem('loc.yo'); localStorage.removeItem('vado.nombre');},
+  async pide(ruta, cuerpo, at) {const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 12000); try {const r = await fetch(SB_URL + '/auth/v1/' + ruta, {method: cuerpo ? 'POST' : 'GET', headers: {apikey: SB_KEY, 'Content-Type': 'application/json', ...(at ? {Authorization: 'Bearer ' + at} : {})}, body: cuerpo ? JSON.stringify(cuerpo) : undefined, signal: ctl.signal}); const t = await r.text(); let j = null; try {j = t ? JSON.parse(t) : null;} catch (e) {} if (!r.ok) {const e = new Error((j && (j.msg || j.message || j.error_description || j.error)) || 'Error ' + r.status); e.status = r.status; throw e;} return j;} finally {clearTimeout(tm);}},
+  error(e) {const m = String(e && e.message || ''); if (e && e.name === 'AbortError') return 'No hay conexión. Prueba otra vez.'; if (/invalid login|invalid_grant|credentials/i.test(m)) return 'Correo o contraseña incorrectos.'; if (/not confirmed/i.test(m)) return 'Aún no has confirmado el correo: abre el enlace que te mandamos.'; if (/already registered|already exists/i.test(m)) return 'Ese correo ya tiene cuenta: entra con él.'; if (/password/i.test(m) && /6/.test(m)) return 'La contraseña tiene que tener al menos 6 letras.'; if (/email/i.test(m) && /invalid/i.test(m)) return 'Ese correo no parece válido.'; if (/rate|too many/i.test(m)) return 'Demasiados intentos: espera un poco.'; return m || 'Algo ha fallado. Prueba otra vez.';},
+  /* al abrir: renueva la sesión si ha caducado y trae el nombre de la cuenta */
+  async refresca() {const a = this.yo(); if (!a) return; try {if (Date.now() > a.exp - 60000) this.guarda(await this.pide('token?grant_type=refresh_token', {refresh_token: a.rt})); const u = await this.pide('user', null, this.yo().at); const n = u && u.user_metadata && u.user_metadata.nombre; if (n && !localStorage.getItem('vado.nombre')) {localStorage.setItem('vado.nombre', String(n).slice(0, 14)); pintaMenu();}} catch (e) {if (e.status === 400 || e.status === 401) {this.sal(); cuentaB('in', 'Tu sesión ha caducado: vuelve a entrar.');}}},
+};
+function cuentaB(modo, aviso) {
+  const a = $('ajustes'), campo = (id, tipo, ph, ac) => '<input id="' + id + '" class="cuF" type="' + tipo + '" autocomplete="' + ac + '" placeholder="' + ph + '"' + (tipo === 'email' ? ' inputmode="email" autocapitalize="off"' : '') + '>';
+  const enlace = (id, t) => '<button class="cuL" id="' + id + '" type="button">' + t + '</button>';
+  let h = '<div class="ajC cuenta"><b>' + (modo === 'up' ? 'Crear cuenta' : modo === 'rec' ? 'Recuperar contraseña' : 'Bienvenido a La Brecha') + '</b>';
+  if (modo === 'in') h += '<p class="cuT">Entra con tu cuenta. Si eres de La Otra Comunidad, es la misma.</p>' + campo('cuEm', 'email', 'Tu correo', 'email') + campo('cuPw', 'password', 'Contraseña', 'current-password') + '<button class="bt" id="cuGo">Entrar</button>' + enlace('cuUp', 'Crear cuenta') + enlace('cuRec', 'He olvidado la contraseña');
+  if (modo === 'up') h += campo('cuEm', 'email', 'Tu correo', 'email') + campo('cuPw', 'password', 'Contraseña (mínimo 6)', 'new-password') + '<input id="cuNom" class="cuF" maxlength="14" autocomplete="nickname" placeholder="Tu nombre en La Brecha">' + '<button class="bt" id="cuGo">Crear cuenta</button>' + enlace('cuIn', 'Ya tengo cuenta');
+  if (modo === 'rec') h += campo('cuEm', 'email', 'Tu correo', 'email') + '<button class="bt" id="cuGo">Enviarme un enlace</button>' + enlace('cuIn', 'Volver');
+  h += '<p class="cuMsg' + (aviso ? ' ok' : '') + '" id="cuMsg">' + (aviso || '') + '</p></div>';
+  a.innerHTML = h; a.classList.remove('hidden'); a.dataset.cuenta = '1';
+  const m = (t, ok) => {const e = $('cuMsg'); e.textContent = t; e.classList.toggle('ok', !!ok);};
+  for (const [id, mo] of [['cuUp', 'up'], ['cuRec', 'rec'], ['cuIn', 'in']]) if ($(id)) $(id).onclick = () => cuentaB(mo);
+  const go = $('cuGo'), espera = (t) => {go.disabled = !!t; if (t) {go.dataset.t = go.dataset.t || go.textContent; go.textContent = t;} else if (go.dataset.t) go.textContent = go.dataset.t;};
+  for (const i of a.querySelectorAll('input')) i.addEventListener('keydown', (e) => {if (e.key === 'Enter') go.click();});
+  go.onclick = async () => {
+    const em = ($('cuEm').value || '').trim(), pw = $('cuPw') ? $('cuPw').value : '';
+    try {
+      if (modo === 'in') {if (!em || !pw) return m('Pon tu correo y tu contraseña.'); espera('Entrando…'); AUTH_B.guarda(await AUTH_B.pide('token?grant_type=password', {email: em, password: pw})); entra();}
+      if (modo === 'up') {const n = ($('cuNom').value || '').trim().replace(/[<>"&]/g, '').slice(0, 14); if (!em || !pw) return m('Pon tu correo y una contraseña.'); if (pw.length < 6) return m('La contraseña tiene que tener al menos 6 letras.'); if (n.length < 2) return m('Elige un nombre (2 letras o más).');
+        espera('Creando…'); const j = await AUTH_B.pide('signup?redirect_to=' + encodeURIComponent(location.origin + '/batalla/'), {email: em, password: pw, data: {nombre: n}});
+        if (j && j.access_token) {AUTH_B.guarda(j); localStorage.setItem('vado.nombre', n); entra();} else cuentaB('in', 'Cuenta creada. Te hemos mandado un correo: ábrelo para confirmarla y luego entra aquí.');}
+      if (modo === 'rec') {if (!em) return m('Pon tu correo.'); espera('Enviando…'); await AUTH_B.pide('recover', {email: em}); cuentaB('in', 'Si ese correo tiene cuenta, te llegará un enlace para cambiar la contraseña.');}
+    } catch (e) {espera(''); m(AUTH_B.error(e));}
+  };
+  function entra() {a.classList.add('hidden'); delete a.dataset.cuenta; if (!localStorage.getItem('vado.nombre')) localStorage.setItem('vado.nombre', (AUTH_B.yo().em || 'Jugador').split('@')[0].slice(0, 14)); pintaMenu();}
+}
+function cuentaHtml() {const a = AUTH_B.yo(); return '<p class="ajT">Cuenta</p><div class="cuYo"><span>' + (a ? (a.em || 'Con sesión').replace(/[<>"&]/g, '') : 'Sin sesión') + '</span><button class="cuL" id="cuSal" type="button">Cerrar sesión</button></div>';}
+function enlazaCuenta() {const b = $('cuSal'); if (b) b.onclick = () => {AUTH_B.sal(); cuentaB('in', 'Has cerrado la sesión.');};}
 function preparaMenu() {
+  /* vuelta del enlace del correo de confirmación: #access_token=…&refresh_token=… */
+  if (/access_token=/.test(location.hash)) {const q = new URLSearchParams(location.hash.slice(1)); if (q.get('type') === 'recovery') {location.replace('../' + location.hash); return;} AUTH_B.guarda({access_token: q.get('access_token'), refresh_token: q.get('refresh_token'), expires_in: +q.get('expires_in') || 3600}); history.replaceState(null, '', location.pathname);}
+  AUTH_B.refresca();
   /* ⚙ del menú: sonido y gráficos (como los ajustes del Wild Rift) */
   /* La Brecha también para quien no es de La Otra Comunidad (16/11): sin cuenta, solo se pide un nombre la primera vez */
-  const deLaComunidad = (() => {try {return !!JSON.parse(localStorage.getItem('loc.yo') || 'null');} catch (e) {return false;}})() || !!localStorage.getItem('loc.auth');
+  const deLaComunidad = (() => {try {return !!JSON.parse(localStorage.getItem('loc.yo') || 'null');} catch (e) {return false;}})();
   if (!deLaComunidad && !window.BrechaAndroid) $('bSalir').style.display = 'none';
   const campoNombre = () => '<p class="ajT">Tu nombre</p><input id="ajNombre" maxlength="14" autocomplete="nickname" value="' + (localStorage.getItem('vado.nombre') || '').replace(/[<>"&]/g, '') + '" placeholder="Cómo te verán los demás">';
   const guardaNombre = () => {const i = $('ajNombre'); if (!i) return true; const n = i.value.trim().replace(/[<>"&]/g, '').slice(0, 14); if (n.length < 2) {i.focus(); i.classList.add('mal'); return false;} localStorage.setItem('vado.nombre', n); return true;};
-  if (!localStorage.getItem('vado.nombre') && !deLaComunidad) {
-    const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Bienvenido a La Brecha</b><p class="ajT" style="color:#e9dcc0;font:15px Alegreya Sans,sans-serif">Duelos de héroes en el Vado del Isen. ¿Cómo quieres llamarte?</p>' + campoNombre().replace('<p class="ajT">Tu nombre</p>', '') + '<button class="bt" id="ajCierra">Entrar</button></div>';
-    a.classList.remove('hidden'); $('ajCierra').onclick = () => {if (guardaNombre()) {a.classList.add('hidden'); pintaMenu();}};
-  }
-  {const abre = () => {{const i = $('ajNombre'); if (i && i.value.trim().length >= 2) guardaNombre();} const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Ajustes</b>' + campoNombre() + botonesSonido() + botonesGraf() + botonesSrv() + '<button class="bt" id="ajCierra">Listo</button></div>'; a.classList.remove('hidden'); enlazaSonido(abre); enlazaGraf(a, abre); enlazaSrv(a, abre); $('ajCierra').onclick = () => {if (guardaNombre()) {a.classList.add('hidden'); pintaMenu();}};}; $('bSon').onclick = abre;}
+  if (!AUTH_B.yo()) cuentaB('in');
+
+  {const abre = () => {{const i = $('ajNombre'); if (i && i.value.trim().length >= 2) guardaNombre();} const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Ajustes</b>' + campoNombre() + cuentaHtml() + botonesSonido() + botonesGraf() + botonesSrv() + '<button class="bt" id="ajCierra">Listo</button></div>'; a.classList.remove('hidden'); enlazaSonido(abre); enlazaGraf(a, abre); enlazaSrv(a, abre); enlazaCuenta(); $('ajCierra').onclick = () => {if (guardaNombre()) {a.classList.add('hidden'); pintaMenu();}};}; $('bSon').onclick = abre;}
   pintaMenu();
   $('bGirar').onclick = apaisa;
   $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);}, modoElegido === '2v2');});
