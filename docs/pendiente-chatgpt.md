@@ -8,7 +8,8 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] ~~**Pack Vado 11 · ART**~~ (llegó como Pack 13, 16/11) — efectos de golpe normal y crítico, muerte de súbdito, subir de nivel, volver a la base, monedas; marcos del retrato y de los botones de habilidad; cartel de baja con dos retratos; adornos de victoria y derrota; kit del menú (JUGAR, botón secundario, tarjetas de Duelo y Batalla, botón redondo); iconos de las pestañas de la Armería y fondo de la Armería.
 - [x] ~~**Pack Vado 14 · WORK** — las Dos Torres (Orthanc y la Torre del Cuerno, 3 estados), estandartes de Edoras y de la Mano Blanca, y el palantír de Orthanc con el Ojo dentro.~~ Metido el 16/11.
 - [x] ~~**Pack Vado 15 · ART** — icono y pantalla de carga de la app Android de La Brecha.~~ Metido el 16/11.
-- [ ] **Pack Vado 12 · Meshy** — las 4 fichas ya están (`tools/vado/pack13/fichas`): falta pasarlas a 3D con esqueleto y animaciones en meshy.ai (empezar por una).
+- [ ] **Pack Vado 16 · ART** — icono de la almenara (encendida y apagada) para el botón de la «ward». Prompt en `docs/prompts-vado.md`.
+- [ ] **Pack Vado 12b · WORK** — ChatGPT viste de nuevo los 4 héroes (mismo esqueleto y animaciones de KayKit) siguiendo las fichas de `tools/vado/pack13/fichas`. Empezar por el Jinete de Rohan. (Meshy descartado el 16/11.)
 - [x] ~~**Pack Vado 10 · WORK**~~ (llegó como Pack 13, 16/11) — rehacer el Huorn (ahora es una bola-monstruo) y el draco (ahora es un triceratops teñido).
 - [x] ~~**Uruk Azul · WORK**~~ (Pack 13) — modelo propio (ahora es el capitán teñido de azul).
 - [ ] Minimapa del mapa del ojo (el de ChatGPT era del mapa recto; ahora se pinta por código) · ART.

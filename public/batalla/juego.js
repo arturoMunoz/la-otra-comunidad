@@ -556,7 +556,7 @@ function nuevaPartida(jugadores, modo) {
     const eq = slot % 2, f = BASES[eq].fuente, x = f.x + (slot >= 2 ? 1.5 : -1.5), z0 = f.z - signo(eq) * 2.5;
     const b = HEROES[tipo] || HEROES.rohan;
     S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: !j, nombre: j ? j.nombre : 'Bot ' + b.nombre.split(' ')[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
-      vida: b.vida, max: b.vida, nivel: 1, xp: 0, oro: 500, inv: [], enc: '', hf: j && j.hech === 'c' ? 'c' : 'f', modoAt: '', fijo: 0, cd: {q: 0, w: 0, e: 0, r: 0, a: 0, d: 0, f: 0}, rk: {q: 0, w: 0, e: 0, r: 0}, pts: 1, muertes: 0, asist: 0, cs: 0, racha: 0, hierba: -1, multi: 0, multiT: -99, danos: {}, buf: {}, resp: 0, muerto: false, ac: 0, hc: 0, hk: '', mueve: false, ataca: false, mx: 0, mz: 0, kills: 0, plan: 0});
+      vida: b.vida, max: b.vida, nivel: 1, xp: 0, oro: 500, vg: 1, vgT: 210, inv: [], enc: '', hf: j && j.hech === 'c' ? 'c' : 'f', modoAt: '', fijo: 0, cd: {q: 0, w: 0, e: 0, r: 0, a: 0, d: 0, f: 0}, rk: {q: 0, w: 0, e: 0, r: 0}, pts: 1, muertes: 0, asist: 0, cs: 0, racha: 0, hierba: -1, multi: 0, multiT: -99, danos: {}, buf: {}, resp: 0, muerto: false, ac: 0, hc: 0, hk: '', mueve: false, ataca: false, mx: 0, mz: 0, kills: 0, plan: 0});
   }
   for (const eq of [0, 1]) {
     /* «los soles» del dibujo: una torre en cada camino y otra delante del estandarte */
@@ -776,6 +776,7 @@ function paso(dt) {
   const hs = heroes();
   for (const h of hs) {
     for (const k in h.cd) h.cd[k] = Math.max(0, h.cd[k] - dt);
+    if (h.vg < 2) {h.vgT -= dt; if (h.vgT <= 0) {h.vg++; h.vgT = recargaAlmenara();}}
     for (const k in h.buf) if (typeof h.buf[k] === 'number' && !k.endsWith('V')) h.buf[k] = Math.max(0, h.buf[k] - dt);
     if (h.muerto) {if (S.t >= h.resp) {h.muerto = false; const f = BASES[h.eq].fuente; h.x = f.x + (h.slot >= 2 ? 1.5 : -1.5); h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; h.vida = stats(h).vida; ev(['vive', h.id]);} continue;}
     const st = stats(h); h.oro += 2.2 * dt;
@@ -926,6 +927,20 @@ function usaHab(h, k, dx, dz, px, pz) {
   return true;
 }
 
+/* ---------- almenaras: la «Stealth Ward» del LoL / Wild Rift ----------
+   Reglas del LoL: 2 cargas como máximo (se empieza con 1), una carga cada 210 → 120 s según el nivel medio de los héroes,
+   dura 90 → 120 s según tu nivel, como mucho 3 tuyas a la vez, alcance de colocación 600 (6,75 m con nuestra escala: Destello 400 = 4,5 m),
+   visión 900 (10 m). Los enemigos no la ven. Aquí la visión sirve para ver dentro de la hierba alta. */
+const ALM = {alc: 6.75, r: 10, max: 3};
+function recargaAlmenara() {const hs = heroes(), l = hs.reduce((a, h) => a + h.nivel, 0) / Math.max(1, hs.length); return 210 - 90 * Math.min(1, (l - 1) / 8);}
+function ponAlmenara(h, px, pz) {
+  if (!h || h.muerto || !(h.vg >= 1)) return false;
+  let dx = px - h.x, dz = pz - h.z; const l = Math.hypot(dx, dz); if (l > ALM.alc) {dx *= ALM.alc / l; dz *= ALM.alc / l;}
+  const p = {x: h.x + dx, z: h.z + dz}; limita(p);
+  const mias = S.visiones.filter((z) => z.alm === h.id && z.hasta > S.t); if (mias.length >= ALM.max) mias.sort((a, b) => a.hasta - b.hasta)[0].hasta = 0;
+  S.visiones.push({x: p.x, z: p.z, r: ALM.r, eq: h.eq, hasta: S.t + 90 + 30 * Math.min(1, (h.nivel - 1) / 8), alm: h.id});
+  if (h.vg >= 2) h.vgT = recargaAlmenara(); h.vg--; ev(['alm', h.eq, p.x, p.z]); return true;
+}
 function usaEnc(h) {
   const e = ENC[h.enc]; if (!h || h.muerto || !e || (h.cd.enc || 0) > 0 || !tieneBotas(h.inv)) return false;
   if (h.enc !== 'azogue' && h.aturd > S.t) return false;
@@ -958,6 +973,7 @@ function ia(h, dt, st) {
   if (S.modo === '1v1') {const r = radioAnillo(S.t); if (r && Math.hypot(h.x, h.z) > r - 3) {ve(h, 0, 0); h.ataca = true; return;}}
   if (h.enc === '' && tieneBotas(h.inv) && dist(h, F) < 8 && h.oro > 420) compra(h, ['gargola', 'estasis', 'azogue', 'medallon'][h.slot % 4]);
   if (h.enc && !(h.cd.enc > 0) && h.vida < stats(h).vida * 0.3 && en.some((e) => e.k === 'h' && dist(e, h) < 8)) usaEnc(h);
+  if (h.vg >= 1 && Math.random() < 0.02) {const hb = HIERBAS.find((q) => dist(h, q) < ALM.alc && dist(q, F) > 25 && !S.visiones.some((z) => z.eq === h.eq && z.hasta > S.t && dist(z, q) < 8)); if (hb) ponAlmenara(h, hb.x, hb.z);}
   /* compra en la fuente */
   if (dist(h, F) < 8) {const plan = PLAN_BOT[h.tipo] || []; const id = plan[h.plan]; if (id && compra(h, id) === '') h.plan++;}
   autoSube(h);
@@ -1069,11 +1085,11 @@ function compra(h, id) {
 const AN = {quieto: 0, correr: 1};
 function foto() {
   const u = S.u.map((q) => q.k === 'h'
-    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0, q.hf]
+    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT)]
     : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') : q.k === 'j' ? q.elem || '' : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
   const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t))), dr = S.bufEq.map((b) => [b.drF || 0, b.drH || 0, b.alma || 0]);
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
-  return {t: +S.t.toFixed(2), u, m: S.muertes, be, cp, an: S.modo === '1v1' ? +radioAnillo(S.t).toFixed(1) : 0, rl: S.reliq.map((r) => S.t >= r.listo ? 1 : 0), dr, pl: S.plantas.map((q) => S.t >= q.listo ? 1 : 0), sa: S.santuarios.filter((z) => z.hasta > S.t).map((z) => [+z.x.toFixed(1), +z.z.toFixed(1), z.eq]), ev: S.ev.splice(0)};
+  return {t: +S.t.toFixed(2), u, m: S.muertes, be, cp, an: S.modo === '1v1' ? +radioAnillo(S.t).toFixed(1) : 0, rl: S.reliq.map((r) => S.t >= r.listo ? 1 : 0), dr, pl: S.plantas.map((q) => S.t >= q.listo ? 1 : 0), sa: S.santuarios.filter((z) => z.hasta > S.t).map((z) => [+z.x.toFixed(1), +z.z.toFixed(1), z.eq]), al: S.visiones.filter((z) => z.alm && z.hasta > S.t).map((z) => [+z.x.toFixed(1), +z.z.toFixed(1), z.eq, Math.ceil(z.hasta - S.t)]), ev: S.ev.splice(0)};
 }
 function aplicaFila(f, t) {
   const [id, k, eq, x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo] = f;
@@ -1082,13 +1098,13 @@ function aplicaFila(f, t) {
   else if (S) {v.x0 = v.x; v.z0 = v.z; v.r0 = v.rot;}   /* anfitrión: de un paso de la simulación al siguiente */
   else {v.x0 = v.xi ?? v.x; v.z0 = v.zi ?? v.z; v.r0 = v.ri ?? v.rot; v.t0 = performance.now();}
   Object.assign(v, {x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo, visto: true, llega: performance.now()});
-  if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30], enc: f[31] || '', cdEnc: f[32] || 0, flagsE: f[33] || 0, fijo: f[34] || 0, hf: f[35] || 'f'});
+  if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30], enc: f[31] || '', cdEnc: f[32] || 0, flagsE: f[33] || 0, fijo: f[34] || 0, hf: f[35] || 'f', vg: f[36] ?? 0, vgT: f[37] || 0});
 }
 function recibeFoto(o) {
   for (const v of VISTA.values()) v.visto = false;
   for (const f of o.u) aplicaFila(f, o.t);
   for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);}
-  marcador(o.m, o.t); EXTRA.be = o.be; EXTRA.cp = o.cp; EXTRA.an = o.an || 0; EXTRA.rl = o.rl || []; EXTRA.dr = o.dr || [[0, 0, 0], [0, 0, 0]]; EXTRA.pl = o.pl || []; EXTRA.sa = o.sa || [];
+  marcador(o.m, o.t); EXTRA.be = o.be; EXTRA.cp = o.cp; EXTRA.an = o.an || 0; EXTRA.rl = o.rl || []; EXTRA.dr = o.dr || [[0, 0, 0], [0, 0, 0]]; EXTRA.pl = o.pl || []; EXTRA.sa = o.sa || []; EXTRA.al = o.al || [];
   for (const e of o.ev || []) efectoLocal(e);
 }
 
@@ -1210,12 +1226,19 @@ function pintaReliquias() {
   RELIQ_V.forEach((o, i) => {const on = !!(EXTRA.rl && EXTRA.rl[i]); o.sp.visible = o.aro.visible = on; if (on) {const f = Math.floor(t * 8) % 16; o.tx.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4); o.sp.position.set(o.r.x, 1.05, o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t;}});
 }
 const PLANTA_V = []; const PL_TAM = {seta: 3.4, baya: 2.8, flor: 2.4};
-const SANT_V = [];
+const SANT_V = [], ALM_V = [];
+/* las almenaras de tu equipo: un brasero pequeño con su zona de vista (las del enemigo no se ven, como en el LoL) */
+function pintaAlmenaras() {
+  const al = (EXTRA.al || []).filter((a) => a[2] === MI_EQ);
+  while (ALM_V.length < al.length) {const g = new THREE.Group(); if (M.brasero) {const b = M.brasero.scene.clone(true); b.scale.setScalar(0.75); g.add(b);} const a = aro('#ffd36a', ALM.r); a.material.opacity = 0.3; a.userData.zona = 1; g.add(a); const c = aro('#ffd36a', 0.9); c.material.opacity = 0.8; c.position.y = 0.02; g.add(c); scene.add(g); ALM_V.push(g);}
+  ALM_V.forEach((g, i) => {g.visible = i < al.length; if (g.visible) {g.position.set(al[i][0], 0.06, al[i][1]); const z = g.children.find((q) => q.userData.zona); if (z) z.material.opacity = al[i][3] < 10 ? 0.1 + 0.2 * Math.abs(Math.sin(UT.value * 4)) : 0.3;}});
+}
 function pintaJungla() {
   if (PLANTA_V.length !== PLANTAS.length || (PLANTA_V[0] && PLANTA_V[0].q !== PLANTAS[0])) {for (const o of PLANTA_V) scene.remove(o.sp); PLANTA_V.length = 0;
     for (const q of PLANTAS) {const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: cargaTex('../batalla/ui/pl_' + q.tipo + '.webp'), transparent: true, depthWrite: false})); const t = PL_TAM[q.tipo]; sp.scale.setScalar(t); sp.center.set(0.5, 0.12); sp.position.set(q.x, 0, q.z); scene.add(sp); PLANTA_V.push({sp, q});}}
   PLANTA_V.forEach((o, i) => {o.sp.visible = !!(EXTRA.pl && EXTRA.pl[i]); if (o.q.tipo === 'seta') o.sp.scale.setScalar(PL_TAM.seta * (1 + 0.04 * Math.sin(performance.now() / 200)));});
   const sa = EXTRA.sa || []; while (SANT_V.length < sa.length) {const a = aro('#5ae0ff', 7); a.material.opacity = 0.35; scene.add(a); SANT_V.push(a);}
+  pintaAlmenaras();
   SANT_V.forEach((a, i) => {a.visible = i < sa.length; if (a.visible) {a.position.set(sa[i][0], 0.08, sa[i][1]); a.material.color.set(sa[i][2] === MI_EQ ? '#5ae0ff' : '#ff6a5a'); a.rotation.y += 0.004;}});
 }
 function pintaAnillo(dt) {
@@ -1269,6 +1292,13 @@ function golpeVisual(id, de, fuerte) {
 function tiñe(raiz, color, k) {const c = new THREE.Color(color); raiz.traverse((q) => {if (q.isMesh && q.material) {q.material.color.lerp(c, k * 0.6); if (q.material.emissive) {q.material.emissive.copy(c); q.material.emissiveIntensity = 0.25 * k;}}});}
 function quitaVis(id) {const o = VIS.get(id); if (!o) return; scene.remove(o.raiz); o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.dispose) q.material.dispose();}); if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} VIS.delete(id); const b = BARRAS.get(id); if (b) {b.remove(); BARRAS.delete(id);}}
 const BARRAS = new Map();
+let MD_F = -1, MD_V = 0;
+/* daño de tu golpe básico (lo mismo que suma stats(), sin las bendiciones: mejor quedarse corto que fallar el remate) */
+function miDano() {
+  const f = renderer.info.render.frame; if (f === MD_F) return MD_V; MD_F = f;
+  const v = VISTA.get(YO); if (!v || !v.tipo) return (MD_V = 0); const b = HEROES[v.tipo]; let d = b.dano + b.crecD * ((v.nivel || 1) - 1);
+  for (const id of v.inv || []) d += (OBJ[id] && OBJ[id].st.dano) || 0; return (MD_V = d);
+}
 const _p = new THREE.Vector3();
 function dibuja(dt) {
   const ahora = performance.now();
@@ -1320,17 +1350,19 @@ function dibuja(dt) {
     if (o.aro) {o.aro.position.set(x, 0.05, z); o.aro.visible = o.raiz.visible && !muerto; if (v.k === 'h') o.aro.rotation.y += dt * 0.6;}
     /* barra de vida */
     let b = BARRAS.get(v.id);
-    if (!b) {b = document.createElement('div'); b.className = 'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].grande ? 't' : 'm'}[v.k] + ' e' + (v.eq === 2 ? 2 : v.eq === MI_EQ ? 0 : 1) + (v.id === YO ? ' yo' : ''); b.innerHTML = (v.k === 'h' ? '<b></b>' : '') + '<i><u></u></i>'; $('barras').appendChild(b); BARRAS.set(v.id, b);}
+    if (!b) {b = document.createElement('div'); b.className = 'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].grande ? 't' : 'm'}[v.k] + ' e' + (v.eq === 2 ? 2 : v.eq === MI_EQ ? 0 : 1) + (v.id === YO ? ' yo' : ''); b.innerHTML = (v.k === 'h' ? '<b></b>' : '') + '<i><s></s><u></u></i>'; $('barras').appendChild(b); BARRAS.set(v.id, b);}
     const altoB = v.k === 'h' ? 2.6 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 : v.k === 't' ? 8 : 8.4;
     _p.set(x, altoB, z).project(camera);
     const vis = o.raiz.visible && !muerto && v.vida > 0 && _p.z < 1 && Math.abs(_p.x) < 1.2 && Math.abs(_p.y) < 1.2 && (v.k !== 'j' || v.vida < v.max || NEUTRO[v.tipo].grande);
     /* barras: solo se toca el DOM cuando algo cambia, y se mueven con transform (no recalcula la página entera en cada fotograma) */
-    if (!b._u) {b._u = b.querySelector('u'); b._i = b.querySelector('i'); b._b = b.querySelector('b');}
+    if (!b._u) {b._s = b.querySelector('s'); b._u = b.querySelector('u'); b._i = b.querySelector('i'); b._b = b.querySelector('b');}
     if (b._vis !== vis) {b._vis = vis; b.style.display = vis ? 'flex' : 'none';}
     if (v.k === 't' || v.k === 'n') {const hk = String(v.hk); if (b._hk !== hk) {b._hk = hk; b.classList.toggle('prot', hk.includes('P')); b.classList.toggle('inh', hk.includes('I'));}}
     if (vis) {
       b.style.transform = 'translate3d(' + ((_p.x + 1) / 2 * VW).toFixed(1) + 'px,' + ((1 - _p.y) / 2 * VH).toFixed(1) + 'px,0) translate(-50%,-100%)';
-      const w = Math.max(0, v.vida / v.max * 100).toFixed(1); if (b._w !== w) {b._w = w; b._u.style.width = w + '%';}
+      const w = Math.max(0, v.vida / v.max * 100).toFixed(1); if (b._w !== w) {b._w = w; b._u.style.width = w + '%'; b._s.style.width = w + '%';} /* la parte clara se queda atrás un momento: se ve cuánto ha quitado el golpe */
+      /* ayuda para rematar (como en el LoL / Wild Rift): la barra del súbdito enemigo se pone blanca si tu golpe básico lo mata */
+      if (v.k === 's' && v.eq !== MI_EQ) {const rm = v.vida <= miDano(); if (b._rm !== rm) {b._rm = rm; b.classList.toggle('remata', rm);}}
       if (v.k === 'h' && b.dataset.max !== String(v.max)) {b.dataset.max = v.max; b._i.style.setProperty('--seg', (100 / v.max * 100) + '%');}
       if (v.k === 'h') {const t = v.nivel + '|' + (v.nombre || ''); if (b._t !== t) {b._t = t; b._b.innerHTML = '<em>' + v.nivel + '</em>' + (v.nombre || '');}}
     }
@@ -1499,6 +1531,7 @@ function efectoLocal(e) {
   if (t === 'tiro') {const o = modeloProy(e[1]); o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); suena('arco', 0.5);}
   if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.userData.tira = 1; a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}
   if (t === 'muere') {const v = VISTA.get(e[1]); if (v) {if (v.k === 'j' && /warg|alfa/.test(v.tipo)) suena('aullido', 0.5, v.x, v.z); else if (v.k === 'h') {suena('golpeH', 0.7, v.x, v.z); suena('cuerno', v.id === YO ? 0.5 : 0.25);} else suena('muerte', 0.35, v.x, v.z);} if (v && v.k === 's') flip('muerteS', v.xi ?? v.x, v.zi ?? v.z, 2.6, false, 0, 1.1);}
+  if (t === 'alm') {if (e[1] === MI_EQ) {flip('ondaC', e[2], e[3], 2.2, true); suena('gema', 0.5, e[2], e[3]);}}
   if (t === 'vive') {const o = VIS.get(e[1]); if (o) {o.sqA = 0.3; o.sqT = o.sqD = 0.45;} const v = VISTA.get(e[1]); if (v) {const f = BASES[v.eq].fuente; flip('ondaC', f.x, f.z, 4, true);}}
   if (t === 'son') suena(e[1], 0.5, e[2], e[3]);
   if (t === 'g') golpeVisual(e[1], e[2], e[3]);
@@ -1634,6 +1667,17 @@ function preparaMandos() {
   }
   /* retratos de los héroes enemigos cercanos junto al ataque: tocar uno lo fija (y otra vez, lo suelta) */
   $('retratos').addEventListener('pointerdown', (e) => {const b = e.target.closest('[data-id]'); if (!b) return; e.preventDefault(); e.stopPropagation(); const id = +b.dataset.id; fija(MANDO.fijo === id ? 0 : id); if (MANDO.fijo) {MANDO.hasta = performance.now() + 700;}});
+  {const b = $('bAlm'); let p0 = null;
+    const destino = (dx, dy) => {const v = VISTA.get(YO); if (!v) return null; const x = v.xi ?? v.x, z = v.zi ?? v.z; const {F, R} = ejes();
+      if (dx === null) {const r = v.ri ?? v.rot ?? 0; return {x: x + Math.sin(r) * 2.5, z: z + Math.cos(r) * 2.5};}
+      const l = Math.hypot(dx, dy) || 1, k = Math.min(1, l / 110) * ALM.alc; return {x: x + (R.x * dx - F.x * dy) / l * k, z: z + (R.z * dx - F.z * dy) / l * k};};
+    let marca = null; const pinta = (p) => {if (!marca) {marca = aro('#ffd36a', ALM.r); marca.material.opacity = 0.25; scene.add(marca);} marca.visible = !!p; if (p) marca.position.set(p.x, 0.09, p.z);};
+    b.addEventListener('pointerdown', (e) => {e.preventDefault(); e.stopPropagation(); p0 = {x: PX(e), y: PY(e), id: e.pointerId, d: null}; try {b.setPointerCapture(e.pointerId);} catch (er) {} pinta(destino(null));});
+    b.addEventListener('pointermove', (e) => {if (!p0 || e.pointerId !== p0.id) return; const dx = PX(e) - p0.x, dy = PY(e) - p0.y; if (Math.hypot(dx, dy) > 18) {p0.d = [dx, dy]; pinta(destino(dx, dy));}});
+    b.addEventListener('pointerup', () => {if (!p0) return; const p = p0.d ? destino(p0.d[0], p0.d[1]) : destino(null); p0 = null; pinta(null); const v = VISTA.get(YO); if (!p || !v || v.muerto >= 0) return;
+      if (!(v.vg >= 1)) {aviso('Almenara: la siguiente en ' + Math.ceil(v.vgT) + ' s'); return;}
+      if (S) ponAlmenara(S.u.find((q) => q.id === YO), p.x, p.z); else NET.manda({t: 'alm', px: p.x, pz: p.z, x: MIO.x, z: MIO.z});});
+    b.addEventListener('pointercancel', () => {p0 = null; pinta(null);});}
   toca($('bEnc'), () => {
     const v = VISTA.get(YO); if (!v || v.muerto >= 0 || !v.enc || v.cdEnc > 0) return;
     if (S) usaEnc(S.u.find((q) => q.id === YO)); else NET.manda({t: 'enc'});
@@ -1798,6 +1842,7 @@ function recibe(o) {
     if (o.t === 'hech1') h.hf = o.v === 'c' ? 'c' : 'f';
     if (o.t === 'ping') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; S.ev.push(e); efectoLocal(e);}
     if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
+    if (o.t === 'alm') {h.x = o.x; h.z = o.z; ponAlmenara(h, o.px, o.pz);}
     if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined;}}
   }
   if (o.t === 'se_fue') {
@@ -1880,6 +1925,7 @@ function minimapa() {
     else if (!(t > 900)) {g.globalAlpha = 0.45; marcaMm(g, 'mm_' + MM[cp.tipo], x, y, tam * 0.75); g.globalAlpha = 1; if (t > 0) {g.save(); g.translate(x, y); if (APAI) g.rotate(-Math.PI / 2); g.fillStyle = '#fff'; g.strokeStyle = '#000'; g.lineWidth = 2; g.font = 'bold 8px system-ui'; g.textAlign = 'center'; g.strokeText(t, 0, 3); g.fillText(t, 0, 3); g.restore();}}
   });
   PLANTAS.forEach((q, i) => {if (EXTRA.pl && EXTRA.pl[i]) {if (q.tipo === 'baya') {g.fillStyle = '#ff4a5a'; g.beginPath(); g.arc(px(q.x), pz(q.z), 2.4, 0, 7); g.fill();} else marcaMm(g, 'mm_' + q.tipo, px(q.x), pz(q.z), 9);}});
+  for (const a of EXTRA.al || []) if (a[2] === MI_EQ) {g.fillStyle = '#ffd36a'; g.beginPath(); g.arc(px(a[0]), pz(a[1]), 2.4, 0, 7); g.fill();}
   RELIQ.forEach((r, i) => {if (EXTRA.rl && EXTRA.rl[i]) {g.fillStyle = '#5aff6a'; g.beginPath(); g.arc(px(r.x), pz(r.z), 2.6, 0, 7); g.fill();}});
   if (MODO === '1v1' && EXTRA.an) {g.strokeStyle = '#ff6a1a'; g.lineWidth = 2; g.beginPath(); g.ellipse(px(0), pz(0), EXTRA.an / KX * W / 2, EXTRA.an / 59 * H / 2, 0, 0, 7); g.stroke();}
   for (const q of VISTA.values()) {
@@ -1903,6 +1949,8 @@ function hud() {
   if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel; rotuloZona(v);
   pon_($('kda'), 'textContent', (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3]);
   ['q', 'w', 'e', 'r'].forEach((k, i) => {const mas = $('m' + k), rk = v.rk ? v.rk[i] : 0, max = rangoMax(v.nivel, k); mas.classList.toggle('hidden', !(v.pts > 0 && rk < max) || v.muerto >= 0 && false); $('p' + k).innerHTML = Array.from({length: k === 'r' ? 2 : 4}, (_, j) => '<i class="' + (j < rk ? 'on' : '') + '"></i>').join(''); $('b' + k.toUpperCase()).classList.toggle('sinAprender', !rk);});
+  {const ba = $('bAlm'), n = v.vg ?? 0; pon_(ba.querySelector('.almN'), 'textContent', String(n)); if (ba._n !== n) {ba._n = n; ba.classList.toggle('vacia', n < 1);}
+    const c = ba.querySelector('.cd'), ver = n < 1 && v.vgT > 0; if (c._v !== ver) {c._v = ver; c.classList.toggle('hidden', !ver);} if (ver) pon_(c, 'textContent', String(v.vgT));}
   {const be = $('bEnc'), e = ENC[v.enc]; be.classList.toggle('hidden', !e); if (e) {if (be.dataset.e !== v.enc) {be.dataset.e = v.enc; be.querySelector('img').src = e.i;} const c = be.querySelector('.cd'), cd = v.cdEnc; c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / e.cd * 100) + '%' : '0%');}}
   {const r = $('retratos'), cerca = [...VISTA.values()].filter((q) => q.k === 'h' && q.eq !== MI_EQ && q.muerto < 0 && !q.escondido && Math.hypot(q.x - v.x, q.z - v.z) < 13).slice(0, 2);
    const key = cerca.map((q) => q.id + (q.id === MANDO.fijo ? 'f' : '')).join(','); if (r.dataset.k !== key) {r.dataset.k = key; pon_(r, 'innerHTML', cerca.map((q) => '<button data-id="' + q.id + '"' + (q.id === MANDO.fijo ? ' class="on"' : '') + '><img src="../abismo/ui/' + HEROES[q.tipo].retrato + '.webp" alt=""></button>').join(''));}
@@ -1998,7 +2046,7 @@ function bucle() {
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];
-function recibeFotoLocal(f) {if (NET.online) ENVIAR.push(...f.ev); f.ev = []; /* contra la máquina no se manda nada: antes se acumulaban sin fin */ for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} marcador(f.m, f.t); EXTRA.be = f.be; EXTRA.cp = f.cp; EXTRA.an = f.an || 0; EXTRA.rl = f.rl || []; EXTRA.dr = f.dr || [[0, 0, 0], [0, 0, 0]]; EXTRA.pl = f.pl || []; EXTRA.sa = f.sa || [];}
+function recibeFotoLocal(f) {if (NET.online) ENVIAR.push(...f.ev); f.ev = []; /* contra la máquina no se manda nada: antes se acumulaban sin fin */ for (const v of VISTA.values()) v.visto = false; for (const fila of f.u) aplicaFila(fila, f.t); for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);} marcador(f.m, f.t); EXTRA.be = f.be; EXTRA.cp = f.cp; EXTRA.an = f.an || 0; EXTRA.rl = f.rl || []; EXTRA.dr = f.dr || [[0, 0, 0], [0, 0, 0]]; EXTRA.pl = f.pl || []; EXTRA.sa = f.sa || []; EXTRA.al = f.al || [];}
 const EXTRA = {be: [0, 0], cp: []};
 
 /* ---------- tienda (en la fuente) ---------- */

@@ -63,7 +63,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 .ap{width:36px;height:36px;border-width:2px;border-color:#9a8a6a;background:#1d140ce8}.ap img{width:80%;height:80%;margin:10%}.ap.pulsado{transform:scale(.9);border-color:#ffd24a;filter:brightness(1.3)}
 #bAtT{right:-6px;bottom:90px}#bAtS{right:68px;bottom:-6px}
 #retratos{position:absolute;right:96px;bottom:150px;display:flex;flex-direction:column;gap:6px}#retratos button{width:40px;height:40px;border-radius:50%;border:2px solid #ff5a4a;background:#000;padding:0;overflow:hidden;box-shadow:0 2px 6px #000a}#retratos button img{width:100%;height:100%;object-fit:cover}#retratos button.on{border:3px solid #ffd24a;box-shadow:0 0 12px #ffb02a}
-#bEnc{right:178px;bottom:108px;border-color:#e2b04a}
+#bEnc{right:178px;bottom:108px;border-color:#e2b04a}#bAlm{right:232px;bottom:78px;width:40px;height:40px;border:2px solid #c99a3a !important;background:#1d140ce0 !important;border-radius:50%}#bAlm .almI{font-style:normal;font-size:19px;line-height:36px}#bAlm .almN{position:absolute;right:-4px;bottom:-4px;min-width:16px;height:16px;border-radius:8px;background:#ffd24a;color:#000;font:900 11px/16px 'Alegreya Sans',sans-serif;font-style:normal;text-align:center}#bAlm.vacia .almI{opacity:.4}#bAlm.vacia .almN{background:#777}
 .bv.prot::before{content:'🛡';position:absolute;left:-17px;top:-6px;font-size:13px;filter:drop-shadow(0 1px 1px #000)}.bv.inh u{background:#9a9a9a!important}
 #elige{position:fixed;inset:0;z-index:60;background:radial-gradient(ellipse at center,#2a1c0e,#0b0704);color:#f2e3c0;display:flex;flex-direction:column;padding:calc(10px + var(--sat)) calc(12px + var(--sar)) calc(10px + var(--sab)) calc(12px + var(--sal));gap:8px;overflow:auto}
 #elige .eTit{font:900 18.4px 'Cinzel',Georgia,serif;text-align:center;color:#ffd98a;letter-spacing:.5px}
@@ -342,7 +342,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
 #menu .modos button{padding:0 6px 5px !important;gap:0}#menu .modos button b{font-size:15px}#menu .modos button span{font-size:10px;opacity:.9}
 #tienda .tCats button img{width:46px;height:46px}
 .ajSon{display:flex;gap:8px;justify-content:center;margin-top:6px}.ajSon .bt{min-width:0;font-size:13px;min-height:44px}
-.ajSon .bt[data-g]{filter:grayscale(.7) brightness(.62)}.ajSon .bt.on{filter:none}#ajustes .ajC>b{color:#ffd77a;font:700 17px Cinzel,serif}.ajT{margin:8px 0 0;color:#ffd77a;font:600 13px Cinzel,serif;letter-spacing:.06em;text-align:center}#ajustes{z-index:80}#ajustes .ajC{max-height:calc(var(--vh) * 100 - 20px);overflow:auto}
+.bv i u{position:relative}.bv i s{background:#ffe6a6;width:100%;transition:width .45s ease-out .28s;will-change:width}.bv.remata u{background:#fff !important;box-shadow:0 0 6px #fff}.ajSon .bt[data-g]{filter:grayscale(.7) brightness(.62)}.ajSon .bt.on{filter:none}#ajustes .ajC>b{color:#ffd77a;font:700 17px Cinzel,serif}.ajT{margin:8px 0 0;color:#ffd77a;font:600 13px Cinzel,serif;letter-spacing:.06em;text-align:center}#ajustes{z-index:80}#ajustes .ajC{max-height:calc(var(--vh) * 100 - 20px);overflow:auto}
 
 /* rendimiento (16/11): los brillos que laten ya no animan «filter» (repinta todo el botón en cada fotograma);
    se anima la opacidad de un halo aparte, que la tarjeta gráfica mueve sola */
@@ -400,7 +400,7 @@ input{background:#0009;border:2px solid #6b5236;border-radius:10px;color:#fff;fo
   <button class="hb ap" id="bAtT" aria-label="Atacar torre"><img src="../abismo/iconos/torre.webp" alt=""></button>
   <button class="hb ap" id="bAtS" aria-label="Atacar súbditos"><img src="../abismo/iconos/uruk_acorazado.webp" alt=""></button>
   <div id="retratos"></div>
-  <button class="hb hs hidden" id="bEnc" aria-label="Encantamiento de botas"><img alt=""><span class="cd hidden"></span></button>
+  <button class="hb hs hidden" id="bEnc" aria-label="Encantamiento de botas"><img alt=""><span class="cd hidden"></span></button><button class="hb hs" id="bAlm" aria-label="Almenara (ver dentro de la hierba)"><i class="almI">🔥</i><em class="almN">1</em><span class="cd hidden"></span></button>
   <button class="hb hs" id="bD" aria-label="Destello"><img src="ui/hz_destello.webp" alt=""><span class="cd hidden"></span></button>
   <button class="hb hs" id="bF" aria-label="Curar"><img src="ui/hz_curar.webp" alt=""><span class="cd hidden"></span></button>
 </div>

@@ -232,3 +232,14 @@ Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard j
 2. carga_app: 1920x1080 horizontal, pantalla de carga: la muralla del Abismo de Helm al atardecer con una brecha abierta en el muro, humo y antorchas, estandartes verdes de Rohan a un lado y la Mano Blanca al otro; el centro más oscuro y despejado para poner encima el título y la barra de carga.
 Pásamelo en Pack_Vado_15.zip.
 ```
+
+## Pack Vado 12b — héroes rehechos por ChatGPT (16/11, sustituye al paso de Meshy: «todo lo tiene que hacer el ChatGPT»)
+**Dónde: WORK.** Adjuntar `public/abismo/modelos/rohan_kk.glb` + `tools/vado/pack13/fichas/E_01_ficha_jinete_de_Rohan.png` (empezar por uno; si sale bien, lo mismo con enano/elfo/hobbit y su ficha).
+Ver el prompt en la respuesta del 16/11 (copiado abajo).
+
+## Pack Vado 16 — almenara (16/11)
+**Dónde: ART**.
+```
+Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard junto al Vado del Isen; aspecto de Supercell: colores vivos, formas claras, metal y oro gastado). Necesito el icono del botón «Almenara»: una de las almenaras de Gondor/Rohan de El Señor de los Anillos en pequeño, un montón de leña con fuego encendido sobre un pie de piedra, vista de frente, dentro de un medallón redondo de bronce con borde dorado (mismo estilo que los botones de habilidades del juego). 512x512, fondo transparente, sin texto. Y una segunda versión igual pero apagada (leña sin fuego, colores grises) para cuando no quedan cargas.
+Pásamelo en Pack_Vado_16.zip (almenara.png, almenara_apagada.png).
+```
