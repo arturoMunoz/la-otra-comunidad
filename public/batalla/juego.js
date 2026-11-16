@@ -708,6 +708,7 @@ function protegida(d) {
 }
 function dana(o, d, n, tipo) {
   if (!d || d.vida <= 0 || d.muerto) return;
+  if (S.facil && o && o.k === 'h' && o.bot && d.k === 'h') n *= 0.45; /* partida guiada: el héroe de la máquina pega menos de la mitad */
   if (o && o.k === 'h' && o.buf.gargola > 0) n *= 0.4;
   if (d.k === 't' || d.k === 'n') {
     if (d.k === 't' && d.n === 1) n *= 100 / (100 + Math.max(0, 300 - 50 * Math.floor(S.t / 60)));
@@ -1717,7 +1718,7 @@ function efectoLocal(e) {
   if (t === 'tp' && e[1] === YO && !S) {MIO.x = e[2]; MIO.z = e[3]; MIO.dash = null;}
   if (t === 'baja') anuncio(e[1], e[2], e[3]);
   if (t === 'aviso' && (e[1] === 0 || e[1] === YO)) aviso(e[2]);
-  if (t === 'fin') acaba(e[1]);
+  if (t === 'fin') {guiaAcaba(false); acaba(e[1]);}
   if (t === 'voto' && e[1] === MI_EQ) pintaVoto(e);
   if (t === 'votoFin' && e[1] === MI_EQ) {$('voto').classList.add('hidden'); aviso('No ha salido la rendición');}
 }
@@ -2088,6 +2089,37 @@ function marcador(m, t) {$('marcador').dataset.t = t;$('marcador').innerHTML = '
 let miniT = 0, consejoI = 0;
 const CONSEJOS = ['Pulsa el + verde encima de una habilidad para aprenderla: cada nivel te da un punto', 'Mueve con el joystick y mantén ⚔ para atacar. Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Dentro de la hierba alta los enemigos no te ven (salvo que estén a tu lado)', 'Los botones pequeños son Destello (un salto corto) y Curar (a ti y a tu compañero)', 'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos', 'En la espesura (a los lados, cruzando los huecos de la empalizada) hay huargos: dan oro y experiencia', 'El troll (oeste) y el huargo alfa (este) dan una bendición a todo tu equipo durante 90 s', 'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en la armería'];
 function consejos(t) {if (localStorage.getItem('vado.consejos') === '3') return; const i = Math.floor((t - 2) / 14); if (i >= 0 && i < CONSEJOS.length && i >= consejoI) {consejoI = i + 1; aviso('💡 ' + CONSEJOS[i]); if (i === CONSEJOS.length - 1) localStorage.setItem('vado.consejos', String(+(localStorage.getItem('vado.consejos') || 0) + 1));}}
+/* PARTIDA GUIADA (16/11): un Duelo contra la máquina con el Jinete, el rival pega menos (S.facil) y un cartel va explicando cada cosa.
+   Cada paso se cumple haciendo lo que pide (ok) o, si solo informa, pasados unos segundos (seg). El aro verde (clase guiaOjo) señala el botón. */
+let GUIA = null;
+const csDe = (v) => +((v.kda || '0/0/0/0').split('/')[3]) || 0;
+const GUIA_PASOS = [
+  {t: 'Arrastra el dedo por la parte IZQUIERDA de la pantalla para moverte. Camina hacia la derecha: allí está Isengard.', ok: (v, g) => Math.hypot(v.x - g.x0, v.z - g.z0) > 6},
+  {t: 'Pulsa el + verde de encima de una habilidad para aprenderla. Cada nivel que subes te da un punto.', ojo: () => 'mq', ok: (v) => v.rk && v.rk.some((n) => n > 0)},
+  {t: 'Toca esa habilidad para lanzarla. Si la arrastras, apuntas tú; si solo la tocas, apunta sola.', ojo: (v) => 'b' + 'QWER'[Math.max(0, (v.rk || []).findIndex((n) => n > 0))], ok: (v, g) => v.hc !== g.hc0},
+  {t: 'Cada habilidad gasta MANÁ: la botella fucsia de abajo. Se rellena sola poco a poco, y muy deprisa en tu campamento.', ojo: () => 'vital', seg: 8},
+  {t: 'Mantén pulsado el botón grande para atacar. Remata a 3 soldados enemigos (los rojos): el ÚLTIMO golpe es el que da oro.', ojo: () => 'bAt', ok: (v, g) => csDe(v) >= g.cs0 + 3, cuenta: (v, g) => Math.min(3, csDe(v) - g.cs0) + ' / 3'},
+  {t: 'La torre enemiga dispara a quien pisa su zona roja. Entra siempre DETRÁS de tus soldados (los azules): les pegará a ellos y no a ti.', seg: 10},
+  {t: 'Con el oro se compra equipo. Pulsa BASE para volver a tu campamento, abre la Armería (arriba a la izquierda) y compra algo.', ojo: (v) => enMiFuente(v) ? 'bTienda' : 'bBase', ok: (v, g) => (v.inv || []).length > g.inv0},
+  {t: 'Si te quedas con poca vida, vuelve a la base: allí te curas. Morir le regala oro y tiempo al rival.', ojo: () => 'vital', seg: 8},
+  {t: 'Ya sabes lo básico. Para ganar: tira la torre del camino, luego la de su base y por último el estandarte de Isengard. ¡Por Rohan!', seg: 9},
+];
+const enMiFuente = (v) => {const f = BASES[MI_EQ].fuente; return Math.hypot(v.x - f.x, v.z - f.z) < 8;};
+function guiaEmpieza() {GUIA = {i: -1, t: 0}; document.body.classList.add('guiada'); $('guia').classList.remove('hidden'); guiaSiguiente();}
+function guiaOjo(id) {if (GUIA.ojo === id) return; if (GUIA.ojo && $(GUIA.ojo)) $(GUIA.ojo).classList.remove('guiaOjo'); GUIA.ojo = id; if (id && $(id)) $(id).classList.add('guiaOjo');}
+function guiaSiguiente() {
+  const v = VISTA.get(YO) || {x: 0, z: 0}; GUIA.i++; GUIA.t = performance.now();
+  if (GUIA.i >= GUIA_PASOS.length) {guiaAcaba(true); return;}
+  Object.assign(GUIA, {x0: v.x, z0: v.z, hc0: v.hc, cs0: csDe(v), inv0: (v.inv || []).length});
+  const g = $('guia'); $('guiaN').textContent = (GUIA.i + 1) + ' / ' + GUIA_PASOS.length; $('guiaT').textContent = GUIA_PASOS[GUIA.i].t; $('guiaC').textContent = '';
+  g.classList.remove('entra'); void g.offsetWidth; g.classList.add('entra'); if (GUIA.i > 0) suena('magia', 0.3);
+}
+function guiaAcaba(completa) {if (!GUIA) return; guiaOjo(null); GUIA = null; document.body.classList.remove('guiada'); $('guia').classList.add('hidden'); if (completa) {try {localStorage.setItem('vado.guia', '1');} catch (e) {} $('bGuia').classList.remove('nueva');}}
+function guiaPaso(v) {
+  if (!GUIA || ESTADO !== 'juego') return; const p = GUIA_PASOS[GUIA.i]; if (!p) return;
+  guiaOjo(p.ojo ? p.ojo(v) : null); if (p.cuenta) pon_($('guiaC'), 'textContent', p.cuenta(v, GUIA));
+  if (p.seg ? performance.now() - GUIA.t > p.seg * 1000 : performance.now() - GUIA.t > 700 && p.ok(v, GUIA)) guiaSiguiente();
+}
 function objetivoTxt() {
   if (MODO === '1v1' && DUELO.activo) {const t = +($('marcador').dataset.t || 0); return t >= DUELO.anillo ? '🔥 Anillo de fuego: el próximo derribo gana' : 'Duelo: 2 derribos o la primera torre · anillo en ' + Math.max(0, Math.ceil((DUELO.anillo - t) / 60)) + ' min';}
   const en = (k, n) => [...VISTA.values()].find((q) => q.k === k && q.eq === 1 - MI_EQ && (n === undefined || q.tipo === n) && q.vida > 0);
@@ -2147,6 +2179,7 @@ function hud() {
    if (HAY_BOTELLA) pon_($('vLle').style, 'clipPath', 'inset(' + (BOT_Y0 + (BOT_Y1 - BOT_Y0) * (1 - pm / 100)).toFixed(1) + '% 0 0 0)');
    const bj = pv < 30; if (vt._bj !== bj) {vt._bj = bj; vt.classList.toggle('poca', bj);} const sm = pm < 12; if (vt._sm !== sm) {vt._sm = sm; vt.classList.toggle('seca', sm);}}
   pon_($('yoNv'), 'textContent', 'Nv ' + v.nivel); pon_($('oro'), 'textContent', '🪙 ' + v.oro); pon_($('xpBar').style, 'width', (v.nivel >= NIVEL_MAX ? 100 : Math.round((v.xpP || 0) * 100)) + '%');
+  if (GUIA) guiaPaso(v);
   if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel; rotuloZona(v);
   pon_($('kda'), 'textContent', (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3]);
   ['q', 'w', 'e', 'r'].forEach((k, i) => {const mas = $('m' + k), rk = v.rk ? v.rk[i] : 0, max = rangoMax(v.nivel, k); mas.classList.toggle('hidden', !(v.pts > 0 && rk < max) || v.muerto >= 0 && false); $('p' + k).innerHTML = Array.from({length: k === 'r' ? 2 : 4}, (_, j) => '<i class="' + (j < rk ? 'on' : '') + '"></i>').join(''); $('b' + k.toUpperCase()).classList.toggle('sinAprender', !rk);});
@@ -2425,6 +2458,10 @@ function preparaMenu() {
   {const abre = () => {{const i = $('ajNombre'); if (i && i.value.trim().length >= 2) guardaNombre();} const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Ajustes</b>' + campoNombre() + cuentaHtml() + botonesSonido() + botonesGraf() + botonesSrv() + '<button class="bt" id="ajCierra">Listo</button></div>'; a.classList.remove('hidden'); enlazaSonido(abre); enlazaGraf(a, abre); enlazaSrv(a, abre); enlazaCuenta(); $('ajCierra').onclick = () => {if (guardaNombre()) {a.classList.add('hidden'); pintaMenu();}};}; $('bSon').onclick = abre;}
   pintaMenu();
   $('bGirar').onclick = apaisa;
+  /* partida guiada: Duelo contra la máquina con el Jinete (el más sencillo), sin pasar por la pantalla de elegir héroe */
+  $('bGuia').onclick = () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; empieza([{slot: 0, nombre: nombreJugador(), heroe: 'rohan', hech: 'f'}], '1v1', true); if (S) S.facil = true; guiaEmpieza();}, false);};
+  if (!localStorage.getItem('vado.guia')) $('bGuia').classList.add('nueva');
+  $('guiaX').addEventListener('pointerdown', (e) => {e.preventDefault(); e.stopPropagation(); guiaAcaba(true);});
   $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);}, modoElegido === '2v2');});
   $('bCrear').onclick = () => eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => {const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);}, true);});
   $('bUnir').onclick = () => {const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => conecta(c, modoElegido, nombreJugador(), heroeElegido), true);});};

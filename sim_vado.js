@@ -297,6 +297,7 @@ function protegida(d) {
 }
 function dana(o, d, n, tipo) {
   if (!d || d.vida <= 0 || d.muerto) return;
+  if (S.facil && o && o.k === 'h' && o.bot && d.k === 'h') n *= 0.45; /* partida guiada: el héroe de la máquina pega menos de la mitad */
   if (o && o.k === 'h' && o.buf.gargola > 0) n *= 0.4;
   if (d.k === 't' || d.k === 'n') {
     if (d.k === 't' && d.n === 1) n *= 100 / (100 + Math.max(0, 300 - 50 * Math.floor(S.t / 60)));

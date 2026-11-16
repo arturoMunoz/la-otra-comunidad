@@ -417,6 +417,17 @@ body.cine #mandos,body.cine #joy,body.cine #hud,body.cine #barras,body.cine #mm{
 #vital .vBot::before{content:'';position:absolute;inset:8% -12% -4%;border-radius:50%;background:radial-gradient(closest-side,#ff2ab0aa,#ff2ab000);opacity:0;pointer-events:none}
 #vital.seca .vBot::before{animation:halo 1s ease-in-out infinite}
 body.cine #vital{visibility:hidden}
+/* partida guiada (16/11) */
+#bGuia{display:block;width:100%;margin:6px 0 2px;position:relative}#bGuia small{font:700 10.5px 'Alegreya Sans',sans-serif;opacity:.8;margin-left:6px;letter-spacing:0;text-transform:none}
+#bGuia.nueva::after{content:'NUEVO';position:absolute;right:26px;top:-3px;background:#7dff6a;color:#0b0705;font:900 9px 'Alegreya Sans',sans-serif;border-radius:6px;padding:1px 5px;box-shadow:0 2px 0 #0008}
+#guia{position:fixed;left:50%;top:calc(54px + var(--sat));transform:translateX(-50%);z-index:8;width:calc(min(440px,50 * var(--vw)));display:flex;align-items:center;gap:8px;background:linear-gradient(#1c120af2,#0b0705f2);border:2.5px solid #0b0705;border-radius:12px;box-shadow:0 0 0 1.5px #b88a2e,0 4px 0 #0009,0 8px 16px #000a;padding:7px 9px;pointer-events:none}
+#guia em{flex:none;font:900 11px 'Cinzel',Georgia,serif;font-style:normal;color:#0b0705;background:linear-gradient(#ffe08a,#d49a2a);border-radius:8px;padding:3px 7px;white-space:nowrap}
+#guia p{margin:0;flex:1;font:700 13px/1.25 'Alegreya Sans',system-ui,sans-serif;color:#fff1d0}#guia p b{color:#7dff6a;white-space:nowrap}
+#guia button{flex:none;pointer-events:auto;touch-action:manipulation;font:800 10.5px 'Alegreya Sans',sans-serif;color:#c9b48a;background:#0006;border:1px solid #6a5630;border-radius:7px;padding:4px 7px}
+#guia.entra{animation:guiaE .35s cubic-bezier(.2,1.5,.4,1)}@keyframes guiaE{0%{transform:translateX(-50%) scale(.85);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:1}}
+.guiaOjo{outline:3px solid #7dff6a !important;outline-offset:5px;border-radius:50%;animation:guiaO .8s ease-in-out infinite !important}#vital.guiaOjo{border-radius:14px}
+@keyframes guiaO{50%{outline-color:#7dff6a33;outline-offset:9px}}
+body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 </style>
 </head>
 <body>
@@ -429,10 +440,11 @@ body.cine #vital{visibility:hidden}
   <div class="mPanel">
     <div class="mTit"><h1>La Brecha</h1><p class="sub">Rohan contra Isengard</p></div>
     <div class="modos">
-      <button data-m="1v1" class="on"><b>Duelo</b><span>1 contra 1 · el Abismo</span><small>2 derribos o la primera torre</small><i class="mc"></i></button>
+      <button data-m="1v1" class="on"><b>Duelo</b><span>1 contra 1 · el Abismo</span><small>Tira el estandarte enemigo</small><i class="mc"></i></button>
       <button data-m="2v2"><b>Batalla</b><span>2 contra 2 · el Ojo del Vado</span><small>Espesura, bestias y Uruk</small><i class="mc"></i></button>
     </div>
     <button class="jugar" id="bBots"><b>JUGAR</b><small id="bBotsSub">contra la máquina</small><i></i></button>
+    <button class="mB" id="bGuia">🎓 Partida guiada <small>aprende a jugar en 5 minutos</small></button>
     <div class="mAmigos"><button class="mB" id="bCrear">👥 Crear sala</button><input id="codigo" maxlength="6" placeholder="CÓDIGO" autocomplete="off"><button class="mB" id="bUnir">Unirse</button></div>
     <div id="sala" class="hidden"></div>
     <div class="fila" id="heroes"></div>
@@ -470,6 +482,7 @@ body.cine #vital{visibility:hidden}
 <canvas id="mini" class="hidden" width="96" height="196"></canvas>
 <div id="rotulo"></div><div id="objetivo" class="hidden"></div><div id="buffs"></div>
 <div id="aviso"></div>
+<div id="guia" class="hidden"><em id="guiaN"></em><p><span id="guiaT"></span> <b id="guiaC"></b></p><button id="guiaX">Saltar</button></div>
 <div id="vs" class="hidden"></div>
 <div id="pings" class="hidden"><button id="bPing" aria-label="Avisos al equipo">💬</button><div class="pOp"><button data-p="ataca">⚔ Atacad</button><button data-p="retira">🛡 Retirada</button><button data-p="voy">🏃 Voy</button><button data-p="cuidado">⚠ Cuidado</button></div></div>
 <div id="anuncio" class="hidden"></div>
