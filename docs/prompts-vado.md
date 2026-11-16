@@ -273,3 +273,32 @@ Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard j
 
 3. vida_marco.png (1024x192): marco horizontal para una barra de vida: hierro negro forjado con filo de oro viejo, remaches y una cabeza de caballo de Rohan pequeña en cada extremo. El HUECO del centro (donde va la barra) completamente transparente y recto, de unos 880x90 px.
 ```
+
+
+## Pack Vado 24 · Gollum
+
+### ART
+```
+Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard junto al Vado del Isen; estilo League of Legends: Wild Rift con toque Supercell oscuro). Héroe nuevo: GOLLUM (Sméagol), flaco, pálido, ojos enormes y brillantes, taparrabos, agazapado; recuerda a las cuevas de las Montañas Nubladas y a los pantanos de las Ciénagas de los Muertos. Mismo estilo exacto que los archivos que adjunto (splash_orco, r_orco, at_orco y h_orco_q). Todo con FONDO TRANSPARENTE de verdad salvo el retrato grande, sin texto:
+
+1. splash_gollum.png (1024x1536): retrato grande de cuerpo entero, agazapado sobre una roca mojada, con el Anillo brillando en su mano; fondo de cueva oscura con agua (este SÍ lleva fondo).
+2. r_gollum.png (512x512): cara de Gollum en medallón redondo, mismo marco que r_orco.
+3. at_gollum.png (512x512): botón de ataque básico: medallón con sus manos huesudas en garra y un pez, mismo marco que at_orco.
+4. Cuatro iconos de habilidad (512x512 cada uno, mismo marco que h_orco_q):
+   h_gollum_q «Mordisco»: Gollum saltando con la boca abierta.
+   h_gollum_w «¡Mi tesoro!»: el Anillo Único brillando en una mano pálida.
+   h_gollum_e «Cuerda élfica»: la cuerda gris de Lórien enroscada, con brillo plateado.
+   h_gollum_r «Sombras de Moria»: dos ojos brillantes en la oscuridad total.
+```
+
+### WORK
+```
+Juego «La Brecha» (Three.js, móvil). Necesito el modelo 3D de GOLLUM (El Señor de los Anillos) para que lo mueva el mismo esqueleto que los héroes KayKit Adventurers que ya uso (adjunto hobbit_kk.glb como referencia de huesos, escala y nombres de clips).
+
+- gollum.glb: personaje low-poly estilo KayKit (formas simples, colores planos), flaco, piel pálida grisácea, ojos enormes, taparrabos, sin armas. Altura 1,4 m, de pie mirando a +Z.
+- Mismo esqueleto y MISMOS NOMBRES de huesos que hobbit_kk.glb (head, chest, handslot.l, handslot.r…), para engancharlo con el mismo código.
+- Clips con estos nombres exactos: quieto, andar, correr, atacar, atacar_2, atacar_3, esquivar, celebrar, morir. Movimientos de criatura agazapada (cuatro patas al correr si se puede).
+- Texturas en un solo atlas de 1024 o menos. Peso máximo 2 MB.
+- Licencia: si usas recursos de otros, solo CC0, con un LICENCIAS.txt.
+Devuélvelo en un zip con gollum.glb y LICENCIAS.txt.
+```

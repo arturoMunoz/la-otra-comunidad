@@ -35,6 +35,12 @@ const HEROES = {
       w: {n: 'Desapercibido', cd: 16, mn: 45, tipo: 'invis', dur: 3, vel: 0.35, icono: 'i_humo', d: 'Desapareces 3 s y corres más: ni torres ni enemigos te ven.'},
       e: {n: 'Puñado de piedras', cd: 6, mn: 35, tipo: 'cono', alc: 5.2, ang: 1.0, dano: 90, icono: 'i_piedras', d: 'Un puñado de piedras en abanico.'},
       r: {n: 'Suerte de Bolsón', cd: 45, mn: 80, tipo: 'suerte', cura: 0.4, vel: 0.5, dur: 5, icono: 'h_hobbit', d: 'Te curas un 40 %, corres más y pegas más fuerte 5 s.'}}},
+  /* Gollum (16/11) = Rengar: asesino de cerca que salta sobre su presa, se cura y se esconde para cazar. Modelo y arte PROVISIONALES (los del hobbit) hasta que llegue el Pack Vado 24. */
+  gollum: {nombre: 'Gollum', modelo: 'hobbit_kk', retrato: 'r_hobbit', mana: 280, crecM: 28, vida: 640, dano: 68, vatq: 1.1, alcance: 2.3, vel: 5.7, crecV: 90, crecD: 5, arm: 32, rm: 30,
+    hab: {q: {n: 'Mordisco', cd: 6, mn: 30, tipo: 'salto', dist: 6, radio: 2.2, dano: 140, lento: 0.35, durL: 1, icono: 'h_gollum_q', d: 'Salta sobre su presa y la muerde: hiere y frena al caer.'},
+      w: {n: '¡Mi tesoro!', cd: 14, mn: 40, tipo: 'suerte', cura: 0.25, vel: 0.3, dur: 3, icono: 'h_gollum_w', d: 'Aprieta el Anillo: se cura un 25 %, corre más y pega más fuerte 3 s.'},
+      e: {n: 'Cuerda élfica', cd: 10, mn: 35, tipo: 'linea', alc: 9, ancho: 0.8, dano: 70, aturde: 1.0, proy: 'piedra', icono: 'h_gollum_e', d: 'Lanza la cuerda de Lórien de Sam: ata 1 s al primero que toca.'},
+      r: {n: 'Sombras de Moria', cd: 50, mn: 80, tipo: 'invis', dur: 5, vel: 0.6, icono: 'h_gollum_r', d: 'Desaparece 5 s y corre mucho más: nadie le ve llegar.'}}},
   /* Pack Vado 18 (16/11). Gandalf = Lux (maga a distancia: atrapa, escudo a aliados, zona que frena, gran rayo).
      Orco = Darius (luchador: giro que cura por héroe golpeado, golpe que frena, cadena que arrastra, ejecución con poca vida). */
   gandalf: {nombre: 'Gandalf el Gris', modelo: 'gandalf_kk', ret: 'ui/r_gandalf.webp', mana: 420, crecM: 40, vida: 540, dano: 50, vatq: 0.88, alcance: 6.8, vel: 5.1, crecV: 78, crecD: 4.3, mag: true, arm: 20, rm: 32, proy: 'luz',
@@ -646,7 +652,7 @@ function nuevaPartida(jugadores, modo) {
   const plazas = modo === '2v2' ? 4 : 2; S.carriles = modo === '2v2' ? [0, 1] : [0];
   for (let slot = 0; slot < plazas; slot++) {
     const j = jugadores.find((q) => q.slot === slot);
-    const tipo = j ? j.heroe : Object.keys(HEROES)[(slot * 5 + 1) % 6];
+    const tipo = j ? j.heroe : Object.keys(HEROES)[(slot * 5 + 1) % Object.keys(HEROES).length];
     const eq = slot % 2, f = BASES[eq].fuente, x = f.x + (slot >= 2 ? 1.5 : -1.5), z0 = f.z - signo(eq) * 2.5;
     const b = HEROES[tipo] || HEROES.rohan;
     S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: !j, nombre: j ? j.nombre : 'Bot ' + b.nombre.split(' ')[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
@@ -1288,10 +1294,10 @@ let tiemblaCam = 0;
 /* ---------- habilidades: cada una con su animación y su efecto (lo que en el LoL hace que «se note») ---------- */
 const HAB_ANIM = {rohan: {q: 'atacar_3', w: 'celebrar', e: 'giro', r: 'golpe_cargado'}, enano: {q: 'giro', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'},
   elfo: {q: 'atacar_2', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'}, hobbit: {q: 'atacar_2', w: 'esquivar', e: 'atacar_3', r: 'celebrar'},
-  gandalf: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'golpe_cargado'}, orco: {q: 'atacar_3', w: 'atacar_2', e: 'atacar', r: 'golpe_cargado'}};
+  gandalf: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'golpe_cargado'}, orco: {q: 'atacar_3', w: 'atacar_2', e: 'atacar', r: 'golpe_cargado'}, gollum: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'esquivar'}};
 const AURA_COL = {escudo: '#6fc8ff', reduce: '#c9b48a', rafaga: '#7dff6a', suerte: '#ffd24a'};
 /* golpe básico que alterna dos movimientos, como en el Wild Rift (el enano: tajo por arriba y tajo de lado; antes el suyo apenas se veía) */
-const BASICOS = {rohan: ['atacar', 'atacar_2'], enano: ['atacar_2', 'atacar_3'], elfo: ['atacar'], hobbit: ['atacar', 'atacar_2'], gandalf: ['atacar', 'atacar_2'], orco: ['atacar', 'atacar_2']};
+const BASICOS = {rohan: ['atacar', 'atacar_2'], enano: ['atacar_2', 'atacar_3'], elfo: ['atacar'], hobbit: ['atacar', 'atacar_2'], gandalf: ['atacar', 'atacar_2'], orco: ['atacar', 'atacar_2'], gollum: ['atacar', 'atacar_2']};
 function animaClip(o, nombre, vel = 1) {
   const a = o.todos && o.todos[nombre]; if (!a) return 0;
   a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; a.timeScale = vel; a.reset().play();
@@ -2077,7 +2083,7 @@ function pantallaVS(jugadores, modo) {
   el.innerHTML = '<div class="vsLado az"><i>Rohan</i>' + lado(0) + '</div><div class="vsX">VS</div><div class="vsLado ro"><i>Isengard</i>' + lado(1) + '</div>';
   el.classList.remove('hidden'); setTimeout(() => el.classList.add('fuera'), 2300); setTimeout(() => {el.classList.add('hidden'); el.classList.remove('fuera');}, 2900);
 }
-const ARMA = {rohan: 'lanza', enano: 'hacha', elfo: 'arco', hobbit: 'honda', gandalf: 'baston', orco: 'hacha'};
+const ARMA = {rohan: 'lanza', enano: 'hacha', elfo: 'arco', hobbit: 'honda', gandalf: 'baston', orco: 'hacha', gollum: 'daga'};
 function iconosHab(tipo) {
   $('bAt').querySelector('img').src = 'ui/at_' + tipo + '.webp'; $('bAt').classList.remove('arma');for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = 'ui/h_' + tipo + '_' + k + '.webp'; b.title = HEROES[tipo].hab[k].n;}}
 function subeNivelFx(v) {
@@ -2363,7 +2369,7 @@ function sueltaApaisado() {try {if (screen.orientation && screen.orientation.unl
 
 /* ---------- menú y sala ---------- */
 let hechElegido = localStorage.getItem('vado.hech') || 'f', heroeElegido = localStorage.getItem('vado.heroe') || 'rohan', modoElegido = localStorage.getItem('vado.modo') || '1v1';
-const ROL_H = {rohan: 'Luchador', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Asesino', gandalf: 'Mago', orco: 'Luchador'};
+const ROL_H = {rohan: 'Luchador', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Asesino', gandalf: 'Mago', orco: 'Luchador', gollum: 'Asesino'};
 let eligeSel = null;
 function eligeHeroe(titulo, listo) {
   const el = $('elige'); eligeSel = heroeElegido; el.classList.remove('hidden');
