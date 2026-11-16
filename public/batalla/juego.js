@@ -180,8 +180,9 @@ const tieneBotas = (inv) => inv.includes('botas') || inv.includes('capa');
 /* Duelo (modo 1 contra 1 del Wild Rift): gana quien derriba 2 veces al rival o tira la primera torre; en el minuto 8 aparece
    un anillo de fuego que cubre el mapa, a los 30 s empieza a cerrarse y 1:30 después mide 5 m; fuera quema; con el anillo, 1 derribo gana.
    Oro y experiencia aumentados. */
-const DUELO = {anillo: 480, cierra: 30, dura: 90, r0: 62, r1: 5, quema: 0.06, botin: 1.5};
-const radioAnillo = (t) => t < DUELO.anillo ? 0 : t < DUELO.anillo + DUELO.cierra ? DUELO.r0 : DUELO.r0 + (DUELO.r1 - DUELO.r0) * Math.min(1, (t - DUELO.anillo - DUELO.cierra) / DUELO.dura);
+/* activo: false (16/11, pedido de Arturo): en el Duelo solo se gana tirando el estandarte, como en la Batalla; ni derribos, ni primera torre, ni anillo */
+const DUELO = {activo: false, anillo: 480, cierra: 30, dura: 90, r0: 62, r1: 5, quema: 0.06, botin: 1.5};
+const radioAnillo = (t) => !DUELO.activo || t < DUELO.anillo ? 0 : t < DUELO.anillo + DUELO.cierra ? DUELO.r0 : DUELO.r0 + (DUELO.r1 - DUELO.r0) * Math.min(1, (t - DUELO.anillo - DUELO.cierra) / DUELO.dura);
 /* desde el minuto 5 las hordas pegan cada vez más fuerte a las torres, para que las partidas no se eternicen */
 const asedio = () => 1 + Math.max(0, (S.t - 300) / 240);   /* multiplicador contra súbditos y contra torres/estandarte */
 const MODELO_SUBD = [{m: 'ballestero2', r: 'arquero_rohan2', a: 'ballestero2', x: 'super_rohan'}, {m: 'uruk', r: 'q_arquero', a: 'uruk', x: 'super_isengard'}];
@@ -667,7 +668,7 @@ function muere(d, o) {
   if (d.k === 'h') {
     d.muerto = true; d.resp = S.t + Math.min(45, 6 + d.nivel * 2 + Math.floor(S.t / 60) * 0.8); /* como en el LoL: cuanto más avanzada la partida, más cuesta morir */ d.buf = {}; ev(['muere', d.id]); S.muertes[1 - d.eq]++;
     d.muertes++; const rachaVictima = d.racha; d.racha = 0;
-    if (S.modo === '1v1' && S.fin < 0 && S.muertes[1 - d.eq] >= (S.t >= DUELO.anillo ? 1 : 2) && !S.duelo) {S.duelo = 1; luego(1.2, () => {if (S.fin < 0) {S.fin = 1 - d.eq; ev(['fin', 1 - d.eq]);}});}
+    if (DUELO.activo && S.modo === '1v1' && S.fin < 0 && S.muertes[1 - d.eq] >= (S.t >= DUELO.anillo ? 1 : 2) && !S.duelo) {S.duelo = 1; luego(1.2, () => {if (S.fin < 0) {S.fin = 1 - d.eq; ev(['fin', 1 - d.eq]);}});}
     const asesino = o && o.k === 'h' ? o : S.u.find((q) => q.id === d.agresor && d.agresorT > S.t);
     let txt = '';
     if (asesino) {
@@ -684,7 +685,7 @@ function muere(d, o) {
     ev(['baja', asesino ? asesino.id : 0, d.id, txt]);
   }
   if (d.k === 't') {ev(['fx', 'explosion', d.x, d.z, 5]); ev(['baja', o && o.k === 'h' ? o.id : 0, d.id, d.eq === 0 ? 'Torre de Rohan destruida' : 'Torre de Isengard destruida']); for (const h of heroes()) if (h.eq !== d.eq) {h.oro += d.inhib ? 50 : 150; ganaXp(h, 80);}
-    if (S.modo === '1v1' && S.fin < 0) {S.fin = 1 - d.eq; luego(1.5, () => ev(['fin', 1 - d.eq]));}
+    if (DUELO.activo && S.modo === '1v1' && S.fin < 0) {S.fin = 1 - d.eq; luego(1.5, () => ev(['fin', 1 - d.eq]));}
     /* inhibidor (Wild Rift 4.0a): la torre de la base vuelve a los 4 min (5 desde el 13, 6 desde el 18) pero ya no dispara; mientras esté caída, supersúbditos */
     if (d.n === 2) {d.respInh = S.t + (S.t < 780 ? 240 : S.t < 1080 ? 300 : 360); ev(['aviso', 0, (d.eq ? '¡Isengard' : '¡Rohan') + ' ha perdido su torre de la base: supersúbditos!']);}}
   if (d.k === 'n' && S.fin < 0) {S.fin = 1 - d.eq; ev(['fx', 'explosion', d.x, d.z, 8]); ev(['fin', 1 - d.eq]);}
@@ -1142,6 +1143,8 @@ let tiemblaCam = 0;
 const HAB_ANIM = {rohan: {q: 'atacar_3', w: 'celebrar', e: 'giro', r: 'golpe_cargado'}, enano: {q: 'giro', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'},
   elfo: {q: 'atacar_2', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'}, hobbit: {q: 'atacar_2', w: 'esquivar', e: 'atacar_3', r: 'celebrar'}};
 const AURA_COL = {escudo: '#6fc8ff', reduce: '#c9b48a', rafaga: '#7dff6a', suerte: '#ffd24a'};
+/* golpe básico que alterna dos movimientos, como en el Wild Rift (el enano: tajo por arriba y tajo de lado; antes el suyo apenas se veía) */
+const BASICOS = {rohan: ['atacar', 'atacar_2'], enano: ['atacar_2', 'atacar_3'], elfo: ['atacar'], hobbit: ['atacar', 'atacar_2']};
 function animaClip(o, nombre, vel = 1) {
   const a = o.todos && o.todos[nombre]; if (!a) return 0;
   a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; a.timeScale = vel; a.reset().play();
@@ -1315,7 +1318,7 @@ function dibuja(dt) {
       if (muerto) pon(o, 'morir', 0.1);
       else {
         if (v.hc !== o.hc) {o.hc = v.hc; if (!o.habYa) {otraVez(o, 'hab'); o.ocup = 0.45;} o.habYa = false;}
-        else if (v.ac !== o.ac) {o.ac = v.ac; if (v.k === 'j' && NEUTRO[v.tipo].jefe && v.ac % 3 === 0 && o.todos && o.todos.pisoton) {o.ocup = animaClip(o, 'pisoton', 1.6); suena('grito', 0.7, v.x, v.z); setTimeout(() => {tiemblaCam = Math.max(tiemblaCam, 0.35); suena('explosion', 0.8, v.x, v.z); flip('grietas', v.xi ?? v.x, v.zi ?? v.z, 8, true);}, 650);} else otraVez(o, 'atacar'); o.ocup = o.ocup || 0.35; if (v.k === 'h') {o.sqA = 0.1; o.sqT = o.sqD = 0.22;} if (v.id === YO && !HEROES[v.tipo].proy) suena('espada', 0.25);}
+        else if (v.ac !== o.ac) {o.ac = v.ac; if (v.k === 'j' && NEUTRO[v.tipo].jefe && v.ac % 3 === 0 && o.todos && o.todos.pisoton) {o.ocup = animaClip(o, 'pisoton', 1.6); suena('grito', 0.7, v.x, v.z); setTimeout(() => {tiemblaCam = Math.max(tiemblaCam, 0.35); suena('explosion', 0.8, v.x, v.z); flip('grietas', v.xi ?? v.x, v.zi ?? v.z, 8, true);}, 650);} else if (v.k === 'h' && BASICOS[v.tipo] && o.todos) {const lista = BASICOS[v.tipo], n = lista[v.ac % lista.length], H = HEROES[v.tipo]; o.ocup = animaClip(o, n, Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9;} else otraVez(o, 'atacar'); o.ocup = o.ocup || 0.35; if (v.k === 'h') {o.sqA = 0.1; o.sqT = o.sqD = 0.22;} if (v.id === YO && !HEROES[v.tipo].proy) suena('espada', 0.25);}
         o.ocup = (o.ocup || 0) - dt;
         const vel = o.lx === undefined ? 0 : Math.hypot(x - o.lx, z - o.lz) / Math.max(dt, 0.001); o.lx = x; o.lz = z; o.vel = (o.vel || 0) + (Math.min(vel, 12) - (o.vel || 0)) * Math.min(1, dt * 10);
         const corre = v.mueve || o.vel > 0.6;
@@ -1617,9 +1620,10 @@ const camM = new THREE.Vector3();
 let APAI = VW > VH;
 function ejes() {const s = signo(MI_EQ); return APAI ? {F: {x: -s, z: 0}, R: {x: 0, z: -s}} : {F: {x: 0, z: -s}, R: {x: s, z: 0}};}
 const ZOOMS = [[24, 14], [31, 18], [40, 23]]; let zoomI = +(localStorage.getItem('vado.zoom') ?? 1);
+let CAM_FIN = null; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
 function camara(dt) {
-  const v = VISTA.get(YO); if (!v) return;
-  const {F} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, ade = APAI ? 5 : 3;
+  const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
+  const {F} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, ade = CAM_FIN ? 0 : APAI ? 5 : 3;
   camM.x += (x + F.x * ade - camM.x) * Math.min(1, dt * 6); camM.z += (z + F.z * ade - camM.z) * Math.min(1, dt * 6);
   camGolpe = Math.max(0, camGolpe - dt * 1.5); const zg = 1 - 0.16 * Math.sin(Math.min(1, camGolpe) * Math.PI), z0 = ZOOMS[zoomI], zz = [z0[0] * zg, z0[1] * zg]; tiemblaCam = Math.max(0, tiemblaCam - dt * 1.6); const tb = tiemblaCam * tiemblaCam * 1.6, ox = (Math.random() - 0.5) * tb, oz = (Math.random() - 0.5) * tb;
   camera.position.set(camM.x - F.x * zz[1] + ox, zz[0], camM.z - F.z * zz[1] + oz); camera.lookAt(camM.x + ox, 0, camM.z + oz);
@@ -1896,7 +1900,7 @@ let miniT = 0, consejoI = 0;
 const CONSEJOS = ['Pulsa el + verde encima de una habilidad para aprenderla: cada nivel te da un punto', 'Mueve con el joystick y mantén ⚔ para atacar. Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Dentro de la hierba alta los enemigos no te ven (salvo que estén a tu lado)', 'Los botones pequeños son Destello (un salto corto) y Curar (a ti y a tu compañero)', 'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos', 'En la espesura (a los lados, cruzando los huecos de la empalizada) hay huargos: dan oro y experiencia', 'El troll (oeste) y el huargo alfa (este) dan una bendición a todo tu equipo durante 90 s', 'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en la armería'];
 function consejos(t) {if (localStorage.getItem('vado.consejos') === '3') return; const i = Math.floor((t - 2) / 14); if (i >= 0 && i < CONSEJOS.length && i >= consejoI) {consejoI = i + 1; aviso('💡 ' + CONSEJOS[i]); if (i === CONSEJOS.length - 1) localStorage.setItem('vado.consejos', String(+(localStorage.getItem('vado.consejos') || 0) + 1));}}
 function objetivoTxt() {
-  if (MODO === '1v1') {const t = +($('marcador').dataset.t || 0); return t >= DUELO.anillo ? '🔥 Anillo de fuego: el próximo derribo gana' : 'Duelo: 2 derribos o la primera torre · anillo en ' + Math.max(0, Math.ceil((DUELO.anillo - t) / 60)) + ' min';}
+  if (MODO === '1v1' && DUELO.activo) {const t = +($('marcador').dataset.t || 0); return t >= DUELO.anillo ? '🔥 Anillo de fuego: el próximo derribo gana' : 'Duelo: 2 derribos o la primera torre · anillo en ' + Math.max(0, Math.ceil((DUELO.anillo - t) / 60)) + ' min';}
   const en = (k, n) => [...VISTA.values()].find((q) => q.k === k && q.eq === 1 - MI_EQ && (n === undefined || q.tipo === n) && q.vida > 0);
   const caidas = [...VISTA.values()].filter((q) => q.k === 't' && q.eq === 1 - MI_EQ && q.tipo === 1 && q.vida <= 0).length;
   if (!caidas) return 'Objetivo: una torre de camino enemiga';
@@ -2006,7 +2010,13 @@ function pintaTabla() {
   $('tabla').innerHTML = '<div class="tbCaja"><b>Marcador</b>' + fil.map((q) => {const [k, d, a, cs] = (q.kda || '0/0/0/0').split('/'); return '<div class="tbFila ' + (q.eq === MI_EQ ? 'az' : 'ro') + '"><img src="../abismo/ui/' + HEROES[q.tipo].retrato + '.webp" alt=""><span class="n">' + q.nombre + '<small>Nv ' + q.nivel + '</small></span><span class="k">' + k + '/' + d + '/' + a + '</span><span class="c">🗡 ' + cs + '</span><span class="o">' + q.inv.map((i) => '<img src="' + ICO(OBJ[i].i) + '" alt="">').join('') + '</span></div>';}).join('') + '<small>Toca para cerrar</small></div>';
 }
 function acaba(ganador) {
-  if (ESTADO === 'fin') return; ESTADO = 'fin'; if (ganador >= 0) voz(ganador === MI_EQ ? 'victoria' : 'derrota'); musica(ganador === MI_EQ ? 'victoria' : 'derrota');
+  if (ESTADO === 'fin') return;
+  const nx = ganador >= 0 && [...VISTA.values()].find((q) => q.k === 'n' && q.eq === 1 - ganador);
+  if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z}; document.body.classList.add('cine'); MANDO.mx = MANDO.mz = 0;
+    const o = VIS.get(nx.id), golpe = (k) => {flip('explosion', nx.x + rnd(-2.5, 2.5), nx.z + rnd(-2.5, 2.5), 5 + k * 1.5); flip('polvoA', nx.x, nx.z, 7 + k * 2, true); tiemblaCam = Math.max(tiemblaCam, 0.4 + k * 0.25); suena(k === 3 ? 'derrumbe' : 'explosion', 0.9, nx.x, nx.z); try {navigator.vibrate && navigator.vibrate(60 + k * 40);} catch (er) {}};
+    [0, 500, 950, 1500].forEach((ms, k) => setTimeout(() => golpe(k), ms));
+    setTimeout(() => {if (o) o.raiz.visible = false; flip('ondaC', nx.x, nx.z, 14, true); flip('grietas', nx.x, nx.z, 12, true);}, 1550);
+    setTimeout(() => {document.body.classList.remove('cine'); acaba(ganador);}, 3300); return;} ESTADO = 'fin'; if (ganador >= 0) voz(ganador === MI_EQ ? 'victoria' : 'derrota'); musica(ganador === MI_EQ ? 'victoria' : 'derrota');
   const f = $('fin'); f.classList.remove('hidden');
   pintaTabla(); const resumen = $('tabla').innerHTML.replace('<small>Toca para cerrar</small>', '');
   const yo = VISTA.get(YO), duelo = MODO === '1v1';
