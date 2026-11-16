@@ -1,0 +1,13 @@
+PACK VADO 20 ART · La Brecha
+
+5 iconos para objetos de la armeria, PNG RGBA 512x512, exterior transparente.
+Marco comun: bronce envejecido, aro interior dorado y remaches.
+
+obj_manto.png  — Manto de Lorien
+obj_tomo.png   — Tomo de Rivendel
+obj_baculo.png — Baculo de los Istari
+obj_narya.png  — Narya, Anillo de Fuego
+obj_velo.png   — Velo de Galadriel
+
+Los cinco archivos han sido ajustados y reescalados desde las ilustraciones
+originales para unificar margen y resolucion. No incluyen texto de interfaz.
