@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+/*SIM{*/ /* entre estas marcas va la simulación que también corre en el servidor (tools/vado/hace_sim.mjs → sim_vado.js) */
 
 const $ = (id) => document.getElementById(id);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -123,6 +124,22 @@ function ponMapa(modo) {
 }
 const ARB = new Map(); const FUEGOS = [], LUCES = []; let NAV = null; const arbKey = (x, z) => Math.floor(x / 4) + ',' + Math.floor(z / 4);
 function ponArbolChoque(x, z, r) {const k = arbKey(x, z); if (!ARB.has(k)) ARB.set(k, []); ARB.get(k).push({x, z, r});}
+/* el bosque: lo mismo en el móvil (para dibujarlo) y en el servidor (para los choques) */
+function plantaBosque(al, planta, enBase) {
+  const sendas = NAV.aristas.filter(([a, b]) => !(NAV.nodos[a].carril && NAV.nodos[b].carril)).map(([a, b]) => [NAV.nodos[a], NAV.nodos[b]]);
+  enBase = enBase || ((x, z) => BASES.some((b) => Math.hypot(b.fuente.x - x, b.fuente.z - z) < 10 || Math.hypot(b.nexo.x - x, b.nexo.z - z) < 9 || Math.hypot(b.torre.x - x, b.torre.z - z) < 6));
+  for (let x = -58; x <= 58; x += 2.6) for (let z = -84; z <= 84; z += 2.6) {
+    const px = x + (al() - 0.5) * 1.5, pz = z + (al() - 0.5) * 1.5, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
+    if (dc < 4.7 || enBase(px, pz)) continue;
+    if (juego) {
+      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
+      if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.3) continue;
+    }
+    const isen = ladoDe({x: px, z: pz}) > 0, r = al();
+    const n = isen ? (r < 0.3 ? 'arbol_muerto_0' + (1 + (r < 0.12 ? 1 : 0)) : 'pino_0' + (1 + Math.floor(al() * 4))) : (r < 0.45 ? 'roble_0' + (1 + Math.floor(al() * 3)) : 'pino_0' + (1 + Math.floor(al() * 4)));
+    planta(n, px, pz, (n.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35, juego);
+  }
+}
 function lineaLibre(a, b) {const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
 const NEUTRO = {
   warg: {nombre: 'Huargo', vida: 560, dano: 26, alcance: 1.9, vatq: 0.9, vel: 5, oro: 45, xp: 55, modelo: 'warg', alto: 1.5},
@@ -190,6 +207,7 @@ const ALTO_SUBD = {m: 1.7, r: 1.6, a: 2.6, x: 2.7};
 const signo = (eq) => eq === 0 ? 1 : -1;
 const ORDA = 3;   /* cuerpo a cuerpo por oleada y camino (más 2 arqueros) */
 
+/*}SIM*/
 /* ---------- siempre en horizontal ----------
    Si el móvil está en vertical (iPhone con la app instalada, que no deja girar), toda la página se gira 90° por CSS
    y se juega en horizontal sin pedir nada. VW/VH son el ancho y alto «lógicos» (los del juego en horizontal). */
@@ -387,17 +405,7 @@ function construyeMapa() {
   const sendas = NAV.aristas.filter(([a, b]) => !(NAV.nodos[a].carril && NAV.nodos[b].carril)).map(([a, b]) => [NAV.nodos[a], NAV.nodos[b]]);
   const arboles = {};
   const planta = (n, x, z, s, choque) => {(arboles[n] = arboles[n] || []).push({x, z, ry: al() * 6.28, s}); if (choque) ponArbolChoque(x, z, 0.75 * s);};
-  for (let x = -58; x <= 58; x += 2.6) for (let z = -84; z <= 84; z += 2.6) {
-    const px = x + (al() - 0.5) * 1.5, pz = z + (al() - 0.5) * 1.5, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
-    if (dc < 4.7 || enBase(px, pz)) continue;
-    if (juego) {
-      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
-      if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.3) continue;
-    }
-    const isen = ladoDe({x: px, z: pz}) > 0, r = al();
-    const n = isen ? (r < 0.3 ? 'arbol_muerto_0' + (1 + (r < 0.12 ? 1 : 0)) : 'pino_0' + (1 + Math.floor(al() * 4))) : (r < 0.45 ? 'roble_0' + (1 + Math.floor(al() * 3)) : 'pino_0' + (1 + Math.floor(al() * 4)));
-    planta(n, px, pz, (n.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35, juego);
-  }
+  plantaBosque(al, planta, enBase);
   for (const n in arboles) instancias('vado_arboles', n, arboles[n]);
   /* hierba alta, juncos del río, piedras de vadear y rocas */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
@@ -543,6 +551,7 @@ let S = null;          /* estado completo (solo lo tiene quien simula: el anfitr
 let VISTA = new Map(); /* lo que se dibuja: id → {k, eq, x, z, rot, vida, max, ...} */
 let YO = null;         /* id de mi héroe */
 let MI_EQ = 0;
+let EN_SERVIDOR = false; /* la partida la calcula el servidor de Cloudflare */
 const NET = {ws: null, soy: -1, anf: -1, online: false, jugadores: [], modo: '1v1', ping: 0};
 let ESTADO = 'menu';   /* menu, sala, juego, fin */
 /* «atrás» del móvil (botón o gesto) durante la partida: no te saca sin preguntar */
@@ -558,6 +567,7 @@ addEventListener('popstate', () => {
 });
 function avisaCierre(e) {if (ESTADO === 'juego') {e.preventDefault(); e.returnValue = '';}}
 addEventListener('beforeunload', avisaCierre);
+/*SIM{*/
 let idSig = 1;
 
 function nuevaPartida(jugadores, modo) {
@@ -1117,6 +1127,20 @@ function compra(h, id) {
 
 /* ---------- foto de la partida (anfitrión → todos) ---------- */
 const AN = {quieto: 0, correr: 1};
+/* lo que manda cada jugador (en el móvil del anfitrión o en el servidor) */
+function aplicaMando(h, o) {
+    if (o.t === 'in') {h.lat = Math.min(0.4, (o.rt || 0) / (EN_SERVIDOR ? 2000 : 1000) + INTERP_MS / 1000 + 1 / 30); /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
+    if (o.t === 'hab') {h.x = o.x; h.z = o.z; rebobinado(h, () => usaHab(h, o.k, o.dx, o.dz, o.px, o.pz));}
+    if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
+    if (o.t === 'sube') subeHab(h, o.k);
+    if (o.t === 'rinde') rinde(h, !!o.si);
+    if (o.t === 'enc') usaEnc(h);
+    if (o.t === 'hech1') h.hf = o.v === 'c' ? 'c' : 'f';
+    if (o.t === 'avisoEq') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; ev(e);}
+    if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
+    if (o.t === 'alm') {h.x = o.x; h.z = o.z; ponAlmenara(h, o.px, o.pz);}
+    if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined;}}
+  }
 function foto() {
   const u = S.u.map((q) => q.k === 'h'
     ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT)]
@@ -1125,6 +1149,7 @@ function foto() {
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
   return {t: +S.t.toFixed(2), u, m: S.muertes, be, cp, an: S.modo === '1v1' ? +radioAnillo(S.t).toFixed(1) : 0, rl: S.reliq.map((r) => S.t >= r.listo ? 1 : 0), dr, pl: S.plantas.map((q) => S.t >= q.listo ? 1 : 0), sa: S.santuarios.filter((z) => z.hasta > S.t).map((z) => [+z.x.toFixed(1), +z.z.toFixed(1), z.eq]), al: S.visiones.filter((z) => z.alm && z.hasta > S.t).map((z) => [+z.x.toFixed(1), +z.z.toFixed(1), z.eq, Math.ceil(z.hasta - S.t)]), ev: S.ev.splice(0)};
 }
+/*}SIM*/
 function aplicaFila(f, t) {
   const [id, k, eq, x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo] = f;
   let v = VISTA.get(id);
@@ -1553,6 +1578,10 @@ function musica(k) {
 function agacha(seg) {if (!AUD.mus || !AUD.musOn) return; const t = AC.currentTime, g = AUD.mus.gain; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0.22, t + 0.15); g.setValueAtTime(0.22, t + seg); g.linearRampToValueAtTime(0.55, t + seg + 0.6);}
 /* clic suave en los botones de los menús */
 addEventListener('pointerdown', (e) => {const b = e.target.closest && e.target.closest('#menu button, #elige button, #tienda button, #ajustes button, #fin button, #sala button'); if (b && !b.disabled) {audio(); suena('gema', 0.18);}});
+/* dónde se calcula la partida en línea: en el servidor de Cloudflare (recomendado: nadie tiene ventaja) o en el móvil del que crea la sala (por si el servidor falla) */
+const SRV = {get: () => localStorage.getItem('vado.srv') || 'nube'};
+function botonesSrv() {const b = (v, t) => '<button class="bt s' + (SRV.get() === v ? ' on' : '') + '" data-srv="' + v + '">' + t + '</button>'; return '<p class="ajT">Partidas en línea (al crear sala)</p><div class="ajSon">' + b('nube', '☁ Servidor') + b('movil', '📱 Mi móvil') + '</div>';}
+function enlazaSrv(el, repinta) {for (const bt of el.querySelectorAll('[data-srv]')) bt.onclick = () => {localStorage.setItem('vado.srv', bt.dataset.srv); repinta();};}
 function botonesGraf() {
   const b = (k, v, t) => '<button class="bt s' + (GRAF[k] === v ? ' on' : '') + '" data-g="' + k + '" data-v="' + v + '">' + t + '</button>';
   return '<p class="ajT">Gráficos</p><div class="ajSon">' + b('cal', 'baja', 'Baja') + b('cal', 'media', 'Media') + b('cal', 'alta', 'Alta') + '</div><div class="ajSon">' + b('fps', 30, '30 fps') + b('fps', 60, '60 fps') + '</div>';
@@ -1882,7 +1911,7 @@ NET.manda = (o) => {if (NET.ws && NET.ws.readyState === 1) NET.ws.send(JSON.stri
 function conecta(codigo, modo, nombre, heroe) {
   const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
   const base = window.SALA_URL || (proto + location.host);
-  const ws = new WebSocket(base + '/api/sala/' + codigo + '?modo=' + modo + '&nombre=' + encodeURIComponent(nombre) + '&heroe=' + heroe);
+  const ws = new WebSocket(base + '/api/sala/' + codigo + '?modo=' + modo + '&nombre=' + encodeURIComponent(nombre) + '&heroe=' + heroe + (SRV.get() === 'nube' ? '&srv=1' : ''));
   NET.ws = ws; NET.codigo = codigo; NET.online = true;
   ws.onmessage = (m) => {let o; try {o = JSON.parse(m.data);} catch (e) {return;} recibe(o);};
   ws.onclose = () => {if (ESTADO === 'juego' && !S) {aviso('Se ha perdido la conexión'); setTimeout(() => acaba(-1), 1500);} else if (ESTADO === 'sala') msg('Conexión cerrada');};
@@ -1892,26 +1921,17 @@ function conecta(codigo, modo, nombre, heroe) {
 function recibe(o) {
   if (o.t === 'hola') NET.soy = o.slot;
   if (o.t === 'error') msg(o.txt);
-  if (o.t === 'sala') {NET.jugadores = o.jugadores; NET.anf = o.anfitrion; NET.modo = o.modo; pintaSala();}
-  if (o.t === 'empieza') {NET.jugadores = o.jugadores; NET.modo = o.modo; empieza(o.jugadores, o.modo, NET.soy === NET.anf);}
+  if (o.t === 'sala') {NET.jugadores = o.jugadores; NET.anf = o.anfitrion; NET.modo = o.modo; NET.srv = !!o.srv; pintaSala();}
+  if (o.t === 'empieza') {NET.jugadores = o.jugadores; NET.modo = o.modo; EN_SERVIDOR = !!o.srv; empieza(o.jugadores, o.modo, !o.srv && NET.soy === NET.anf);}
   if (o.t === 'pong') {NET.ping = Math.round(performance.now() - o.c); $('ping').textContent = NET.ping + ' ms';}
   if (o.t === 'foto' && !S) recibeFoto(o.f);
   if (S) {/* soy el anfitrión: mandos de los demás */
     const h = S.u.find((q) => q.k === 'h' && q.slot === o.de); if (!h) return;
-    if (o.t === 'in') {h.lat = Math.min(0.4, (o.rt || 0) / 1000 + INTERP_MS / 1000 + 1 / 30); /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
-    if (o.t === 'hab') {h.x = o.x; h.z = o.z; rebobinado(h, () => usaHab(h, o.k, o.dx, o.dz, o.px, o.pz));}
-    if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
-    if (o.t === 'sube') subeHab(h, o.k);
-    if (o.t === 'rinde') rinde(h, !!o.si);
-    if (o.t === 'enc') usaEnc(h);
-    if (o.t === 'hech1') h.hf = o.v === 'c' ? 'c' : 'f';
-    if (o.t === 'avisoEq') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; S.ev.push(e); efectoLocal(e);}
-    if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
-    if (o.t === 'alm') {h.x = o.x; h.z = o.z; ponAlmenara(h, o.px, o.pz);}
-    if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined;}}
+    aplicaMando(h, o);
   }
   if (o.t === 'se_fue') {
     if (S) {const h = S.u.find((q) => q.k === 'h' && q.slot === o.slot); if (h) {h.bot = true; h.nombre += ' (bot)';} aviso(o.nombre + ' se ha ido: lo lleva la máquina');}
+    else if (EN_SERVIDOR) aviso(o.nombre + ' se ha ido: lo lleva la máquina');
     else if (o.slot === NET.anf) {aviso('El anfitrión se ha ido'); setTimeout(() => acaba(-1), 1500);}
   }
 }
@@ -2228,7 +2248,7 @@ function pintaSala() {
   const plazas = NET.modo === '2v2' ? 4 : 2, soyAnf = NET.soy === NET.anf;
   const plaza = (i) => {const j = NET.jugadores.find((q) => q.slot === i); return '<div class="jug eq' + (i % 2) + '">' + (j ? '<img src="ui/splash_' + j.heroe + '.webp" alt=""><div>' + j.nombre + (j.slot === NET.anf ? ' 👑' : '') + '<small>' + HEROES[j.heroe].nombre + '</small></div>' : '<i>Libre · la máquina</i>') + '</div>';};
   let col = (eq) => {let h = ''; for (let i = eq; i < plazas; i += 2) h += plaza(i); return '<div style="display:flex;flex-direction:column;gap:5px">' + h + '</div>';};
-  s.innerHTML = '<div class="cab"><span>Código de la sala · ' + (NET.modo === '2v2' ? 'Batalla 2 contra 2' : 'Duelo') + '</span><div class="cod">' + NET.codigo + '</div></div>' +
+  s.innerHTML = '<div class="cab"><span>Código de la sala · ' + (NET.modo === '2v2' ? 'Batalla 2 contra 2' : 'Duelo') + '</span><div class="cod">' + NET.codigo + '</div><small style="display:block;color:#cdb98a;font-size:11px">' + (NET.srv ? '☁ Partida en el servidor de Cloudflare' : '📱 Partida en el móvil del anfitrión') + '</small></div>' +
     '<div class="bandos">' + col(0) + col(1) + '</div>' +
     (soyAnf ? '<button class="bt v" id="bEmpezar">⚔ Empezar</button>' : '<div style="font-size:13px;text-align:center;color:#d9c49a">Esperando a que el anfitrión empiece…</div>');
   if (soyAnf) $('bEmpezar').onclick = () => NET.manda({t: 'empezar'});
@@ -2245,7 +2265,7 @@ function preparaMenu() {
     const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Bienvenido a La Brecha</b><p class="ajT" style="color:#e9dcc0;font:15px Alegreya Sans,sans-serif">Duelos de héroes en el Vado del Isen. ¿Cómo quieres llamarte?</p>' + campoNombre().replace('<p class="ajT">Tu nombre</p>', '') + '<button class="bt" id="ajCierra">Entrar</button></div>';
     a.classList.remove('hidden'); $('ajCierra').onclick = () => {if (guardaNombre()) {a.classList.add('hidden'); pintaMenu();}};
   }
-  {const abre = () => {{const i = $('ajNombre'); if (i && i.value.trim().length >= 2) guardaNombre();} const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Ajustes</b>' + campoNombre() + botonesSonido() + botonesGraf() + '<button class="bt" id="ajCierra">Listo</button></div>'; a.classList.remove('hidden'); enlazaSonido(abre); enlazaGraf(a, abre); $('ajCierra').onclick = () => {if (guardaNombre()) {a.classList.add('hidden'); pintaMenu();}};}; $('bSon').onclick = abre;}
+  {const abre = () => {{const i = $('ajNombre'); if (i && i.value.trim().length >= 2) guardaNombre();} const a = $('ajustes'); a.innerHTML = '<div class="ajC"><b>Ajustes</b>' + campoNombre() + botonesSonido() + botonesGraf() + botonesSrv() + '<button class="bt" id="ajCierra">Listo</button></div>'; a.classList.remove('hidden'); enlazaSonido(abre); enlazaGraf(a, abre); enlazaSrv(a, abre); $('ajCierra').onclick = () => {if (guardaNombre()) {a.classList.add('hidden'); pintaMenu();}};}; $('bSon').onclick = abre;}
   pintaMenu();
   $('bGirar').onclick = apaisa;
   $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);}, modoElegido === '2v2');});

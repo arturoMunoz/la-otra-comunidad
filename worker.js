@@ -3,6 +3,8 @@
      (loc_push_pendientes, protegida con PUSH_SECRETO) y los manda cifrados a cada móvil suscrito.
    - Secretos en Cloudflare (no en el repo): VAPID_JWK (clave privada) y PUSH_SECRETO. */
 
+import {creaSim} from './sim_vado.js';
+
 const enc = new TextEncoder();
 
 function b64u(buf) {
@@ -103,12 +105,29 @@ export class Sala {
   anfitrion() { const l = this.lista(); return l.length ? l[0].slot : -1; }
   manda(ws, o) { try { ws.send(typeof o === 'string' ? o : JSON.stringify(o)); } catch (e) {} }
   todos(o, salvo) { const s = typeof o === 'string' ? o : JSON.stringify(o); for (const ws of this.socks()) if (ws !== salvo) this.manda(ws, s); }
-  async avisaLista() { const l = this.lista(), e = await this.est(); this.todos({ t: 'sala', jugadores: l, anfitrion: this.anfitrion(), modo: e.modo || '1v1', empezada: !!e.empezada }); }
+  async avisaLista() { const l = this.lista(), e = await this.est(); this.todos({ t: 'sala', jugadores: l, anfitrion: this.anfitrion(), modo: e.modo || '1v1', empezada: !!e.empezada, srv: !!e.srv }); }
+  /* La Brecha con la partida calculada AQUÍ (servidor) en vez de en el móvil del anfitrión: misma simulación (sim_vado.js, sacada de juego.js),
+     30 pasos por segundo y 15 fotos por segundo a todos. Si alguien se va, su héroe lo lleva la máquina. */
+  arrancaSim(jugadores, modo) {
+    const sim = creaSim(); sim.montaMapa(modo); sim.nuevaPartida(jugadores, modo); this.sim = sim;
+    let t = Date.now(), acum = 0, fotoT = 0, finT = 0;
+    this.tic = setInterval(() => {
+      try {
+        const ahora = Date.now(), dt = Math.min(0.25, (ahora - t) / 1000); t = ahora; acum += dt; let n = 0;
+        while (acum >= 1 / 30 && n < 6) { sim.paso(1 / 30); acum -= 1 / 30; n++; }
+        fotoT -= dt;
+        if (fotoT <= 0) { fotoT = 1 / 15; this.todos({ t: 'foto', f: sim.foto() }); }
+        if (sim.S.fin >= 0 && (finT += dt) > 8) this.paraSim();
+        if (!this.socks().length) this.paraSim();
+      } catch (e) { this.todos({ t: 'error', txt: 'Fallo en el servidor: ' + (e && e.message) }); this.paraSim(); }
+    }, 1000 / 30);
+  }
+  paraSim() { if (this.tic) clearInterval(this.tic); this.tic = null; this.sim = null; }
   async fetch(req) {
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('solo websocket', { status: 426 });
     const u = new URL(req.url), modo = u.searchParams.get('modo') === '2v2' ? '2v2' : '1v1';
     const l = this.lista(); let e = await this.est();
-    if (!l.length) { e = { modo, empezada: false }; await this.ponEst(e); }
+    if (!l.length) { this.paraSim(); e = { modo, empezada: false, srv: u.searchParams.get('srv') === '1' }; await this.ponEst(e); }
     const max = e.modo === '2v2' ? 4 : 2;
     const par = new WebSocketPair(), [cli, srv] = Object.values(par);
     this.ctx.acceptWebSocket(srv);
@@ -124,8 +143,9 @@ export class Sala {
     let o; try { o = JSON.parse(msg); } catch (e) { return; }
     const yo = this.info(ws), anf = this.anfitrion();
     if (o.t === 'heroe') { yo.heroe = String(o.heroe).slice(0, 10); ws.serializeAttachment(yo); await this.avisaLista(); return; }
-    if (o.t === 'empezar') { if (yo.slot === anf) { const e = await this.est(); e.empezada = true; await this.ponEst(e); this.todos({ t: 'empieza', jugadores: this.lista(), modo: e.modo, semilla: Date.now() % 100000 }); } return; }
+    if (o.t === 'empezar') { if (yo.slot === anf) { const e = await this.est(); e.empezada = true; await this.ponEst(e); const jug = this.lista(); this.todos({ t: 'empieza', jugadores: jug, modo: e.modo, semilla: Date.now() % 100000, srv: !!e.srv }); if (e.srv) this.arrancaSim(jug, e.modo); } return; }
     if (o.t === 'ping') { this.manda(ws, { t: 'pong', c: o.c }); return; }
+    if (this.sim) { const S = this.sim.S, h = S && S.u.find((q) => q.k === 'h' && q.slot === yo.slot); if (h) try { this.sim.aplicaMando(h, o); } catch (e) {} return; }
     o.de = yo.slot; const s = JSON.stringify(o);
     if (yo.slot === anf) this.todos(s, ws);            /* foto de la partida y avisos del anfitrión: a todos */
     else for (const w of this.socks()) if (this.info(w).slot === anf) this.manda(w, s);   /* mandos: solo al anfitrión */
@@ -133,8 +153,9 @@ export class Sala {
   async webSocketClose(ws) {
     const yo = this.info(ws); try { ws.close(1000, 'adios'); } catch (e) {}
     const e = await this.est();
-    if (e.empezada) this.todos({ t: 'se_fue', slot: yo.slot, nombre: yo.nombre });
-    if (!this.lista().length) await this.ponEst({ modo: null, empezada: false });
+    if (e.empezada) this.todos({ t: 'se_fue', slot: yo.slot, nombre: yo.nombre, srv: !!this.sim });
+    if (this.sim) { const h = this.sim.S.u.find((q) => q.k === 'h' && q.slot === yo.slot); if (h && !h.bot) { h.bot = true; h.nombre += ' (bot)'; } }
+    if (!this.lista().length) { this.paraSim(); await this.ponEst({ modo: null, empezada: false }); }
     else await this.avisaLista();
   }
   async webSocketError(ws) { await this.webSocketClose(ws); }
