@@ -545,6 +545,19 @@ let YO = null;         /* id de mi héroe */
 let MI_EQ = 0;
 const NET = {ws: null, soy: -1, anf: -1, online: false, jugadores: [], modo: '1v1', ping: 0};
 let ESTADO = 'menu';   /* menu, sala, juego, fin */
+/* «atrás» del móvil (botón o gesto) durante la partida: no te saca sin preguntar */
+let ATRAS_ON = false;
+function guardaAtras() {if (ATRAS_ON) return; ATRAS_ON = true; history.pushState({brecha: 1}, '');}
+addEventListener('popstate', () => {
+  if (!ATRAS_ON) return;
+  if (ESTADO !== 'juego' && ESTADO !== 'sala') {ATRAS_ON = false; history.back(); return;}
+  history.pushState({brecha: 1}, '');
+  let c = document.getElementById('salirC');
+  if (!c) {c = document.createElement('div'); c.id = 'salirC'; c.innerHTML = '<div class="ajC"><b>¿Salir de la partida?</b><p class="ajT" style="color:#e9dcc0;font:15px Alegreya Sans,sans-serif">' + (NET.online ? 'Tu héroe lo llevará la máquina y no podrás volver a esta partida.' : 'Perderás la partida.') + '</p><div class="ajSon"><button class="bt" id="salirNo">Seguir jugando</button><button class="bt" id="salirSi">Salir</button></div></div>'; document.body.appendChild(c);
+    c.querySelector('#salirNo').onclick = () => c.remove(); c.querySelector('#salirSi').onclick = () => {ATRAS_ON = false; removeEventListener('beforeunload', avisaCierre); location.reload();};}
+});
+function avisaCierre(e) {if (ESTADO === 'juego') {e.preventDefault(); e.returnValue = '';}}
+addEventListener('beforeunload', avisaCierre);
 let idSig = 1;
 
 function nuevaPartida(jugadores, modo) {
@@ -1908,7 +1921,7 @@ let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 let MODO = '1v1';
 function empieza(jugadores, modo, simulo) {
   MODO = modo; if (ponMapa(modo)) construyeMapa();
-  precargaVoces(); musica('batalla'); colorFuentes(); document.body.classList.add('jugando'); ESTADO = 'juego'; precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
+  precargaVoces(); musica('batalla'); colorFuentes(); document.body.classList.add('jugando'); ESTADO = 'juego'; guardaAtras(); precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo'].forEach((i) => $(i).classList.remove('hidden'));
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; h.hf = hechElegido; recibeFoto(foto());}
