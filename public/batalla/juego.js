@@ -2431,17 +2431,28 @@ let hechElegido = localStorage.getItem('vado.hech') || 'f', heroeElegido = local
 const ROL_H = {rohan: 'Luchador', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Asesino', gandalf: 'Mago', orco: 'Luchador', gollum: 'Asesino'};
 let eligeSel = null;
 function eligeHeroe(titulo, listo) {
-  const el = $('elige'); eligeSel = heroeElegido; el.classList.remove('hidden');
+  /* 17/11: una sola pantalla sin scroll: retrato a la izquierda; a la derecha héroes en fila, barras, iconos P/Q/W/E/R
+     (al tocar uno se ve su descripción en un único recuadro), hechizos y botones */
+  const el = $('elige'); eligeSel = heroeElegido; let habSel = 'p'; el.classList.remove('hidden'); el.classList.add('e2');
   const pinta = () => {
     const H = HEROES[eligeSel], max = {vida: 760, dano: 65, alcance: 7, vel: 5.8};
     const barra = (n, v, m) => '<div class="eB"><span>' + n + '</span><i><u style="width:' + Math.round(v / m * 100) + '%"></u></i></div>';
-    el.innerHTML = '<div class="eTit">' + titulo + '</div>' +
-      '<div class="eLista">' + Object.entries(HEROES).map(([k, h]) => '<button class="eH' + (k === eligeSel ? ' on' : '') + '" data-h="' + k + '"><img src="ui/splash_' + k + '.webp" alt=""><span>' + h.nombre.split(' ')[0] + '</span></button>').join('') + '</div>' +
-      '<div class="eFicha"><div class="eRet"><img src="ui/splash_' + eligeSel + '.webp" alt=""><b>' + H.nombre + '</b><em>' + ROL_H[eligeSel] + '</em></div>' +
-      '<div class="eDatos">' + barra('Vida', H.vida, max.vida) + barra('Daño', H.dano, max.dano) + barra('Alcance', H.alcance, max.alcance) + barra('Velocidad', H.vel, max.vel) +
-      '<div class="eHabs">' + (PASIVA[eligeSel] ? '<div class="eHab pas"><img class="pasI" src="ui/p_' + eligeSel + '.webp" alt=""><div><b>' + PASIVA[eligeSel].n + ' <i class="cMn" style="color:#d9c79c">pasiva</i></b><small>' + PASIVA[eligeSel].d + '</small></div></div>' : '') + ['q', 'w', 'e', 'r'].map((k) => '<div class="eHab' + (k === 'r' ? ' ult' : '') + '"><img src="ui/h_' + eligeSel + '_' + k + '.webp" alt=""><div><b>' + H.hab[k].n + (k === 'r' ? ' · definitiva' : '') + '</b><small>' + H.hab[k].d + ' <i class="cMn">' + H.hab[k].mn + ' de maná</i></small></div></div>').join('') + '<div class="eHech"><span>Hechizos:</span><b><img src="ui/hz_destello.webp" alt="">Destello</b>' + ['f', 'c'].map((k) => '<button data-hz="' + k + '"' + (hechElegido === k ? ' class="on"' : '') + '><img src="' + HECHIZOS[k].icono + '" alt="">' + HECHIZOS[k].n + '</button>').join('') + '<small>' + (hechElegido === 'c' ? 'Castigo: golpe seco a una bestia o súbdito (para cazar en la espesura y robar el draco o el Uruk).' : 'Curar: te cura a ti y a un aliado cercano.') + '</small></div>' + '</div></div></div>' +
-      '<div class="eBot"><button class="bt s" id="eVolver">← Volver</button><button class="bt" id="eOk">¡Confirmar!</button></div>';
+    if (habSel === 'p' && !PASIVA[eligeSel]) habSel = 'q';
+    const habs = (PASIVA[eligeSel] ? ['p'] : []).concat(['q', 'w', 'e', 'r']);
+    const ico = (k) => k === 'p' ? 'ui/p_' + eligeSel + '.webp' : 'ui/h_' + eligeSel + '_' + k + '.webp';
+    let det;
+    if (habSel === 'p') det = '<b>' + PASIVA[eligeSel].n + ' <i class="eTag">pasiva</i></b><small>' + PASIVA[eligeSel].d + '</small>';
+    else {const A = H.hab[habSel]; det = '<b>' + A.n + ' <i class="eTag">' + (habSel === 'r' ? 'definitiva' : habSel.toUpperCase()) + '</i>' + (A.mn ? ' <i class="eMn">' + A.mn + ' de maná</i>' : '') + '</b><small>' + (A.d || '') + '</small>';}
+    el.innerHTML = '<div class="eRet"><img src="ui/splash_' + eligeSel + '.webp" alt=""><div class="eNom"><b>' + H.nombre + '</b><em>' + ROL_H[eligeSel] + '</em></div></div>' +
+      '<div class="eDer"><div class="eTit">' + titulo + '</div>' +
+      '<div class="eLista">' + Object.keys(HEROES).map((k) => '<button class="eH' + (k === eligeSel ? ' on' : '') + '" data-h="' + k + '"><img src="ui/splash_' + k + '.webp" alt=""></button>').join('') + '</div>' +
+      '<div class="eBarras">' + barra('Vida', H.vida, max.vida) + barra('Daño', H.dano, max.dano) + barra('Alcance', H.alcance, max.alcance) + barra('Velocidad', H.vel, max.vel) + '</div>' +
+      '<div class="eIcos">' + habs.map((k) => '<button data-k="' + k + '" class="' + (k === habSel ? 'on' : '') + (k === 'r' ? ' ult' : '') + '"><img src="' + ico(k) + '" alt=""><span>' + (k === 'p' ? 'P' : k.toUpperCase()) + '</span></button>').join('') + '</div>' +
+      '<div class="eDet">' + det + '</div>' +
+      '<div class="eHech"><span>Hechizos:</span><b><img src="ui/hz_destello.webp" alt="">Destello</b>' + ['f', 'c'].map((k) => '<button data-hz="' + k + '"' + (hechElegido === k ? ' class="on"' : '') + '><img src="' + HECHIZOS[k].icono + '" alt="">' + HECHIZOS[k].n + '</button>').join('') + '</div>' +
+      '<div class="eBot"><button class="bt s" id="eVolver">← Volver</button><button class="bt" id="eOk">¡Confirmar!</button></div></div>';
     el.querySelectorAll('[data-h]').forEach((b) => b.onclick = () => {eligeSel = b.dataset.h; pinta();});
+    el.querySelectorAll('[data-k]').forEach((b) => b.onclick = () => {habSel = b.dataset.k; pinta();});
     el.querySelectorAll('[data-hz]').forEach((b) => b.onclick = () => {hechElegido = b.dataset.hz; localStorage.setItem('vado.hech', hechElegido); pinta();});
     $('eVolver').onclick = () => el.classList.add('hidden');
     $('eOk').onclick = () => {heroeElegido = eligeSel; localStorage.setItem('vado.heroe', heroeElegido); el.classList.add('hidden'); pintaMenu(); listo();};

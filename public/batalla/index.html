@@ -459,6 +459,23 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 #menu .mB,#menu #codigo{font-size:11px !important}#menu #codigo{font-size:13px !important}
 #menu .mAmigos{width:min(100%,calc(80*var(--vh)));margin:0 auto}
 #elige .pasI{flex:none;width:34px;height:34px}
+/* Elegir héroe en una sola pantalla (17/11) */
+#elige.e2{display:grid !important;grid-template-columns:auto 1fr;grid-template-rows:1fr;gap:14px;overflow:hidden !important;align-items:stretch}
+#elige.e2 .eRet{position:relative;height:100%;display:flex;flex-direction:column;justify-content:center}
+#elige.e2 .eRet img{width:auto !important;height:calc(var(--vh) * 100 - 40px) !important;max-height:none !important;aspect-ratio:3/4;max-width:calc(var(--vw) * 34);object-fit:cover}
+#elige.e2 .eNom{position:absolute;left:0;right:0;bottom:10px;text-align:center;text-shadow:0 2px 6px #000}#elige.e2 .eNom b{display:block;font:900 17px Cinzel,serif;color:#ffe7a8}#elige.e2 .eNom em{font-size:12px;color:#ffb070}
+#elige.e2 .eDer{display:flex;flex-direction:column;gap:clamp(3px,1.2vh,9px);min-width:0;min-height:0;justify-content:space-between}
+#elige.e2 .eTit{grid-column:auto !important;font-size:17px;text-align:left}
+#elige.e2 .eLista{flex-direction:row !important;flex-wrap:nowrap;gap:6px;justify-content:flex-start}
+#elige.e2 .eH{width:auto !important;padding:0;border-radius:50%;border-width:2px}#elige.e2 .eH img{width:clamp(32px,10vh,48px) !important;height:clamp(32px,10vh,48px) !important;display:block}
+#elige.e2 .eBarras{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px}#elige.e2 .eB span{width:58px}
+#elige.e2 .eIcos{display:flex;gap:8px}#elige.e2 .eIcos button{position:relative;padding:0;border:0;background:none;border-radius:50%;opacity:.6;transition:transform .12s,opacity .12s}
+#elige.e2 .eIcos img{width:clamp(34px,11vh,52px);height:clamp(34px,11vh,52px);border-radius:50%;border:2px solid #c99a3a;display:block}#elige.e2 .eIcos .ult img{border-color:#ff7a2a}
+#elige.e2 .eIcos button.on{opacity:1;transform:scale(1.1)}#elige.e2 .eIcos button.on img{box-shadow:0 0 12px #ffb02a}
+#elige.e2 .eIcos span{position:absolute;right:-3px;bottom:-3px;background:#1a120a;border:1px solid #c99a3a;border-radius:6px;font:700 10px Cinzel,serif;color:#ffe7a8;padding:0 3px}
+#elige.e2 .eDet{background:#0008;border:1px solid #5a4020;border-radius:8px;padding:5px 9px;min-height:calc(var(--vh) * 14);overflow:hidden}#elige.e2 .eDet b{font-size:13px;display:block}#elige.e2 .eDet small{font-size:12px;color:#d9c49a;line-height:1.25}
+#elige.e2 .eTag{font-style:normal;font-size:10px;color:#d9c79c;border:1px solid #6a5030;border-radius:5px;padding:0 4px;margin-left:4px}#elige.e2 .eMn{font-style:normal;font-size:11px;color:#ff5ad2;margin-left:4px}
+#elige.e2 .eHech small{display:none}#elige.e2 .eBot{margin-top:0;justify-content:flex-end}#elige.e2 .bt{min-width:150px !important;font-size:14px}
 </style>
 </head>
 <body>
@@ -524,6 +541,6 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 <div id="fin" class="hidden"></div>
 <div id="elige" class="hidden"></div>
 <div id="girar"><div class="giraMovil">📱</div><b>Gira el móvil</b><p>La Brecha se juega en horizontal.<br>En iPhone, quita el bloqueo de rotación si no gira.</p><button class="bt s" id="bGirar">Pantalla completa</button></div>
-<script type="module" src="juego.js?v=20261117e"></script>
+<script type="module" src="juego.js?v=20261117f"></script>
 </body>
 </html>
