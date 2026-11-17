@@ -685,6 +685,36 @@ html = sub(html, '</head>', """<style>
 .hb[data-k]::after,.hb[data-k].pronta::after,.hb.hs::after,#bR::after,#bR.pronta::after{box-shadow:none !important;border:0 !important;border-radius:0 !important;inset:-11% !important}
 #bR{right:92px !important;bottom:186px !important}
 </style></head>""", donde='html')
+# ---------- PACK 27 ART (17/11, Henar): FONDO DEL MENÚ CON TORMENTA (tools/autopista/procesa_pack27.py) ----------
+# base fría y oscura; cada 6-12 s un rayo (tira de 8 fotogramas) y el fondo encendido parpadea encima; lluvia en mosaico que cae
+html = sub(html, '<i class="fr"></i></div>', '<i class="fr"></i><i class="tL"></i><i class="tR"></i><i class="tLl tA"></i><i class="tLl tB"></i></div>', donde='html')
+html = sub(html, '</head>', """<style>
+#menu #mFondo .fc,#menu #mFondo .tL{background-image:url(ui/ap_tormenta_base.webp)!important;background-position:62% 50%!important}
+#menu .mSplash img{-webkit-mask-image:linear-gradient(90deg,#000 45%,transparent 92%)!important;mask-image:linear-gradient(90deg,#000 45%,transparent 92%)!important}
+#menu #mFondo .tL{background-image:url(ui/ap_tormenta_luz.webp)!important;opacity:0;transition:opacity .07s linear;animation:mfCielo 48s ease-in-out infinite alternate}
+#mFondo .fp,#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none!important}
+#mFondo .fn{opacity:.18}
+#mFondo .tR{inset:auto;top:-2%;right:14%;width:34%;aspect-ratio:1;background:url(ui/ap_rayo1.webp) 0 0/800% 100% no-repeat;mix-blend-mode:screen;opacity:0}
+#mFondo .tLl{inset:auto;top:-360px;left:-10%;width:130%;height:calc(100% + 360px);background:url(ui/ap_lluvia.webp) 0 0/340px 340px repeat;mix-blend-mode:screen;opacity:.42;animation:llueve .42s linear infinite}
+#mFondo .tB{background-size:520px 520px;opacity:.28;animation-duration:.33s;filter:blur(.6px)}
+@keyframes llueve{to{transform:translate(-91px,340px)}}
+@media (prefers-reduced-motion:reduce){#mFondo .tLl,#mFondo .tR,#mFondo .tL{display:none}}
+</style></head>""", donde='html')
+html = sub(html, '</body>', """<script>
+(() => {const f = document.getElementById('mFondo'); if (!f || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const L = f.querySelector('.tL'), R = f.querySelector('.tR'), menu = document.getElementById('menu');
+  function rayo() {
+    if (!menu || menu.classList.contains('hidden') || document.hidden) return setTimeout(rayo, 2500);
+    const n = Math.random() < 0.6 ? 1 : 2; R.style.backgroundImage = 'url(ui/ap_rayo' + n + '.webp)';
+    R.style.right = (2 + Math.random() * 30) + '%'; R.style.top = (n === 1 ? -2 : 2 + Math.random() * 10) + '%'; R.style.width = (n === 1 ? 30 + Math.random() * 10 : 38 + Math.random() * 10) + '%';
+    let i = 0; R.style.backgroundPosition = '0% 0'; R.style.opacity = 1;
+    const t = setInterval(() => {i++; if (i > 7) {clearInterval(t); R.style.opacity = 0; return;} R.style.backgroundPosition = (i * 100 / 7) + '% 0';}, 60);
+    for (const [d, o] of [[150, 0.9], [230, 0.3], [300, 1], [420, 0.55], [620, 0.2], [800, 0]]) setTimeout(() => {L.style.opacity = o;}, d);
+    setTimeout(rayo, 6000 + Math.random() * 6000);
+  }
+  setTimeout(rayo, 1800);
+})();
+</script></body>""", donde='html')
 # menú: fondo = la imagen de carga (los dos peajes), retrato sin cortar la cabeza, sin Gamling (Tolkien) ni el jinete
 html = sub(html, '</head>', '<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}'
            '#menu .mSplash img{object-position:50% 0%!important}</style></head>', donde='html')

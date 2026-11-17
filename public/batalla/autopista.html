@@ -613,6 +613,17 @@ body[data-heroe=rohan]{--tinte:-150deg;--tsat:.9;--tluz:.95}  /* Moha: arena dor
 </style><style>
 .hb[data-k]::after,.hb[data-k].pronta::after,.hb.hs::after,#bR::after,#bR.pronta::after{box-shadow:none !important;border:0 !important;border-radius:0 !important;inset:-11% !important}
 #bR{right:92px !important;bottom:186px !important}
+</style><style>
+#menu #mFondo .fc,#menu #mFondo .tL{background-image:url(ui/ap_tormenta_base.webp)!important;background-position:62% 50%!important}
+#menu .mSplash img{-webkit-mask-image:linear-gradient(90deg,#000 45%,transparent 92%)!important;mask-image:linear-gradient(90deg,#000 45%,transparent 92%)!important}
+#menu #mFondo .tL{background-image:url(ui/ap_tormenta_luz.webp)!important;opacity:0;transition:opacity .07s linear;animation:mfCielo 48s ease-in-out infinite alternate}
+#mFondo .fp,#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none!important}
+#mFondo .fn{opacity:.18}
+#mFondo .tR{inset:auto;top:-2%;right:14%;width:34%;aspect-ratio:1;background:url(ui/ap_rayo1.webp) 0 0/800% 100% no-repeat;mix-blend-mode:screen;opacity:0}
+#mFondo .tLl{inset:auto;top:-360px;left:-10%;width:130%;height:calc(100% + 360px);background:url(ui/ap_lluvia.webp) 0 0/340px 340px repeat;mix-blend-mode:screen;opacity:.42;animation:llueve .42s linear infinite}
+#mFondo .tB{background-size:520px 520px;opacity:.28;animation-duration:.33s;filter:blur(.6px)}
+@keyframes llueve{to{transform:translate(-91px,340px)}}
+@media (prefers-reduced-motion:reduce){#mFondo .tLl,#mFondo .tR,#mFondo .tL{display:none}}
 </style><style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}#menu .mSplash img{object-position:50% 0%!important}</style><style>.mTit h1.apLogo{margin:6px 0 0;line-height:0}.mTit h1.apLogo img{width:min(200px,calc(24 * var(--vw)));height:auto;filter:drop-shadow(0 4px 6px #000a)}.mTit h1.apA6{margin:6px 0 0;font:italic 900 46px 'Arial Black',system-ui,sans-serif!important;color:#ffd21f!important;letter-spacing:.04em;line-height:1;-webkit-text-stroke:2px #10161f;text-shadow:0 4px 0 #10161f,0 0 18px #2f8cff88}</style><style>
 #menu #bSon{background:url(ui/ap_b_ajustes.webp) center/100% 100% no-repeat !important;width:48px !important;height:48px !important}
 #bGuia{overflow:visible !important}
@@ -634,7 +645,7 @@ body[data-heroe=rohan]{--tinte:-150deg;--tsat:.9;--tluz:.95}  /* Moha: arena dor
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>
 <div id="menu">
-  <div id="mFondo" aria-hidden="true"><i class="fc"></i><i class="ff"></i><i class="fm"></i><i class="fn n1"></i><i class="fn n2"></i><i class="fp p1"></i><i class="fp p2"></i><i class="fr"></i></div>
+  <div id="mFondo" aria-hidden="true"><i class="fc"></i><i class="ff"></i><i class="fm"></i><i class="fn n1"></i><i class="fn n2"></i><i class="fp p1"></i><i class="fp p2"></i><i class="fr"></i><i class="tL"></i><i class="tR"></i><i class="tLl tA"></i><i class="tLl tB"></i></div>
   <div class="mSplash"><img id="mSplash" alt="" fetchpriority="high" decoding="async"></div>
   <button class="mAtras" id="bSalir" aria-label="Volver a La Otra Comunidad">←</button><button class="mAtras" id="bSon" aria-label="Ajustes" style="left:auto;right:calc(10px + var(--sar))">⚙</button>
   <div class="mHeroe"><em id="mHeroRol"></em><b id="mHeroNom"></b><button id="mCambiar">⇄ Cambiar héroe</button></div>
@@ -697,5 +708,19 @@ body[data-heroe=rohan]{--tinte:-150deg;--tsat:.9;--tluz:.95}  /* Moha: arena dor
 <div id="elige" class="hidden"></div>
 <div id="girar"><div class="giraMovil">📱</div><b>Gira el móvil</b><p>A-6 se juega en horizontal.<br>En iPhone, quita el bloqueo de rotación si no gira.</p><button class="bt s" id="bGirar">Pantalla completa</button></div>
 <script type="module" src="autopista.js?v=20261117j"></script>
-</body>
+<script>
+(() => {const f = document.getElementById('mFondo'); if (!f || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const L = f.querySelector('.tL'), R = f.querySelector('.tR'), menu = document.getElementById('menu');
+  function rayo() {
+    if (!menu || menu.classList.contains('hidden') || document.hidden) return setTimeout(rayo, 2500);
+    const n = Math.random() < 0.6 ? 1 : 2; R.style.backgroundImage = 'url(ui/ap_rayo' + n + '.webp)';
+    R.style.right = (2 + Math.random() * 30) + '%'; R.style.top = (n === 1 ? -2 : 2 + Math.random() * 10) + '%'; R.style.width = (n === 1 ? 30 + Math.random() * 10 : 38 + Math.random() * 10) + '%';
+    let i = 0; R.style.backgroundPosition = '0% 0'; R.style.opacity = 1;
+    const t = setInterval(() => {i++; if (i > 7) {clearInterval(t); R.style.opacity = 0; return;} R.style.backgroundPosition = (i * 100 / 7) + '% 0';}, 60);
+    for (const [d, o] of [[150, 0.9], [230, 0.3], [300, 1], [420, 0.55], [620, 0.2], [800, 0]]) setTimeout(() => {L.style.opacity = o;}, d);
+    setTimeout(rayo, 6000 + Math.random() * 6000);
+  }
+  setTimeout(rayo, 1800);
+})();
+</script></body>
 </html>
