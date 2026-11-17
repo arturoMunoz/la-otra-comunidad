@@ -402,7 +402,7 @@ function construyeMapa() {
   MAPA_G = new THREE.Group(); scene.add(MAPA_G); const scene_ = MAPA_G; BOSQUE.length = 0; bosqueEn = null;
   /* SUELO HORNEADO (16/11): el sombreador del suelo (ruido, caminos, río, bases…) se pinta UNA vez en una textura al montar el mapa;
      en partida el suelo es una textura y luz sencilla. Antes cada píxel de la pantalla calculaba ~50 ruidos en cada fotograma (lo que más calienta el móvil). */
-  const tH = cargaTex('../batalla/texturas/ap_arcen.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);
+  const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);
   const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
   const BX = MAPA.ancho + 14, BZ = MAPA.largo + 12; /* zona horneada (la jugable con margen); fuera, suelo sencillo bajo el bosque */
   const bakeU = {tH: {value: tH}, tB: {value: tB}, tC: {value: tC}, uA: {value: v2(CARRILES[0])}, uB: {value: v2(CARRILES[1])}, uEje: {value: new THREE.Vector2(EJE.x, EJE.z)}, uPit: {value: new THREE.Vector2(PIT.x, PIT.z)}, uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)},
@@ -426,10 +426,12 @@ function construyeMapa() {
       float mb=max(carril*.92,smoothstep(.62,.8,fbm(w*.05+1.3))*.5);
       /* hierba de colores vivos (estilo Supercell): dos verdes que se mezclan por manchas y flores claras sueltas */
       /* LA AUTOPISTA: arcén de tierra seca, calzada de asfalto con sus líneas y plaza de hormigón en cada base */
-      vec3 arc=mix(texture2D(tH,w*.085).rgb,texture2D(tH,rw*.043+.31).rgb,smoothstep(.35,.65,fbm(w*.07+4.)))*vec3(.92,.86,.8);
+      vec3 arc=mix(texture2D(tH,w*.085).rgb,texture2D(tH,rw*.043+.31).rgb,smoothstep(.35,.65,fbm(w*.07+4.)))*vec3(.82,.95,.72);
+      vec3 hor0=texture2D(tC,w*.13).rgb*.8;
       vec3 asf=mix(texture2D(tB,w*.075).rgb,texture2D(tB,rw*.037+.5).rgb,.4)*1.12;
       float ax=abs(w.x), road=1.-smoothstep(6.75,7.25,ax+fbm(w*.6)*.35);
-      vec3 col=mix(arc,asf,road);
+      float tablero=1.-smoothstep(10.95,11.05,ax);                            /* el tablero del puente: arcén asfaltado hasta el pretil */
+      vec3 col=mix(arc,asf*.8,tablero); col=mix(col,asf,road); col=mix(col,hor0*.95,smoothstep(10.5,10.65,ax)*tablero);
       float rayaB=(1.-smoothstep(.07,.13,abs(ax-6.35)));                       /* línea continua del borde */
       float raya=(1.-smoothstep(.06,.11,abs(ax-3.2)))*step(.45,fract(w.y/7.)); /* discontinuas entre carriles */
       float rayaC=(1.-smoothstep(.05,.09,abs(ax-.16)));                       /* doble línea amarilla del centro */
@@ -438,6 +440,7 @@ function construyeMapa() {
       vec3 hor=texture2D(tC,w*.13).rgb*.72;
       float plaza=1.-smoothstep(9.,10.5,max(abs(w.x)*.8,min(abs(w.y-uF[0].y),abs(w.y-uF[1].y))+2.));
       col=mix(col,hor,plaza);
+      float hueco=1.-(1.-tablero)*(1.-step(38.,abs(w.y)));  /* sobre el barranco: fuera del tablero no hay suelo */
       /* lado de Isengard: tierra cenicienta y quemada */
 
       /* el centro: un claro de barro y piedra donde duerme el Uruk Azul */
@@ -449,7 +452,7 @@ function construyeMapa() {
       col=mix(col,agua,rio*.9*(1.-(1.-smoothstep(5.,7.5,length(w-uPit))))*(1.-(1.-smoothstep(5.,7.5,length(w-uPit2)))));
       
       
-      gl_FragColor=vec4(col,1.);
+      gl_FragColor=vec4(col,hueco);
       #include <colorspace_fragment>
       }`});
   const gB = new THREE.PlaneGeometry(BX * 2, BZ * 2, 1, 1); gB.rotateX(-Math.PI / 2);
@@ -458,7 +461,7 @@ function construyeMapa() {
   if (SUELO_RT) SUELO_RT.dispose(); SUELO_RT = rt;
   const hornea = () => {const sc = new THREE.Scene(), q = new THREE.Mesh(gB, bakeM); sc.add(q); const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); const prev = renderer.getRenderTarget(); renderer.setRenderTarget(rt); renderer.render(sc, cam); renderer.setRenderTarget(prev); bakeM.dispose();};
   (function espera() {if (listoTex()) hornea(); else setTimeout(espera, 60);})();
-  const m = new THREE.MeshLambertMaterial({map: rt.texture});
+  const m = new THREE.MeshLambertMaterial({map: rt.texture, alphaTest: 0.5});
   /* detalle fino encima (la hierba de cerca se ve nítida aunque la textura horneada sea de ~5 cm por píxel) */
   m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH};
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWD=(modelMatrix*vec4(transformed,1.)).xz;');
@@ -466,8 +469,8 @@ function construyeMapa() {
   const suelo = new THREE.Mesh(gB, m); suelo.receiveShadow = true; scene_.add(suelo);
   /* fuera de la zona horneada: suelo sencillo y oscuro (queda bajo el bosque) */
   const g = new THREE.PlaneGeometry(220, 260, 1, 1); g.rotateX(-Math.PI / 2);
-  const tF = cargaTex('../batalla/texturas/ap_arcen.webp', true); tF.repeat.set(20, 24); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#ead8c8'});
-  const fuera_ = new THREE.Mesh(g, mF); fuera_.position.y = -0.03; fuera_.receiveShadow = true; scene_.add(fuera_);
+  const tF = cargaTex('texturas/campo.webp', true); tF.repeat.set(30, 36); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#b8d39a'});
+  const fuera_ = new THREE.Mesh(g, mF); fuera_.position.y = -0.03; fuera_.receiveShadow = true; scene_.add(fuera_); if (TIPO_MAPA === 'linea') puente(scene_, fuera_);
   const pon2 = (n, x, z, ry = 0, e = 1) => {if (!M[n]) return null; const o = M[n].scene.clone(true); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.setScalar(e); o.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); scene_.add(o); return o;};
   const semilla = {v: 7}; const al = () => {semilla.v = (semilla.v * 16807) % 2147483647; return semilla.v / 2147483647;};
   const enBase = (x, z) => BASES.some((b) => Math.hypot(b.fuente.x - x, b.fuente.z - z) < 10 || Math.hypot(b.nexo.x - x, b.nexo.z - z) < 9 || Math.hypot(b.torre.x - x, b.torre.z - z) < 6);
@@ -476,7 +479,7 @@ function construyeMapa() {
   const arboles = {};
   const planta = (n, x, z, s, choque) => {(arboles[n] = arboles[n] || []).push({x, z, ry: al() * 6.28, s}); if (choque) ponArbolChoque(x, z, 0.75 * s);};
   plantaBosque(al, planta, enBase);
-  for (const n in arboles) if (n.startsWith('pino')) instancias('vado_arboles', n, arboles[n].filter((q, i) => i % 5 === 0 && Math.abs(q.x) > 16));
+  for (const n in arboles) if (n.startsWith('pino')) instancias('vado_arboles', n, arboles[n].filter((q, i) => i % 3 === 0 && Math.abs(q.x) > 16 && Math.abs(q.z) > 41));
   if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al);
   /* hierba alta, juncos del río, piedras de vadear y rocas */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
@@ -494,7 +497,7 @@ function construyeMapa() {
   }
   if (CAMPOS.some((c) => NEUTRO[c.tipo].jefe)) for (const P of [PIT, PIT2]) for (const x of [-5.5, 5.5]) {pon2('brasero', P.x + x, P.z - 4.5, 0, 1.8); luzFuego(P.x + x, P.z - 4.5);}
   /* braseros a lo largo del puente del Abismo */
-  if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-8.6, 8.6]) luzFuego(x, z);
+  if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-11.1, 11.1]) luzFuego(x, z);
   for (const eq of [0, 1]) {
     const b = BASES[eq], o = pieza('vado_fuentes', eq ? 'fuente_isengard' : 'fuente_rohan'); o.position.set(b.fuente.x, 0, b.fuente.z); o.scale.setScalar(1.3); scene_.add(o);
     const s = signo(eq); pon2('tienda', b.fuente.x - 3 * s, b.fuente.z + 3.5 * s, eq ? 0 : Math.PI, 1.6);
@@ -503,15 +506,51 @@ function construyeMapa() {
   fusiona(MAPA_G);
   vidaMapa(scene_); PALANTIR = null; ponPalantir();
 }
+/* EL PUENTE: tierra firme a los dos lados (bases), barranco con río 24 m más abajo, tablero con pretil, pilas y estribos */
+const PUENTE = {z: 38, hondo: 24, ancho: 11};
+function puente(sc, fuera) {
+  const {z: Z, hondo: H, ancho: A} = PUENTE;
+  fuera.visible = false;
+  const tG = cargaTex('texturas/campo.webp', true), tR = cargaTex('texturas/roca.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);
+  /* tierra firme a los dos lados */
+  const tT = tG.clone(); tT.repeat.set(26, 10); tT.source = tG.source;
+  for (const sg of [1, -1]) {const g = new THREE.PlaneGeometry(260, 100); g.rotateX(-Math.PI / 2); const t = new THREE.Mesh(g, new THREE.MeshLambertMaterial({map: tT, color: '#b8d39a'})); t.position.set(0, -0.05, sg * (Z + 50)); t.receiveShadow = true; sc.add(t);}
+  /* el fondo del barranco: hierba, roca en las orillas y el río que pasa por debajo del puente */
+  const gV = new THREE.PlaneGeometry(260, Z * 2 + 4); gV.rotateX(-Math.PI / 2);
+  const mV = new THREE.MeshLambertMaterial({color: '#ffffff'});
+  mV.onBeforeCompile = (sh) => {sh.uniforms.tG = {value: tG}; sh.uniforms.tR = {value: tR}; sh.uniforms.uT = UT;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vWV;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWV=(modelMatrix*vec4(transformed,1.)).xz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vWV; uniform sampler2D tG,tR; uniform float uT;').replace('#include <map_fragment>', `
+      vec2 w=vWV; float cauce=abs(w.y+sin(w.x*.045)*7.+sin(w.x*.11)*2.);
+      vec3 hierba=texture2D(tG,w*.06).rgb*vec3(.95,1.2,.75); vec3 roca=texture2D(tR,w*.09).rgb*.85;
+      vec3 c=mix(roca*vec3(1.05,.95,.82),hierba,smoothstep(9.5,12.5,cauce+texture2D(tR,w*.02).r*3.));
+      float agua=1.-smoothstep(7.5,9.,cauce);
+      float onda=texture2D(tR,w*vec2(.05,.12)+vec2(uT*.03,0.)).r;
+      vec3 rio=mix(vec3(.06,.3,.5),vec3(.2,.55,.75),onda)+vec3(smoothstep(.72,.9,onda)*.25);
+      c=mix(c,rio,agua); c=mix(c,vec3(.94),(1.-smoothstep(.0,.9,abs(cauce-8.)))*.35);
+      c=mix(c,vec3(.62,.75,.86),.14); /* bruma: está lejos, abajo */
+      diffuseColor.rgb=c;`);};
+  const valle = new THREE.Mesh(gV, mV); valle.position.y = -H; sc.add(valle);
+  /* paredes del barranco bajo cada tierra firme */
+  const tRp = tR.clone(); tRp.source = tR.source; tRp.repeat.set(30, 3);
+  for (const sg of [1, -1]) {const p = new THREE.Mesh(new THREE.BoxGeometry(260, H, 2), new THREE.MeshLambertMaterial({map: tRp, color: '#c9bba8'})); p.position.set(0, -H / 2 - 0.06, sg * (Z + 1)); sc.add(p);}
+  /* el tablero: cantos, panza, pretil, vigas y pilas de hormigón */
+  const hc = (rx, ry) => {const t = tC.clone(); t.source = tC.source; t.repeat.set(rx, ry); return new THREE.MeshLambertMaterial({map: t, color: '#d8d8d4'});};
+  const caja = (w, h, d, x, y, z, mat) => {const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.receiveShadow = true; sc.add(b); return b;};
+  const L = Z * 2 + 2;
+  for (const sg of [1, -1]) {caja(0.7, 2.2, L, sg * (A + 0.05), -1.1, 0, hc(1, 24)); caja(0.55, 0.75, L, sg * (A + 0.05), 0.37, 0, hc(1, 30)).castShadow = true;}
+  caja(A * 2 + 0.6, 0.4, L, 0, -2.2, 0, hc(8, 24));
+  for (const z of [-19, 0, 19]) {caja(A * 2 + 1.4, 1.4, 2.8, 0, -2.9, z, hc(8, 1)); for (const x of [-6.5, 6.5]) caja(2.6, H - 3, 2.6, x, -3.6 - (H - 3) / 2, z, hc(1, 8));}
+}
 /* LA AUTOPISTA: quitamiedos a los dos lados, farolas, coches abandonados, conos y señales (piezas CC0 de Kenney, Pack Autopista 2) */
 function decoradoAutopista(pon2, al) {
   const lejosBase = (z) => Math.abs(Math.abs(z) - 49) > 9;
-  for (let z = -60; z < 60; z += 10) for (const x of [-7.9, 7.9]) if (lejosBase(z + 5)) pon2('ap_quitamiedos', x, z + 5, 0, 1);
-  for (let z = -42; z <= 42; z += 14) for (const x of [-8.6, 8.6]) {const o = pon2('ap_farola', x, z, x < 0 ? Math.PI / 2 : -Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});}
+  for (let z = -60; z < 60; z += 10) for (const x of [-10.5, 10.5]) if (lejosBase(z + 5) && Math.abs(z + 5) > 40) pon2('ap_quitamiedos', x, z + 5, 0, 1);
+  for (let z = -42; z <= 42; z += 14) for (const x of [-11.1, 11.1]) {const o = pon2('ap_farola', x, z, x < 0 ? Math.PI / 2 : -Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});}
   const coches = ['ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion'];
-  for (let i = 0; i < 22; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (10.5 + al() * 12), z = (al() - 0.5) * 112; if (!lejosBase(z)) continue; pon2(coches[i % 4], x, z, (al() - 0.5) * 1.2 + (al() < 0.5 ? 0 : Math.PI), 1);}
-  for (let i = 0; i < 40; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (8.4 + al() * 6), z = (al() - 0.5) * 110; if (!lejosBase(z)) continue; pon2('ap_cono', x, z, al() * 6.3, 1.6);}
-  for (let i = 0; i < 8; i++) {const lado = al() < 0.5 ? -1 : 1, z = (al() - 0.5) * 100; if (!lejosBase(z)) continue; pon2(al() < 0.5 ? 'ap_senal' : 'ap_valla', lado * (9 + al() * 3), z, al() * 6.3, 1.3);}
+  for (let i = 0; i < 22; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (13 + al() * 14), z = (al() < 0.5 ? -1 : 1) * (41 + al() * 30); if (Math.abs(z) < 41) continue; pon2(coches[i % 4], x, z, (al() - 0.5) * 1.2 + (al() < 0.5 ? 0 : Math.PI), 1);}
+  for (let i = 0; i < 26; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (8.2 + al() * 2), z = (al() - 0.5) * 110; if (!lejosBase(z)) continue; pon2('ap_cono', x, z, al() * 6.3, 1.6);}
+  for (let i = 0; i < 8; i++) {const lado = al() < 0.5 ? -1 : 1, z = (al() - 0.5) * 100; if (!lejosBase(z)) continue; if (Math.abs(z) > 40) pon2(al() < 0.5 ? 'ap_senal' : 'ap_valla', lado * (12 + al() * 3), z, al() * 6.3, 1.3);}
 }
 /* el palantír junto al estandarte de Isengard: el Ojo late y mira al héroe más cercano */
 let PALANTIR = null; const HAY_PALANTIR = false; /* poner a true cuando llegue modelos/palantir.glb (Pack Vado 14) */
@@ -1310,7 +1349,7 @@ const texAro = cargaTex('ui/aro_heroe.webp');
 function aro(color, r) {const g = new THREE.PlaneGeometry(r * 2, r * 2); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: texAro, color, transparent: true, depthWrite: false, opacity: 0.85})); m.renderOrder = 2; return m;}
 function creaVis(v) {
   let o = {};
-  if (v.k === 'h') {o = montar(HEROES[v.tipo].modelo, HEROES[v.tipo].alto || 2.05); o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95); if (v.id === YO) o.aro.material.color.set('#ffd24a'); scene.add(o.aro);}
+  if (v.k === 'h') {o = montar(HEROES[v.tipo].modelo, (HEROES[v.tipo].alto || 2.05) * ESC_H); o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95 * ESC_H); if (v.id === YO) o.aro.material.color.set('#ffd24a'); scene.add(o.aro);}
   else if (v.k === 's') {
     o = montar(MODELO_SUBD[v.eq][v.tipo], ALTO_SUBD[v.tipo]); const col = v.eq === MI_EQ ? '#3d8bff' : '#ff3b30';
     tiñe(o.raiz, col, v.hk === 'F' ? 1 : 0.75);
@@ -1587,7 +1626,7 @@ function dibuja(dt) {
     /* barra de vida */
     let b = BARRAS.get(v.id);
     if (!b) {b = document.createElement('div'); b.className = 'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].grande ? 't' : 'm'}[v.k] + ' e' + (v.eq === 2 ? 2 : v.eq === MI_EQ ? 0 : 1) + (v.id === YO ? ' yo' : ''); b.innerHTML = (v.k === 'h' ? '<b></b>' : '') + '<i><s></s><u></u></i>' + (v.k === 'h' ? '<span class="mn"><u></u></span>' : ''); $('barras').appendChild(b); BARRAS.set(v.id, b);}
-    const altoB = v.k === 'h' ? 2.6 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 : v.k === 't' ? 8 : 8.4;
+    const altoB = v.k === 'h' ? (HEROES[v.tipo].alto || 2.05) * ESC_H + 0.55 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 : v.k === 't' ? 8 : 8.4;
     _p.set(x, altoB, z).project(camera);
     const vis = o.raiz.visible && !muerto && v.vida > 0 && _p.z < 1 && Math.abs(_p.x) < 1.2 && Math.abs(_p.y) < 1.2 && (v.k !== 'j' || v.vida < v.max || NEUTRO[v.tipo].grande);
     /* barras: solo se toca el DOM cuando algo cambia, y se mueven con transform (no recalcula la página entera en cada fotograma) */
@@ -1866,7 +1905,7 @@ const camM = new THREE.Vector3();
    F = hacia dónde mira la cámara (arriba en pantalla), R = la derecha de la pantalla, en coordenadas del mundo. */
 let APAI = VW > VH;
 function ejes() {const s = signo(MI_EQ); return APAI ? {F: {x: -s, z: 0}, R: {x: 0, z: -s}} : {F: {x: 0, z: -s}, R: {x: s, z: 0}};}
-const ZOOMS = [[24, 14], [31, 18], [40, 23]]; let zoomI = +(localStorage.getItem('auto.zoom') ?? 1);
+const ESC_H = 1.6; const ZOOMS = [[17, 14], [21, 17], [27, 21.5]]; let zoomI = +(localStorage.getItem('auto.zoom') ?? 1);
 const INTERP_MS = 100;
 let CAM_FIN = null; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
 function camara(dt) {

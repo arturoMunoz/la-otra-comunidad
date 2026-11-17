@@ -97,7 +97,10 @@ js = sub(js, "const ROL_H = {rohan: 'Luchador', enano: 'Tanque', elfo: 'Tirador'
          "const ROL_H = {rohan: 'Asesino', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Tirador', gandalf: 'Mago', orco: 'Luchador', gollum: 'Asesino'};")
 # sin las piezas de Tolkien (yelmos de Rohan, barba de enano…)
 js = sub(js, "const VADO = ['vado_arboles',", "const VADO = ['ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'vado_arboles',")
-js = sub(js, 'o = montar(HEROES[v.tipo].modelo, 2.05);', 'o = montar(HEROES[v.tipo].modelo, HEROES[v.tipo].alto || 2.05);')
+js = sub(js, 'o = montar(HEROES[v.tipo].modelo, 2.05);', 'o = montar(HEROES[v.tipo].modelo, (HEROES[v.tipo].alto || 2.05) * ESC_H);')
+js = sub(js, "o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95);", "o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95 * ESC_H);")
+js = sub(js, "const altoB = v.k === 'h' ? 2.6 :", "const altoB = v.k === 'h' ? (HEROES[v.tipo].alto || 2.05) * ESC_H + 0.55 :")
+js = sub(js, 'const ZOOMS = [[24, 14], [31, 18], [40, 23]];', 'const ESC_H = 1.6; const ZOOMS = [[17, 14], [21, 17], [27, 21.5]];')
 js = bloque(js, 'const VESTIR = {', '};', 'const VESTIR = {};\n')
 # retratos grandes de La Autopista
 n = js.count('ui/splash_'); assert n >= 6, n
@@ -232,16 +235,18 @@ js = sub(js, 'const HAY_PALANTIR = true;', 'const HAY_PALANTIR = false;')
 # ---------- EL MAPA DE AUTOPISTA (17/11): suelo de asfalto/arcén/hormigón (Pack 11) y piezas de Kenney (Pack 2) ----------
 js = sub(js, "const VADO = ['ap_brask',", "const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask',")
 js = sub(js, "const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('texturas/barro.webp', true);",
-         "const tH = cargaTex('../batalla/texturas/ap_arcen.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);")
+         "const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);")
 js = sub(js, "const bakeU = {tH: {value: tH}, tB: {value: tB},", "const bakeU = {tH: {value: tH}, tB: {value: tB}, tC: {value: tC},")
 js = sub(js, "uniform sampler2D tH,tB; uniform vec2 uA[7];", "uniform sampler2D tH,tB,tC; uniform vec2 uA[7];")
 js = sub(js, "const listoTex = () => [tH, tB].every(", "const listoTex = () => [tH, tB, tC].every(")
 i0 = js.index('      float mh=fbm(w*.09+9.);'); i1 = js.index('      col=mix(col,losa,base*.95);') + len('      col=mix(col,losa,base*.95);')
 js = js[:i0] + """      /* LA AUTOPISTA: arcén de tierra seca, calzada de asfalto con sus líneas y plaza de hormigón en cada base */
-      vec3 arc=mix(texture2D(tH,w*.085).rgb,texture2D(tH,rw*.043+.31).rgb,smoothstep(.35,.65,fbm(w*.07+4.)))*vec3(.92,.86,.8);
+      vec3 arc=mix(texture2D(tH,w*.085).rgb,texture2D(tH,rw*.043+.31).rgb,smoothstep(.35,.65,fbm(w*.07+4.)))*vec3(.82,.95,.72);
+      vec3 hor0=texture2D(tC,w*.13).rgb*.8;
       vec3 asf=mix(texture2D(tB,w*.075).rgb,texture2D(tB,rw*.037+.5).rgb,.4)*1.12;
       float ax=abs(w.x), road=1.-smoothstep(6.75,7.25,ax+fbm(w*.6)*.35);
-      vec3 col=mix(arc,asf,road);
+      float tablero=1.-smoothstep(10.95,11.05,ax);                            /* el tablero del puente: arcén asfaltado hasta el pretil */
+      vec3 col=mix(arc,asf*.8,tablero); col=mix(col,asf,road); col=mix(col,hor0*.95,smoothstep(10.5,10.65,ax)*tablero);
       float rayaB=(1.-smoothstep(.07,.13,abs(ax-6.35)));                       /* línea continua del borde */
       float raya=(1.-smoothstep(.06,.11,abs(ax-3.2)))*step(.45,fract(w.y/7.)); /* discontinuas entre carriles */
       float rayaC=(1.-smoothstep(.05,.09,abs(ax-.16)));                       /* doble línea amarilla del centro */
@@ -249,26 +254,72 @@ js = js[:i0] + """      /* LA AUTOPISTA: arcén de tierra seca, calzada de asfal
       col=mix(col,vec3(.86,.85,.8),max(rayaB,raya)*road*gast); col=mix(col,vec3(.9,.68,.16),rayaC*road*gast);
       vec3 hor=texture2D(tC,w*.13).rgb*.72;
       float plaza=1.-smoothstep(9.,10.5,max(abs(w.x)*.8,min(abs(w.y-uF[0].y),abs(w.y-uF[1].y))+2.));
-      col=mix(col,hor,plaza);""" + js[i1:]
+      col=mix(col,hor,plaza);
+      float hueco=1.-(1.-tablero)*(1.-step(38.,abs(w.y)));  /* sobre el barranco: fuera del tablero no hay suelo */""" + js[i1:]
 js = sub(js, "float borde=smoothstep(.0,1.,max(abs(w.x)-${MAPA.ancho.toFixed(1)},abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;", "")
 js = sub(js, "      float isen=smoothstep(-2.,24.,dot(w,uEje)); col=mix(col,vec3(dot(col,vec3(.33)))*vec3(1.05,.95,.85),isen*.45);", "")
 js = sub(js, "const tF = cargaTex('texturas/campo.webp', true); tF.repeat.set(30, 36); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#9ab870'});",
          "const tF = cargaTex('../batalla/texturas/ap_arcen.webp', true); tF.repeat.set(20, 24); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#ead8c8'});")
 js = sub(js, "diffuseColor.rgb*=clamp(.55+dot(dt,vec3(.3,.6,.1))*9.,.75,1.25);", "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1);")
+# ---------- EL PUENTE (17/11, Arturo: «como si estuvieses encima de un puente cruzando algo, y a los lados paisaje») ----------
+# el tablero (|x| < 11) cruza un barranco con río entre z = -38 y 38; las bases quedan en tierra firme a los dos lados
+js = sub(js, "      gl_FragColor=vec4(col,1.);\n      #include <colorspace_fragment>", "      gl_FragColor=vec4(col,hueco);\n      #include <colorspace_fragment>")
+js = sub(js, "  const m = new THREE.MeshLambertMaterial({map: rt.texture});", "  const m = new THREE.MeshLambertMaterial({map: rt.texture, alphaTest: 0.5});")
+js = sub(js, "const fuera_ = new THREE.Mesh(g, mF); fuera_.position.y = -0.03; fuera_.receiveShadow = true; scene_.add(fuera_);",
+         "const fuera_ = new THREE.Mesh(g, mF); fuera_.position.y = -0.03; fuera_.receiveShadow = true; scene_.add(fuera_); if (TIPO_MAPA === 'linea') puente(scene_, fuera_);")
+js = sub(js, "const tF = cargaTex('../batalla/texturas/ap_arcen.webp', true); tF.repeat.set(20, 24); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#ead8c8'});",
+         "const tF = cargaTex('texturas/campo.webp', true); tF.repeat.set(30, 36); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#b8d39a'});")
+js = sub(js, "/* el palantír junto al estandarte de Isengard:", """/* EL PUENTE: tierra firme a los dos lados (bases), barranco con río 24 m más abajo, tablero con pretil, pilas y estribos */
+const PUENTE = {z: 38, hondo: 24, ancho: 11};
+function puente(sc, fuera) {
+  const {z: Z, hondo: H, ancho: A} = PUENTE;
+  fuera.visible = false;
+  const tG = cargaTex('texturas/campo.webp', true), tR = cargaTex('texturas/roca.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);
+  /* tierra firme a los dos lados */
+  const tT = tG.clone(); tT.repeat.set(26, 10); tT.source = tG.source;
+  for (const sg of [1, -1]) {const g = new THREE.PlaneGeometry(260, 100); g.rotateX(-Math.PI / 2); const t = new THREE.Mesh(g, new THREE.MeshLambertMaterial({map: tT, color: '#b8d39a'})); t.position.set(0, -0.05, sg * (Z + 50)); t.receiveShadow = true; sc.add(t);}
+  /* el fondo del barranco: hierba, roca en las orillas y el río que pasa por debajo del puente */
+  const gV = new THREE.PlaneGeometry(260, Z * 2 + 4); gV.rotateX(-Math.PI / 2);
+  const mV = new THREE.MeshLambertMaterial({color: '#ffffff'});
+  mV.onBeforeCompile = (sh) => {sh.uniforms.tG = {value: tG}; sh.uniforms.tR = {value: tR}; sh.uniforms.uT = UT;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\\nvarying vec2 vWV;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\\nvWV=(modelMatrix*vec4(transformed,1.)).xz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\\nvarying vec2 vWV; uniform sampler2D tG,tR; uniform float uT;').replace('#include <map_fragment>', `
+      vec2 w=vWV; float cauce=abs(w.y+sin(w.x*.045)*7.+sin(w.x*.11)*2.);
+      vec3 hierba=texture2D(tG,w*.06).rgb*vec3(.95,1.2,.75); vec3 roca=texture2D(tR,w*.09).rgb*.85;
+      vec3 c=mix(roca*vec3(1.05,.95,.82),hierba,smoothstep(9.5,12.5,cauce+texture2D(tR,w*.02).r*3.));
+      float agua=1.-smoothstep(7.5,9.,cauce);
+      float onda=texture2D(tR,w*vec2(.05,.12)+vec2(uT*.03,0.)).r;
+      vec3 rio=mix(vec3(.06,.3,.5),vec3(.2,.55,.75),onda)+vec3(smoothstep(.72,.9,onda)*.25);
+      c=mix(c,rio,agua); c=mix(c,vec3(.94),(1.-smoothstep(.0,.9,abs(cauce-8.)))*.35);
+      c=mix(c,vec3(.62,.75,.86),.14); /* bruma: está lejos, abajo */
+      diffuseColor.rgb=c;`);};
+  const valle = new THREE.Mesh(gV, mV); valle.position.y = -H; sc.add(valle);
+  /* paredes del barranco bajo cada tierra firme */
+  const tRp = tR.clone(); tRp.source = tR.source; tRp.repeat.set(30, 3);
+  for (const sg of [1, -1]) {const p = new THREE.Mesh(new THREE.BoxGeometry(260, H, 2), new THREE.MeshLambertMaterial({map: tRp, color: '#c9bba8'})); p.position.set(0, -H / 2 - 0.06, sg * (Z + 1)); sc.add(p);}
+  /* el tablero: cantos, panza, pretil, vigas y pilas de hormigón */
+  const hc = (rx, ry) => {const t = tC.clone(); t.source = tC.source; t.repeat.set(rx, ry); return new THREE.MeshLambertMaterial({map: t, color: '#d8d8d4'});};
+  const caja = (w, h, d, x, y, z, mat) => {const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.receiveShadow = true; sc.add(b); return b;};
+  const L = Z * 2 + 2;
+  for (const sg of [1, -1]) {caja(0.7, 2.2, L, sg * (A + 0.05), -1.1, 0, hc(1, 24)); caja(0.55, 0.75, L, sg * (A + 0.05), 0.37, 0, hc(1, 30)).castShadow = true;}
+  caja(A * 2 + 0.6, 0.4, L, 0, -2.2, 0, hc(8, 24));
+  for (const z of [-19, 0, 19]) {caja(A * 2 + 1.4, 1.4, 2.8, 0, -2.9, z, hc(8, 1)); for (const x of [-6.5, 6.5]) caja(2.6, H - 3, 2.6, x, -3.6 - (H - 3) / 2, z, hc(1, 8));}
+}
+/* el palantír junto al estandarte de Isengard:""")
 # árboles: solo queda algún pino suelto lejos; en su sitio, el decorado de la autopista
 js = sub(js, "  for (const n in arboles) instancias('vado_arboles', n, arboles[n]);",
-         "  for (const n in arboles) if (n.startsWith('pino')) instancias('vado_arboles', n, arboles[n].filter((q, i) => i % 5 === 0 && Math.abs(q.x) > 16));\n  if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al);")
+         "  for (const n in arboles) if (n.startsWith('pino')) instancias('vado_arboles', n, arboles[n].filter((q, i) => i % 3 === 0 && Math.abs(q.x) > 16 && Math.abs(q.z) > 41));\n  if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al);")
 js = sub(js, "if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-9.4, 9.4]) {pon2('brasero', x, z, 0, 1.5); luzFuego(x, z);}",
-         "if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-8.6, 8.6]) luzFuego(x, z);")
+         "if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-11.1, 11.1]) luzFuego(x, z);")
 js = sub(js, "/* el palantír junto al estandarte de Isengard:", """/* LA AUTOPISTA: quitamiedos a los dos lados, farolas, coches abandonados, conos y señales (piezas CC0 de Kenney, Pack Autopista 2) */
 function decoradoAutopista(pon2, al) {
   const lejosBase = (z) => Math.abs(Math.abs(z) - 49) > 9;
-  for (let z = -60; z < 60; z += 10) for (const x of [-7.9, 7.9]) if (lejosBase(z + 5)) pon2('ap_quitamiedos', x, z + 5, 0, 1);
-  for (let z = -42; z <= 42; z += 14) for (const x of [-8.6, 8.6]) {const o = pon2('ap_farola', x, z, x < 0 ? Math.PI / 2 : -Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});}
+  for (let z = -60; z < 60; z += 10) for (const x of [-10.5, 10.5]) if (lejosBase(z + 5) && Math.abs(z + 5) > 40) pon2('ap_quitamiedos', x, z + 5, 0, 1);
+  for (let z = -42; z <= 42; z += 14) for (const x of [-11.1, 11.1]) {const o = pon2('ap_farola', x, z, x < 0 ? Math.PI / 2 : -Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});}
   const coches = ['ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion'];
-  for (let i = 0; i < 22; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (10.5 + al() * 12), z = (al() - 0.5) * 112; if (!lejosBase(z)) continue; pon2(coches[i % 4], x, z, (al() - 0.5) * 1.2 + (al() < 0.5 ? 0 : Math.PI), 1);}
-  for (let i = 0; i < 40; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (8.4 + al() * 6), z = (al() - 0.5) * 110; if (!lejosBase(z)) continue; pon2('ap_cono', x, z, al() * 6.3, 1.6);}
-  for (let i = 0; i < 8; i++) {const lado = al() < 0.5 ? -1 : 1, z = (al() - 0.5) * 100; if (!lejosBase(z)) continue; pon2(al() < 0.5 ? 'ap_senal' : 'ap_valla', lado * (9 + al() * 3), z, al() * 6.3, 1.3);}
+  for (let i = 0; i < 22; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (13 + al() * 14), z = (al() < 0.5 ? -1 : 1) * (41 + al() * 30); if (Math.abs(z) < 41) continue; pon2(coches[i % 4], x, z, (al() - 0.5) * 1.2 + (al() < 0.5 ? 0 : Math.PI), 1);}
+  for (let i = 0; i < 26; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (8.2 + al() * 2), z = (al() - 0.5) * 110; if (!lejosBase(z)) continue; pon2('ap_cono', x, z, al() * 6.3, 1.6);}
+  for (let i = 0; i < 8; i++) {const lado = al() < 0.5 ? -1 : 1, z = (al() - 0.5) * 100; if (!lejosBase(z)) continue; if (Math.abs(z) > 40) pon2(al() < 0.5 ? 'ap_senal' : 'ap_valla', lado * (12 + al() * 3), z, al() * 6.3, 1.3);}
 }
 /* el palantír junto al estandarte de Isengard:""")
 
