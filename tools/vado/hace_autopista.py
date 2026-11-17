@@ -139,9 +139,9 @@ js = sub(js, "['Anillo de Isengard', 'tu base'] : ['Anillo de Isengard', 'base e
 js = sub(js, "['El Desfiladero', 'tierra de nadie']", "['Kilómetro cero', 'tierra de nadie']")
 js = sub(js, "['Desfiladero del Abismo de Helm', 'lado de Rohan'] : ['Camino de Isengard', 'lado de Saruman']", "['Carril azul', 'sentido norte'] : ['Carril rojo', 'sentido sur']")
 
-js = sub(js, '¿Salir de La Brecha?', '¿Salir de La Autopista?')
-js = sub(js, "'Bienvenido a La Brecha'", "'Bienvenido a La Autopista'")
-js = sub(js, 'placeholder="Tu nombre en La Brecha"', 'placeholder="Tu nombre en La Autopista"')
+js = sub(js, '¿Salir de La Brecha?', '¿Salir de A-6?')
+js = sub(js, "'Bienvenido a La Brecha'", "'Bienvenido a A-6'")
+js = sub(js, 'placeholder="Tu nombre en La Brecha"', 'placeholder="Tu nombre en A-6"')
 js = sub(js, "return n || 'Hobbit' + Math.floor(", "return n || 'Jugador' + Math.floor(")
 
 # ---------- suelo: el camino es asfalto y la hierba, la cuneta seca ----------
@@ -159,7 +159,7 @@ js = js.replace("'vado.nombre'", "'@@NOMBRE@@'").replace("'vado.", "'auto.").rep
 # ---------- página ----------
 html = sub(html, "l.href='ui/splash_'+hv", "l.href='ui/ap_splash_'+hv", donde='html')
 html = sub(html, '<img src="ui/splash_rohan.webp" alt="" class="mTi2">', '<img src="ui/ap_splash_rohan.webp" alt="" class="mTi2">', donde='html')
-html = sub(html, '<title>La Brecha</title>', '<title>La Autopista</title><link rel="icon" href="ui/ap_icono.png"><link rel="apple-touch-icon" href="ui/ap_icono_180.png">', donde='html')
+html = sub(html, '<title>La Brecha</title>', '<title>A-6</title><link rel="icon" href="ui/ap_icono.png"><link rel="apple-touch-icon" href="ui/ap_icono_180.png">', donde='html')
 # ---------- arte propio de La Autopista (packs 4, 5 y 6; se hace con tools/autopista/procesa_arte.py) ----------
 for n, ap in [('menu_cielo',)*2, ('menu_fondo',)*2, ('menu_medio',)*2, ('menu_frente',)*2, ('menu_niebla',)*2, ('menu_pavesas',)*2,
               ('fondo_vs',)*2, ('carga',)*2, ('fondo_menu',)*2, ('fondo_armeria',)*2, ('carta_duelo',)*2,
@@ -334,13 +334,13 @@ for v in ["'ui/h_' + ", "'ui/p_' + ", "'ui/at_' + "]:
     js = js.replace(v, v.replace('ui/', 'ui/ap_'))
 html = sub(html, '<script type="module" src="juego.js?', '<script type="module" src="autopista.js?', donde='html')
 html = sub(html, '<h1>La Brecha</h1><p class="sub">Rohan contra Isengard</p>', '<h1>La Autopista</h1><p class="sub">Azules contra rojos</p>', donde='html')
-# logo del Pack 15 (17/11) en vez del título de texto; la versión 2 queda en ui/ap_logo_2.webp por si se prefiere
-html = sub(html, '<h1>La Autopista</h1><p class="sub">Azules contra rojos</p>', '<h1 class="apLogo"><img src="ui/ap_logo_1.webp" alt="La Autopista"></h1>', donde='html')
-html = sub(html, '</head>', '<style>.mTit h1.apLogo{margin:8px 0 0;line-height:0}.mTit h1.apLogo img{width:min(225px,calc(27 * var(--vw)));height:auto;filter:drop-shadow(0 4px 6px #000a)}</style></head>', donde='html')
+# 17/11: el juego se llama «A-6»; título de texto hasta que llegue el logo nuevo (Pack 17 ART). Los logos del Pack 15 decían «La Autopista»
+html = sub(html, '<h1>La Autopista</h1><p class="sub">Azules contra rojos</p>', '<h1 class="apA6">A-6</h1>', donde='html')
+html = sub(html, '</head>', '<style>.mTit h1.apA6{margin:6px 0 0;font:italic 900 46px \'Arial Black\',system-ui,sans-serif!important;color:#ffd21f!important;letter-spacing:.04em;line-height:1;-webkit-text-stroke:2px #10161f;text-shadow:0 4px 0 #10161f,0 0 18px #2f8cff88}</style></head>', donde='html')
 html = sub(html, '<span>1 contra 1 · el Abismo</span>', '<span>1 contra 1 · la autopista</span>', donde='html')
 html = re.sub(r'\s*<button data-m="2v2">.*?</button>', '', html, count=1)  # la Batalla 2v2 (mapa del Vado, bestias de Tolkien) aún no
 html = html.replace("'vado.heroe'", "'auto.heroe'")
-html = sub(html, 'La Brecha se juega en horizontal.', 'La Autopista se juega en horizontal.', donde='html')
+html = sub(html, 'La Brecha se juega en horizontal.', 'A-6 se juega en horizontal.', donde='html')
 html = sub(html, '<p>Preparando el campo de batalla</p>', '<p>Preparando la autopista</p>', donde='html')
 
 if fallos:

@@ -693,7 +693,7 @@ window.brechaAtras = () => {
   if (document.getElementById('salirC')) {document.getElementById('salirC').remove(); return 'si';}
   for (const id of ['tienda', 'tabla', 'elige', 'ajustes']) {const e = document.getElementById(id); if (e && !e.classList.contains('hidden') && !(id === 'ajustes' && e.dataset.cuenta)) {if (id === 'elige' || id === 'ajustes') {e.classList.add('hidden'); return 'si';}}}
   if (ESTADO === 'juego' || ESTADO === 'sala') {ATRAS_ON = true; dispatchEvent(new PopStateEvent('popstate')); return 'si';}
-  const c = document.createElement('div'); c.id = 'salirC'; c.innerHTML = '<div class="ajC"><b>¿Salir de La Autopista?</b><div class="ajSon"><button class="bt" id="salirNo">Quedarme</button><button class="bt" id="salirSi">Salir</button></div></div>'; document.body.appendChild(c);
+  const c = document.createElement('div'); c.id = 'salirC'; c.innerHTML = '<div class="ajC"><b>¿Salir de A-6?</b><div class="ajSon"><button class="bt" id="salirNo">Quedarme</button><button class="bt" id="salirSi">Salir</button></div></div>'; document.body.appendChild(c);
   c.querySelector('#salirNo').onclick = () => c.remove(); c.querySelector('#salirSi').onclick = () => {try {BrechaAndroid.salir();} catch (e) {}};
   return 'si';
 };
@@ -2571,9 +2571,9 @@ const AUTH_B = {
 function cuentaB(modo, aviso) {
   const a = $('ajustes'), campo = (id, tipo, ph, ac) => '<input id="' + id + '" class="cuF" type="' + tipo + '" autocomplete="' + ac + '" placeholder="' + ph + '"' + (tipo === 'email' ? ' inputmode="email" autocapitalize="off"' : '') + '>';
   const enlace = (id, t) => '<button class="cuL" id="' + id + '" type="button">' + t + '</button>';
-  let h = '<div class="ajC cuenta"><b>' + (modo === 'up' ? 'Crear cuenta' : modo === 'rec' ? 'Recuperar contraseña' : 'Bienvenido a La Autopista') + '</b>';
+  let h = '<div class="ajC cuenta"><b>' + (modo === 'up' ? 'Crear cuenta' : modo === 'rec' ? 'Recuperar contraseña' : 'Bienvenido a A-6') + '</b>';
   if (modo === 'in') h += '<p class="cuT">Entra con tu cuenta. Si eres de La Otra Comunidad, es la misma.</p>' + campo('cuEm', 'email', 'Tu correo', 'email') + campo('cuPw', 'password', 'Contraseña', 'current-password') + '<button class="bt" id="cuGo">Entrar</button>' + enlace('cuUp', 'Crear cuenta') + enlace('cuRec', 'He olvidado la contraseña');
-  if (modo === 'up') h += campo('cuEm', 'email', 'Tu correo', 'email') + campo('cuPw', 'password', 'Contraseña (mínimo 6)', 'new-password') + '<input id="cuNom" class="cuF" maxlength="14" autocomplete="nickname" placeholder="Tu nombre en La Autopista">' + '<button class="bt" id="cuGo">Crear cuenta</button>' + enlace('cuIn', 'Ya tengo cuenta');
+  if (modo === 'up') h += campo('cuEm', 'email', 'Tu correo', 'email') + campo('cuPw', 'password', 'Contraseña (mínimo 6)', 'new-password') + '<input id="cuNom" class="cuF" maxlength="14" autocomplete="nickname" placeholder="Tu nombre en A-6">' + '<button class="bt" id="cuGo">Crear cuenta</button>' + enlace('cuIn', 'Ya tengo cuenta');
   if (modo === 'rec') h += campo('cuEm', 'email', 'Tu correo', 'email') + '<button class="bt" id="cuGo">Enviarme un enlace</button>' + enlace('cuIn', 'Volver');
   h += '<p class="cuMsg' + (aviso ? ' ok' : '') + '" id="cuMsg">' + (aviso || '') + '</p></div>';
   a.innerHTML = h; a.classList.remove('hidden'); a.dataset.cuenta = '1';
