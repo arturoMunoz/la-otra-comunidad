@@ -1339,7 +1339,7 @@ function compra(h, id) {
 const AN = {quieto: 0, correr: 1};
 /* lo que manda cada jugador (en el móvil del anfitrión o en el servidor) */
 function aplicaMando(h, o) {
-    if (o.t === 'in') {h.lat = Math.min(0.5, (o.rt || 0) / 1000 + (+o.ip || INTERP_MS) / 1000 + 1 / 30); /* 17/11: antes en el servidor se usaba media ida y vuelta y los golpes del invitado se quedaban cortos */ /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
+    if (o.t === 'in') {if (o.tc !== undefined) h.tcIn = o.tc; h.lat = Math.min(0.5, (o.rt || 0) / 1000 + (+o.ip || INTERP_MS) / 1000 + 1 / 30); /* 17/11: antes en el servidor se usaba media ida y vuelta y los golpes del invitado se quedaban cortos */ /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; rebobinado(h, () => usaHab(h, o.k, o.dx, o.dz, o.px, o.pz));}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
@@ -1353,7 +1353,7 @@ function aplicaMando(h, o) {
   }
 function foto() {
   const u = S.u.map((q) => q.k === 'h'
-    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT), Math.round(q.mana), Math.round(stats(q).mana)]
+    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT), Math.round(q.mana), Math.round(stats(q).mana), q.bot ? 0 : (q.tcIn || 0)]
     : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') : q.k === 'j' ? q.elem || '' : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
   const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t))), dr = S.bufEq.map((b) => [b.drF || 0, b.drH || 0, b.alma || 0]);
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
@@ -1364,8 +1364,18 @@ function aplicaFila(f, t) {
   const [id, k, eq, x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo] = f;
   let v = VISTA.get(id);
   if (!v) {v = {id, k, eq, x, z, rot, x0: x, z0: z, r0: rot, t0: t, t1: t}; VISTA.set(id, v);}
-  else if (S) {v.x0 = v.x; v.z0 = v.z; v.r0 = v.rot;}   /* anfitrión: de un paso de la simulación al siguiente */
-  else {v.x0 = v.xi ?? v.x; v.z0 = v.zi ?? v.z; v.r0 = v.ri ?? v.rot; v.t0 = performance.now(); const b = v.buf || (v.buf = []); b.push(v.t0, x, z, rot); if (b.length > 32) b.splice(0, 4);}
+  else if (S) {v.x0 = v.x; v.z0 = v.z; v.r0 = v.rot;   /* anfitrión: de un paso de la simulación al siguiente */
+    /* el héroe de otro jugador solo cambia cuando llega su «in» (15 por segundo, a trompicones): se pinta con colchón, como en el invitado */
+    const h = k === 'h' && S.porId && S.porId.get(id); v.remoto = !!(h && !h.bot && id !== YO && h.tcIn !== undefined);
+    if (v.remoto && h.tcIn !== v.tcUlt) {v.tcUlt = h.tcIn; const e = v.reloj || (v.reloj = {offs: [], tarde: [], ip: 100, paso: 1000 / 30}); const b = v.buf || (v.buf = []); b.push(relojRemoto(e, h.llegaIn, h.tcIn), x, z, rot); if (b.length > 32) b.splice(0, 4);}}
+  else {v.x0 = v.xi ?? v.x; v.z0 = v.zi ?? v.z; v.r0 = v.ri ?? v.rot; v.t0 = performance.now(); const b = v.buf || (v.buf = []);
+    /* héroe de otra persona: su posición es la de su último «in»; con la hora de la foto, según en qué momento entre dos fotos llegara ese «in»
+       la posición tenía 0 o 66 ms (antes daba tirones). Se coloca con el reloj de su móvil (campo 40). */
+    const tc = k === 'h' && id !== YO ? f[40] || 0 : 0;
+    if (!tc !== !v.reloj) {b.length = 0; v.reloj = tc ? {offs: [], tarde: [], ip: 120, paso: 1000 / 15} : null; v.tcUlt = 0;}
+    if (tc) {if (tc !== v.tcUlt) {v.tcUlt = tc; b.push(relojRemoto(v.reloj, v.t0, tc), x, z, rot);}}
+    else b.push(FOTO_TS || v.t0, x, z, rot);
+    if (b.length > 32) b.splice(0, 4);}
   Object.assign(v, {x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo, visto: true, llega: performance.now()});
   if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30], enc: f[31] || '', cdEnc: f[32] || 0, flagsE: f[33] || 0, fijo: f[34] || 0, hf: f[35] || 'f', vg: f[36] ?? 0, vgT: f[37] || 0, mana: f[38] ?? 0, manaMax: f[39] || 1});
 }
@@ -1379,7 +1389,8 @@ function pintaConexion() {
   if (mal && ahora - CONEX.aviso > 20000 && ESTADO === 'juego') {CONEX.aviso = ahora; aviso('⚠ Conexión inestable: se están perdiendo datos');}
 }
 function recibeFoto(o) {
-  {const ahora = performance.now(); if (CONEX.ult) {const g = ahora - CONEX.ult; if (g > 300) CONEX.huecos.push(ahora); if (g < 1000) {HUECOS_F.push(g); if (HUECOS_F.length > 45) HUECOS_F.shift(); if (HUECOS_F.length >= 15) {const o2 = [...HUECOS_F].sort((a, b) => a - b), p90 = o2[Math.floor(o2.length * 0.9)], obj = Math.max(90, Math.min(180, p90 + 22)); INTERP_MS += (obj - INTERP_MS) * 0.08;}}} CONEX.ult = ahora;}
+  {const ahora = performance.now(); if (CONEX.ult) {const g = ahora - CONEX.ult; if (g > 300) CONEX.huecos.push(ahora); if (g < 1000) {HUECOS_F.push(g); if (HUECOS_F.length > 45) HUECOS_F.shift();}} CONEX.ult = ahora;}
+  FOTO_TS = relojRemoto(RELOJ_F, performance.now(), o.t * 1000); INTERP_MS = RELOJ_F.ip;
   for (const v of VISTA.values()) v.visto = false;
   for (const f of o.u) aplicaFila(f, o.t);
   for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);}
@@ -1694,10 +1705,10 @@ function dibuja(dt) {
     let o = VIS.get(v.id); if (!o) o = creaVis(v);
     /* interpolación: de la posición anterior a la nueva en el tiempo entre fotos */
     let x = v.x, z = v.z, r = v.rot;
-    if (!(v.id === YO && !S) && !S && v.buf && v.buf.length >= 8) {
+    if (!(v.id === YO && !S) && (!S || v.remoto) && v.buf && v.buf.length >= 8) {
       /* invitado: se pinta 100 ms por detrás con un colchón de fotos (como los juegos en línea): si una foto llega tarde o a trompicones, no da tirones */
-      const b = v.buf, T = ahora - INTERP_MS; let i = b.length - 8; while (i > 0 && b[i] > T) i -= 4;
-      if (T >= b[b.length - 4]) {const n = b.length - 4, p = n - 4, dt2 = Math.max(1, b[n] - b[p]), e2 = Math.min(T - b[n], 90) / dt2; x = b[n + 1] + (b[n + 1] - b[p + 1]) * e2; z = b[n + 2] + (b[n + 2] - b[p + 2]) * e2; r = b[n + 3];}
+      const b = v.buf, T = ahora - (v.reloj ? v.reloj.ip : INTERP_MS); let i = b.length - 8; while (i > 0 && b[i] > T) i -= 4;
+      if (T >= b[b.length - 4]) {PERF.ext = (PERF.ext || 0) + 1; const n = b.length - 4, p = n - 4, dt2 = Math.max(1, b[n] - b[p]), e2 = Math.min(T - b[n], 90) / dt2; x = b[n + 1] + (b[n + 1] - b[p + 1]) * e2; z = b[n + 2] + (b[n + 2] - b[p + 2]) * e2; r = b[n + 3];}
       else {const j = i + 4, k = Math.max(0, Math.min(1, (T - b[i]) / Math.max(1, b[j] - b[i]))); x = b[i + 1] + (b[j + 1] - b[i + 1]) * k; z = b[i + 2] + (b[j + 2] - b[i + 2]) * k; let dr = b[j + 3] - b[i + 3]; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = b[i + 3] + dr * k;}
       if (Math.hypot(x - v.x, z - v.z) > 8) {x = v.x; z = v.z; b.length = 0;} /* reaparición o salto: sin deslizarse por el mapa */
     } else if (!(v.id === YO && !S)) {const k = S ? ALFA : Math.min(1, (ahora - v.t0) / 72); x = v.x0 + (v.x - v.x0) * k; z = v.z0 + (v.z - v.z0) * k; let dr = v.rot - v.r0; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); r = v.r0 + dr * k;}
@@ -2034,7 +2045,20 @@ const camM = new THREE.Vector3();
 let APAI = VW > VH;
 function ejes() {const s = signo(MI_EQ); return APAI ? {F: {x: -s, z: 0}, R: {x: 0, z: -s}} : {F: {x: 0, z: -s}, R: {x: s, z: 0}};}
 const ESC_H = 1.28; const ZOOMS = [[17, 14], [21, 17], [27, 21.5]]; let zoomI = +(localStorage.getItem('auto.zoom') ?? 1);
-let INTERP_MS = 100; const HUECOS_F = []; /* 17/11: el retraso de pintado se adapta a la red (fotos a trompicones → más colchón; red buena → menos retraso) */
+let INTERP_MS = 100; const HUECOS_F = [];
+/* 17/11 (Henar: «más fluido en línea, con servidor y con móvil»): cada posición recibida se coloca en el tiempo en que se CALCULÓ (reloj de la
+   simulación o del móvil que la mandó), no en el que llegó: el vaivén de la red ya no mueve las posiciones de sitio y el colchón (ip) se ajusta
+   a lo que llegan tarde las fotos de verdad (p95 + una foto). desfase = llegada − tiempo remoto; el menor de los últimos ~3 s es el camino rápido. */
+function relojRemoto(est, llegada, tRemoto) {
+  if (est.ult !== undefined && tRemoto < est.ult - 1500) {est.offs.length = 0; est.tarde.length = 0;} est.ult = tRemoto; /* partida nueva o reloj que salta atrás */
+  const off = llegada - tRemoto; est.offs.push(off); if (est.offs.length > 45) est.offs.shift();
+  let m = Infinity; for (const q of est.offs) if (q < m) m = q;
+  est.tarde.push(off - m); if (est.tarde.length > 60) est.tarde.shift();
+  if (est.tarde.length >= 12) {const o2 = [...est.tarde].sort((a, b) => a - b), p95 = o2[Math.floor(o2.length * 0.95)], obj = Math.max(90, Math.min(220, p95 + est.paso + 18)); est.ip += (obj - est.ip) * 0.1;}
+  return tRemoto + m;
+}
+const RELOJ_F = {offs: [], tarde: [], ip: 100, paso: 1000 / 15}; let FOTO_TS = 0;
+function ipVisto() {let m = INTERP_MS; for (const v of VISTA.values()) if (v.reloj && v.k === 'h' && v.eq !== MI_EQ) m = Math.max(m, v.reloj.ip); return m;} /* 17/11: el retraso de pintado se adapta a la red (fotos a trompicones → más colchón; red buena → menos retraso) */
 let CAM_FIN = null; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
 function camara(dt) {
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
@@ -2308,6 +2332,7 @@ function recibe(o) {
   if (o.t === 'foto' && !S) recibeFoto(o.f);
   if (S) {/* soy el anfitrión: mandos de los demás */
     const h = S.u.find((q) => q.k === 'h' && q.slot === o.de); if (!h) return;
+    if (o.t === 'in') h.llegaIn = performance.now();
     aplicaMando(h, o);
   }
   if (o.t === 'se_fue') {
@@ -2562,7 +2587,7 @@ function bucle() {
       } else if (!S && ESTADO === 'juego') {
         mueveMio(dt);
         if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0) {NET.manda({t: 'volver'}); MIO.listo = false;}}
-        inT -= dt; const golpeNuevo = (MANDO.golpes || 0) !== NET.gEnv || atacando() !== NET.aEnv; if ((inT <= 0 || golpeNuevo) && MIO.listo) {inT = Math.max(inT + 1 / 15, 0); NET.gEnv = MANDO.golpes || 0; NET.aEnv = atacando(); /* 17/11: el golpe se manda al momento, sin esperar al siguiente envío (hasta 66 ms menos) */ NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0, rt: NET.ping || 0, ip: Math.round(INTERP_MS)});}
+        inT -= dt; const golpeNuevo = (MANDO.golpes || 0) !== NET.gEnv || atacando() !== NET.aEnv; if ((inT <= 0 || golpeNuevo) && MIO.listo) {inT = Math.max(inT + 1 / 30, 0); NET.gEnv = MANDO.golpes || 0; NET.aEnv = atacando(); /* 17/11: el golpe se manda al momento, sin esperar al siguiente envío (hasta 66 ms menos) */ NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0, rt: NET.ping || 0, ip: Math.round(ipVisto()), tc: Math.round(performance.now())});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
       UT.value += dt; animaPalantir(); const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); else if (MIRA_AT) miraAtaque(); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
