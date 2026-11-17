@@ -15,7 +15,7 @@ import android.widget.ImageView
 
 /** La Autopista: el juego de duelos a pantalla completa y en horizontal, sin barra del navegador. */
 class MainActivity : Activity() {
-    companion object { const val WEB = "https://la-otra-comunidad.benbarek1903.workers.dev/"; const val JUEGO = WEB + "batalla/autopista.html" }
+    companion object { const val WEB = "https://la-otra-comunidad.benbarek1903.workers.dev/"; const val JUEGO = WEB + "batalla/autopista" } /* sin «.html»: Cloudflare redirige autopista.html → autopista, y esa redirección cerraba la app */
     private var web: WebView? = null
     private var carga: View? = null
 
@@ -37,6 +37,10 @@ class MainActivity : Activity() {
                     startActivity(Intent(Intent.ACTION_VIEW, r.url)); return true
                 }
                 override fun onPageFinished(view: WebView, url: String) { quitaCarga() }
+                /* si el motor de la página se cae (memoria), se recarga en vez de cerrar la app */
+                override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+                    (view.parent as? FrameLayout)?.removeView(view); view.destroy(); web = null; recreate(); return true
+                }
             }
             webChromeClient = WebChromeClient()
             addJavascriptInterface(Puente(), "BrechaAndroid")
