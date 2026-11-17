@@ -2222,7 +2222,7 @@ function subeNivelFx(v) {
   const n = document.createElement('div'); n.className = 'nivelSube'; n.textContent = '¡Nivel ' + v.nivel + '!'; document.body.appendChild(n); setTimeout(() => n.remove(), 1400);
   $('yo').classList.remove('brilla'); void $('yo').offsetWidth; $('yo').classList.add('brilla');
 }
-function marcador(m, t) {$('marcador').dataset.t = t;$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span> · <span class="b">' + m[1 - MI_EQ] + '</span><div style="font-size:11px;color:#c8d4e3">' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</div>';}
+function marcador(m, t) {$('marcador').dataset.t = t;$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span><i>' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</i><span class="b">' + m[1 - MI_EQ] + '</span>';}
 let miniT = 0, consejoI = 0;
 const CONSEJOS = ['Pulsa el + verde encima de una habilidad para aprenderla: cada nivel te da un punto', 'Mueve con el joystick y mantén ⚔ para atacar. Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Dentro de la hierba alta los enemigos no te ven (salvo que estén a tu lado)', 'Los botones pequeños son Destello (un salto corto) y Curar (a ti y a tu compañero)', 'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos', 'En la espesura (a los lados, cruzando los huecos de la empalizada) hay huargos: dan oro y experiencia', 'El troll (oeste) y el huargo alfa (este) dan una bendición a todo tu equipo durante 90 s', 'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en la armería'];
 function consejos(t) {if (localStorage.getItem('auto.consejos') === '3') return; const i = Math.floor((t - 2) / 14); if (i >= 0 && i < CONSEJOS.length && i >= consejoI) {consejoI = i + 1; aviso('💡 ' + CONSEJOS[i]); if (i === CONSEJOS.length - 1) localStorage.setItem('auto.consejos', String(+(localStorage.getItem('auto.consejos') || 0) + 1));}}
@@ -2270,6 +2270,8 @@ const MARCAS = {}; for (const n of ['m_huargo', 'm_troll', 'm_torre0', 'm_torre1
 const marca = (g, n, x, z, t) => {const im = MARCAS[n]; if (im.complete && im.naturalWidth) g.drawImage(im, x - t / 2, z - t / 2, t, t); else return false; return true;};
 const MM_IMG = {};
 function marcaMm(g, n, x, y, t) {let im = MM_IMG[n]; if (!im) {im = MM_IMG[n] = new Image(); im.src = 'ui/' + n + '.webp';} if (!im.complete || !im.naturalWidth) return false; g.drawImage(im, x - t / 2, y - t / 2, t, t); return true;}
+const NIEBLA_MM = document.createElement('canvas'); NIEBLA_MM.width = 96; NIEBLA_MM.height = 196; let VIS_MM = [];
+function vistoMm(q) {const x = q.xi ?? q.x, z = q.zi ?? q.z; return VIS_MM.some((v) => (x - v[0]) ** 2 + (z - v[1]) ** 2 < v[2] * v[2]);}
 function minimapa() {
   const c = $('mini'); if (APAI !== (c.width > c.height)) {c.width = APAI ? 196 : 96; c.height = APAI ? 96 : 196;}
   const W = 96, H = 196, g = c.getContext('2d'), s = signo(MI_EQ);
@@ -2290,12 +2292,17 @@ function minimapa() {
   for (const a of EXTRA.al || []) if (a[2] === MI_EQ) {g.fillStyle = '#ffd36a'; g.beginPath(); g.arc(px(a[0]), pz(a[1]), 2.4, 0, 7); g.fill();}
   RELIQ.forEach((r, i) => {if (EXTRA.rl && EXTRA.rl[i]) {g.fillStyle = '#5aff6a'; g.beginPath(); g.arc(px(r.x), pz(r.z), 2.6, 0, 7); g.fill();}});
   if (MODO === '1v1' && EXTRA.an) {g.strokeStyle = '#ff6a1a'; g.lineWidth = 2; g.beginPath(); g.ellipse(px(0), pz(0), EXTRA.an / KX * W / 2, EXTRA.an / 59 * H / 2, 0, 0, 7); g.stroke();}
+  VIS_MM = [];
+  for (const q of VISTA.values()) if (q.eq === MI_EQ && !(q.vida <= 0)) {if (q.k === 'h' && q.muerto < 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 13]); else if (q.k === 's' && q.muerto !== 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 8]); else if (q.k === 't' || q.k === 'n') VIS_MM.push([q.x, q.z, 13]);}
+  for (const a of EXTRA.al || []) if (a[2] === MI_EQ) VIS_MM.push([a[0], a[1], 10]);
+  {const n = NIEBLA_MM.getContext('2d'); n.globalCompositeOperation = 'source-over'; n.clearRect(0, 0, W, H); n.fillStyle = '#05080cb8'; n.fillRect(0, 0, W, H); n.globalCompositeOperation = 'destination-out';
+   for (const v of VIS_MM) {n.beginPath(); n.ellipse(px(v[0]), pz(v[1]), v[2] / KX * W / 2, v[2] / 59 * H / 2, 0, 0, 7); n.fill();} g.drawImage(NIEBLA_MM, 0, 0);}
   for (const q of VISTA.values()) {
     if (q.k === 'j') continue;
     const mio = q.eq === MI_EQ, col = mio ? '#5fb6ff' : '#ff5a4a', x = px(q.xi ?? q.x), z = pz(q.zi ?? q.z);
     if (q.k === 't' || q.k === 'n') {if (q.vida <= 0) continue; if (q.k === 't' && marca(g, 'm_torre' + q.eq, x, z, 15)) continue; g.fillStyle = col; const r = q.k === 'n' ? 5 : 4; g.fillRect(x - r, z - r, r * 2, r * 2); g.strokeStyle = '#000'; g.lineWidth = 1; g.strokeRect(x - r, z - r, r * 2, r * 2);}
-    else if (q.k === 's') {if (q.muerto === 0) continue; g.fillStyle = col; g.fillRect(x - 1.2, z - 1.2, 2.4, 2.4);}
-    else if (q.k === 'h') {if (q.muerto >= 0 || (!mio && q.escondido)) continue; g.fillStyle = q.id === YO ? '#ffd24a' : col; g.beginPath(); g.arc(x, z, q.id === YO ? 5 : 4, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke();}
+    else if (q.k === 's') {if (q.muerto === 0 || (q.eq !== MI_EQ && !vistoMm(q))) continue; g.fillStyle = col; g.fillRect(x - 1.2, z - 1.2, 2.4, 2.4);}
+    else if (q.k === 'h') {if (q.muerto >= 0 || (!mio && (q.escondido || !vistoMm(q)))) continue; g.fillStyle = q.id === YO ? '#ffd24a' : col; g.beginPath(); g.arc(x, z, q.id === YO ? 5 : 4, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke();}
   }
   /* lo que ve la cámara */
   const ahoraP = performance.now(); for (let i = PINGS.length - 1; i >= 0; i--) {const p = PINGS[i], k = (ahoraP - p.t) / 3000; if (k > 1) {PINGS.splice(i, 1); continue;} g.strokeStyle = p.k === 'retira' || p.k === 'cuidado' ? '#ffcf3a' : '#ff5a3a'; g.lineWidth = 2; g.beginPath(); g.arc(px(p.x), pz(p.z), 4 + 10 * ((k * 3) % 1), 0, 7); g.stroke();}

@@ -61,3 +61,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] (HECHO 17/11, `tools/autopista/pack16`) Pack Autopista 16 ART: lo de debajo del puente — suelo del barranco con río visto desde arriba (`ap_barranco.png`, 1536x1024, se repite de lado a lado) y pared de roca (`ap_pared_roca.png`, 1536x1024, se repite de lado a lado)
 - [ ] Pack Autopista 16 WORK: decorado del fondo del barranco (`ap_barranco_props.glb`: rocas, árboles, arbustos, troncos caídos, juncos) y pilas del puente (`ap_pila.glb`, `ap_estribo.glb`), CC0
 - [x] (HECHO 17/11, `tools/autopista/pack17`) Pack Autopista 17 ART: logo «A-6» del menú (`ap_logo_a6.png`, 1600x640, transparente) e icono de la app con la señal A-6 — el juego pasa a llamarse A-6 (17/11)
+- [ ] Pack Autopista 18 ART (A y B): marcas de apuntado y alcance propias de cada héroe de A-6 (`ap_ind_<clave>_<q|w|e|r|alcance>.png`; líneas 1024x256 hacia la derecha, conos y círculos 512x512) — 17/11

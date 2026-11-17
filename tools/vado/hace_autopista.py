@@ -263,6 +263,46 @@ js = sub(js, "const tF = cargaTex('texturas/campo.webp', true); tF.repeat.set(30
 js = sub(js, "diffuseColor.rgb*=clamp(.55+dot(dt,vec3(.3,.6,.1))*9.,.75,1.25);", "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1);")
 # niebla de día y clara (la de La Brecha era verde oscura y a 24 m de bajada el barranco salía casi negro)
 js = sub(js, "scene.background = new THREE.Color('#14201a'); scene.fog = new THREE.Fog('#14201a', 50, 115);", "scene.background = new THREE.Color('#9fc3dc'); scene.fog = new THREE.Fog('#9fc3dc', 60, 170);")
+# ---------- HUD DE PARTIDA (17/11, Arturo): minimapa arriba del todo y con niebla, marcador nuevo, batería junto al retrato, R más arriba, aros de color ----------
+# marcador: [azul] reloj [rojo] en una sola fila
+js = sub(js, """$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span> · <span class="b">' + m[1 - MI_EQ] + '</span><div style="font-size:11px;color:#c8d4e3">' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</div>';""",
+         """$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span><i>' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</i><span class="b">' + m[1 - MI_EQ] + '</span>';""")
+# niebla en el minimapa: solo se ve lo que ven tu héroe, tus soldados, tus torres y tus balizas (como en el LoL)
+js = sub(js, "function minimapa() {", """const NIEBLA_MM = document.createElement('canvas'); NIEBLA_MM.width = 96; NIEBLA_MM.height = 196; let VIS_MM = [];
+function vistoMm(q) {const x = q.xi ?? q.x, z = q.zi ?? q.z; return VIS_MM.some((v) => (x - v[0]) ** 2 + (z - v[1]) ** 2 < v[2] * v[2]);}
+function minimapa() {""")
+js = sub(js, "  for (const q of VISTA.values()) {\n    if (q.k === 'j') continue;",
+         """  VIS_MM = [];
+  for (const q of VISTA.values()) if (q.eq === MI_EQ && !(q.vida <= 0)) {if (q.k === 'h' && q.muerto < 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 13]); else if (q.k === 's' && q.muerto !== 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 8]); else if (q.k === 't' || q.k === 'n') VIS_MM.push([q.x, q.z, 13]);}
+  for (const a of EXTRA.al || []) if (a[2] === MI_EQ) VIS_MM.push([a[0], a[1], 10]);
+  {const n = NIEBLA_MM.getContext('2d'); n.globalCompositeOperation = 'source-over'; n.clearRect(0, 0, W, H); n.fillStyle = '#05080cb8'; n.fillRect(0, 0, W, H); n.globalCompositeOperation = 'destination-out';
+   for (const v of VIS_MM) {n.beginPath(); n.ellipse(px(v[0]), pz(v[1]), v[2] / KX * W / 2, v[2] / 59 * H / 2, 0, 0, 7); n.fill();} g.drawImage(NIEBLA_MM, 0, 0);}
+  for (const q of VISTA.values()) {
+    if (q.k === 'j') continue;""")
+js = sub(js, "else if (q.k === 's') {if (q.muerto === 0) continue;", "else if (q.k === 's') {if (q.muerto === 0 || (q.eq !== MI_EQ && !vistoMm(q))) continue;")
+js = sub(js, "else if (q.k === 'h') {if (q.muerto >= 0 || (!mio && q.escondido)) continue;", "else if (q.k === 'h') {if (q.muerto >= 0 || (!mio && (q.escondido || !vistoMm(q)))) continue;")
+html = sub(html, '</head>', """<style>
+/* A-6 · HUD de partida (17/11) */
+#mini{top:calc(6px + var(--sat)) !important;border:2px solid #4a6a8a !important;border-radius:10px !important}
+#bAjustes{top:calc(6px + var(--sat)) !important}
+#hud #ping{position:fixed;right:calc(162px + var(--sar));top:calc(56px + var(--sat));padding:2px 6px;font-size:10px !important}
+#marcador{position:fixed;left:50%;top:calc(6px + var(--sat));transform:translateX(-50%);display:flex;align-items:stretch;gap:0;padding:0 !important;border:0 !important;background:none !important;filter:drop-shadow(0 3px 5px #000a)}
+#marcador .a,#marcador .b{min-width:38px;padding:2px 10px;font:italic 900 22px 'Arial Black',system-ui,sans-serif;color:#fff;text-shadow:0 2px 0 #0008;display:flex;align-items:center;justify-content:center}
+#marcador .a{background:linear-gradient(#3aa0ff,#1659c7);border-radius:10px 0 0 10px;clip-path:polygon(0 0,100% 0,88% 100%,0 100%)}
+#marcador .b{background:linear-gradient(#ff5a4a,#b01e1e);border-radius:0 10px 10px 0;clip-path:polygon(12% 0,100% 0,100% 100%,0 100%)}
+#marcador i{font:800 13px system-ui,sans-serif;font-style:normal;color:#e8f0ff;background:#0d1622e8;padding:0 9px;display:flex;align-items:center;border-top:2px solid #ffd21f;border-bottom:2px solid #ffd21f}
+#vital{left:calc(186px + var(--sal)) !important;top:calc(8px + var(--sat)) !important;bottom:auto !important;transform:none !important}
+#vital .vBot{width:30px !important;height:60px !important}
+#vital .vBot b{font-size:10px !important}
+#bR{bottom:172px !important}#mr{bottom:188px !important}
+.hb[data-k] img,.hb.hs img{inset:7% !important;width:86% !important;height:86% !important}
+.hb[data-k] .cd,.hb.hs .cd{inset:7% !important}
+.hb[data-k]::after,.hb.hs::after{background:none !important;inset:4% !important;border-radius:50%;border:3px solid #38c8ff;box-shadow:0 0 9px #38c8ffaa,inset 0 0 6px #38c8ff66;filter:none !important}
+#bR::after{border-color:#ff8a2a !important;box-shadow:0 0 10px #ff8a2aaa,inset 0 0 6px #ff8a2a66 !important}
+.hb.hs::after{border-color:#e8eef6 !important;box-shadow:0 0 6px #fff6 !important;border-width:2px !important}
+.hb[data-k].pronta::after{border-color:#ffd21f !important;box-shadow:0 0 14px #ffd21fcc,inset 0 0 8px #ffd21f88 !important;inset:2% !important}
+.hb[data-k]:not(.pronta)::after{opacity:.75}
+</style></head>""", donde='html')
 # ---------- EL PUENTE (17/11, Arturo: «como si estuvieses encima de un puente cruzando algo, y a los lados paisaje») ----------
 # el tablero (|x| < 11) cruza un barranco con río entre z = -38 y 38; las bases quedan en tierra firme a los dos lados
 js = sub(js, "      gl_FragColor=vec4(col,1.);\n      #include <colorspace_fragment>", "      gl_FragColor=vec4(col,hueco);\n      #include <colorspace_fragment>")

@@ -496,7 +496,28 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 #menu .mAmigos #bUnir{width:34% !important;aspect-ratio:auto !important;height:100% !important;padding:0 !important;border-radius:0 !important;background-image:url(ui/ap_m_jugar.webp) !important;background-size:100% 100% !important;color:#08243a !important;text-shadow:0 1px 0 #ffe9a8;font:800 13px 'Arial Black',system-ui,sans-serif !important}
 #menu .mFila2{width:100% !important}
 </style>
-<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}#menu .mSplash img{object-position:50% 0%!important}</style><style>.mTit h1.apLogo{margin:6px 0 0;line-height:0}.mTit h1.apLogo img{width:min(200px,calc(24 * var(--vw)));height:auto;filter:drop-shadow(0 4px 6px #000a)}.mTit h1.apA6{margin:6px 0 0;font:italic 900 46px 'Arial Black',system-ui,sans-serif!important;color:#ffd21f!important;letter-spacing:.04em;line-height:1;-webkit-text-stroke:2px #10161f;text-shadow:0 4px 0 #10161f,0 0 18px #2f8cff88}</style></head>
+<style>
+/* A-6 · HUD de partida (17/11) */
+#mini{top:calc(6px + var(--sat)) !important;border:2px solid #4a6a8a !important;border-radius:10px !important}
+#bAjustes{top:calc(6px + var(--sat)) !important}
+#hud #ping{position:fixed;right:calc(162px + var(--sar));top:calc(56px + var(--sat));padding:2px 6px;font-size:10px !important}
+#marcador{position:fixed;left:50%;top:calc(6px + var(--sat));transform:translateX(-50%);display:flex;align-items:stretch;gap:0;padding:0 !important;border:0 !important;background:none !important;filter:drop-shadow(0 3px 5px #000a)}
+#marcador .a,#marcador .b{min-width:38px;padding:2px 10px;font:italic 900 22px 'Arial Black',system-ui,sans-serif;color:#fff;text-shadow:0 2px 0 #0008;display:flex;align-items:center;justify-content:center}
+#marcador .a{background:linear-gradient(#3aa0ff,#1659c7);border-radius:10px 0 0 10px;clip-path:polygon(0 0,100% 0,88% 100%,0 100%)}
+#marcador .b{background:linear-gradient(#ff5a4a,#b01e1e);border-radius:0 10px 10px 0;clip-path:polygon(12% 0,100% 0,100% 100%,0 100%)}
+#marcador i{font:800 13px system-ui,sans-serif;font-style:normal;color:#e8f0ff;background:#0d1622e8;padding:0 9px;display:flex;align-items:center;border-top:2px solid #ffd21f;border-bottom:2px solid #ffd21f}
+#vital{left:calc(186px + var(--sal)) !important;top:calc(8px + var(--sat)) !important;bottom:auto !important;transform:none !important}
+#vital .vBot{width:30px !important;height:60px !important}
+#vital .vBot b{font-size:10px !important}
+#bR{bottom:172px !important}#mr{bottom:188px !important}
+.hb[data-k] img,.hb.hs img{inset:7% !important;width:86% !important;height:86% !important}
+.hb[data-k] .cd,.hb.hs .cd{inset:7% !important}
+.hb[data-k]::after,.hb.hs::after{background:none !important;inset:4% !important;border-radius:50%;border:3px solid #38c8ff;box-shadow:0 0 9px #38c8ffaa,inset 0 0 6px #38c8ff66;filter:none !important}
+#bR::after{border-color:#ff8a2a !important;box-shadow:0 0 10px #ff8a2aaa,inset 0 0 6px #ff8a2a66 !important}
+.hb.hs::after{border-color:#e8eef6 !important;box-shadow:0 0 6px #fff6 !important;border-width:2px !important}
+.hb[data-k].pronta::after{border-color:#ffd21f !important;box-shadow:0 0 14px #ffd21fcc,inset 0 0 8px #ffd21f88 !important;inset:2% !important}
+.hb[data-k]:not(.pronta)::after{opacity:.75}
+</style><style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}#menu .mSplash img{object-position:50% 0%!important}</style><style>.mTit h1.apLogo{margin:6px 0 0;line-height:0}.mTit h1.apLogo img{width:min(200px,calc(24 * var(--vw)));height:auto;filter:drop-shadow(0 4px 6px #000a)}.mTit h1.apA6{margin:6px 0 0;font:italic 900 46px 'Arial Black',system-ui,sans-serif!important;color:#ffd21f!important;letter-spacing:.04em;line-height:1;-webkit-text-stroke:2px #10161f;text-shadow:0 4px 0 #10161f,0 0 18px #2f8cff88}</style></head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>
 <div id="menu">
