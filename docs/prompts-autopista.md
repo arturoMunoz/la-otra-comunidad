@@ -159,3 +159,10 @@ ap_borde.glb con nodos sueltos (origen en la base, y=0, frente a +Z, metros real
 Reglas: máx. 1.500 triángulos por pieza (el paso elevado 4.000), un único atlas de 1024 px, sin texto, sin marcas reales, sin luces ni cámaras. Recursos CC0 (Kenney, Quaternius, Poly Haven); LICENCIAS.txt.
 Entrega: Pack_Autopista_10_WORK.zip con ap_borde.glb, una captura de todas las piezas y LICENCIAS.txt.
 ```
+
+## 17/11 · Pack Autopista 27 ART — fondo del menú con tormenta
+Cuatro pedidos ART en el mismo chat y en orden (el 2 rehace el 1 con la luz del relámpago). Textos completos pasados en el chat del 17/11:
+1. Fondo base 1536x1024: autopista abandonada de noche bajo tormenta, paleta fría (azul acero, índigo, violeta), sin naranja; peaje azul/rojo al centro-derecha; mitad izquierda sencilla (va tapada por el retrato); SIN rayos.
+2. La MISMA imagen, idéntica, iluminada desde dentro de las nubes por un relámpago fuera de cuadro (sin dibujar el rayo).
+3. Hoja 2048x2048, 4x4 de 512, fondo negro: rayo 1 vertical ramificado (fotogramas 1-8) y rayo 2 horizontal nube-nube (9-16), chispa → impacto → destello → se apaga.
+4. Hoja 2048x2048, 2x2 de 1024, fondo negro: lluvia inclinada ~15°, 3 tamaños, mismo patrón en bucle y repetible en mosaico.

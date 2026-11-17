@@ -678,6 +678,13 @@ function decoradoPack10(al) {
     pz('paso_elevado', 0, s * 82, 0);
   }
 }""")
+# ---------- DEFINITIVA MÁS A LA IZQUIERDA Y SIN «CAJAS» EN LOS AROS (17/11, Arturo) ----------
+# la definitiva pegada al borde no dejaba sitio para arrastrar y apuntar; y un brillo viejo (box-shadow de antes del Pack 19)
+# en el aro de las habilidades listas salía como un recuadro, y además encogía el aro (inset 2 %)
+html = sub(html, '</head>', """<style>
+.hb[data-k]::after,.hb[data-k].pronta::after,.hb.hs::after,#bR::after,#bR.pronta::after{box-shadow:none !important;border:0 !important;border-radius:0 !important;inset:-11% !important}
+#bR{right:92px !important;bottom:186px !important}
+</style></head>""", donde='html')
 # menú: fondo = la imagen de carga (los dos peajes), retrato sin cortar la cabeza, sin Gamling (Tolkien) ni el jinete
 html = sub(html, '</head>', '<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}'
            '#menu .mSplash img{object-position:50% 0%!important}</style></head>', donde='html')
