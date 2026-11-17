@@ -13,16 +13,16 @@ async def main():
         for i in range(60):
             await pg.wait_for_timeout(1000)
             if await pg.evaluate("window._vado && window._vado.ESTADO") == 'juego': break
-        await pg.wait_for_timeout(5000)
-        await pg.evaluate("() => {const V = window._vado, h = V.S.u.find(u => u.id === V.YO); h.rk = {q:1,w:1,e:1,r:1}; h.lvl = 6; h.mana = 999; for (const c of 'qwer') h.cd[c] = 0;}")
+        await pg.wait_for_timeout(5000); await pg.evaluate("() => {const g = document.getElementById('guia'); if (g) g.remove();}")
+        await pg.evaluate("() => {const V = window._vado, h = V.S.u.find(u => u.id === V.YO); h.x = 0; h.z = 6; if (V.MIO) {V.MIO.x = 0; V.MIO.z = 6;} h.rk = {q:1,w:1,e:1,r:1}; h.lvl = 6; h.mana = 999; for (const c of 'qwer') h.cd[c] = 0;}")
         await pg.wait_for_timeout(1500)
         bid = '#b' + K.upper(); bb = await pg.evaluate("(s) => {const r = document.querySelector(s).getBoundingClientRect(); return [r.x + r.width/2, r.y + r.height/2];}", bid)
         x, y = bb
         await pg.evaluate("""([s, x, y]) => {const el = document.querySelector(s); const ev = (t, X, Y) => el.dispatchEvent(new PointerEvent(t, {bubbles: true, pointerId: 7, clientX: X, clientY: Y, pointerType: 'touch', isPrimary: true}));
-          ev('pointerdown', x, y); setTimeout(() => ev('pointermove', x - 30, y - 50), 60); setTimeout(() => window.dispatchEvent(new PointerEvent('pointermove', {bubbles: true, pointerId: 7, clientX: x - 60, clientY: y - 90, pointerType: 'touch'})), 120);}""", [bid, x, y])
+          ev('pointerdown', x, y); setTimeout(() => ev('pointermove', x - 30, y - 50), 60); setTimeout(() => window.dispatchEvent(new PointerEvent('pointermove', {bubbles: true, pointerId: 7, clientX: x - 160, clientY: y - 40, pointerType: 'touch'})), 120);}""", [bid, x, y])
         await pg.wait_for_timeout(1500)
         vis = await pg.evaluate("() => Object.entries(window._vado.MIRA_H).filter(([n, m]) => m.visible).map(([n]) => n)")
-        await pg.screenshot(path='/home/claude/pruebas/mira_%s_%s.png' % (HEROE, K))
+        await pg.screenshot(path='/home/claude/pruebas/mira_%s_%s.png' % (HEROE, K), clip={'x': 200, 'y': 110, 'width': 420, 'height': 280})
         print('visibles', vis); print('errores', [e for e in err if 'ind' in e or 'webp' in e][:5])
         await b.close()
 asyncio.run(main())

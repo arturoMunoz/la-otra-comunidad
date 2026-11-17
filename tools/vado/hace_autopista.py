@@ -954,6 +954,34 @@ js = sub(js, "const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: t, t
 js = sub(js, "f.scale.set(alc, 1, an);", "f.scale.set(alc, 1, propia ? (H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2) / propia.userData.banda : an);")
 js = sub(js, "f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.9);", "f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.4 / (f.userData.banda || 0.45));")
 
+# ---------- PACK 32 ART imagen 1 (17/11, Henar: «las flechas que no te gusten, rehazlas»): flecha de apuntar EN PIEZAS, blanca y teñida del
+# color del héroe con mezcla de luz: inicio en los pies + cuerpo que se REPITE (no se estira) + punta con la punta en el alcance. La franja
+# del cuerpo mide justo lo que golpea. tools/autopista/pack32/flecha.png → ui/ap_fl_{cuerpo,inicio,punta}.webp (procesa_pack32.py).
+# Medidas en píxeles del original: cuerpo 1056x103 (franja 82,5 entre las dos líneas, 11 chevrones de 96); punta 318x320 (rectángulo de
+# 155 de alto que empieza en x=6, punta en x=312); inicio 192x200 (líneas a 100, extremo abierto en x=187).
+js = sub(js, "function marcaH(tipo, k, forma) {", r"""const COLOR_FL = {enano: '#9bdcff', gandalf: '#ff8a3a', orco: '#7dff5a', elfo: '#ff5a4a', hobbit: '#c4ff6a', gollum: '#c88bff', rohan: '#ffcf7a'};
+const FL = {};
+function flechaAP(tipo, x, z, wx, wz, alc, W) {
+  if (!FL.g) {
+    FL.g = new THREE.Group(); FL.g.renderOrder = 5;
+    const pieza = (n, rep) => {const t = cargaTex('../batalla/ui/' + n + '.webp'); t.anisotropy = renderer.capabilities.getMaxAnisotropy(); if (rep) t.wrapS = THREE.RepeatWrapping; const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.95})); m.renderOrder = 5; FL.g.add(m); return m;};
+    FL.cuerpo = pieza('ap_fl_cuerpo', true); FL.punta = pieza('ap_fl_punta'); FL.inicio = pieza('ap_fl_inicio'); scene.add(FL.g);
+  }
+  const c = COLOR_FL[tipo] || '#ffffff'; for (const m of [FL.cuerpo, FL.punta, FL.inicio]) m.material.color.set(c).multiplyScalar(2.2);
+  const k = W / 82.5, kh = W / 155, ks = W / 100, finCuerpo = Math.max(0.05, alc - 306 * kh + 2 * kh);
+  FL.punta.scale.set(318 * kh, 1, 320 * kh); FL.punta.position.set(alc - (312 - 159) * kh, 0, 0);
+  FL.cuerpo.scale.set(finCuerpo, 1, 103 * k); FL.cuerpo.position.set(finCuerpo / 2, 0, 0); FL.cuerpo.material.map.repeat.x = finCuerpo / (1056 * k); FL.cuerpo.material.map.offset.x = -(performance.now() / 1000) * 0.6 % 1;
+  FL.inicio.scale.set(192 * ks, 1, 200 * ks); FL.inicio.position.set((96 - 187) * ks, 0, 0);
+  FL.g.position.set(x, 0.11, z); FL.g.rotation.y = Math.atan2(-wz, wx); FL.g.visible = true; FL.vivo = performance.now();
+}
+function marcaH(tipo, k, forma) {""")
+js = sub(js, "function animaRafagas(dt) {", "function animaRafagas(dt) {\n  if (FL.g && FL.g.visible && performance.now() - FL.vivo > 80) FL.g.visible = false;")
+js = sub(js, "else {const f = propia || mira.flecha, an = (H.ancho ? H.ancho * 2 : H.tipo === 'dash' ? (H.dano ? 3.2 : 1.1) : 1.4) * 2 * (propia ? 1.25 : 1); /* ancho real de lo que golpea: la carga hiere a 1,6 m de cada lado; el paso élfico no hiere */ f.visible = true; f.scale.set(alc, 1, propia ? (H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2) / propia.userData.banda : an); f.position.set(x + wx * alc / 2, 0.11, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);}",
+             "else {if (propia) propia.visible = false; flechaAP(t, x, z, wx, wz, alc, H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2);}")
+js = sub(js, "const f = marcaH(v.tipo, 'basico', 'flecha') || mira.flecha; f.visible = true; f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.4 / (f.userData.banda || 0.45)); f.position.set(x + wx * alc / 2, 0.1, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);",
+             "flechaAP(v.tipo, x, z, wx, wz, alc, 0.55);")
+js = sub(js, "function ocultaMira() {", "function ocultaMira() {if (FL.g) FL.g.visible = false; ")
+
 # ---------- MANDOS EN ARCO (17/11, Henar: «es una chapuza»: botones pisándose) ----------
 # Esquema fijo como el del Wild Rift alrededor del ataque (abajo a la derecha): Q a la izquierda, W en diagonal, E encima y la R
 # más afuera; el «+» como insignia arriba a la izquierda de cada habilidad; torre y soldados pegados al ataque; hechizos, BASE y

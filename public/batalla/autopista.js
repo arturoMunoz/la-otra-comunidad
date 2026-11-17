@@ -1440,6 +1440,7 @@ function animaBrillos(dt) {
   animaBrillos.antes = [...suma.keys()];
 }
 function animaRafagas(dt) {
+  if (FL.g && FL.g.visible && performance.now() - FL.vivo > 80) FL.g.visible = false;
   animaBrillos(dt);
   for (let i = RAFAGAS.length - 1; i >= 0; i--) {const r = RAFAGAS[i]; r.t += dt; const k = Math.min(1, r.t / r.dur);
     r.o.position.set(r.x + (r.tx - r.x) * k, r.y * (1 - k) + 0.25 * k + Math.sin(k * Math.PI) * r.salta, r.z + (r.tz - r.z) * k); r.o.rotation.y = Math.atan2(r.tx - r.x, r.tz - r.z);
@@ -2202,6 +2203,21 @@ const APUNTABLE = {dash: 1, linea: 1, cono: 1, zona: 1, salto: 1, area: 1, ejecu
 const IND_HEROE = {rohan: 'q e r alcance basico', enano: 'q e r alcance basico', hobbit: 'q e alcance basico', gandalf: 'q e r alcance basico', gollum: 'q e alcance basico', orco: 'q w e r alcance basico', elfo: 'q e r alcance basico'};
 const MIRA_H = {};
 const IND_BANDA = {"ap_ind_elfo_basico": 0.5, "ap_ind_elfo_e": 0.39, "ap_ind_elfo_q": 0.203, "ap_ind_enano_basico": 0.534, "ap_ind_gandalf_basico": 0.431, "ap_ind_gandalf_q": 0.659, "ap_ind_gandalf_r": 0.757, "ap_ind_gollum_basico": 0.469, "ap_ind_gollum_e": 0.673, "ap_ind_hobbit_basico": 0.526, "ap_ind_hobbit_q": 0.777, "ap_ind_orco_basico": 0.526, "ap_ind_orco_e": 0.459, "ap_ind_rohan_basico": 0.435, "ap_ind_rohan_q": 0.828, "ap_ind_rohan_r": 0.652};
+const COLOR_FL = {enano: '#9bdcff', gandalf: '#ff8a3a', orco: '#7dff5a', elfo: '#ff5a4a', hobbit: '#c4ff6a', gollum: '#c88bff', rohan: '#ffcf7a'};
+const FL = {};
+function flechaAP(tipo, x, z, wx, wz, alc, W) {
+  if (!FL.g) {
+    FL.g = new THREE.Group(); FL.g.renderOrder = 5;
+    const pieza = (n, rep) => {const t = cargaTex('../batalla/ui/' + n + '.webp'); t.anisotropy = renderer.capabilities.getMaxAnisotropy(); if (rep) t.wrapS = THREE.RepeatWrapping; const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.95})); m.renderOrder = 5; FL.g.add(m); return m;};
+    FL.cuerpo = pieza('ap_fl_cuerpo', true); FL.punta = pieza('ap_fl_punta'); FL.inicio = pieza('ap_fl_inicio'); scene.add(FL.g);
+  }
+  const c = COLOR_FL[tipo] || '#ffffff'; for (const m of [FL.cuerpo, FL.punta, FL.inicio]) m.material.color.set(c).multiplyScalar(2.2);
+  const k = W / 82.5, kh = W / 155, ks = W / 100, finCuerpo = Math.max(0.05, alc - 306 * kh + 2 * kh);
+  FL.punta.scale.set(318 * kh, 1, 320 * kh); FL.punta.position.set(alc - (312 - 159) * kh, 0, 0);
+  FL.cuerpo.scale.set(finCuerpo, 1, 103 * k); FL.cuerpo.position.set(finCuerpo / 2, 0, 0); FL.cuerpo.material.map.repeat.x = finCuerpo / (1056 * k); FL.cuerpo.material.map.offset.x = -(performance.now() / 1000) * 0.6 % 1;
+  FL.inicio.scale.set(192 * ks, 1, 200 * ks); FL.inicio.position.set((96 - 187) * ks, 0, 0);
+  FL.g.position.set(x, 0.11, z); FL.g.rotation.y = Math.atan2(-wz, wx); FL.g.visible = true; FL.vivo = performance.now();
+}
 function marcaH(tipo, k, forma) {
   if (!(IND_HEROE[tipo] || '').split(' ').includes(k)) return null; const n = 'ap_ind_' + tipo + '_' + k;
   if (!MIRA_H[n]) {const t = cargaTex('../batalla/ui/' + n + '.webp'), g = new THREE.PlaneGeometry(1, 1); t.anisotropy = renderer.capabilities.getMaxAnisotropy(); g.rotateX(-Math.PI / 2); if (forma === 'cono') g.translate(0, 0, -0.5);
@@ -2231,7 +2247,7 @@ function muestraMira(k, dx, dy) {
   {const ra = H.tipo === 'area' ? H.radio : alc, a = marcaH(t, 'alcance', 'area'); if (a) {a.visible = true; a.position.set(x, 0.09, z); a.scale.setScalar(2 * ra);} else {mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * ra * 256 / 235);}}
   if (forma === 'area') {const a = propia || mira.area, r = H.tipo === 'ejecuta' ? H.alc : H.radio, lejos = H.tipo === 'zona' || H.tipo === 'salto'; a.visible = true; a.scale.setScalar(2 * r * (propia ? 1 : 256 / 231)); a.position.set(lejos ? x + wx * alc * k2 : x, 0.11, lejos ? z + wz * alc * k2 : z);}
   else if (forma === 'cono') {if (propia) {const d = H.alc * 1.05; propia.visible = true; propia.scale.set(d * Math.min(1.25, H.ang / (Math.PI / 2) + 0.2), 1, d); propia.position.set(x, 0.11, z); propia.rotation.y = Math.atan2(-wx, -wz);} else {const c = mira.cono, tam = H.alc * 512 / 325; c.visible = true; c.scale.set(tam * Math.min(1.2, H.ang / (Math.PI / 2)), 1, tam); c.position.set(x, 0.11, z); c.rotation.y = Math.atan2(-wx, -wz);}}
-  else {const f = propia || mira.flecha, an = (H.ancho ? H.ancho * 2 : H.tipo === 'dash' ? (H.dano ? 3.2 : 1.1) : 1.4) * 2 * (propia ? 1.25 : 1); /* ancho real de lo que golpea: la carga hiere a 1,6 m de cada lado; el paso élfico no hiere */ f.visible = true; f.scale.set(alc, 1, propia ? (H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2) / propia.userData.banda : an); f.position.set(x + wx * alc / 2, 0.11, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);}
+  else {if (propia) propia.visible = false; flechaAP(t, x, z, wx, wz, alc, H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2);}
   mira.dir = {wx, wz, px: x + wx * alc * k2, pz: z + wz * alc * k2};
 }
 /* 17/11: apuntar el golpe básico como en el LoL: al arrastrar el ataque se ve tu alcance y una flecha hacia donde apuntas (el objetivo sale con el aro blanco) */
@@ -2241,7 +2257,7 @@ function miraAtaque() {
   if (!mira) mira = {alc: indicador('ind_alcance', '#ffffff'), area: indicador('ind_area', '#ffe9a8'), flecha: indicador('ind_flecha', '#ffe9a8'), cono: indicador('ind_cono', '#ffe9a8')};
   const {F, R} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, {dx, dy} = MIRA_AT, l = Math.hypot(dx, dy) || 1, wx = (dx * R.x - dy * F.x) / l, wz = (dx * R.z - dy * F.z) / l, alc = HEROES[v.tipo].alcance;
   mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * alc * 256 / 235);
-  const f = marcaH(v.tipo, 'basico', 'flecha') || mira.flecha; f.visible = true; f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.4 / (f.userData.banda || 0.45)); f.position.set(x + wx * alc / 2, 0.1, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);
+  flechaAP(v.tipo, x, z, wx, wz, alc, 0.55);
 }
 /* 17/11 («que se vean las habilidades del contrario»): al lanzar el rival, su forma sale en rojo en el suelo y se apaga en medio segundo */
 const TELE = [];
@@ -2253,7 +2269,7 @@ function telegrafo(H, x, z, dx, dz, px, pz) {
   if (!m) return; m.visible = true; m.material.opacity = 0.9; TELE.push({m, t: 0});
 }
 function animaTele(dt) {for (let i = TELE.length - 1; i >= 0; i--) {const T = TELE[i]; T.t += dt; T.m.material.opacity = 0.9 * Math.max(0, 1 - T.t / 0.6); if (T.t > 0.6) {scene.remove(T.m); T.m.geometry.dispose(); T.m.material.dispose(); TELE.splice(i, 1);}}}
-function ocultaMira() {for (const n in MIRA_H) MIRA_H[n].visible = false; if (mira) {for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false; mira.dir = null;}}
+function ocultaMira() {if (FL.g) FL.g.visible = false; for (const n in MIRA_H) MIRA_H[n].visible = false; if (mira) {for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false; mira.dir = null;}}
 function lanzaMia(k, apunta) {
   const v = VISTA.get(YO); if (!v || v.muerto >= 0) return;
   const i = 'qwer'.indexOf(k); if (v.cds && v.cds[i] > 0) return; if (!(v.rk && v.rk[i] > 0)) {if (subeMia(k)) return; aviso(v.pts > 0 ? 'Pulsa el + de encima para aprender esta habilidad' : k === 'r' ? 'La definitiva se aprende a nivel 4' : 'Aún no la has aprendido: sube de nivel'); return;}
