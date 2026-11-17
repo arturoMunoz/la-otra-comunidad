@@ -303,6 +303,25 @@ html = sub(html, '</head>', """<style>
 .hb[data-k].pronta::after{border-color:#ffd21f !important;box-shadow:0 0 14px #ffd21fcc,inset 0 0 8px #ffd21f88 !important;inset:2% !important}
 .hb[data-k]:not(.pronta)::after{opacity:.75}
 </style></head>""", donde='html')
+# ---------- NIEBLA EN EL MAPA (17/11, Arturo: «como en el LoL»): fuera de la vista de los tuyos el suelo se oscurece y los enemigos no se ven ----------
+# la vista se calcula a la vez que el minimapa (~7 veces por segundo) y se pinta en una textura de 64x140 (1 px = 1 m): coste casi nulo
+js = sub(js, "const NIEBLA_MM = document.createElement('canvas');", "const NIEBLA_SUELO = document.createElement('canvas'); NIEBLA_SUELO.width = 64; NIEBLA_SUELO.height = 140; const NIEBLA_TEX = new THREE.CanvasTexture(NIEBLA_SUELO); NIEBLA_TEX.minFilter = NIEBLA_TEX.magFilter = THREE.LinearFilter; NIEBLA_TEX.generateMipmaps = false;\nconst NIEBLA_MM = document.createElement('canvas');")
+js = sub(js, " g.drawImage(NIEBLA_MM, 0, 0);}", """ g.drawImage(NIEBLA_MM, 0, 0);
+   const ns = NIEBLA_SUELO.getContext('2d'); ns.globalCompositeOperation = 'source-over'; ns.clearRect(0, 0, 64, 140); ns.fillStyle = '#000'; ns.fillRect(0, 0, 64, 140); ns.globalCompositeOperation = 'destination-out';
+   for (const v of VIS_MM) {const cx = v[0] + 32, cz = v[1] + 70, gr = ns.createRadialGradient(cx, cz, v[2] * 0.72, cx, cz, v[2]); gr.addColorStop(0, '#000'); gr.addColorStop(1, '#0000'); ns.fillStyle = gr; ns.beginPath(); ns.arc(cx, cz, v[2], 0, 7); ns.fill();}
+   NIEBLA_TEX.needsUpdate = true;}""")
+js = sub(js, "uniform sampler2D tH;')", "uniform sampler2D tH,tNie;')")
+js = sub(js, "m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH};", "m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH}; sh.uniforms.tNie = {value: NIEBLA_TEX};")
+js = sub(js, "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1);", "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1); diffuseColor.rgb*=1.-.58*texture2D(tNie,vec2((vWD.x+32.)/64.,1.-(vWD.y+70.)/140.)).a;")
+# enemigos fuera de la vista: no se ven ni se pueden señalar (los héroes cuentan como «escondidos», igual que en la hierba)
+js = sub(js, "escondido = v.k === 'h' && v.eq !== MI_EQ && ((v.flags & 1) || ((v.flags & 8) && !veoHierba(v)));", "escondido = v.k === 'h' && v.eq !== MI_EQ && ((v.flags & 1) || ((v.flags & 8) && !veoHierba(v)) || !vistoMm(v));")
+js = sub(js, "o.raiz.visible = !escondido && !(v.k === 'h' && muerto && v.muerto > 3);", "o.raiz.visible = !escondido && !(v.k === 'h' && muerto && v.muerto > 3) && !(v.k === 's' && v.eq !== MI_EQ && !vistoMm(v));")
+# vista: héroe 16 m, soldados 9 m
+js = js.replace("VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 13]); else if (q.k === 's' && q.muerto !== 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 8]);", "VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 14]); else if (q.k === 's' && q.muerto !== 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 9]);")
+# textos que aún decían «armería»
+for a, b in [('La armería está en tu fuente', 'El taller está en tu base'), ('puedes comprar en la armería', 'puedes comprar en el taller'), ('compras en la armería', 'compras en el taller')]:
+    if a not in js: fallos.append('[texto] ' + a)
+    js = js.replace(a, b)
 # ---------- EL PUENTE (17/11, Arturo: «como si estuvieses encima de un puente cruzando algo, y a los lados paisaje») ----------
 # el tablero (|x| < 11) cruza un barranco con río entre z = -38 y 38; las bases quedan en tierra firme a los dos lados
 js = sub(js, "      gl_FragColor=vec4(col,1.);\n      #include <colorspace_fragment>", "      gl_FragColor=vec4(col,hueco);\n      #include <colorspace_fragment>")

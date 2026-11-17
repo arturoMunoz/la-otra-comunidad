@@ -463,9 +463,9 @@ function construyeMapa() {
   (function espera() {if (listoTex()) hornea(); else setTimeout(espera, 60);})();
   const m = new THREE.MeshLambertMaterial({map: rt.texture, alphaTest: 0.5});
   /* detalle fino encima (la hierba de cerca se ve nítida aunque la textura horneada sea de ~5 cm por píxel) */
-  m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH};
+  m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH}; sh.uniforms.tNie = {value: NIEBLA_TEX};
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWD=(modelMatrix*vec4(transformed,1.)).xz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD; uniform sampler2D tH;').replace('#include <map_fragment>', '#include <map_fragment>\nvec3 dt=texture2D(tH,vWD*.45).rgb; diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1);');};
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD; uniform sampler2D tH,tNie;').replace('#include <map_fragment>', '#include <map_fragment>\nvec3 dt=texture2D(tH,vWD*.45).rgb; diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1); diffuseColor.rgb*=1.-.58*texture2D(tNie,vec2((vWD.x+32.)/64.,1.-(vWD.y+70.)/140.)).a;');};
   const suelo = new THREE.Mesh(gB, m); suelo.receiveShadow = true; scene_.add(suelo);
   /* fuera de la zona horneada: suelo sencillo y oscuro (queda bajo el bosque) */
   const g = new THREE.PlaneGeometry(220, 260, 1, 1); g.rotateX(-Math.PI / 2);
@@ -1608,7 +1608,7 @@ function dibuja(dt) {
       if (o.escala === undefined) o.escala = o.raiz.scale.x;
       if (o.sqT > 0) {o.sqT -= dt; const k = 1 - Math.max(0, o.sqT) / o.sqD, a = o.sqA * Math.sin(k * Math.PI * 1.5) * (1 - k) * 1.4; o.raiz.scale.set(o.escala * (1 - a * 0.55), o.escala * (1 + a), o.escala * (1 - a * 0.55)); o.sqOn = true;}
       else if (o.sqOn) {o.sqOn = false; o.raiz.scale.setScalar(o.escala);}
-      const invis = v.k === 'h' && (v.flags & 1 || (v.flags & 8 && v.eq === MI_EQ)), escondido = v.k === 'h' && v.eq !== MI_EQ && ((v.flags & 1) || ((v.flags & 8) && !veoHierba(v))); v.escondido = escondido; o.raiz.visible = !escondido && !(v.k === 'h' && muerto && v.muerto > 3);
+      const invis = v.k === 'h' && (v.flags & 1 || (v.flags & 8 && v.eq === MI_EQ)), escondido = v.k === 'h' && v.eq !== MI_EQ && ((v.flags & 1) || ((v.flags & 8) && !veoHierba(v)) || !vistoMm(v)); v.escondido = escondido; o.raiz.visible = !escondido && !(v.k === 'h' && muerto && v.muerto > 3) && !(v.k === 's' && v.eq !== MI_EQ && !vistoMm(v));
       if (invis && v.eq === MI_EQ) o.raiz.traverse((q) => {if (q.isMesh) {q.material.transparent = true; q.material.opacity = 0.4;}}); else if (o.semi) o.raiz.traverse((q) => {if (q.isMesh) q.material.opacity = 1;});
       o.semi = invis;
     } else if (v.k === 't') {
@@ -2224,7 +2224,7 @@ function subeNivelFx(v) {
 }
 function marcador(m, t) {$('marcador').dataset.t = t;$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span><i>' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</i><span class="b">' + m[1 - MI_EQ] + '</span>';}
 let miniT = 0, consejoI = 0;
-const CONSEJOS = ['Pulsa el + verde encima de una habilidad para aprenderla: cada nivel te da un punto', 'Mueve con el joystick y mantén ⚔ para atacar. Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Dentro de la hierba alta los enemigos no te ven (salvo que estén a tu lado)', 'Los botones pequeños son Destello (un salto corto) y Curar (a ti y a tu compañero)', 'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos', 'En la espesura (a los lados, cruzando los huecos de la empalizada) hay huargos: dan oro y experiencia', 'El troll (oeste) y el huargo alfa (este) dan una bendición a todo tu equipo durante 90 s', 'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en la armería'];
+const CONSEJOS = ['Pulsa el + verde encima de una habilidad para aprenderla: cada nivel te da un punto', 'Mueve con el joystick y mantén ⚔ para atacar. Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Dentro de la hierba alta los enemigos no te ven (salvo que estén a tu lado)', 'Los botones pequeños son Destello (un salto corto) y Curar (a ti y a tu compañero)', 'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos', 'En la espesura (a los lados, cruzando los huecos de la empalizada) hay huargos: dan oro y experiencia', 'El troll (oeste) y el huargo alfa (este) dan una bendición a todo tu equipo durante 90 s', 'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en el taller'];
 function consejos(t) {if (localStorage.getItem('auto.consejos') === '3') return; const i = Math.floor((t - 2) / 14); if (i >= 0 && i < CONSEJOS.length && i >= consejoI) {consejoI = i + 1; aviso('💡 ' + CONSEJOS[i]); if (i === CONSEJOS.length - 1) localStorage.setItem('auto.consejos', String(+(localStorage.getItem('auto.consejos') || 0) + 1));}}
 /* PARTIDA GUIADA (16/11): un Duelo contra la máquina con el Jinete, el rival pega menos (S.facil) y un cartel va explicando cada cosa.
    Cada paso se cumple haciendo lo que pide (ok) o, si solo informa, pasados unos segundos (seg). El aro verde (clase guiaOjo) señala el botón. */
@@ -2270,6 +2270,7 @@ const MARCAS = {}; for (const n of ['m_huargo', 'm_troll', 'm_torre0', 'm_torre1
 const marca = (g, n, x, z, t) => {const im = MARCAS[n]; if (im.complete && im.naturalWidth) g.drawImage(im, x - t / 2, z - t / 2, t, t); else return false; return true;};
 const MM_IMG = {};
 function marcaMm(g, n, x, y, t) {let im = MM_IMG[n]; if (!im) {im = MM_IMG[n] = new Image(); im.src = 'ui/' + n + '.webp';} if (!im.complete || !im.naturalWidth) return false; g.drawImage(im, x - t / 2, y - t / 2, t, t); return true;}
+const NIEBLA_SUELO = document.createElement('canvas'); NIEBLA_SUELO.width = 64; NIEBLA_SUELO.height = 140; const NIEBLA_TEX = new THREE.CanvasTexture(NIEBLA_SUELO); NIEBLA_TEX.minFilter = NIEBLA_TEX.magFilter = THREE.LinearFilter; NIEBLA_TEX.generateMipmaps = false;
 const NIEBLA_MM = document.createElement('canvas'); NIEBLA_MM.width = 96; NIEBLA_MM.height = 196; let VIS_MM = [];
 function vistoMm(q) {const x = q.xi ?? q.x, z = q.zi ?? q.z; return VIS_MM.some((v) => (x - v[0]) ** 2 + (z - v[1]) ** 2 < v[2] * v[2]);}
 function minimapa() {
@@ -2293,10 +2294,13 @@ function minimapa() {
   RELIQ.forEach((r, i) => {if (EXTRA.rl && EXTRA.rl[i]) {g.fillStyle = '#5aff6a'; g.beginPath(); g.arc(px(r.x), pz(r.z), 2.6, 0, 7); g.fill();}});
   if (MODO === '1v1' && EXTRA.an) {g.strokeStyle = '#ff6a1a'; g.lineWidth = 2; g.beginPath(); g.ellipse(px(0), pz(0), EXTRA.an / KX * W / 2, EXTRA.an / 59 * H / 2, 0, 0, 7); g.stroke();}
   VIS_MM = [];
-  for (const q of VISTA.values()) if (q.eq === MI_EQ && !(q.vida <= 0)) {if (q.k === 'h' && q.muerto < 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 13]); else if (q.k === 's' && q.muerto !== 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 8]); else if (q.k === 't' || q.k === 'n') VIS_MM.push([q.x, q.z, 13]);}
+  for (const q of VISTA.values()) if (q.eq === MI_EQ && !(q.vida <= 0)) {if (q.k === 'h' && q.muerto < 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 14]); else if (q.k === 's' && q.muerto !== 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 9]); else if (q.k === 't' || q.k === 'n') VIS_MM.push([q.x, q.z, 13]);}
   for (const a of EXTRA.al || []) if (a[2] === MI_EQ) VIS_MM.push([a[0], a[1], 10]);
   {const n = NIEBLA_MM.getContext('2d'); n.globalCompositeOperation = 'source-over'; n.clearRect(0, 0, W, H); n.fillStyle = '#05080cb8'; n.fillRect(0, 0, W, H); n.globalCompositeOperation = 'destination-out';
-   for (const v of VIS_MM) {n.beginPath(); n.ellipse(px(v[0]), pz(v[1]), v[2] / KX * W / 2, v[2] / 59 * H / 2, 0, 0, 7); n.fill();} g.drawImage(NIEBLA_MM, 0, 0);}
+   for (const v of VIS_MM) {n.beginPath(); n.ellipse(px(v[0]), pz(v[1]), v[2] / KX * W / 2, v[2] / 59 * H / 2, 0, 0, 7); n.fill();} g.drawImage(NIEBLA_MM, 0, 0);
+   const ns = NIEBLA_SUELO.getContext('2d'); ns.globalCompositeOperation = 'source-over'; ns.clearRect(0, 0, 64, 140); ns.fillStyle = '#000'; ns.fillRect(0, 0, 64, 140); ns.globalCompositeOperation = 'destination-out';
+   for (const v of VIS_MM) {const cx = v[0] + 32, cz = v[1] + 70, gr = ns.createRadialGradient(cx, cz, v[2] * 0.72, cx, cz, v[2]); gr.addColorStop(0, '#000'); gr.addColorStop(1, '#0000'); ns.fillStyle = gr; ns.beginPath(); ns.arc(cx, cz, v[2], 0, 7); ns.fill();}
+   NIEBLA_TEX.needsUpdate = true;}
   for (const q of VISTA.values()) {
     if (q.k === 'j') continue;
     const mio = q.eq === MI_EQ, col = mio ? '#5fb6ff' : '#ff5a4a', x = px(q.xi ?? q.x), z = pz(q.zi ?? q.z);
@@ -2357,7 +2361,7 @@ function hud() {
     if (b._cd > 0 && !(cd > 0)) {b.classList.remove('lista'); void b.offsetWidth; b.classList.add('lista');} b._cd = cd; const sm = rk > 0 && v.mana < costeMn(v.tipo, k, rk); if (b._sm !== sm) {b._sm = sm; b.classList.toggle('sinMana', sm);}
     const pr = !(cd > 0) && rk > 0 && v.muerto < 0 && !sm; if (b._pr !== pr) {b._pr = pr; b.classList.toggle('pronta', pr);}
   });;
-  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); pon_(m, 'innerHTML', (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en la armería</small>');} else m.classList.add('hidden');
+  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); pon_(m, 'innerHTML', (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en el taller</small>');} else m.classList.add('hidden');
   const enFuente = enF;
   $('bTienda').style.opacity = enFuente ? 1 : 0.45;
 }
@@ -2455,7 +2459,7 @@ const CAT_OBJ = {atq: ['hoja', 'daga', 'herugrim', 'guthwine', 'hacha', 'tomo', 
 const ST_TXT = {dano: (v) => '+' + v + ' daño', vatq: (v) => '+' + Math.round(v * 100) + ' % vel. ataque', vida: (v) => '+' + v + ' vida', reduc: (v) => '−' + Math.round(v * 100) + ' % daño recibido', arm: (v) => '+' + v + ' armadura', rm: (v) => '+' + v + ' resist. mágica', poder: (v) => '+' + v + ' poder mágico', mana: (v) => '+' + v + ' maná', vel: (v) => '+' + Math.round(v * 100) + ' % velocidad', regen: (v) => '+' + v + ' vida/s', crit: (v) => Math.round(v * 100) + ' % crítico', espinas: (v) => Math.round(v * 100) + ' % espinas', esquiva: (v) => Math.round(v * 100) + ' % esquiva', robo: (v) => Math.round(v * 100) + ' % robo de vida'};
 function abreTienda() {
   const v = VISTA.get(YO); if (!v) return;
-  if (!(Math.hypot(v.x - BASES[MI_EQ].fuente.x, v.z - BASES[MI_EQ].fuente.z) < 9 || v.muerto >= 0)) {aviso('La armería está en tu fuente (botón ⌂ para volver)'); return;}
+  if (!(Math.hypot(v.x - BASES[MI_EQ].fuente.x, v.z - BASES[MI_EQ].fuente.z) < 9 || v.muerto >= 0)) {aviso('El taller está en tu base (botón ⌂ para volver)'); return;}
   const sg = sugerencia(v); if (sg) tSel = sg; tCat = 'rec';
   $('tienda').classList.remove('hidden'); pintaTienda();
 }
