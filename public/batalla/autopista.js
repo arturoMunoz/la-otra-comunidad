@@ -72,7 +72,7 @@ function puedeSubir(h, k) {return h.pts > 0 && h.rk[k] < rangoMax(h.nivel, k);}
 function subeHab(h, k) {if (!puedeSubir(h, k)) return false; h.rk[k]++; h.pts--; return true;}
 function autoSube(h) {let n = 0; while (h.pts > 0 && n++ < 6) {const o = ['r', 'q', 'e', 'w', 'q', 'e'].find((k) => puedeSubir(h, k) && (k === 'r' || h.rk[k] <= Math.min(h.rk.q, h.rk.e, h.rk.w) + (k === 'q' ? 1 : 0))) || ['q', 'w', 'e'].find((k) => puedeSubir(h, k)); if (!o) break; subeHab(h, o);}}
 /* hechizos de invocador: Destello y Curar */
-const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/hz_curar.webp'}, c: {n: 'Castigo', cd: 60, icono: 'ui/hz_castigo.webp'}};
+const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/ap_hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/ap_hz_curar.webp'}, c: {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'}};
 const OBJ = {
   hoja: {t: 'Barra de hierro', i: 'ui/ap_obj_hoja.webp', c: 350, st: {dano: 18}},
   daga: {t: 'Navaja automática', i: 'ui/ap_obj_daga.webp', c: 300, st: {vatq: 0.2}},
@@ -1421,10 +1421,10 @@ let ANILLO = null, anilloFx = 0;
 const RELIQ_V = []; let RELIQ_MAT = null;
 function pintaReliquias() {
   if (RELIQ_V.length !== RELIQ.length) {for (const o of RELIQ_V) {scene.remove(o.sp); scene.remove(o.aro);} RELIQ_V.length = 0;
-    if (!RELIQ_MAT) {const tx = cargaTex('../batalla/ui/reliquia.webp'); tx.repeat.set(0.25, 0.25); RELIQ_MAT = new THREE.SpriteMaterial({map: tx, transparent: true, depthWrite: false});}
-    for (const r of RELIQ) {const tx = RELIQ_MAT.map; const sp = new THREE.Sprite(RELIQ_MAT); sp.scale.setScalar(3); scene.add(sp); const a = aro('#5aff6a', 1.2); a.material.opacity = 0.35; scene.add(a); RELIQ_V.push({sp, aro: a, r, tx});}}
+    if (!RELIQ_MAT) {const tx = cargaTex('../batalla/ui/ap_botiquin.webp'); tx.repeat.set(0.125, 0.125); tx.minFilter = THREE.LinearFilter; tx.generateMipmaps = false; RELIQ_MAT = new THREE.SpriteMaterial({map: tx, transparent: true, depthWrite: false, depthTest: false}); if (0) RELIQ_MAT = new THREE.SpriteMaterial({map: tx, transparent: true, depthWrite: false});}
+    for (const r of RELIQ) {const tx = RELIQ_MAT.map; const sp = new THREE.Sprite(RELIQ_MAT); sp.scale.setScalar(3.4); sp.renderOrder = 4; scene.add(sp); const a = aro('#5aff6a', 1.2); a.material.opacity = 0.3; scene.add(a); const so = new THREE.Mesh(new THREE.CircleGeometry(0.7, 24).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({color: 0, transparent: true, opacity: 0.35, depthWrite: false})); so.position.y = -0.03; a.add(so); RELIQ_V.push({sp, aro: a, r, tx});}}
   const t = performance.now() / 1000;
-  RELIQ_V.forEach((o, i) => {const on = !!(EXTRA.rl && EXTRA.rl[i]); o.sp.visible = o.aro.visible = on; if (on) {const f = Math.floor(t * 8) % 16; o.tx.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4); o.sp.position.set(o.r.x, 1.05, o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t;}});
+  RELIQ_V.forEach((o, i) => {const on = !!(EXTRA.rl && EXTRA.rl[i]); o.sp.visible = o.aro.visible = on; if (on) {const f = Math.floor(t * 60) % 64; o.tx.offset.set((f % 8) / 8, 1 - (Math.floor(f / 8) + 1) / 8); o.sp.position.set(o.r.x, 1.5, o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t * 0.4;}});
 }
 const PLANTA_V = []; const PL_TAM = {seta: 3.4, baya: 2.8, flor: 2.4};
 const SANT_V = [], ALM_V = [];
@@ -1806,7 +1806,7 @@ function efectoLocal(e) {
 let avisoT = 0;
 /* cartel de baja al estilo Wild Rift: retrato del que derriba ⚔ retrato del derribado, y el grito si lo hay */
 let anuncioT = 0;
-function retratoDe(id) {const q = VISTA.get(id); if (!q) return ''; if (q.k === 'h') return RET(q.tipo); return q.eq === 0 ? 'ui/b_armeria.webp' : 'ui/buff_troll.webp';}
+function retratoDe(id) {const q = VISTA.get(id); if (!q) return ''; if (q.k === 'h') return RET(q.tipo); return q.eq === 0 ? 'ui/ap_b_armeria.webp' : 'ui/buff_troll.webp';}
 let ULTIMA_BAJA = 0;
 function anuncio(a, d, txt) {
   if (d === YO) ULTIMA_BAJA = a || 0;
@@ -2152,7 +2152,7 @@ let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 let MODO = '1v1';
 function empieza(jugadores, modo, simulo) {
   MODO = modo; if (ponMapa(modo)) construyeMapa();
-  precargaVoces(); musica('batalla'); colorFuentes(); document.body.classList.add('jugando'); ESTADO = 'juego'; guardaAtras(); precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo', 'vital'].forEach((i) => $(i).classList.remove('hidden')); if (HAY_BOTELLA && !$('vital').classList.contains('conBotella')) {$('vital').classList.add('conBotella'); $('vVac').src = 'ui/mana_vacia.webp'; $('vLle').src = 'ui/mana_llena.webp';}
+  precargaVoces(); musica('batalla'); colorFuentes(); document.body.classList.add('jugando'); ESTADO = 'juego'; guardaAtras(); precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo', 'vital'].forEach((i) => $(i).classList.remove('hidden')); if (HAY_BOTELLA && !$('vital').classList.contains('conBotella')) {$('vital').classList.add('conBotella'); $('vVac').src = 'ui/ap_mana_vacia.webp'; $('vLle').src = 'ui/ap_mana_llena.webp';}
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; h.hf = hechElegido; recibeFoto(foto());}
@@ -2269,8 +2269,8 @@ function minimapa() {
 }
 /* escribe en la página solo si cambia (cada escritura obliga al móvil a recolocar y repintar) */
 function pon_(el, p, v) {if (el['_' + p] !== v) {el['_' + p] = v; el[p] = v;}}
-/* botella de maná (Pack Vado 22): poner true cuando lleguen ui/mana_vacia.webp y ui/mana_llena.webp; BOT_Y0/BOT_Y1 = % de la altura donde empieza y acaba el líquido */
-const HAY_BOTELLA = true, BOT_Y0 = 39.7, BOT_Y1 = 87;
+/* botella de maná (Pack Vado 22): poner true cuando lleguen ui/ap_mana_vacia.webp y ui/ap_mana_llena.webp; BOT_Y0/BOT_Y1 = % de la altura donde empieza y acaba el líquido */
+const HAY_BOTELLA = true, BOT_Y0 = 15.3, BOT_Y1 = 88.5;
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
   miniT -= 1 / 60; if (miniT <= 0) {miniT = 0.15; minimapa(); pon_($('objetivo'), 'textContent', objetivoTxt()); const bu = EXTRA.be[MI_EQ] || 0; pon_($('buffs'), 'innerHTML', (bu ? '<span class="azul"><img src="ui/bend_furia.webp" alt="">' + bu + ' s</span>' : '') + (v.bTroll ? '<span><img src="ui/bend_brasa.webp" alt="">' + v.bTroll + ' s</span>' : '') + (v.bAlfa ? '<span><img src="ui/bend_savia.webp" alt="">' + v.bAlfa + ' s</span>' : '') + (() => {const d = (EXTRA.dr || [])[MI_EQ] || [0, 0, 0]; return d[2] ? '<span><img src="ui/bend_alma.webp" alt="">Alma</span>' : (d[0] ? '<span><img src="ui/bend_fuego.webp" alt="">×' + d[0] + '</span>' : '') + (d[1] ? '<span><img src="ui/bend_hielo.webp" alt="">×' + d[1] + '</span>' : '');})()); consejos(+($('marcador').dataset.t || 0));}
@@ -2294,7 +2294,7 @@ function hud() {
    if (!aroFijo) {aroFijo = indicador('ind_alcance', '#ffd24a'); aroFijo.renderOrder = 6;}
    const af = VISTA.get(MANDO.cand || MANDO.fijo); aroFijo.visible = !!af && v.muerto < 0;
    if (af) {const rr = af.k === 't' ? 2.4 : af.k === 'n' ? 2.8 : af.k === 'h' ? 1.3 : 1.1; aroFijo.position.set(af.xi ?? af.x, 0.18, af.zi ?? af.z); aroFijo.scale.setScalar(2 * rr * 256 / 235 * (1 + 0.1 * Math.sin(performance.now() / 70))); aroFijo.material.color.set(MANDO.cand ? '#ffffff' : '#ffd24a');}}
-  {const bf = $('bF').querySelector('img'), src = v.hf === 'c' ? 'ui/hz_castigo.webp' : 'ui/hz_curar.webp'; if (!bf.src.endsWith(src)) bf.src = src; const bd = $('bD').querySelector('img'); if (!bd.src.endsWith('hz_destello.webp')) bd.src = 'ui/hz_destello.webp';}
+  {const bf = $('bF').querySelector('img'), src = v.hf === 'c' ? 'ui/ap_hz_castigo.webp' : 'ui/ap_hz_curar.webp'; if (!bf.src.endsWith(src)) bf.src = src; const bd = $('bD').querySelector('img'); if (!bd.src.endsWith('hz_destello.webp')) bd.src = 'ui/ap_hz_destello.webp';}
   for (const [k, cd] of [['d', v.cdD], ['f', v.cdF]]) {const c = $('b' + k.toUpperCase()).querySelector('.cd'); c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / HECHIZOS[k === 'f' && v.hf === 'c' ? 'c' : k].cd * 100) + '%' : '0%');}
   /* volver a la fuente: el botón se va llenando */
   $('bBase').style.setProperty('--p', volverBase > 0 ? (1 - volverBase / VOLVER_T) * 100 + '%' : '0%'); $('bBase').classList.toggle('cargando', volverBase > 0);
@@ -2486,7 +2486,7 @@ function eligeHeroe(titulo, listo) {
       '<div class="eBarras">' + barra('Vida', H.vida, max.vida) + barra('Daño', H.dano, max.dano) + barra('Alcance', H.alcance, max.alcance) + barra('Velocidad', H.vel, max.vel) + '</div>' +
       '<div class="eIcos">' + habs.map((k) => '<button data-k="' + k + '" class="' + (k === habSel ? 'on' : '') + (k === 'r' ? ' ult' : '') + '"><img src="' + ico(k) + '" alt=""><span>' + (k === 'p' ? 'P' : k.toUpperCase()) + '</span></button>').join('') + '</div>' +
       '<div class="eDet">' + det + '</div>' +
-      '<div class="eHech"><span>Hechizos:</span><b><img src="ui/hz_destello.webp" alt="">Destello</b>' + ['f', 'c'].map((k) => '<button data-hz="' + k + '"' + (hechElegido === k ? ' class="on"' : '') + '><img src="' + HECHIZOS[k].icono + '" alt="">' + HECHIZOS[k].n + '</button>').join('') + '</div>' +
+      '<div class="eHech"><span>Hechizos:</span><b><img src="ui/ap_hz_destello.webp" alt="">Destello</b>' + ['f', 'c'].map((k) => '<button data-hz="' + k + '"' + (hechElegido === k ? ' class="on"' : '') + '><img src="' + HECHIZOS[k].icono + '" alt="">' + HECHIZOS[k].n + '</button>').join('') + '</div>' +
       '<div class="eBot"><button class="bt s" id="eVolver">← Volver</button><button class="bt" id="eOk">¡Confirmar!</button></div></div>';
     el.querySelectorAll('[data-h]').forEach((b) => b.onclick = () => {eligeSel = b.dataset.h; pinta();});
     el.querySelectorAll('[data-k]').forEach((b) => b.onclick = () => {habSel = b.dataset.k; pinta();});

@@ -1,0 +1,17 @@
+LA AUTOPISTA — BOTIQUÍN · Animación ampliada a 64 fotogramas
+
+ap_botiquin_64f.png: atlas RGBA 2048 x 2048 píxeles.
+Organización: 8 columnas x 8 filas, orden izquierda a derecha y arriba abajo.
+Tamaño de celda: 256 x 256 píxeles.
+Animación: 64 fotogramas (4 por cada fotograma original de 16).
+Vistas previas: ap_botiquin_64f_preview.gif (30 FPS aprox.); ap_botiquin_64f_preview_60fps.webp (60 FPS aprox.).
+fotogramas/: 64 PNG transparentes individuales, numerados del 000 al 063.
+
+REPRODUCCIÓN RECOMENDADA
+- 60 FPS: 64 / 60 = 1,07 s por ciclo (recomendado).
+- 30 FPS: 64 / 30 = 2,13 s por ciclo (más lento).
+- Repetición: loop infinito.
+- Filtrado de texturas: Linear, con clamp si extraes los fotogramas.
+- No necesitas volver a cortar los archivos individuales, si tu motor no usa atlas.
+
+NOTA: los 48 fotogramas intermedios se interpolaron digitalmente a partir de los 16 originales; la animación conserva el diseño original, pero no son 48 nuevas ilustraciones independientes.

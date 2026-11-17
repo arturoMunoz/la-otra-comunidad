@@ -68,7 +68,7 @@ input{background:#0009;border:2px solid #3c4a5e;border-radius:10px;color:#fff;fo
 .ap{width:36px;height:36px;border-width:2px;border-color:#9a8a6a;background:#141b26e8}.ap img{width:80%;height:80%;margin:10%}.ap.pulsado{transform:scale(.9);border-color:#ffd24a;filter:brightness(1.3)}
 #bAtT{right:-6px;bottom:90px}#bAtS{right:68px;bottom:-6px}
 #retratos{position:absolute;right:96px;bottom:150px;display:flex;flex-direction:column;gap:6px}#retratos button{width:40px;height:40px;border-radius:50%;border:2px solid #ff5a4a;background:#000;padding:0;overflow:hidden;box-shadow:0 2px 6px #000a}#retratos button img{width:100%;height:100%;object-fit:cover}#retratos button.on{border:3px solid #ffd24a;box-shadow:0 0 12px #ffb02a}
-#bEnc{right:178px;bottom:108px;border-color:#e2b04a}#bAlm{right:232px;bottom:78px;width:44px;height:44px;border:0 !important;background:transparent !important;border-radius:50%}#bAlm .almI{position:absolute;inset:-3px;background:url(ui/almenara.webp) center/cover;border-radius:50%}#bAlm.vacia .almI{background-image:url(ui/almenara_off.webp)}#bAlm .almN{position:absolute;right:-4px;bottom:-4px;min-width:16px;height:16px;border-radius:8px;background:#ffd24a;color:#000;font:900 11px/16px system-ui,'Segoe UI',Roboto,sans-serif;font-style:normal;text-align:center}#bAlm.vacia .almN{background:#777}
+#bEnc{right:178px;bottom:108px;border-color:#e2b04a}#bAlm{right:232px;bottom:78px;width:44px;height:44px;border:0 !important;background:transparent !important;border-radius:50%}#bAlm .almI{position:absolute;inset:-3px;background:url(ui/ap_baliza.webp) center/cover;border-radius:50%}#bAlm.vacia .almI{background-image:url(ui/ap_baliza_off.webp)}#bAlm .almN{position:absolute;right:-4px;bottom:-4px;min-width:16px;height:16px;border-radius:8px;background:#ffd24a;color:#000;font:900 11px/16px system-ui,'Segoe UI',Roboto,sans-serif;font-style:normal;text-align:center}#bAlm.vacia .almN{background:#777}
 .bv.prot::before{content:'🛡';position:absolute;left:-17px;top:-6px;font-size:13px;filter:drop-shadow(0 1px 1px #000)}.bv.inh u{background:#9a9a9a!important}
 #elige{position:fixed;inset:0;z-index:60;background:radial-gradient(ellipse at center,#0e1c2a,#0b0704);color:#eef3f9;display:flex;flex-direction:column;padding:calc(10px + var(--sat)) calc(12px + var(--sar)) calc(10px + var(--sab)) calc(12px + var(--sal));gap:8px;overflow:auto}
 #elige .eTit{font:900 18.4px 'Arial Black','Segoe UI Black',system-ui,sans-serif;text-align:center;color:#ffd98a;letter-spacing:.5px}
@@ -80,10 +80,10 @@ input{background:#0009;border:2px solid #3c4a5e;border-radius:10px;color:#fff;fo
 #elige .eHech{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font:700 12px system-ui,'Segoe UI',Roboto,sans-serif;color:#c8d4e3}#elige .eHech b,#elige .eHech button{display:flex;gap:4px;align-items:center;border:2px solid #26425a;border-radius:16px;background:#0008;color:#eef3f9;padding:2px 8px 2px 2px;font:700 12px system-ui,'Segoe UI',Roboto,sans-serif}#elige .eHech img{width:24px;height:24px;border-radius:50%}#elige .eHech button.on{border-color:#ffd24a;box-shadow:0 0 10px #ffb02a88}#elige .eHech small{flex-basis:100%;font-weight:400;color:#93a3b8}
 #buffs span img{width:22px;height:22px;vertical-align:middle;margin-right:3px;border-radius:50%}#elige #eOk{min-width:180px;font-size:17px}
 @media (orientation:landscape) and (max-height:520px){#elige{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr auto;gap:6px 12px}#elige .eTit{grid-column:1/3;font-size:17px}#elige .eLista{flex-direction:column;grid-row:2/4;justify-content:flex-start}#elige .eH{width:62px;flex-direction:row;font-size:0}#elige .eH img{width:46px;height:46px}#elige .eFicha{flex-wrap:nowrap;justify-content:flex-start}#elige .eRet img{width:92px;height:92px}#elige .eRet b{font-size:13px;max-width:110px;text-align:center}#elige .eDatos{max-width:none}#elige .eB{font-size:10px}#elige .eHabs{gap:3px}#elige .eHab{padding:2px 6px}#elige .eHab img{width:28px;height:28px}#elige .eHab small{font-size:10px}#elige .eBot{grid-column:2;justify-content:flex-end;margin:0}#elige .eHech small{display:none}#elige .eHab{padding:2px 6px}#elige .eHab img{width:30px;height:30px}#elige .bt{padding:0 14px;min-height:44px;border-width:12px 18px;border-image-width:12px 18px;min-width:150px}}
-#bTienda{position:fixed;left:6px;top:calc(64px + var(--sat));z-index:7;width:58px;height:58px;border-radius:50%;border:0;background:url(ui/b_armeria.webp) center/contain no-repeat}
-#bBase{position:fixed;right:228px;bottom:calc(16px + var(--sab));z-index:7;width:54px;height:54px;border-radius:50%;border:0;background:url(ui/b_volver.webp) center/contain no-repeat;color:transparent;--p:0%}
-#bBase.cargando{box-shadow:0 0 0 4px #0008,0 0 0 4px #ffd24a inset;background-image:conic-gradient(#ffd24acc var(--p),#0000 var(--p)),url(ui/b_volver.webp);background-size:contain;border-radius:50%}
-#bZoom{position:fixed;left:6px;top:calc(126px + var(--sat));z-index:7;width:50px;height:50px;border-radius:50%;border:0;background:url(ui/b_zoom.webp) center/contain no-repeat;color:transparent}
+#bTienda{position:fixed;left:6px;top:calc(64px + var(--sat));z-index:7;width:58px;height:58px;border-radius:50%;border:0;background:url(ui/ap_b_armeria.webp) center/contain no-repeat}
+#bBase{position:fixed;right:228px;bottom:calc(16px + var(--sab));z-index:7;width:54px;height:54px;border-radius:50%;border:0;background:url(ui/ap_b_volver.webp) center/contain no-repeat;color:transparent;--p:0%}
+#bBase.cargando{box-shadow:0 0 0 4px #0008,0 0 0 4px #ffd24a inset;background-image:conic-gradient(#ffd24acc var(--p),#0000 var(--p)),url(ui/ap_b_volver.webp);background-size:contain;border-radius:50%}
+#bZoom{position:fixed;left:6px;top:calc(126px + var(--sat));z-index:7;width:50px;height:50px;border-radius:50%;border:0;background:url(ui/ap_b_zoom.webp) center/contain no-repeat;color:transparent}
 #bAjustes{position:fixed;right:calc(86px + var(--sar));top:calc(58px + var(--sat));z-index:7;width:38px;height:38px;border-radius:50%;border:2px solid #e0a91c;background:#141b26e0;color:#eef3f9;font-size:20px;padding:0}
 #ajustes{position:fixed;inset:0;z-index:40;background:#000a;display:flex;align-items:center;justify-content:center}#ajustes .ajC{background:#141b26f2;border:2px solid #e0a91c;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;align-items:stretch;min-width:240px;text-align:center}#ajustes p{margin:0;font-size:12px;color:#c8d4e3}#ajustes button[disabled]{opacity:.45}
 #voto{position:fixed;left:50%;top:calc(130px + var(--sat));transform:translateX(-50%);z-index:12;background:#141b26f2;border:2px solid #e0a91c;border-radius:12px;padding:8px 14px;display:flex;flex-direction:column;align-items:center;gap:5px}#voto .vC{display:flex;gap:5px}#voto .vC i{width:26px;height:10px;border-radius:3px;background:#555;border:1px solid #000}#voto .vC i.si{background:#5fd35a}#voto .vC i.no{background:#e04a3a}#voto small{font-size:11px;color:#c8d4e3}#voto .vB{display:flex;gap:8px}#voto .bt{min-width:0;padding:5px 18px}
@@ -400,8 +400,8 @@ body.cine #mandos,body.cine #joy,body.cine #hud,body.cine #barras,body.cine #mm{
 /* TUS CONSTANTES abajo en el centro (Pack Vado 22): botella de maná fucsia que se vacía y barra de vida dentro del marco de hierro y oro de Rohan */
 #vital{position:fixed;left:calc(50% - 50px);bottom:calc(4px + var(--sab));transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:1px;pointer-events:none}
 #vital .vCol{display:none} /* la vida va solo sobre la cabeza (pedido de Arturo: «la vida ingame es una») */
-#vital .vV{position:relative;width:calc(min(250px,28 * var(--vw)));aspect-ratio:4.88;filter:drop-shadow(0 3px 4px #000a)}
-#vital .vH{position:absolute;left:13.6%;right:13.7%;top:33.5%;bottom:33.5%;background:#080d16;border-radius:4px;overflow:hidden}
+#vital .vV{position:relative;width:calc(min(250px,28 * var(--vw)));aspect-ratio:3;filter:drop-shadow(0 3px 4px #000a)}
+#vital .vH{position:absolute;left:15.1%;right:15.1%;top:38.5%;bottom:37.7%;background:#080d16;border-radius:4px;overflow:hidden}
 #vital .vMc{position:absolute;inset:0;width:100%;height:100%;display:block}
 #vital u,#vital s{position:absolute;left:0;top:0;bottom:0;display:block;text-decoration:none}
 #vital .vH u{background:linear-gradient(#b6ff7a 0,#4fd13f 38%,#1f8f2a 100%);box-shadow:inset 0 2px 0 #ffffff66,inset 0 -3px 0 #0003}
@@ -411,7 +411,7 @@ body.cine #mandos,body.cine #joy,body.cine #hud,body.cine #barras,body.cine #mm{
 #vital.poca .vV::before{animation:halo .7s ease-in-out infinite}
 #vital b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:900 11.5px 'Arial Black','Segoe UI Black',system-ui,sans-serif;color:#fff;-webkit-text-stroke:3px #090c12;paint-order:stroke fill;letter-spacing:.02em}
 #vital .vM{display:none}
-#vital .vBot{position:relative;width:51px;height:68px;flex:none;filter:drop-shadow(0 3px 4px #000a)}
+#vital .vBot{position:relative;width:40px;height:80px;flex:none;filter:drop-shadow(0 3px 4px #000a)}
 #vital .vBot img{position:absolute;inset:0;width:100%;height:100%;display:block}
 #vital .vBot b{inset:auto 0 15% 0;font-size:11.5px;color:#ffe0f6}
 #vital .vBot::before{content:'';position:absolute;inset:8% -12% -4%;border-radius:50%;background:radial-gradient(closest-side,#ff2ab0aa,#ff2ab000);opacity:0;pointer-events:none}
@@ -529,20 +529,20 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 <div id="dolor"></div><div id="ulti"></div>
 <div id="joy" class="hidden"><b><i></i></b></div>
 <div id="mandos" class="hidden">
-  <button class="hb" id="bAt"><img src="ui/b_ataque.webp" alt=""></button>
+  <button class="hb" id="bAt"><img src="ui/ap_b_ataque.webp" alt=""></button>
   <button class="hb" id="bQ" data-k="q"><img alt=""><span class="pip" id="pq"></span><span class="cd hidden"></span></button>
   <button class="hb" id="bW" data-k="w"><img alt=""><span class="pip" id="pw"></span><span class="cd hidden"></span></button>
   <button class="hb" id="bE" data-k="e"><img alt=""><span class="pip" id="pe"></span><span class="cd hidden"></span></button>
   <button class="hb" id="bR" data-k="r"><img alt=""><span class="pip" id="pr"></span><span class="cd hidden"></span></button>
   <button class="mas hidden" id="mq">+</button><button class="mas hidden" id="mw">+</button><button class="mas hidden" id="me">+</button><button class="mas hidden" id="mr">+</button>
-  <button class="hb ap" id="bAtT" aria-label="Atacar torre"><img src="../abismo/iconos/torre.webp" alt=""></button>
-  <button class="hb ap" id="bAtS" aria-label="Atacar súbditos"><img src="../abismo/iconos/uruk_acorazado.webp" alt=""></button>
+  <button class="hb ap" id="bAtT" aria-label="Atacar torre"><img src="ui/ap_b_torre.webp" alt=""></button>
+  <button class="hb ap" id="bAtS" aria-label="Atacar súbditos"><img src="ui/ap_b_subditos.webp" alt=""></button>
   <div id="retratos"></div>
   <button class="hb hs hidden" id="bEnc" aria-label="Encantamiento de botas"><img alt=""><span class="cd hidden"></span></button><button class="hb hs" id="bAlm" aria-label="Almenara (ver dentro de la hierba)"><i class="almI"></i><em class="almN">1</em><span class="cd hidden"></span></button>
-  <button class="hb hs" id="bD" aria-label="Destello"><img src="ui/hz_destello.webp" alt=""><span class="cd hidden"></span></button>
-  <button class="hb hs" id="bF" aria-label="Curar"><img src="ui/hz_curar.webp" alt=""><span class="cd hidden"></span></button>
+  <button class="hb hs" id="bD" aria-label="Destello"><img src="ui/ap_hz_destello.webp" alt=""><span class="cd hidden"></span></button>
+  <button class="hb hs" id="bF" aria-label="Curar"><img src="ui/ap_hz_curar.webp" alt=""><span class="cd hidden"></span></button>
 </div>
-<div id="vital" class="hidden"><div class="vBot"><img id="vVac" alt=""><img id="vLle" alt=""><i class="vBri"></i><b id="vMnT"></b></div><div class="vCol"><div class="vV"><div class="vH"><s id="vViS"></s><u id="vVi"></u><b id="vViT"></b></div><img class="vMc" src="ui/vida_marco.webp" alt=""></div><div class="vM"><u id="vMn"></u><b id="vMnT2"></b></div></div></div>
+<div id="vital" class="hidden"><div class="vBot"><img id="vVac" alt=""><img id="vLle" alt=""><i class="vBri"></i><b id="vMnT"></b></div><div class="vCol"><div class="vV"><div class="vH"><s id="vViS"></s><u id="vVi"></u><b id="vViT"></b></div><img class="vMc" src="ui/ap_vida_marco.webp" alt=""></div><div class="vM"><u id="vMn"></u><b id="vMnT2"></b></div></div></div>
 <button id="bTienda" class="hidden" aria-label="Taller"></button>
 <button id="bBase" class="hidden" aria-label="Volver a la base"><span>BASE</span></button>
 <div id="canal" class="hidden"></div>

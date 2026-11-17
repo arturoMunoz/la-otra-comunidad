@@ -168,6 +168,28 @@ for n, ap in [('menu_cielo',)*2, ('menu_fondo',)*2, ('menu_medio',)*2, ('menu_fr
     c = js.count(v) + html.count(v)
     if c == 0: fallos.append('[arte] ' + v + ' ya no aparece')
     js, html = js.replace(v, nv), html.replace(v, nv)
+# ---------- Pack 13 (17/11): HUD de partida sin aire medieval (tools/autopista/procesa_pack13.py) ----------
+for n, ap in [('vida_marco',)*2, ('mana_vacia',)*2, ('mana_llena',)*2, ('hz_destello',)*2, ('hz_curar',)*2, ('hz_castigo',)*2,
+              ('b_ataque',)*2, ('b_armeria',)*2, ('b_zoom',)*2, ('b_volver',)*2, ('almenara', 'baliza'), ('almenara_off', 'baliza_off')]:
+    v, nv = 'ui/' + n + '.webp', 'ui/ap_' + ap + '.webp'
+    if js.count(v) + html.count(v) == 0: fallos.append('[pack13] ' + v + ' ya no aparece')
+    js, html = js.replace(v, nv), html.replace(v, nv)
+html = sub(html, '<button class="hb ap" id="bAtT" aria-label="Atacar torre"><img src="../abismo/iconos/torre.webp" alt="">', '<button class="hb ap" id="bAtT" aria-label="Atacar torre"><img src="ui/ap_b_torre.webp" alt="">', donde='html')
+html = sub(html, '<button class="hb ap" id="bAtS" aria-label="Atacar súbditos"><img src="../abismo/iconos/uruk_acorazado.webp" alt="">', '<button class="hb ap" id="bAtS" aria-label="Atacar súbditos"><img src="ui/ap_b_subditos.webp" alt="">', donde='html')
+# batería de energía: el líquido (solo la parte fucsia) va del 15,3 % al 88,5 % de la altura; el dibujo es el doble de alto que de ancho
+js = sub(js, 'const HAY_BOTELLA = true, BOT_Y0 = 39.7, BOT_Y1 = 87;', 'const HAY_BOTELLA = true, BOT_Y0 = 15.3, BOT_Y1 = 88.5;')
+html = sub(html, '#vital .vBot{position:relative;width:51px;height:68px', '#vital .vBot{position:relative;width:40px;height:80px', donde='html')
+html = sub(html, '#vital .vV{position:relative;width:calc(min(250px,28 * var(--vw)));aspect-ratio:4.88', '#vital .vV{position:relative;width:calc(min(250px,28 * var(--vw)));aspect-ratio:3', donde='html')
+html = sub(html, '#vital .vH{position:absolute;left:13.6%;right:13.7%;top:33.5%;bottom:33.5%', '#vital .vH{position:absolute;left:15.1%;right:15.1%;top:38.5%;bottom:37.7%', donde='html')
+# botiquín en vez de la reliquia: 64 fotogramas a 60 por segundo (antes 16 a 8: iba a saltos), giro del aro más tranquilo
+# y una sombra en el suelo para que parezca un objeto que flota encima y no una pegatina
+js = sub(js, "const tx = cargaTex('../batalla/ui/reliquia.webp'); tx.repeat.set(0.25, 0.25);",
+         "const tx = cargaTex('../batalla/ui/ap_botiquin.webp'); tx.repeat.set(0.125, 0.125); tx.minFilter = THREE.LinearFilter; tx.generateMipmaps = false; RELIQ_MAT = new THREE.SpriteMaterial({map: tx, transparent: true, depthWrite: false, depthTest: false}); if (0)")
+js = sub(js, "sp.scale.setScalar(3); scene.add(sp); const a = aro('#5aff6a', 1.2); a.material.opacity = 0.35; scene.add(a);",
+         "sp.scale.setScalar(3.4); sp.renderOrder = 4; scene.add(sp); const a = aro('#5aff6a', 1.2); a.material.opacity = 0.3; scene.add(a); "
+         "const so = new THREE.Mesh(new THREE.CircleGeometry(0.7, 24).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({color: 0, transparent: true, opacity: 0.35, depthWrite: false})); so.position.y = -0.03; a.add(so);")
+js = sub(js, "const f = Math.floor(t * 8) % 16; o.tx.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4); o.sp.position.set(o.r.x, 1.05, o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t;",
+         "const f = Math.floor(t * 60) % 64; o.tx.offset.set((f % 8) / 8, 1 - (Math.floor(f / 8) + 1) / 8); o.sp.position.set(o.r.x, 1.5, o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t * 0.4;")
 # ---------- LA TIENDA (17/11): objetos de autopista, mismas estadísticas y recetas que La Brecha ----------
 NOMBRES_OBJ = {'hoja': ('Barra de hierro', None), 'daga': ('Navaja automática', None), 'cota': ('Chaleco reflectante', None),
     'yelmo': ('Casco de obra', None), 'manto': ('Mono ignífugo', None), 'tomo': ('Batería de litio', None), 'botas': ('Zapatillas de correr', None),
