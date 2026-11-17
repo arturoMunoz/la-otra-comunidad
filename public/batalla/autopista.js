@@ -519,6 +519,7 @@ function construyeMapa() {
     const b = BASES[eq], s = signo(eq);
     for (const [dx, dz] of [[4, -4], [-4, -4]]) luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);
   }
+  {const bb = new THREE.Box3(); MAPA_G.updateMatrixWorld(true); MAPA_G.traverse((q) => {if (!q.isMesh || q.isInstancedMesh || q.isSkinnedMesh || !q.castShadow) return; bb.setFromObject(q); if (bb.max.y - Math.max(0, bb.min.y) < 2.2) q.castShadow = false;});}
   fusiona(MAPA_G);
   vidaMapa(scene_); PALANTIR = null; ponPalantir();
 }
@@ -2401,7 +2402,7 @@ const marca = (g, n, x, z, t) => {const im = MARCAS[n]; if (im.complete && im.na
 const MM_IMG = {};
 function marcaMm(g, n, x, y, t) {let im = MM_IMG[n]; if (!im) {im = MM_IMG[n] = new Image(); im.src = 'ui/' + n + '.webp';} if (!im.complete || !im.naturalWidth) return false; g.drawImage(im, x - t / 2, y - t / 2, t, t); return true;}
 const NIEBLA_SUELO = document.createElement('canvas'); NIEBLA_SUELO.width = 64; NIEBLA_SUELO.height = 140; const NIEBLA_TEX = new THREE.CanvasTexture(NIEBLA_SUELO); NIEBLA_TEX.minFilter = NIEBLA_TEX.magFilter = THREE.LinearFilter; NIEBLA_TEX.generateMipmaps = false;
-const NIEBLA_MM = document.createElement('canvas'); NIEBLA_MM.width = 96; NIEBLA_MM.height = 196; let VIS_MM = [];
+const NIEBLA_MM = document.createElement('canvas'); NIEBLA_MM.width = 96; NIEBLA_MM.height = 196; let VIS_MM = [], NIEBLA_F = '', NIEBLA_T = 0;
 function vistoMm(q) {const x = q.xi ?? q.x, z = q.zi ?? q.z; return VIS_MM.some((v) => (x - v[0]) ** 2 + (z - v[1]) ** 2 < v[2] * v[2]);}
 function minimapa() {
   const c = $('mini'); if (APAI !== (c.width > c.height)) {c.width = APAI ? 196 : 96; c.height = APAI ? 96 : 196;}
@@ -2428,9 +2429,10 @@ function minimapa() {
   for (const a of EXTRA.al || []) if (a[2] === MI_EQ) VIS_MM.push([a[0], a[1], 10]);
   {const n = NIEBLA_MM.getContext('2d'); n.globalCompositeOperation = 'source-over'; n.clearRect(0, 0, W, H); n.fillStyle = '#05080cb8'; n.fillRect(0, 0, W, H); n.globalCompositeOperation = 'destination-out';
    for (const v of VIS_MM) {n.beginPath(); n.ellipse(px(v[0]), pz(v[1]), v[2] / KX * W / 2, v[2] / 59 * H / 2, 0, 0, 7); n.fill();} g.drawImage(NIEBLA_MM, 0, 0);
+   const firma = VIS_MM.map((v) => Math.round(v[0]) + ',' + Math.round(v[1])).join(';'), ahoraN = performance.now(); if (firma !== NIEBLA_F && ahoraN - NIEBLA_T > 320) {NIEBLA_F = firma; NIEBLA_T = ahoraN;
    const ns = NIEBLA_SUELO.getContext('2d'); ns.globalCompositeOperation = 'source-over'; ns.clearRect(0, 0, 64, 140); ns.fillStyle = '#000'; ns.fillRect(0, 0, 64, 140); ns.globalCompositeOperation = 'destination-out';
    for (const v of VIS_MM) {const cx = v[0] + 32, cz = v[1] + 70, gr = ns.createRadialGradient(cx, cz, v[2] * 0.72, cx, cz, v[2]); gr.addColorStop(0, '#000'); gr.addColorStop(1, '#0000'); ns.fillStyle = gr; ns.beginPath(); ns.arc(cx, cz, v[2], 0, 7); ns.fill();}
-   NIEBLA_TEX.needsUpdate = true;}
+   NIEBLA_TEX.needsUpdate = true;}}
   for (const q of VISTA.values()) {
     if (q.k === 'j') continue;
     const mio = q.eq === MI_EQ, col = mio ? '#5fb6ff' : '#ff5a4a', x = px(q.xi ?? q.x), z = pz(q.zi ?? q.z);
@@ -2536,7 +2538,7 @@ function acaba(ganador) {
 }
 
 /* ---------- bucle ---------- */
-const reloj = new THREE.Clock(); let acum = 0, ALFA = 1;
+const reloj = new THREE.Clock(); let acum = 0, ALFA = 1, SOMBRA_F = 0;
 /* medidor para pruebas: window._vado.PERF (ms acumulados por parte) */
 const PERF = {n: 0, sim: 0, dib: 0, hud: 0, ren: 0, tot: 0, max: 0};
 function bucle() {
@@ -2561,7 +2563,7 @@ function bucle() {
       UT.value += dt; animaPalantir(); const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); else if (MIRA_AT) miraAtaque(); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
-  const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') renderer.render(scene, camera); /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
+  const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') {renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = (SOMBRA_F = (SOMBRA_F + 1) % 2) === 0; renderer.render(scene, camera);} /* 17/11: la sombra se repinta un fotograma sí y otro no (es otra pasada entera de la escena; a 60 fps no se nota) */ /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];

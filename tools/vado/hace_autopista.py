@@ -266,7 +266,7 @@ js = sub(js, "scene.background = new THREE.Color('#14201a'); scene.fog = new THR
 js = sub(js, """$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span> · <span class="b">' + m[1 - MI_EQ] + '</span><div style="font-size:11px;color:#c8d4e3">' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</div>';""",
          """$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span><i>' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</i><span class="b">' + m[1 - MI_EQ] + '</span>';""")
 # niebla en el minimapa: solo se ve lo que ven tu héroe, tus soldados, tus torres y tus balizas (como en el LoL)
-js = sub(js, "function minimapa() {", """const NIEBLA_MM = document.createElement('canvas'); NIEBLA_MM.width = 96; NIEBLA_MM.height = 196; let VIS_MM = [];
+js = sub(js, "function minimapa() {", """const NIEBLA_MM = document.createElement('canvas'); NIEBLA_MM.width = 96; NIEBLA_MM.height = 196; let VIS_MM = [], NIEBLA_F = '', NIEBLA_T = 0;
 function vistoMm(q) {const x = q.xi ?? q.x, z = q.zi ?? q.z; return VIS_MM.some((v) => (x - v[0]) ** 2 + (z - v[1]) ** 2 < v[2] * v[2]);}
 function minimapa() {""")
 js = sub(js, "  for (const q of VISTA.values()) {\n    if (q.k === 'j') continue;",
@@ -305,9 +305,10 @@ html = sub(html, '</head>', """<style>
 # la vista se calcula a la vez que el minimapa (~7 veces por segundo) y se pinta en una textura de 64x140 (1 px = 1 m): coste casi nulo
 js = sub(js, "const NIEBLA_MM = document.createElement('canvas');", "const NIEBLA_SUELO = document.createElement('canvas'); NIEBLA_SUELO.width = 64; NIEBLA_SUELO.height = 140; const NIEBLA_TEX = new THREE.CanvasTexture(NIEBLA_SUELO); NIEBLA_TEX.minFilter = NIEBLA_TEX.magFilter = THREE.LinearFilter; NIEBLA_TEX.generateMipmaps = false;\nconst NIEBLA_MM = document.createElement('canvas');")
 js = sub(js, " g.drawImage(NIEBLA_MM, 0, 0);}", """ g.drawImage(NIEBLA_MM, 0, 0);
+   const firma = VIS_MM.map((v) => Math.round(v[0]) + ',' + Math.round(v[1])).join(';'), ahoraN = performance.now(); if (firma !== NIEBLA_F && ahoraN - NIEBLA_T > 320) {NIEBLA_F = firma; NIEBLA_T = ahoraN;
    const ns = NIEBLA_SUELO.getContext('2d'); ns.globalCompositeOperation = 'source-over'; ns.clearRect(0, 0, 64, 140); ns.fillStyle = '#000'; ns.fillRect(0, 0, 64, 140); ns.globalCompositeOperation = 'destination-out';
    for (const v of VIS_MM) {const cx = v[0] + 32, cz = v[1] + 70, gr = ns.createRadialGradient(cx, cz, v[2] * 0.72, cx, cz, v[2]); gr.addColorStop(0, '#000'); gr.addColorStop(1, '#0000'); ns.fillStyle = gr; ns.beginPath(); ns.arc(cx, cz, v[2], 0, 7); ns.fill();}
-   NIEBLA_TEX.needsUpdate = true;}""")
+   NIEBLA_TEX.needsUpdate = true;}}""")
 js = sub(js, "uniform sampler2D tH;')", "uniform sampler2D tH,tNie;')")
 js = sub(js, "m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH};", "m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH}; sh.uniforms.tNie = {value: NIEBLA_TEX};")
 js = sub(js, "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1);", "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1); diffuseColor.rgb*=1.-.58*texture2D(tNie,vec2((vWD.x+32.)/64.,1.-(vWD.y+70.)/140.)).a;")
@@ -851,6 +852,13 @@ js = sub(js, "c.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveSh
 js = sub(js, "function pieza(archivo, nombre) {", """const MAT_UNI = new Map();
 function unificaMats(raiz) {raiz.traverse((q) => {if (!q.isMesh || Array.isArray(q.material) || !q.material.isMeshStandardMaterial) return; const m = q.material, k = (m.map ? m.map.uuid : '-') + '|' + Math.round(m.metalness * 3) + '|' + m.emissive.getHexString() + '|' + m.transparent; if (!MAT_UNI.has(k)) {const n = m.clone(); n.metalness = Math.round(m.metalness * 3) / 3; MAT_UNI.set(k, n);} q.material = MAT_UNI.get(k);});}
 function pieza(archivo, nombre) {""")
+
+# ---------- FLUIDEZ (17/11, Henar: «que vaya fluido»): la pasada de la sombra dibujaba otra vez todo el decorado (56.000 triángulos
+# de coches, conos, quitamiedos, señales…). Ahora solo echan sombra lo alto (≥ 2,2 m: farolas, camiones, árboles, edificios) y
+# los personajes; lo bajo pega al suelo y su sombra casi no se ve.
+js = sub(js, "  fusiona(MAPA_G);\n", """  {const bb = new THREE.Box3(); MAPA_G.updateMatrixWorld(true); MAPA_G.traverse((q) => {if (!q.isMesh || q.isInstancedMesh || q.isSkinnedMesh || !q.castShadow) return; bb.setFromObject(q); if (bb.max.y - Math.max(0, bb.min.y) < 2.2) q.castShadow = false;});}
+  fusiona(MAPA_G);
+""")
 
 # ---------- MANDOS EN ARCO (17/11, Henar: «es una chapuza»: botones pisándose) ----------
 # Esquema fijo como el del Wild Rift alrededor del ataque (abajo a la derecha): Q a la izquierda, W en diagonal, E encima y la R
