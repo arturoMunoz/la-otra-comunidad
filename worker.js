@@ -4,6 +4,7 @@
    - Secretos en Cloudflare (no en el repo): VAPID_JWK (clave privada) y PUSH_SECRETO. */
 
 import {creaSim} from './sim_vado.js';
+import {creaSim as creaSimAP} from './sim_ap.js';  /* A-6: salas con código que empieza por X */
 
 const enc = new TextEncoder();
 
@@ -108,8 +109,8 @@ export class Sala {
   async avisaLista() { const l = this.lista(), e = await this.est(); this.todos({ t: 'sala', jugadores: l, anfitrion: this.anfitrion(), modo: e.modo || '1v1', empezada: !!e.empezada, srv: !!e.srv }); }
   /* La Brecha con la partida calculada AQUÍ (servidor) en vez de en el móvil del anfitrión: misma simulación (sim_vado.js, sacada de juego.js),
      30 pasos por segundo y 15 fotos por segundo a todos. Si alguien se va, su héroe lo lleva la máquina. */
-  arrancaSim(jugadores, modo) {
-    const sim = creaSim(); sim.montaMapa(modo); sim.nuevaPartida(jugadores, modo); this.sim = sim;
+  arrancaSim(jugadores, modo, ap) {
+    const sim = ap ? creaSimAP() : creaSim(); sim.montaMapa(modo); sim.nuevaPartida(jugadores, modo); this.sim = sim;
     let t = Date.now(), acum = 0, fotoT = 0, finT = 0;
     this.tic = setInterval(() => {
       try {
@@ -127,7 +128,7 @@ export class Sala {
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('solo websocket', { status: 426 });
     const u = new URL(req.url), modo = u.searchParams.get('modo') === '2v2' ? '2v2' : '1v1';
     const l = this.lista(); let e = await this.est();
-    if (!l.length) { this.paraSim(); e = { modo, empezada: false, srv: u.searchParams.get('srv') === '1' }; await this.ponEst(e); }
+    if (!l.length) { this.paraSim(); e = { modo, empezada: false, srv: u.searchParams.get('srv') === '1', ap: /\/sala\/X/.test(u.pathname) }; await this.ponEst(e); }
     const max = e.modo === '2v2' ? 4 : 2;
     const par = new WebSocketPair(), [cli, srv] = Object.values(par);
     this.ctx.acceptWebSocket(srv);
@@ -143,7 +144,7 @@ export class Sala {
     let o; try { o = JSON.parse(msg); } catch (e) { return; }
     const yo = this.info(ws), anf = this.anfitrion();
     if (o.t === 'heroe') { yo.heroe = String(o.heroe).slice(0, 10); ws.serializeAttachment(yo); await this.avisaLista(); return; }
-    if (o.t === 'empezar') { if (yo.slot === anf) { const e = await this.est(); e.empezada = true; await this.ponEst(e); const jug = this.lista(); this.todos({ t: 'empieza', jugadores: jug, modo: e.modo, semilla: Date.now() % 100000, srv: !!e.srv }); if (e.srv) this.arrancaSim(jug, e.modo); } return; }
+    if (o.t === 'empezar') { if (yo.slot === anf) { const e = await this.est(); e.empezada = true; await this.ponEst(e); const jug = this.lista(); this.todos({ t: 'empieza', jugadores: jug, modo: e.modo, semilla: Date.now() % 100000, srv: !!e.srv }); if (e.srv) this.arrancaSim(jug, e.modo, e.ap); } return; }
     if (o.t === 'ping') { this.manda(ws, { t: 'pong', c: o.c }); return; }
     if (this.sim) { const S = this.sim.S, h = S && S.u.find((q) => q.k === 'h' && q.slot === yo.slot); if (h) try { this.sim.aplicaMando(h, o); } catch (e) {} return; }
     o.de = yo.slot; const s = JSON.stringify(o);

@@ -149,9 +149,7 @@ js = sub(js, 'vec3 arena=ba*vec3(1.35,1.18,.92);', 'vec3 arena=vec3(dot(ba,vec3(
 js = sub(js, 'vec3 musgo=hi*mix(vec3(1.55,2.15,.95),vec3(1.95,2.3,.85),smoothstep(.35,.7,mh))*(.85+.3*fbm(w*.6+3.));',
          'vec3 musgo=hi*mix(vec3(1.6,1.75,.85),vec3(1.95,1.85,.8),smoothstep(.35,.7,mh))*(.85+.3*fbm(w*.6+3.));')
 
-# ---------- en línea: siempre «mi móvil» (la simulación del servidor es la de La Brecha) y salas aparte ----------
-js = sub(js, "const SRV = {get: () => localStorage.getItem('vado.srv') || 'nube'};", "const SRV = {get: () => 'movil'};")
-js = re.sub(r"^function botonesSrv\(\) \{.*$", "function botonesSrv() {return '';}", js, count=1, flags=re.M)
+# ---------- en línea: salas aparte (prefijo X); con «Servidor» la partida la calcula Cloudflare con sim_ap.js (17/11) ----------
 js = sub(js, "base + '/api/sala/' + codigo", "base + '/api/sala/X' + codigo")
 # preferencias propias (el nombre se comparte con La Brecha y La Otra Comunidad)
 js = js.replace("'vado.nombre'", "'@@NOMBRE@@'").replace("'vado.", "'auto.").replace("'@@NOMBRE@@'", "'vado.nombre'")

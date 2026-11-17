@@ -3,7 +3,10 @@
 // Uso: node tools/vado/hace_sim.mjs   (se lanza solo antes de subir; el resultado es sim_vado.js en la raíz)
 import fs from 'node:fs';
 const raiz = new URL('../../', import.meta.url);
-const js = fs.readFileSync(new URL('public/batalla/juego.js', raiz), 'utf8');
+// node tools/vado/hace_sim.mjs            → sim_vado.js (La Brecha, de juego.js)
+// node tools/vado/hace_sim.mjs autopista  → sim_ap.js (A-6, de autopista.js)
+const AP = process.argv[2] === 'autopista';
+const js = fs.readFileSync(new URL(AP ? 'public/batalla/autopista.js' : 'public/batalla/juego.js', raiz), 'utf8');
 const trozos = [...js.matchAll(/\/\*SIM\{\*\/([\s\S]*?)\/\*\}SIM\*\//g)].map((m) => m[1]);
 if (trozos.length < 2) throw new Error('faltan las marcas SIM');
 const pre = `let S = null, VISTA = new Map(), YO = null, MI_EQ = 0, ESTADO = 'juego';
@@ -19,5 +22,6 @@ ${trozos.join('\n')}
   return {montaMapa, nuevaPartida, paso, foto, aplicaMando, get S() {return S;}, set S(v) {S = v;}};
 }
 `;
-fs.writeFileSync(new URL('sim_vado.js', raiz), out);
-console.log('sim_vado.js', out.length, 'bytes,', trozos.length, 'trozos');
+const nom = AP ? 'sim_ap.js' : 'sim_vado.js';
+fs.writeFileSync(new URL(nom, raiz), out);
+console.log(nom, out.length, 'bytes,', trozos.length, 'trozos');

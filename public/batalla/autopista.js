@@ -1882,8 +1882,8 @@ function agacha(seg) {if (!AUD.mus || !AUD.musOn) return; const t = AC.currentTi
 /* clic suave en los botones de los menús */
 addEventListener('pointerdown', (e) => {const b = e.target.closest && e.target.closest('#menu button, #elige button, #tienda button, #ajustes button, #fin button, #sala button'); if (b && !b.disabled) {audio(); suena('gema', 0.18);}});
 /* dónde se calcula la partida en línea: en el servidor de Cloudflare (recomendado: nadie tiene ventaja) o en el móvil del que crea la sala (por si el servidor falla) */
-const SRV = {get: () => 'movil'};
-function botonesSrv() {return '';}
+const SRV = {get: () => localStorage.getItem('auto.srv') || 'nube'};
+function botonesSrv() {const b = (v, t) => '<button class="bt s' + (SRV.get() === v ? ' on' : '') + '" data-srv="' + v + '">' + t + '</button>'; return '<p class="ajT">Partidas en línea (al crear sala)</p><div class="ajSon">' + b('nube', '☁ Servidor') + b('movil', '📱 Mi móvil') + '</div>';}
 function enlazaSrv(el, repinta) {for (const bt of el.querySelectorAll('[data-srv]')) bt.onclick = () => {localStorage.setItem('auto.srv', bt.dataset.srv); repinta();};}
 function botonesGraf() {
   const b = (k, v, t) => '<button class="bt s' + (GRAF[k] === v ? ' on' : '') + '" data-g="' + k + '" data-v="' + v + '">' + t + '</button>';
