@@ -194,3 +194,19 @@ Diseño (original, sin marcas): tanque enorme con armadura completa de placas gr
 
 Técnico: 6.000-9.000 triángulos, una textura de 1024 (atlas) + material emisivo SOLO en las juntas de luz (en un material aparte llamado «luz» para poder encenderlo por código), altura 2,0 m de pies a cabeza en «quieto» (sin la espada levantada por encima de la cabeza en ese clip), pies en y=0, mirando a +Z. Entrega `ap_dalinar.glb` y una captura de frente y de lado junto al modelo antiguo para comparar tamaños. Licencias CC0 en un txt.
 ```
+
+## 17/11 · Pack Autopista 32 ART — marcas de apuntar EN PIEZAS (blancas, se tiñen por código)
+
+```
+ART · Pack Autopista 32 · Marcas de apuntar habilidades para A-6 (juego móvil tipo Wild Rift visto desde arriba, HUD cyberpunk serio: neón limpio y fino, nada de caramelo). TODO en BLANCO/gris claro con un brillo suave, sobre fondo NEGRO puro #000000 (se suman como luz y el juego las tiñe del color de cada héroe). Vista cenital plana, sin perspectiva, sin texto, sin marco. Hazlo en 2 imágenes, una por mensaje.
+
+IMAGEN 1 (1536x1024) — piezas de la flecha de las habilidades en línea, separadas con mucho hueco negro:
+ A) CUERPO: tira horizontal de 1024x128 que se repite SIN COSTURA de izquierda a derecha. La franja ocupa EXACTAMENTE de y=32 a y=96 (la mitad central del alto): dos bordes finos y brillantes arriba y abajo, interior muy translúcido con chevrones suaves (>>>) apuntando a la derecha. Nada fuera de esa franja.
+ B) PUNTA: 256x256, punta de flecha mirando a la DERECHA; su base (a la izquierda) mide exactamente 128 px de alto centrada, para encajar con el cuerpo; bordes finos y brillantes, interior translúcido.
+ C) INICIO: 128x128, medio círculo abierto a la derecha (donde nace la flecha, en los pies del héroe), del mismo alto que la franja (64 px).
+
+IMAGEN 2 (1536x1024) — formas de área, separadas con mucho hueco negro:
+ D) CUATRO CONOS de 512x512 con aperturas de 30°, 60°, 90° y 120°: vértice EXACTO en el centro de abajo de su cuadro, abriéndose hacia ARRIBA hasta el borde superior (radio = 512 px); dos bordes rectos finos, arco exterior más brillante, interior muy translúcido con ondas suaves.
+ E) CÍRCULO DE ÁREA 512x512: disco que toca los cuatro bordes, aro exterior brillante y fino, interior muy translúcido con un patrón hexagonal suave.
+ F) ARO DE ALCANCE 512x512: solo el aro, fino, con marcas cortas cada 30° por fuera, que toque los cuatro bordes.
+```
