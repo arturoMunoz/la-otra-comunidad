@@ -174,6 +174,8 @@ export default {
       if (req.method !== 'POST') return new Response('usa POST', { status: 405 });
       try { return Response.json(await reparte(env)); } catch (e) { return Response.json({ error: String(e.message || e) }, { status: 500 }); }
     }
+    /* enlace corto para pasar por WhatsApp: /a6 (con la vista previa del logo) */
+    if (/^\/a6\/?$/i.test(u.pathname)) return Response.redirect(u.origin + '/batalla/autopista.html', 302);
     return env.ASSETS.fetch(req);
   },
   async scheduled(ev, env, ctx) { ctx.waitUntil(reparte(env).catch(() => {})); },
