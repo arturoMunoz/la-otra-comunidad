@@ -48,8 +48,14 @@ class MainActivity : Activity() {
         }
         web = w
         raiz.addView(w, FrameLayout.LayoutParams(-1, -1))
+        /* pantalla de carga: el fondo de los dos peajes con el logo de A-6 en el centro */
         val img = ImageView(this).apply { setImageResource(R.drawable.carga); scaleType = ImageView.ScaleType.CENTER_CROP }
-        carga = img; raiz.addView(img, FrameLayout.LayoutParams(-1, -1))
+        val logo = ImageView(this).apply { setImageResource(R.drawable.logo); scaleType = ImageView.ScaleType.FIT_CENTER; adjustViewBounds = true }
+        val capa = FrameLayout(this).apply { setBackgroundColor(android.graphics.Color.BLACK) }
+        capa.addView(img, FrameLayout.LayoutParams(-1, -1))
+        val ancho = (resources.displayMetrics.widthPixels.coerceAtLeast(resources.displayMetrics.heightPixels) * 0.34f).toInt()
+        capa.addView(logo, FrameLayout.LayoutParams(ancho, -2, android.view.Gravity.CENTER))
+        carga = capa; raiz.addView(capa, FrameLayout.LayoutParams(-1, -1))
         setContentView(raiz)
         pantallaCompleta()
     }
