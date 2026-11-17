@@ -529,7 +529,7 @@ function paso(dt) {
       if (d.n) for (const e of enemigosDe(h.eq)) if (!d.toc.has(e.id) && e.k !== 'n' && (e.k !== 't') && dist(h, e) < 1.6 + radio(e)) {d.toc.add(e.id); dana(h, e, d.n, 'hab'); if (d.aturde && e.k !== 't') {e.aturd = S.t + d.aturde;}}
       if (d.t <= 0) {if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, d.cae) < d.cae.r) {dana(h, e, d.cae.n, 'hab'); e.buf ? (e.buf.lento = d.cae.dur, e.buf.lentoV = d.cae.l) : (e.lento = S.t + d.cae.dur);} ev(['fx', 'onda', h.x, h.z, d.cae.r * 1.6]);} h.dash = null;}
     } else if (h.buf.estasis > 0) {h.mueve = false;
-    } else if (!(h.aturd > S.t)) {
+    } else if (!(h.aturd > S.t) && !(h.paraT > S.t)) {
       if (h.bot || h.local) {if (h.mx || h.mz) {const l = Math.hypot(h.mx, h.mz); h.x += h.mx / l * st.vel * Math.min(1, l) * dt; h.z += h.mz / l * st.vel * Math.min(1, l) * dt; h.rot = Math.atan2(h.mx, h.mz); limita(h); h.mueve = true;} else h.mueve = false;}
     }
     /* ataque básico */
@@ -546,7 +546,7 @@ function paso(dt) {
       else if (h.modoAt === 't') obj = masCercano(h, en.filter((e) => e.k === 't' || e.k === 'n'), r);
       else if (h.modoAt === 's') obj = en.filter((e) => (e.k === 's' || e.k === 'j') && aTiro(e)).sort((a, b) => a.vida - b.vida)[0] || null;
       else obj = hh.length && (h.prioHeroe !== false) ? hh.sort((a, b) => a.vida - b.vida)[0] : masCercano(h, en.filter((e) => e.k !== 'j' || e.agro === h.id || !h.bot || h.ataca), r);
-      if (obj) {h.cd.a = 1 / st.vatq; h.rot = Math.atan2(obj.x - h.x, obj.z - h.z); if (h.buf.invis) h.buf.invis = 0; h.revela = S.t + 1.2; golpea(h, obj); h.tap = 0;}
+      if (obj) {h.cd.a = 1 / st.vatq; h.rot = Math.atan2(obj.x - h.x, obj.z - h.z); if (h.buf.invis) h.buf.invis = 0; h.revela = S.t + 1.2; golpea(h, obj); h.tap = 0; h.paraT = S.t + Math.min(0.3, 0.3 / st.vatq); h.mueve = false;}
       /* pedido de Arturo: cada toque del ataque da un golpe SIEMPRE, aunque te muevas y no haya nadie (golpe al aire) */
       else if (!h.bot && (h.tap > S.t || !h.mueve)) {h.cd.a = 1 / st.vatq; h.ac++; h.tap = 0;}
     }

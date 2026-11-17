@@ -751,6 +751,15 @@ js = sub(js, """    const t = masCercano(h, S.u.filter((u) => (u.k === 'j' || u.
 # un solo botiquín, en mitad del puente (salía uno delante y otro detrás de cada torre: cuatro)
 js = sub(js, "if (tipo === 'linea') {const t = puntoCarril(0, TORRE_F).z; for (const [z, t0] of [[t - 7, 105], [t + 8, 150]]) for (const sg of [1, -1]) RELIQ.push({x: -6.8, z: z * sg, t0});}",
          "if (tipo === 'linea') RELIQ.push({x: 0, z: 0, t0: 105});")
+# ---------- EL GOLPE BÁSICO TE PARA (17/11, Arturo): como en el Wild Rift, al soltar un básico te quedas quieto lo que dura el gesto ----------
+# en la simulación (tú contra la máquina, los bots y el anfitrión) se para al dar el golpe; en línea, tu móvil para con el golpe que predice
+js = sub(js, "} else if (!(h.aturd > S.t)) {\n      if (h.bot || h.local) {if (h.mx || h.mz) {", "} else if (!(h.aturd > S.t) && !(h.paraT > S.t)) {\n      if (h.bot || h.local) {if (h.mx || h.mz) {")
+js = sub(js, "golpea(h, obj); h.tap = 0;}", "golpea(h, obj); h.tap = 0; h.paraT = S.t + Math.min(0.3, 0.3 / st.vatq); h.mueve = false;}")
+js = sub(js, "  if (MIO.dash) {MIO.x += MIO.dash.vx * dt; MIO.z += MIO.dash.vz * dt; MIO.dash.t -= dt; if (MIO.dash.t <= 0) MIO.dash = null;}\n  else {const ac = acercaAtaque(",
+         """  {const oo = VIS.get(YO), marca = oo && oo.predT || 0; if (marca !== MIO.marcaAt) {if (MIO.marcaAt !== undefined && marca) MIO.para = performance.now() + Math.min(300, 300 / HEROES[v.tipo].vatq); MIO.marcaAt = marca;}}
+  if (MIO.dash) {MIO.x += MIO.dash.vx * dt; MIO.z += MIO.dash.vz * dt; MIO.dash.t -= dt; if (MIO.dash.t <= 0) MIO.dash = null;}
+  else if (performance.now() < (MIO.para || 0)) MIO.mueve = false;
+  else {const ac = acercaAtaque(""")
 # menú: fondo = la imagen de carga (los dos peajes), retrato sin cortar la cabeza, sin Gamling (Tolkien) ni el jinete
 html = sub(html, '</head>', '<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}'
            '#menu .mSplash img{object-position:50% 0%!important}</style></head>', donde='html')

@@ -1014,7 +1014,7 @@ function paso(dt) {
       if (d.n) for (const e of enemigosDe(h.eq)) if (!d.toc.has(e.id) && e.k !== 'n' && (e.k !== 't') && dist(h, e) < 1.6 + radio(e)) {d.toc.add(e.id); dana(h, e, d.n, 'hab'); if (d.aturde && e.k !== 't') {e.aturd = S.t + d.aturde;}}
       if (d.t <= 0) {if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, d.cae) < d.cae.r) {dana(h, e, d.cae.n, 'hab'); e.buf ? (e.buf.lento = d.cae.dur, e.buf.lentoV = d.cae.l) : (e.lento = S.t + d.cae.dur);} ev(['fx', 'onda', h.x, h.z, d.cae.r * 1.6]);} h.dash = null;}
     } else if (h.buf.estasis > 0) {h.mueve = false;
-    } else if (!(h.aturd > S.t)) {
+    } else if (!(h.aturd > S.t) && !(h.paraT > S.t)) {
       if (h.bot || h.local) {if (h.mx || h.mz) {const l = Math.hypot(h.mx, h.mz); h.x += h.mx / l * st.vel * Math.min(1, l) * dt; h.z += h.mz / l * st.vel * Math.min(1, l) * dt; h.rot = Math.atan2(h.mx, h.mz); limita(h); h.mueve = true;} else h.mueve = false;}
     }
     /* ataque básico */
@@ -1031,7 +1031,7 @@ function paso(dt) {
       else if (h.modoAt === 't') obj = masCercano(h, en.filter((e) => e.k === 't' || e.k === 'n'), r);
       else if (h.modoAt === 's') obj = en.filter((e) => (e.k === 's' || e.k === 'j') && aTiro(e)).sort((a, b) => a.vida - b.vida)[0] || null;
       else obj = hh.length && (h.prioHeroe !== false) ? hh.sort((a, b) => a.vida - b.vida)[0] : masCercano(h, en.filter((e) => e.k !== 'j' || e.agro === h.id || !h.bot || h.ataca), r);
-      if (obj) {h.cd.a = 1 / st.vatq; h.rot = Math.atan2(obj.x - h.x, obj.z - h.z); if (h.buf.invis) h.buf.invis = 0; h.revela = S.t + 1.2; golpea(h, obj); h.tap = 0;}
+      if (obj) {h.cd.a = 1 / st.vatq; h.rot = Math.atan2(obj.x - h.x, obj.z - h.z); if (h.buf.invis) h.buf.invis = 0; h.revela = S.t + 1.2; golpea(h, obj); h.tap = 0; h.paraT = S.t + Math.min(0.3, 0.3 / st.vatq); h.mueve = false;}
       /* pedido de Arturo: cada toque del ataque da un golpe SIEMPRE, aunque te muevas y no haya nadie (golpe al aire) */
       else if (!h.bot && (h.tap > S.t || !h.mueve)) {h.cd.a = 1 / st.vatq; h.ac++; h.tap = 0;}
     }
@@ -2244,7 +2244,9 @@ function mueveMio(dt) {
   if (v.flagsE & 1) {MIO.x = v.x; MIO.z = v.z; return;}
   if (!MIO.listo || v.muerto >= 0) {MIO.x = v.x; MIO.z = v.z; MIO.listo = v.muerto < 0; return;}
   const st = {vel: HEROES[v.tipo].vel * (v.inv.includes('botas') ? 1.12 : 1) * (v.inv.includes('capa') ? 1.18 : 1)};
+  {const oo = VIS.get(YO), marca = oo && oo.predT || 0; if (marca !== MIO.marcaAt) {if (MIO.marcaAt !== undefined && marca) MIO.para = performance.now() + Math.min(300, 300 / HEROES[v.tipo].vatq); MIO.marcaAt = marca;}}
   if (MIO.dash) {MIO.x += MIO.dash.vx * dt; MIO.z += MIO.dash.vz * dt; MIO.dash.t -= dt; if (MIO.dash.t <= 0) MIO.dash = null;}
+  else if (performance.now() < (MIO.para || 0)) MIO.mueve = false;
   else {const ac = acercaAtaque(MIO.x, MIO.z), mx = ac ? ac.x : MANDO.mx, mz = ac ? ac.z : MANDO.mz; MIO.mueve = !!(mx || mz) && !(v.flags & 2); if (MIO.mueve) {const l = Math.hypot(mx, mz), k = ac ? 1 : Math.min(1, l); MIO.x += mx / l * st.vel * k * dt; MIO.z += mz / l * st.vel * k * dt; MIO.rot = Math.atan2(mx, mz);}}
   limita(MIO);
   /* si el anfitrión me ve muy lejos (me han empujado, he reaparecido), manda él */
