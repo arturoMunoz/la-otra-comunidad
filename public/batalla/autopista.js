@@ -270,12 +270,15 @@ const renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'hig
 /* resolución dinámica (como en el Abismo): si el móvil no llega a ~50 fps baja la nitidez un paso; si va sobrado, la sube */
 /* ajustes de gráficos como en el Wild Rift: calidad (baja/media/alta) y 30 o 60 fotogramas por segundo */
 const GRAF = {cal: localStorage.getItem('auto.cal') || (() => {const n = navigator.hardwareConcurrency || 4, m = navigator.deviceMemory || 4; return n >= 8 && m >= 6 ? 'alta' : n <= 4 || m <= 3 ? 'baja' : 'media';})(), fps: +(localStorage.getItem('auto.fps') || 60), ult: 0};
-const PR = {max: Math.min(devicePixelRatio, {baja: 1, media: 1.5, alta: 2}[GRAF.cal] || 1.5), min: 0.75, t: 0, n: 0, acum: 0}; PR.v = PR.max;
+/* 17/11 (Henar: «se ve borroso al moverse»): la resolución bajaba a 0,75 en cuanto el móvil iba un poco justo y se notaba; ahora no baja de
+   1 (media) o 1,25 (alta) y solo baja tras DOS tandas seguidas lentas. Para ganar fluidez de verdad: Calidad Baja o 30 fps en ⚙. */
+const PR_MIN = (c) => Math.min(devicePixelRatio, c === 'baja' ? 0.75 : c === 'alta' ? 1.25 : 1);
+const PR = {max: Math.min(devicePixelRatio, {baja: 1, media: 1.5, alta: 2}[GRAF.cal] || 1.5), min: PR_MIN(GRAF.cal), t: 0, n: 0, acum: 0, malas: 0}; PR.v = PR.max;
 renderer.setPixelRatio(PR.v); renderer.setSize(VW, VH);
 function ajustaResolucion(dt) {
   PR.acum += dt; PR.n++; PR.t += dt; if (PR.t < 1.5) return;
   const fps = PR.n / PR.acum; PR.t = PR.acum = PR.n = 0;
-  const nv = fps < GRAF.fps * 0.8 ? Math.max(PR.min, PR.v - 0.25) : fps > GRAF.fps * 0.96 ? Math.min(PR.max, PR.v + 0.25) : PR.v;
+  PR.malas = fps < GRAF.fps * 0.8 ? PR.malas + 1 : 0; const nv = PR.malas >= 2 ? Math.max(PR.min, PR.v - 0.25) : fps > GRAF.fps * 0.96 ? Math.min(PR.max, PR.v + 0.25) : PR.v;
   if (nv !== PR.v) {PR.v = nv; renderer.setPixelRatio(nv); renderer.setSize(VW, VH);}
   /* si el móvil va justo, la sombra a la mitad de resolución (4 veces menos píxeles que pintar) */
   const ms = PR.v <= 1 || GRAF.cal !== 'alta' ? 1024 : 2048; if (sol.shadow.mapSize.x !== ms) {sol.shadow.mapSize.set(ms, ms); if (sol.shadow.map) {sol.shadow.map.dispose(); sol.shadow.map = null;}}
@@ -1934,7 +1937,7 @@ function botonesGraf() {
 }
 function ponGraf(k, v) {
   GRAF[k] = v; localStorage.setItem('auto.' + k, v);
-  if (k === 'cal') {PR.max = Math.min(devicePixelRatio, {baja: 1, media: 1.5, alta: 2}[v]); PR.min = v === 'baja' ? 0.6 : 0.75; PR.v = PR.max; renderer.setPixelRatio(PR.v); renderer.setSize(VW, VH);
+  if (k === 'cal') {PR.max = Math.min(devicePixelRatio, {baja: 1, media: 1.5, alta: 2}[v]); PR.min = PR_MIN(v); PR.v = PR.max; renderer.setPixelRatio(PR.v); renderer.setSize(VW, VH);
     sol.castShadow = v !== 'baja'; if (LUCES_AIRE) LUCES_AIRE.visible = v !== 'baja'; const ms = v === 'alta' && PR.v > 1 ? 2048 : 1024; sol.shadow.mapSize.set(ms, ms); if (sol.shadow.map) {sol.shadow.map.dispose(); sol.shadow.map = null;}}
 }
 function enlazaGraf(el, repinta) {for (const bt of el.querySelectorAll('[data-g]')) bt.onclick = () => {const k = bt.dataset.g; ponGraf(k, k === 'fps' ? +bt.dataset.v : bt.dataset.v); repinta();};}

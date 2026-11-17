@@ -171,3 +171,16 @@ Cuatro pedidos ART en el mismo chat y en orden (el 2 rehace el 1 con la luz del 
 Dos medallones redondos 512x512 sobre fondo transparente (o magenta #FF00FF para recortar), mismo estilo metal oscuro + neón del HUD de A-6, sin texto:
 1. Partida guiada: casco de obra / instructor con silbato o un cono con un signo de interrogación, aro verde neón.
 2. Crear sala: dos o tres siluetas de jugadores juntas con un walkie-talkie, aro dorado.
+
+## 17/11 · Pack Autopista 30 ART — barras de vida y energía LÍQUIDAS (en el MISMO chat del 22, 4 imágenes por separado)
+
+```
+ART · Pack Autopista 30 · Barras de vida y energía de los héroes de A-6 (juego móvil tipo Wild Rift, HUD cyberpunk serio: metal oscuro con neón, el MISMO estilo que el HUD que ya hiciste en este chat). Hazlo en 4 imágenes, una por mensaje, sin texto, sin números, sin letras.
+
+IMAGEN 1 — Placas (1536x1024, fondo magenta liso #FF00FF): tres placas iguales en forma, una debajo de otra con mucho hueco entre ellas: AZUL (aliado), ROJA (enemigo) y DORADA (el jugador). Cada placa es UNA sola pieza horizontal, proporción 5:1, con DOS ventanas vacías dentro: arriba una ventana ancha para la vida (ocupa ~60 % del alto) y debajo, pegada, una ventana más fina para la energía (~25 % del alto). Las dos ventanas DENTRO de la placa, con el mismo largo, bordes limpios y rectos por dentro; el interior de las ventanas también magenta liso #FF00FF. Marco fino (que no se coma la barra), remaches o detalles solo en los extremos. Vista frontal, plana, sin perspectiva.
+
+IMAGEN 2 — Líquidos de vida (1024x1024, fondo magenta liso #FF00FF): tres tiras horizontales de líquido VISCOSO y espeso tipo gel/slime brillante, cada una 1024x200, separadas: VERDE ácido, AZUL cian y ROJO sangre. Cada tira se repite sin costura de izquierda a derecha (el borde izquierdo continúa el derecho). Que tenga volumen: brillo blanco curvo arriba como un tubo de cristal lleno, parte de abajo más oscura, burbujas pequeñas atrapadas, vetas que se arremolinan despacio. Nada de color plano.
+
+IMAGEN 3 — Líquido de energía (1024x1024, fondo magenta liso #FF00FF): arriba una tira horizontal igual que las de la imagen 2 pero FUCSIA neón (1024x200, sin costura izquierda-derecha); abajo, el mismo líquido fucsia en VERTICAL (300x700, sin costura de arriba abajo) para rellenar la batería del HUD.
+
+IMAGEN 4 — Frentes del líquido (1024x1024, fondo magenta liso #FF00FF): el borde donde se ACABA el líquido, para poner al final de la barra: una gota/menisco redondeado y un poco tembloroso, de 128 px de alto, en VERDE, AZUL, ROJO y FUCSIA (cuatro, separados, mirando a la derecha); y debajo la superficie de arriba del líquido fucsia de la batería vertical (una franja ondulada de 300x80 con brillo).
