@@ -1,5 +1,7 @@
 # La Otra Comunidad — notas de traspaso
 
+> Cambio de cuenta de Claude (17/11/2026): ver `docs/traspaso-otra-cuenta.md`. Los scripts de prueba que estaban en `/home/claude/pruebas` y `/tmp` de la sesión vieja: los que quedaban están en `tools/pruebas/` (copiarlos a `/home/claude/pruebas` para usarlos tal cual). `sala_local.py`, `simsrv.mjs`, `/home/claude/abismo` y `/tmp/t_*.py`/`t_bal.mjs` de días anteriores se perdieron con la sesión: si hacen falta, se rehacen.
+
 Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri, Patri, Juan Pablo): cada uno avanza con sus pasos reales por el camino de Frodo, siempre detrás de él, y descubre la historia de cada tramo al llegar. Lo lleva Henar.
 
 ## Dónde está cada cosa
