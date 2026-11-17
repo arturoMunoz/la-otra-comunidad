@@ -16,7 +16,7 @@ const ICO = (n) => n.includes('/') ? n : '../abismo/iconos/' + n + '.webp';
 /* ---------- datos ---------- */
 const HEROES = {
   /* LA AUTOPISTA (17/11): 7 héroes originales. Clave interna = héroe de La Brecha cuyo kit usan. Modelos y arte PROVISIONALES hasta los pedidos a ChatGPT. */
-  enano: {nombre: 'Brask, Caballero de Luz', modelo: 'ap_brask', alto: 2.45, ret: 'ui/ap_r_enano.webp', mana: 300, crecM: 30, vida: 740, dano: 58, vatq: 0.8, alcance: 2.3, vel: 4.9, crecV: 95, crecD: 4, arm: 38, rm: 32,
+  enano: {nombre: 'Dalinar, Caballero de Luz', modelo: 'ap_brask', alto: 2.45, ret: 'ui/ap_r_enano.webp', mana: 300, crecM: 30, vida: 740, dano: 58, vatq: 0.8, alcance: 2.3, vel: 4.9, crecV: 95, crecD: 4, arm: 38, rm: 32,
     hab: {q: {n: 'Tajo radiante', cd: 5, mn: 30, tipo: 'cono', alc: 3.8, ang: 1.5, dano: 115, icono: 'hacha', d: 'Un espadazo de luz en abanico delante de ti.'},
       w: {n: 'Coraza de luz', cd: 14, mn: 45, tipo: 'reduce', val: 0.45, dur: 3, icono: 'escudo', d: 'Su armadura se llena de luz: recibe un 45 % menos de daño durante 3 s.'},
       e: {n: 'Caída luminosa', cd: 10, mn: 45, tipo: 'salto', dist: 7, radio: 2.6, dano: 85, lento: 0.35, durL: 1.5, icono: 'botas', d: 'Salta impulsado por la luz, hiere y frena al caer.'},
@@ -342,7 +342,8 @@ function cullBosque(cx, cz, forzar) {
   }
 }
 const ALTO = {};
-function alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene, ['draco', 'huorn', 'crebain', 'nutria', 'sapo', 'uruk_azul'].includes(n)); ALTO[n] = Math.max(0.5, b.max.y - b.min.y);} return ALTO[n];}
+const AJ_ALTO = {ap_brask: 1.83};
+function alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene, ['draco', 'huorn', 'crebain', 'nutria', 'sapo', 'uruk_azul'].includes(n)); ALTO[n] = Math.max(0.5, b.max.y - b.min.y) / (AJ_ALTO[n] || 1);} return ALTO[n];}
 /* Pack Vado 17: equipo de cada héroe (piezas sueltas de ChatGPT hechas para un maniquí de 2 m) enganchado a los huesos de KayKit.
    Cabeza: al centro de la cabeza, del ancho de la cabeza; pecho: al hueso chest; armas: en el sitio del arma original (que se esconde). */
 const VESTIR = {};
@@ -758,7 +759,7 @@ function nuevaPartida(jugadores, modo) {
     const tipo = j ? j.heroe : Object.keys(HEROES)[(slot * 5 + 1) % Object.keys(HEROES).length];
     const eq = slot % 2, f = BASES[eq].fuente, x = f.x + (slot >= 2 ? 1.5 : -1.5), z0 = f.z - signo(eq) * 2.5;
     const b = HEROES[tipo] || HEROES.rohan;
-    S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: !j, nombre: j ? j.nombre : 'Bot ' + b.nombre.split(' ')[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
+    S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: !j, nombre: j ? j.nombre : 'Bot ' + b.nombre.split(/[ ,]/)[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
       vida: b.vida, max: b.vida, mana: b.mana, nivel: 1, xp: 0, oro: 500, vg: 1, vgT: 210, inv: [], enc: '', hf: j && j.hech === 'c' ? 'c' : 'f', modoAt: '', fijo: 0, cd: {q: 0, w: 0, e: 0, r: 0, a: 0, d: 0, f: 0}, rk: {q: 0, w: 0, e: 0, r: 0}, pts: 1, muertes: 0, asist: 0, cs: 0, racha: 0, hierba: -1, multi: 0, multiT: -99, danos: {}, buf: {}, resp: 0, muerto: false, ac: 0, hc: 0, hk: '', mueve: false, ataca: false, mx: 0, mz: 0, kills: 0, plan: 0});
   }
   for (const eq of [0, 1]) {
@@ -1421,7 +1422,25 @@ function rafaga({n = 1, x, z, ang, abre = 0, dist, varia = 0.25, cada = 0, y = 1
   if (fin === undefined) fin = IMPACTO_AP[kind] || 'impacto';
   for (let i = 0; i < n; i++) setTimeout(() => {if (RAFAGAS.length > 70) return; const a = ang + (Math.random() - 0.5) * abre, d = dist * (1 - varia + Math.random() * varia), o = proyAP(kind); scene.add(o); RAFAGAS.push({o, x, z, tx: x + Math.sin(a) * d, tz: z + Math.cos(a) * d, t: 0, dur: d / vel, y, salta, kind, fin});}, i * cada);
 }
+/* 17/11: el tajo de luz de Dalinar es un ABANICO cuyo vértice está en la esquina de abajo a la izquierda de cada fotograma: se coloca con
+   ese vértice en la espada y la diagonal del abanico hacia donde golpea (antes el centro del dibujo iba delante y el vértice quedaba de lado) */
+function abanico(nombre, x, z, r, largo, y) {const s = largo / 1.2, se = s * (FB_DUR[nombre] ? 1.3 : 1); return flip(nombre, x + Math.sin(r) * se * 0.62, z + Math.cos(r) * se * 0.62, s, true, r - 3 * Math.PI / 4, y);}
+/* armadura que brilla (W de Dalinar) y que echa luz (R): emisivo en los materiales del héroe (copiados la primera vez, para no encender a otro igual) */
+const BRILLOS = [];
+function brillaArmadura(o, color, fuerza, dur) {
+  if (!o || !o.raiz) return;
+  if (!o.matsPropios) {o.matsPropios = []; o.raiz.traverse((m) => {if (m.isMesh && m.material && m.material.emissive) {m.material = m.material.clone(); o.matsPropios.push(m.material);}});}
+  BRILLOS.push({o, c: new THREE.Color(color), f: fuerza, t: 0, dur});
+}
+function animaBrillos(dt) {
+  const suma = new Map();
+  for (let i = BRILLOS.length - 1; i >= 0; i--) {const b = BRILLOS[i]; b.t += dt; if (b.t >= b.dur) {BRILLOS.splice(i, 1); continue;} const ent = Math.min(1, b.t / 0.15), sal = Math.min(1, (b.dur - b.t) / 0.4), late = 0.75 + 0.25 * Math.sin(b.t * 9); const k = b.f * ent * sal * late, a = suma.get(b.o) || {r: 0, g: 0, b: 0}; a.r += b.c.r * k; a.g += b.c.g * k; a.b += b.c.b * k; suma.set(b.o, a);}
+  for (const [o, a] of suma) for (const m of o.matsPropios || []) {m.emissive.setRGB(a.r, a.g, a.b); m.userData.brillando = true;}
+  for (const b of animaBrillos.antes || []) if (!suma.has(b)) for (const m of b.matsPropios || []) if (m.userData.brillando) {m.emissive.setRGB(0, 0, 0); m.userData.brillando = false;}
+  animaBrillos.antes = [...suma.keys()];
+}
 function animaRafagas(dt) {
+  animaBrillos(dt);
   for (let i = RAFAGAS.length - 1; i >= 0; i--) {const r = RAFAGAS[i]; r.t += dt; const k = Math.min(1, r.t / r.dur);
     r.o.position.set(r.x + (r.tx - r.x) * k, r.y * (1 - k) + 0.25 * k + Math.sin(k * Math.PI) * r.salta, r.z + (r.tz - r.z) * k); r.o.rotation.y = Math.atan2(r.tx - r.x, r.tz - r.z);
     if (k >= 1) {scene.remove(r.o); RAFAGAS.splice(i, 1); if (r.fin) flip(r.fin, r.tx, r.tz, r.kind === 'bala' ? 0.9 : 1.3);}}
@@ -1539,7 +1558,7 @@ function habVisual(e) {
 }
 /* A-6: lo propio de cada héroe, encima de lo común de La Brecha */
 function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
-  const t = v.tipo, rs = rot - Math.PI / 4, lejos = () => {const d0 = Math.min(H.alc || 0, Math.hypot(px - x, pz - z)); return [x + dx * d0, z + dz * d0];};
+  const t = v.tipo, rs = rot - Math.PI / 2, lejos = () => {const d0 = Math.min(H.alc || 0, Math.hypot(px - x, pz - z)); return [x + dx * d0, z + dz * d0];};
   if (o.estelaTiro) o.estelaTiro.fx = {gandalf: 'fuego', orco: 'impacto', gollum: 'humo'}[t];
   {const sn = {gandalf: 'ap_llama', orco: 'ap_energia', enano: 'ap_luz', elfo: 'ap_fusil', hobbit: 'ap_golf', rohan: 'ap_arena'}[t]; if (sn) suena(sn, k === 'r' ? 0.8 : 0.55, x, z);}
   if (t === 'hobbit') {
@@ -1573,9 +1592,9 @@ function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
     if (k === 'e') {flip('ap_rohan_arena', x, z, H.radio * 2, true, rot); for (let i = 0; i < 4; i++) luego2(i * 90, () => {const a = rot + i * 1.6, r = H.radio * 0.6; flip('ap_rohan_arena', x + Math.cos(a) * r, z + Math.sin(a) * r, 2.2, true, a);});}
   }
   if (t === 'enano') {
-    if (k === 'q') flip('ap_enano_tajo', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, H.alc * 1.5, true, rs);
-    if (k === 'w') auraFx(o, 'escudo', H.dur, 3.8);
-    if (k === 'r') {flip('ap_enano_estallido', x, z, H.radio * 2, true); flip('ap_enano_estallido', x, z, H.radio * 1.4, false, undefined, 1.4);}
+    if (k === 'q') {abanico('ap_enano_tajo', x + dx * 0.5, z + dz * 0.5, rot, (H.alc || 4) + 0.4, 1.1); abanico('ap_enano_tajo', x + dx * 0.5, z + dz * 0.5, rot, (H.alc || 4) * 0.8, 0.12);}
+    if (k === 'w') {auraFx(o, 'escudo', H.dur, 3.8); brillaArmadura(o, '#5fc4ff', 0.9, H.dur || 3);}
+    if (k === 'r') {flip('ap_enano_estallido', x, z, H.radio * 2, true); flip('ap_enano_estallido', x, z, H.radio * 1.4, false, undefined, 1.4); brillaArmadura(o, '#e8f6ff', 2.2, 2.6); flip('ondaC', x, z, H.radio * 2.6, true); luego2(180, () => flip('ondaC', x, z, H.radio * 3.4, true));}
   }
 }
 /* lluvia de flechas: caen flechas de verdad sobre la zona */
@@ -1672,7 +1691,8 @@ function basicoFx(v, o, n, rot) {
   const espera = Math.min(150, 120 / Math.max(0.6, H.vatq));
   setTimeout(() => {const p = o.raiz.position, r = rot ?? o.rv ?? 0, dx = Math.sin(r), dz = Math.cos(r), lado = n % 2 ? 1 : -1;
     /* 17/11 (Henar: «los básicos no se ven bien»): además del tajo en el suelo (que el propio héroe tapaba), otro de pie delante, a la altura del pecho, y más grandes */
-    if (TAJO_B[v.tipo]) {const d = Math.min(H.alcance, 2.4) * 0.8; flip(TAJO_B[v.tipo], p.x + dx * d, p.z + dz * d, 3.4 + H.alcance * 0.7, true, r - Math.PI / 4 + (lado > 0 ? 0 : Math.PI / 2)); flip(TAJO_B[v.tipo], p.x + dx * (d + 0.3), p.z + dz * (d + 0.3), 2.4 + H.alcance * 0.4, false, undefined, 1.15);}
+    if (v.tipo === 'enano') {abanico('ap_enano_tajo', p.x + dx * 0.45, p.z + dz * 0.45, r + lado * 0.18, H.alcance + 1.2, 1.15); abanico('ap_enano_tajo', p.x + dx * 0.45, p.z + dz * 0.45, r - lado * 0.18, H.alcance + 0.6, 0.12); brillaArmadura(o, '#7fd0ff', 0.25, 0.28);}
+    else if (TAJO_B[v.tipo]) {const d = Math.min(H.alcance, 2.4) * 0.8; flip(TAJO_B[v.tipo], p.x + dx * d * 0.6, p.z + dz * d * 0.6, 3.4 + H.alcance * 0.7, true, r - Math.PI / 2 + lado * 0.35); flip(TAJO_B[v.tipo], p.x + dx * (d + 0.3), p.z + dz * (d + 0.3), 2.4 + H.alcance * 0.4, false, undefined, 1.15);}
     else if (v.tipo === 'elfo') {flip('ap_elfo_fogonazo', p.x + dx * 1.2, p.z + dz * 1.2, 2.4, false, undefined, 1.25); o.kb = {x: -dx * 0.25, z: -dz * 0.25, t: 0.12, d: 0.12};}
     else if (v.tipo === 'gandalf') {flip('fuego', p.x + dx * 0.9, p.z + dz * 0.9, 1.9, false, undefined, 1.3, 0.35); flip('ap_gandalf_impacto', p.x + dx * 0.9, p.z + dz * 0.9, 1.3, false, undefined, 1.3);}
     else if (v.tipo === 'hobbit') {flip('tArco', p.x + dx * 0.8, p.z + dz * 0.8, 2.8, true, r - Math.PI / 4); flip('ap_hobbit_impacto', p.x + dx * 0.9, p.z + dz * 0.9, 1.2, false, undefined, 0.6);}
