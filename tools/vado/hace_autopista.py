@@ -736,12 +736,19 @@ html = sub(html, '</head>', """<style>
 #menu #bGuia span small{display:none!important}
 #menu #bGuia.nueva::after{right:-8px!important;top:-6px!important}
 </style></head>""", donde='html')
+# ---------- 17/11 (Arturo): el «+» de la definitiva se había quedado donde estaba antes; soldados más bajitos ----------
+html = sub(html, '</head>', """<style>
+#mr{right:124px !important;bottom:226px !important}
+</style></head>""", donde='html')
+# las flechas de los soldados sonaban al 50 % estuvieran donde estuvieran: ahora bajan con la distancia y mucho más flojas; su muerte, también
+js = sub(js, "suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', 0.5);}", "{const sh = {bala: 'ap_fusil', bola: 'ap_golf'}[e[1]]; suena(sh || 'arco', sh ? 0.5 : 0.12, e[2], e[3]);}}")
+js = sub(js, "else suena('muerte', 0.35, v.x, v.z);}", "else suena('muerte', v.k === 's' ? 0.14 : 0.35, v.x, v.z);}")
 # menú: fondo = la imagen de carga (los dos peajes), retrato sin cortar la cabeza, sin Gamling (Tolkien) ni el jinete
 html = sub(html, '</head>', '<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}'
            '#menu .mSplash img{object-position:50% 0%!important}</style></head>', donde='html')
 html = sub(html, 'ui/guia_gamling.webp" alt="Gamling"', 'ui/ap_guia.webp" alt=""', donde='html')
 html = sub(html, '<img src="ui/guia_gamling.webp" alt="">', '<img src="ui/ap_guia.webp" alt="">', donde='html')
-html = sub(html, '<img src="ui/ap_splash_rohan.webp" alt="" class="mTi2">', '<img src="ui/ap_r_rohan.webp" alt="" class="mTi2">', donde='html')
+html = sub(html, '<img src="ui/ap_splash_rohan.webp" alt="" class="mTi2">', '<img src="ui/ap_crear.webp" alt="" class="mTi2">', donde='html')
 for v in ["'ui/h_' + ", "'ui/p_' + ", "'ui/at_' + "]:
     if v not in js: fallos.append('[arte] ' + v)
     js = js.replace(v, v.replace('ui/', 'ui/ap_'))
