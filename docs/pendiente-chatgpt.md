@@ -50,3 +50,7 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] Pack Autopista 5 ART: kit de botones del menú y de la partida
 - [x] Pack Autopista 6 ART: hoja de iconos de habilidades y pasivas (7×5) + botones de ataque (7)
 - [x] Pack Autopista 7 WORK: mejorar los 7 héroes 3D (detalle, proporciones, armas) sobre los ap_*.glb actuales
+- [ ] Pack Autopista 8 WORK: torres-edificio (azul/roja, 3 estados), nexos y fuentes → `ap_estructuras.glb` (prompt en el chat del 17/11)
+- [ ] Pack Autopista 9 ART: retrato del guía de la partida guiada (`ap_guia.png`) e icono de «Crear sala»
+- [ ] Pack Autopista 10 WORK: vegetación de autopista, piezas de borde (muro antirruido, New Jersey, taludes, valla publicitaria, paso elevado) y objetos de suelo
+- [x] Pack Autopista 11 ART: texturas de asfalto, arcén y hormigón (17/11)

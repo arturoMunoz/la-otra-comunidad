@@ -292,7 +292,7 @@ const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30,
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard', 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
+const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard', 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
 /* modelos: los de la jungla solo hacen falta en la Batalla (2 contra 2) y se bajan después; los que no se usaban (capitán, estandartes, barriles…: casi 3 MB) ya no se bajan.
    Los del Abismo van adelgazados en modelos_l/ (sin los clips que aquí no se usan y con las texturas en WebP: tools/vado/adelgaza.py). */
 const JUNGLA = ['huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'warg', 'huargo_alfa', 'troll', 'orco'];
@@ -402,15 +402,15 @@ function construyeMapa() {
   MAPA_G = new THREE.Group(); scene.add(MAPA_G); const scene_ = MAPA_G; BOSQUE.length = 0; bosqueEn = null;
   /* SUELO HORNEADO (16/11): el sombreador del suelo (ruido, caminos, río, bases…) se pinta UNA vez en una textura al montar el mapa;
      en partida el suelo es una textura y luz sencilla. Antes cada píxel de la pantalla calculaba ~50 ruidos en cada fotograma (lo que más calienta el móvil). */
-  const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('texturas/barro.webp', true);
+  const tH = cargaTex('../batalla/texturas/ap_arcen.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);
   const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
   const BX = MAPA.ancho + 14, BZ = MAPA.largo + 12; /* zona horneada (la jugable con margen); fuera, suelo sencillo bajo el bosque */
-  const bakeU = {tH: {value: tH}, tB: {value: tB}, uA: {value: v2(CARRILES[0])}, uB: {value: v2(CARRILES[1])}, uEje: {value: new THREE.Vector2(EJE.x, EJE.z)}, uPit: {value: new THREE.Vector2(PIT.x, PIT.z)}, uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)},
+  const bakeU = {tH: {value: tH}, tB: {value: tB}, tC: {value: tC}, uA: {value: v2(CARRILES[0])}, uB: {value: v2(CARRILES[1])}, uEje: {value: new THREE.Vector2(EJE.x, EJE.z)}, uPit: {value: new THREE.Vector2(PIT.x, PIT.z)}, uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)},
     uF: {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]}};
   const bakeM = new THREE.ShaderMaterial({uniforms: bakeU, depthTest: false, depthWrite: false,
     vertexShader: `varying vec3 vWP; void main(){vWP=(modelMatrix*vec4(position,1.)).xyz; gl_Position=vec4(uv*2.-1.,0.,1.);}`,
     fragmentShader: `varying vec3 vWP; 
-      uniform sampler2D tH,tB; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec2 uEje, uPit, uPit2;
+      uniform sampler2D tH,tB,tC; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec2 uEje, uPit, uPit2;
       float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
       float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.03;a*=.5;}return s;}
@@ -425,19 +425,21 @@ function construyeMapa() {
       float base=1.-smoothstep(7.,11.,min(length(w-uF[0]),length(w-uF[1]))+fbm(w*.2)*2.);
       float mb=max(carril*.92,smoothstep(.62,.8,fbm(w*.05+1.3))*.5);
       /* hierba de colores vivos (estilo Supercell): dos verdes que se mezclan por manchas y flores claras sueltas */
-      float mh=fbm(w*.09+9.);
-      vec3 musgo=hi*mix(vec3(1.6,1.75,.85),vec3(1.95,1.85,.8),smoothstep(.35,.7,mh))*(.85+.3*fbm(w*.6+3.));
-      musgo=mix(musgo,vec3(.42,.5,.16),smoothstep(.93,.97,vn(w*1.7))*.5);
-      vec3 arena=vec3(dot(ba,vec3(.33)))*vec3(.62,.63,.68);
-      vec3 col=mix(musgo,arena,mb);
-      /* borde oscuro de los caminos: se leen como en el Wild Rift */
-      float bc=smoothstep(.18,.42,carril)*(1.-smoothstep(.42,.75,carril)); col*=1.-bc*.32;
-      /* las bases: plaza de losas de piedra con juntas */
-      vec2 lz=w*.62+vec2(floor(w.y*.62)*.5,0.); vec2 lf=fract(lz); float junta=smoothstep(.0,.07,min(min(lf.x,1.-lf.x),min(lf.y,1.-lf.y)));
-      vec3 losa=vec3(.2,.19,.17)*(.75+.4*h2(floor(lz)))*(.5+.5*junta);
-      col=mix(col,losa,base*.95);
+      /* LA AUTOPISTA: arcén de tierra seca, calzada de asfalto con sus líneas y plaza de hormigón en cada base */
+      vec3 arc=mix(texture2D(tH,w*.085).rgb,texture2D(tH,rw*.043+.31).rgb,smoothstep(.35,.65,fbm(w*.07+4.)))*vec3(.92,.86,.8);
+      vec3 asf=mix(texture2D(tB,w*.075).rgb,texture2D(tB,rw*.037+.5).rgb,.4)*1.12;
+      float ax=abs(w.x), road=1.-smoothstep(6.75,7.25,ax+fbm(w*.6)*.35);
+      vec3 col=mix(arc,asf,road);
+      float rayaB=(1.-smoothstep(.07,.13,abs(ax-6.35)));                       /* línea continua del borde */
+      float raya=(1.-smoothstep(.06,.11,abs(ax-3.2)))*step(.45,fract(w.y/7.)); /* discontinuas entre carriles */
+      float rayaC=(1.-smoothstep(.05,.09,abs(ax-.16)));                       /* doble línea amarilla del centro */
+      float gast=.55+.45*smoothstep(.25,.6,fbm(w*1.3));
+      col=mix(col,vec3(.86,.85,.8),max(rayaB,raya)*road*gast); col=mix(col,vec3(.9,.68,.16),rayaC*road*gast);
+      vec3 hor=texture2D(tC,w*.13).rgb*.72;
+      float plaza=1.-smoothstep(9.,10.5,max(abs(w.x)*.8,min(abs(w.y-uF[0].y),abs(w.y-uF[1].y))+2.));
+      col=mix(col,hor,plaza);
       /* lado de Isengard: tierra cenicienta y quemada */
-      float isen=smoothstep(-2.,24.,dot(w,uEje)); col=mix(col,vec3(dot(col,vec3(.33)))*vec3(1.05,.95,.85),isen*.45);
+
       /* el centro: un claro de barro y piedra donde duerme el Uruk Azul */
       col=mix(col,ba*vec3(.7,.72,.8),(1.-smoothstep(5.5,8.,length(w-uPit)+fbm(w*.5)*1.5))*.9); col=mix(col,ba*vec3(.78,.66,.6),(1.-smoothstep(5.5,8.,length(w-uPit2)+fbm(w*.5)*1.5))*.9);
       /* el vado: el río cruza de lado a lado por la mitad del mapa */
@@ -445,13 +447,13 @@ function construyeMapa() {
       ${TIPO_MAPA === 'ojo' ? '' : 'rio=0.;'} /* en el Duelo no hay río (17/11) */
       vec3 agua=mix(vec3(.05,.07,.06),vec3(.09,.1,.07),fbm(w*.5));
       col=mix(col,agua,rio*.9*(1.-(1.-smoothstep(5.,7.5,length(w-uPit))))*(1.-(1.-smoothstep(5.,7.5,length(w-uPit2)))));
-      float borde=smoothstep(.0,1.,max(abs(w.x)-${MAPA.ancho.toFixed(1)},abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;
+      
       
       gl_FragColor=vec4(col,1.);
       #include <colorspace_fragment>
       }`});
   const gB = new THREE.PlaneGeometry(BX * 2, BZ * 2, 1, 1); gB.rotateX(-Math.PI / 2);
-  const listoTex = () => [tH, tB].every((t) => t.image && t.image.complete !== false && t.image.width);
+  const listoTex = () => [tH, tB, tC].every((t) => t.image && t.image.complete !== false && t.image.width);
   const RES = 2048, rt = new THREE.WebGLRenderTarget(RES, RES, {colorSpace: THREE.SRGBColorSpace, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter, anisotropy: 4});
   if (SUELO_RT) SUELO_RT.dispose(); SUELO_RT = rt;
   const hornea = () => {const sc = new THREE.Scene(), q = new THREE.Mesh(gB, bakeM); sc.add(q); const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); const prev = renderer.getRenderTarget(); renderer.setRenderTarget(rt); renderer.render(sc, cam); renderer.setRenderTarget(prev); bakeM.dispose();};
@@ -460,11 +462,11 @@ function construyeMapa() {
   /* detalle fino encima (la hierba de cerca se ve nítida aunque la textura horneada sea de ~5 cm por píxel) */
   m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH};
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWD=(modelMatrix*vec4(transformed,1.)).xz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD; uniform sampler2D tH;').replace('#include <map_fragment>', '#include <map_fragment>\nvec3 dt=texture2D(tH,vWD*.45).rgb; diffuseColor.rgb*=clamp(.55+dot(dt,vec3(.3,.6,.1))*9.,.75,1.25);');};
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD; uniform sampler2D tH;').replace('#include <map_fragment>', '#include <map_fragment>\nvec3 dt=texture2D(tH,vWD*.45).rgb; diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1);');};
   const suelo = new THREE.Mesh(gB, m); suelo.receiveShadow = true; scene_.add(suelo);
   /* fuera de la zona horneada: suelo sencillo y oscuro (queda bajo el bosque) */
   const g = new THREE.PlaneGeometry(220, 260, 1, 1); g.rotateX(-Math.PI / 2);
-  const tF = cargaTex('texturas/campo.webp', true); tF.repeat.set(30, 36); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#9ab870'});
+  const tF = cargaTex('../batalla/texturas/ap_arcen.webp', true); tF.repeat.set(20, 24); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#ead8c8'});
   const fuera_ = new THREE.Mesh(g, mF); fuera_.position.y = -0.03; fuera_.receiveShadow = true; scene_.add(fuera_);
   const pon2 = (n, x, z, ry = 0, e = 1) => {if (!M[n]) return null; const o = M[n].scene.clone(true); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.setScalar(e); o.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); scene_.add(o); return o;};
   const semilla = {v: 7}; const al = () => {semilla.v = (semilla.v * 16807) % 2147483647; return semilla.v / 2147483647;};
@@ -474,7 +476,8 @@ function construyeMapa() {
   const arboles = {};
   const planta = (n, x, z, s, choque) => {(arboles[n] = arboles[n] || []).push({x, z, ry: al() * 6.28, s}); if (choque) ponArbolChoque(x, z, 0.75 * s);};
   plantaBosque(al, planta, enBase);
-  for (const n in arboles) instancias('vado_arboles', n, arboles[n]);
+  for (const n in arboles) if (n.startsWith('pino')) instancias('vado_arboles', n, arboles[n].filter((q, i) => i % 5 === 0 && Math.abs(q.x) > 16));
+  if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al);
   /* hierba alta, juncos del río, piedras de vadear y rocas */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
   for (const b of HIERBAS) for (let i = 0; i < 9; i++) {const a = al() * 6.28, d = Math.sqrt(al()) * b.r * 0.85; mata('arbusto_0' + (1 + i % 4), b.x + Math.cos(a) * d, b.z + Math.sin(a) * d, 1.3 + al() * 0.5);}
@@ -491,7 +494,7 @@ function construyeMapa() {
   }
   if (CAMPOS.some((c) => NEUTRO[c.tipo].jefe)) for (const P of [PIT, PIT2]) for (const x of [-5.5, 5.5]) {pon2('brasero', P.x + x, P.z - 4.5, 0, 1.8); luzFuego(P.x + x, P.z - 4.5);}
   /* braseros a lo largo del puente del Abismo */
-  if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-9.4, 9.4]) {pon2('brasero', x, z, 0, 1.5); luzFuego(x, z);}
+  if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-8.6, 8.6]) luzFuego(x, z);
   for (const eq of [0, 1]) {
     const b = BASES[eq], o = pieza('vado_fuentes', eq ? 'fuente_isengard' : 'fuente_rohan'); o.position.set(b.fuente.x, 0, b.fuente.z); o.scale.setScalar(1.3); scene_.add(o);
     const s = signo(eq); pon2('tienda', b.fuente.x - 3 * s, b.fuente.z + 3.5 * s, eq ? 0 : Math.PI, 1.6);
@@ -500,8 +503,18 @@ function construyeMapa() {
   fusiona(MAPA_G);
   vidaMapa(scene_); PALANTIR = null; ponPalantir();
 }
+/* LA AUTOPISTA: quitamiedos a los dos lados, farolas, coches abandonados, conos y señales (piezas CC0 de Kenney, Pack Autopista 2) */
+function decoradoAutopista(pon2, al) {
+  const lejosBase = (z) => Math.abs(Math.abs(z) - 49) > 9;
+  for (let z = -60; z < 60; z += 10) for (const x of [-7.9, 7.9]) if (lejosBase(z + 5)) pon2('ap_quitamiedos', x, z + 5, 0, 1);
+  for (let z = -42; z <= 42; z += 14) for (const x of [-8.6, 8.6]) {const o = pon2('ap_farola', x, z, x < 0 ? Math.PI / 2 : -Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});}
+  const coches = ['ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion'];
+  for (let i = 0; i < 22; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (10.5 + al() * 12), z = (al() - 0.5) * 112; if (!lejosBase(z)) continue; pon2(coches[i % 4], x, z, (al() - 0.5) * 1.2 + (al() < 0.5 ? 0 : Math.PI), 1);}
+  for (let i = 0; i < 40; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (8.4 + al() * 6), z = (al() - 0.5) * 110; if (!lejosBase(z)) continue; pon2('ap_cono', x, z, al() * 6.3, 1.6);}
+  for (let i = 0; i < 8; i++) {const lado = al() < 0.5 ? -1 : 1, z = (al() - 0.5) * 100; if (!lejosBase(z)) continue; pon2(al() < 0.5 ? 'ap_senal' : 'ap_valla', lado * (9 + al() * 3), z, al() * 6.3, 1.3);}
+}
 /* el palantír junto al estandarte de Isengard: el Ojo late y mira al héroe más cercano */
-let PALANTIR = null; const HAY_PALANTIR = true; /* poner a true cuando llegue modelos/palantir.glb (Pack Vado 14) */
+let PALANTIR = null; const HAY_PALANTIR = false; /* poner a true cuando llegue modelos/palantir.glb (Pack Vado 14) */
 function ponPalantir() {
   if (!M.palantir || !MAPA_G || PALANTIR) return;
   const b = BASES[1], o = M.palantir.scene.clone(true), dx = b.nexo.x - b.fuente.x, dz = b.nexo.z - b.fuente.z, l = Math.hypot(dx, dz) || 1;

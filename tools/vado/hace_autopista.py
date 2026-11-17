@@ -164,6 +164,56 @@ for n, ap in [('menu_cielo',)*2, ('menu_fondo',)*2, ('menu_medio',)*2, ('menu_fr
     c = js.count(v) + html.count(v)
     if c == 0: fallos.append('[arte] ' + v + ' ya no aparece')
     js, html = js.replace(v, nv), html.replace(v, nv)
+js = sub(js, 'const HAY_PALANTIR = true;', 'const HAY_PALANTIR = false;')
+# ---------- EL MAPA DE AUTOPISTA (17/11): suelo de asfalto/arcén/hormigón (Pack 11) y piezas de Kenney (Pack 2) ----------
+js = sub(js, "const VADO = ['ap_brask',", "const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask',")
+js = sub(js, "const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('texturas/barro.webp', true);",
+         "const tH = cargaTex('../batalla/texturas/ap_arcen.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);")
+js = sub(js, "const bakeU = {tH: {value: tH}, tB: {value: tB},", "const bakeU = {tH: {value: tH}, tB: {value: tB}, tC: {value: tC},")
+js = sub(js, "uniform sampler2D tH,tB; uniform vec2 uA[7];", "uniform sampler2D tH,tB,tC; uniform vec2 uA[7];")
+js = sub(js, "const listoTex = () => [tH, tB].every(", "const listoTex = () => [tH, tB, tC].every(")
+i0 = js.index('      float mh=fbm(w*.09+9.);'); i1 = js.index('      col=mix(col,losa,base*.95);') + len('      col=mix(col,losa,base*.95);')
+js = js[:i0] + """      /* LA AUTOPISTA: arcén de tierra seca, calzada de asfalto con sus líneas y plaza de hormigón en cada base */
+      vec3 arc=mix(texture2D(tH,w*.085).rgb,texture2D(tH,rw*.043+.31).rgb,smoothstep(.35,.65,fbm(w*.07+4.)))*vec3(.92,.86,.8);
+      vec3 asf=mix(texture2D(tB,w*.075).rgb,texture2D(tB,rw*.037+.5).rgb,.4)*1.12;
+      float ax=abs(w.x), road=1.-smoothstep(6.75,7.25,ax+fbm(w*.6)*.35);
+      vec3 col=mix(arc,asf,road);
+      float rayaB=(1.-smoothstep(.07,.13,abs(ax-6.35)));                       /* línea continua del borde */
+      float raya=(1.-smoothstep(.06,.11,abs(ax-3.2)))*step(.45,fract(w.y/7.)); /* discontinuas entre carriles */
+      float rayaC=(1.-smoothstep(.05,.09,abs(ax-.16)));                       /* doble línea amarilla del centro */
+      float gast=.55+.45*smoothstep(.25,.6,fbm(w*1.3));
+      col=mix(col,vec3(.86,.85,.8),max(rayaB,raya)*road*gast); col=mix(col,vec3(.9,.68,.16),rayaC*road*gast);
+      vec3 hor=texture2D(tC,w*.13).rgb*.72;
+      float plaza=1.-smoothstep(9.,10.5,max(abs(w.x)*.8,min(abs(w.y-uF[0].y),abs(w.y-uF[1].y))+2.));
+      col=mix(col,hor,plaza);""" + js[i1:]
+js = sub(js, "float borde=smoothstep(.0,1.,max(abs(w.x)-${MAPA.ancho.toFixed(1)},abs(w.y)-57.)/3.); col*=1.-clamp(borde,0.,1.)*.75;", "")
+js = sub(js, "      float isen=smoothstep(-2.,24.,dot(w,uEje)); col=mix(col,vec3(dot(col,vec3(.33)))*vec3(1.05,.95,.85),isen*.45);", "")
+js = sub(js, "const tF = cargaTex('texturas/campo.webp', true); tF.repeat.set(30, 36); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#9ab870'});",
+         "const tF = cargaTex('../batalla/texturas/ap_arcen.webp', true); tF.repeat.set(20, 24); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#ead8c8'});")
+js = sub(js, "diffuseColor.rgb*=clamp(.55+dot(dt,vec3(.3,.6,.1))*9.,.75,1.25);", "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1);")
+# árboles: solo queda algún pino suelto lejos; en su sitio, el decorado de la autopista
+js = sub(js, "  for (const n in arboles) instancias('vado_arboles', n, arboles[n]);",
+         "  for (const n in arboles) if (n.startsWith('pino')) instancias('vado_arboles', n, arboles[n].filter((q, i) => i % 5 === 0 && Math.abs(q.x) > 16));\n  if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al);")
+js = sub(js, "if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-9.4, 9.4]) {pon2('brasero', x, z, 0, 1.5); luzFuego(x, z);}",
+         "if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-8.6, 8.6]) luzFuego(x, z);")
+js = sub(js, "/* el palantír junto al estandarte de Isengard:", """/* LA AUTOPISTA: quitamiedos a los dos lados, farolas, coches abandonados, conos y señales (piezas CC0 de Kenney, Pack Autopista 2) */
+function decoradoAutopista(pon2, al) {
+  const lejosBase = (z) => Math.abs(Math.abs(z) - 49) > 9;
+  for (let z = -60; z < 60; z += 10) for (const x of [-7.9, 7.9]) if (lejosBase(z + 5)) pon2('ap_quitamiedos', x, z + 5, 0, 1);
+  for (let z = -42; z <= 42; z += 14) for (const x of [-8.6, 8.6]) {const o = pon2('ap_farola', x, z, x < 0 ? Math.PI / 2 : -Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});}
+  const coches = ['ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion'];
+  for (let i = 0; i < 22; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (10.5 + al() * 12), z = (al() - 0.5) * 112; if (!lejosBase(z)) continue; pon2(coches[i % 4], x, z, (al() - 0.5) * 1.2 + (al() < 0.5 ? 0 : Math.PI), 1);}
+  for (let i = 0; i < 40; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (8.4 + al() * 6), z = (al() - 0.5) * 110; if (!lejosBase(z)) continue; pon2('ap_cono', x, z, al() * 6.3, 1.6);}
+  for (let i = 0; i < 8; i++) {const lado = al() < 0.5 ? -1 : 1, z = (al() - 0.5) * 100; if (!lejosBase(z)) continue; pon2(al() < 0.5 ? 'ap_senal' : 'ap_valla', lado * (9 + al() * 3), z, al() * 6.3, 1.3);}
+}
+/* el palantír junto al estandarte de Isengard:""")
+
+# menú: fondo = la imagen de carga (los dos peajes), retrato sin cortar la cabeza, sin Gamling (Tolkien) ni el jinete
+html = sub(html, '</head>', '<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}'
+           '#menu .mSplash img{object-position:50% 0%!important}</style></head>', donde='html')
+html = sub(html, 'ui/guia_gamling.webp" alt="Gamling"', 'ui/ap_guia.webp" alt=""', donde='html')
+html = sub(html, '<img src="ui/guia_gamling.webp" alt="">', '<img src="ui/ap_guia.webp" alt="">', donde='html')
+html = sub(html, '<img src="ui/ap_splash_rohan.webp" alt="" class="mTi2">', '<img src="ui/ap_r_rohan.webp" alt="" class="mTi2">', donde='html')
 for v in ["'ui/h_' + ", "'ui/p_' + ", "'ui/at_' + "]:
     if v not in js: fallos.append('[arte] ' + v)
     js = js.replace(v, v.replace('ui/', 'ui/ap_'))

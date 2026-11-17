@@ -496,7 +496,7 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 #menu .mAmigos #bUnir{width:34% !important;aspect-ratio:auto !important;height:100% !important;padding:0 !important;border-radius:0 !important;background-image:url(ui/ap_m_jugar.webp) !important;background-size:100% 100% !important;color:#3a2408 !important;text-shadow:0 1px 0 #ffe9a8;font:800 13px Cinzel,serif !important}
 #menu .mFila2{width:100% !important}
 </style>
-</head>
+<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}#menu .mSplash img{object-position:50% 0%!important}</style></head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>
 <div id="menu">
@@ -511,8 +511,8 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
     </div>
     <button class="jugar" id="bBots"><b>JUGAR</b><small id="bBotsSub">contra la máquina</small><i></i></button>
     <div class="mFila2">
-      <button class="mB mT" id="bGuia"><img src="ui/guia_gamling.webp" alt=""><span><b>Partida guiada</b><small>aprende en 5 minutos</small></span></button>
-      <button class="mB mT" id="bCrear"><img src="ui/ap_splash_rohan.webp" alt="" class="mTi2"><span><b>Crear sala</b><small>juega con amigos</small></span></button>
+      <button class="mB mT" id="bGuia"><img src="ui/ap_guia.webp" alt=""><span><b>Partida guiada</b><small>aprende en 5 minutos</small></span></button>
+      <button class="mB mT" id="bCrear"><img src="ui/ap_r_rohan.webp" alt="" class="mTi2"><span><b>Crear sala</b><small>juega con amigos</small></span></button>
     </div>
     <div class="mAmigos"><input id="codigo" maxlength="6" placeholder="Código de sala" autocomplete="off"><button class="mB" id="bUnir">Unirse</button></div>
     <div id="sala" class="hidden"></div>
@@ -551,7 +551,7 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 <canvas id="mini" class="hidden" width="96" height="196"></canvas>
 <div id="rotulo"></div><div id="objetivo" class="hidden"></div><div id="buffs"></div>
 <div id="aviso"></div>
-<div id="guia" class="hidden"><img class="gCara" src="ui/guia_gamling.webp" alt="Gamling"><em id="guiaN"></em><p><span id="guiaT"></span> <b id="guiaC"></b></p><button id="guiaX">Saltar</button></div>
+<div id="guia" class="hidden"><img class="gCara" src="ui/ap_guia.webp" alt=""><em id="guiaN"></em><p><span id="guiaT"></span> <b id="guiaC"></b></p><button id="guiaX">Saltar</button></div>
 <div id="vs" class="hidden"></div>
 <div id="pings" class="hidden"><button id="bPing" aria-label="Avisos al equipo">💬</button><div class="pOp"><button data-p="ataca">⚔ Atacad</button><button data-p="retira">🛡 Retirada</button><button data-p="voy">🏃 Voy</button><button data-p="cuidado">⚠ Cuidado</button></div></div>
 <div id="anuncio" class="hidden"></div>
