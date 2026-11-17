@@ -316,3 +316,17 @@ Kit de botones para el menú del juego de móvil «La Brecha» (El Señor de los
 6. campo.png (800x200): hueco para escribir un código: placa de piedra oscura hundida con marco de hierro; centro liso.
 7. marco_modo.png (1000x700): marco dorado para la tarjeta de modo SELECCIONADA, con el hueco del centro transparente y un caballo de Rohan arriba en el centro, que no sobresalga más de un 6 % por cada lado.
 ```
+
+## Pack Vado 26 · ART (17/11): iconos de las 7 pasivas
+Adjuntar h_orco_q.png para que copie el marco y el estilo.
+```
+Juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard junto al Vado del Isen; estilo League of Legends: Wild Rift con toque Supercell oscuro). Necesito 7 iconos de PASIVA, uno por héroe, en el mismo estilo y con el mismo marco redondo que el icono que adjunto (h_orco_q). Cada uno en una imagen suelta de 512x512, FONDO TRANSPARENTE de verdad, SIN TEXTO, centrado:
+
+1. p_orco.png «Hemorragia»: hacha negra de Mordor con gotas de sangre oscura cayendo del filo.
+2. p_gandalf.png «Iluminación»: runa élfica de luz blanca estallando en rayos, como la luz del bastón en el puente de Khazad-dûm.
+3. p_gollum.png «Acecho»: dos ojos verdes brillando entre hierba alta de las ciénagas, de noche.
+4. p_rohan.png «Cadencia marcial»: lanza de Rohan con tres cortes dorados marcados en el aire delante de la punta.
+5. p_elfo.png «Flecha de escarcha»: flecha élfica de Lórien con la punta cubierta de hielo azul y escarcha.
+6. p_enano.png «Piel de granito»: escudo de roca de las Montañas Azules con runas enanas grabadas brillando.
+7. p_hobbit.png «Escondido»: capa verde de hobbit de la Comarca desvaneciéndose en el aire, medio transparente.
+```
