@@ -866,6 +866,33 @@ js = sub(js, "  fusiona(MAPA_G);\n", """  {const bb = new THREE.Box3(); MAPA_G.u
 js = sub(js, "  try {for (const n in FB) {flip(n, 0, 0, 0.01, false, 0, -40, 0.3); flip(n, 0, 0, 0.01, true, 0, -40, 0.3);}} catch (e) {}",
          "  try {for (const n in FB) {flip(n, 0, 0, 0.01, false, 0, -40, 0.3); flip(n, 0, 0, 0.01, true, 0, -40, 0.3);}} catch (e) {}\n  try {for (const n in PROY_AP) {const o = proyAP(n); o.position.set(0, -40, 0); scene.add(o); setTimeout(() => scene.remove(o), 1500);}} catch (e) {}")
 
+# ---------- PACK 30 ART (17/11, Henar: «rehacer la vida y el maná, que no se salga»): una placa por héroe con la vida y la energía DENTRO.
+# tools/autopista/procesa_pack30.py quita el magenta y mide las ventanas (placa 1396x227): vida x 10,67-89,33 % · y 17,6-59,9 %;
+# energía y 70,0-88,8 %. La barra de vida (i) ocupa justo su ventana y la placa va encima con márgenes negativos en % de la ventana.
+# El líquido es un degradado de momento: cuando lleguen las imágenes 2-4 del pack (líquidos viscosos) se cambia por la textura.
+html = sub(html, '</head>', """<style>
+/* A-6 · Pack 30: placa de vida + energía */
+.bv.h i{z-index:auto !important;width:86px !important;height:7.4px !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:#06090f !important;overflow:visible !important}
+.bv.h.yo i{width:100px !important;height:8.6px !important}
+.bv.h i::before{content:'' !important;position:absolute !important;left:-13.57% !important;right:-13.57% !important;top:-41.7% !important;bottom:-94.8% !important;background:url(ui/ap_placa_azul.webp) center/100% 100% no-repeat !important;z-index:3 !important;pointer-events:none}
+.bv.h.e1 i::before{background-image:url(ui/ap_placa_rojo.webp) !important}
+.bv.h.yo i::before{background-image:url(ui/ap_placa_yo.webp) !important}
+.bv.h i u,.bv.h i s{border-radius:0 !important}
+/* líquido: brillo de tubo arriba, cuerpo y fondo oscuro, con un reflejo que pasa despacio */
+.bv.h i u{background:linear-gradient(180deg,#eaffd6 0,#9bff5e 22%,#3fd426 52%,#1f9a14 78%,#0f5e0a 100%) !important;box-shadow:inset 0 -1px 0 #0006}
+.bv.h.e0:not(.yo) i u{background:linear-gradient(180deg,#e2f6ff 0,#7fdcff 22%,#2aa6f0 52%,#1767b8 78%,#0b3a72 100%) !important}
+.bv.h.e1 i u{background:linear-gradient(180deg,#ffe0dc 0,#ff7a6a 22%,#e5281c 52%,#a3140c 78%,#5e0805 100%) !important}
+.bv.h i u::before{content:'';position:absolute;left:0;right:0;top:12%;height:22%;background:linear-gradient(90deg,#fff0 0,#fff9 50%,#fff0 100%) 0 0/40px 100% repeat-x;animation:apBrillo 2.4s linear infinite;opacity:.8}
+@keyframes apBrillo{to{background-position:40px 0}}
+.bv.h i s{background:#fff6 !important}
+.bv.h i::after{opacity:.35}
+.bv.h .mn{width:86px !important;height:3.3px !important;margin-top:1.8px !important;border:0 !important;border-radius:0 !important;box-shadow:none !important;background:#06090f !important;position:relative;z-index:2}
+.bv.h.yo .mn{width:100px !important;height:3.8px !important;margin-top:2.1px !important}
+.bv.h .mn u{background:linear-gradient(180deg,#ffe0f8 0,#ff6fe0 30%,#e0189a 70%,#8a0a5e 100%) !important}
+.bv.h b{margin-bottom:5px !important}
+</style>
+</head>""", donde='html')
+
 # ---------- MANDOS EN ARCO (17/11, Henar: «es una chapuza»: botones pisándose) ----------
 # Esquema fijo como el del Wild Rift alrededor del ataque (abajo a la derecha): Q a la izquierda, W en diagonal, E encima y la R
 # más afuera; el «+» como insignia arriba a la izquierda de cada habilidad; torre y soldados pegados al ataque; hechizos, BASE y
