@@ -448,7 +448,7 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 #menu #bGuia small{display:none}
 #menu .mAtras,#bAjustes,#tienda .tX{background-image:url(ui/m_redondo.webp) !important}
 #menu .modos button .mc{inset:-5% -3.5% -4% !important;background-image:url(ui/m_marco_modo.webp) !important}
-#menu .modos{margin-bottom:6px}
+#menu .modos{margin-bottom:0}
 #menu .jugar,#menu #bGuia{height:auto !important;min-height:0 !important;max-height:none !important;flex:none !important}
 #menu .jugar{width:min(100%,calc(58*var(--vh))) !important;flex-direction:column;justify-content:center;gap:0}
 #menu .jugar b{font-size:22px !important;line-height:1}#menu .jugar small{font-size:10px !important;line-height:1.1;margin-top:1px}
@@ -476,6 +476,24 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 #elige.e2 .eDet{background:#0008;border:1px solid #5a4020;border-radius:8px;padding:5px 9px;min-height:calc(var(--vh) * 14);overflow:hidden}#elige.e2 .eDet b{font-size:13px;display:block}#elige.e2 .eDet small{font-size:12px;color:#d9c49a;line-height:1.25}
 #elige.e2 .eTag{font-style:normal;font-size:10px;color:#d9c79c;border:1px solid #6a5030;border-radius:5px;padding:0 4px;margin-left:4px}#elige.e2 .eMn{font-style:normal;font-size:11px;color:#ff5ad2;margin-left:4px}
 #elige.e2 .eHech small{display:none}#elige.e2 .eBot{margin-top:0;justify-content:flex-end}#elige.e2 .bt{min-width:150px !important;font-size:14px}
+/* Menú (17/11, «los botones son pequeños, iguales y feos»): jerarquía clara */
+#menu .jugar{width:min(100%,calc(66*var(--vh))) !important;margin:6px auto 4px !important}#menu .jugar b{font-size:26px !important;letter-spacing:.06em}#menu .jugar small{font-size:11.5px !important}
+#menu .mFila2{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(100%,calc(92*var(--vh)));margin:2px auto 0}
+#menu .mT{aspect-ratio:auto !important;width:100% !important;margin:0 !important;height:48px !important;min-height:0 !important;max-height:none;display:flex !important;align-items:center;justify-content:flex-start !important;gap:8px;padding:0 10px 0 8px !important;text-align:left;background:linear-gradient(180deg,#2b2114,#140e07) !important;border:2px solid #b8893a !important;border-radius:12px !important;box-shadow:inset 0 1px 0 #ffe2a055,0 3px 0 #000a,0 0 0 1px #000 !important}
+#menu .mT:active{transform:translateY(2px);box-shadow:inset 0 1px 0 #ffe2a033,0 1px 0 #000a !important}
+#menu #bGuia.mT{background:linear-gradient(180deg,#24402a,#0f1f12) !important;border-color:#8fcf7a !important}
+#menu .mT img{width:40px !important;height:40px !important;max-width:none;border-radius:50%;object-fit:cover;object-position:50% 15%;flex:none;border:2px solid #d9b45a}
+#menu .mT span{display:flex;flex-direction:column;line-height:1.1;min-width:0}#menu .mT b{font:800 14px Cinzel,Georgia,serif;color:#ffe7a8;white-space:nowrap}#menu .mT small{display:block !important;font:600 11px 'Alegreya Sans',sans-serif;color:#d9c79c;white-space:nowrap}
+#menu .mAmigos{grid-template-columns:2fr 1fr !important;width:min(100%,calc(66*var(--vh))) !important;margin:6px auto 0 !important}
+#menu #codigo{font-size:15px !important}#menu #bUnir{font-size:13px !important;font-weight:800}
+#bGuia.nueva::after{right:6px !important;top:-7px !important}
+#menu #bGuia.mT{width:100% !important;margin:0 !important;font-size:inherit !important}
+#menu .mPanel{gap:5px !important}#menu .jugar{width:min(100%,calc(56*var(--vh))) !important;margin:2px auto !important}
+#menu .mAmigos{margin:3px auto 0 !important;width:100% !important;display:flex !important;gap:0 !important;height:38px !important;min-height:38px !important;flex:none !important;border:2px solid #b8893a;border-radius:12px;overflow:hidden;background:#0d0905d9;box-shadow:0 3px 0 #000a}
+#menu .mAmigos #codigo{flex:1;width:auto !important;aspect-ratio:auto !important;height:100% !important;background:none !important;font-size:15px !important;letter-spacing:.25em}
+#menu .mAmigos #codigo::placeholder{color:#a08a60;letter-spacing:.12em;font-size:12px}
+#menu .mAmigos #bUnir{width:34% !important;aspect-ratio:auto !important;height:100% !important;padding:0 !important;border-radius:0 !important;background-image:url(ui/m_jugar.webp) !important;background-size:100% 100% !important;color:#3a2408 !important;text-shadow:0 1px 0 #ffe9a8;font:800 13px Cinzel,serif !important}
+#menu .mFila2{width:100% !important}
 </style>
 </head>
 <body>
@@ -492,8 +510,11 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
       <button data-m="2v2"><b>Batalla</b><span>2 contra 2 · el Ojo del Vado</span><small>Espesura, bestias y Uruk</small><i class="mc"></i></button>
     </div>
     <button class="jugar" id="bBots"><b>JUGAR</b><small id="bBotsSub">contra la máquina</small><i></i></button>
-    <button class="mB" id="bGuia">🎓 Partida guiada <small>aprende a jugar en 5 minutos</small></button>
-    <div class="mAmigos"><button class="mB" id="bCrear">👥 Crear sala</button><input id="codigo" maxlength="6" placeholder="CÓDIGO" autocomplete="off"><button class="mB" id="bUnir">Unirse</button></div>
+    <div class="mFila2">
+      <button class="mB mT" id="bGuia"><img src="ui/guia_gamling.webp" alt=""><span><b>Partida guiada</b><small>aprende en 5 minutos</small></span></button>
+      <button class="mB mT" id="bCrear"><img src="ui/splash_rohan.webp" alt="" class="mTi2"><span><b>Crear sala</b><small>juega con amigos</small></span></button>
+    </div>
+    <div class="mAmigos"><input id="codigo" maxlength="6" placeholder="Código de sala" autocomplete="off"><button class="mB" id="bUnir">Unirse</button></div>
     <div id="sala" class="hidden"></div>
     <div class="fila" id="heroes"></div>
     <div id="msg"></div>
@@ -541,6 +562,6 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 <div id="fin" class="hidden"></div>
 <div id="elige" class="hidden"></div>
 <div id="girar"><div class="giraMovil">📱</div><b>Gira el móvil</b><p>La Brecha se juega en horizontal.<br>En iPhone, quita el bloqueo de rotación si no gira.</p><button class="bt s" id="bGirar">Pantalla completa</button></div>
-<script type="module" src="juego.js?v=20261117f"></script>
+<script type="module" src="juego.js?v=20261117g"></script>
 </body>
 </html>
