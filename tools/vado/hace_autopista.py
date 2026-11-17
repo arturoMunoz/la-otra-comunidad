@@ -361,6 +361,28 @@ html = sub(html, '</head>', """<style>
 .bv.h.yo i::before{left:-20px;right:-20px;top:-8px;bottom:-8px;background-image:url(ui/ap_bv_yo.webp)}
 .bv.h b{margin-bottom:6px !important}.bv.h .mn{margin-top:6px}
 </style></head>""", donde='html')
+# ---------- PACK 22 ART (17/11): HUD cyberpunk (mismos nombres que el 19; tools/autopista/procesa_pack22.py). Medidas de los huecos ----------
+html = sub(html, '</head>', """<style>
+/* A-6 · Pack 22: aros con hueco del 76 % */
+.hb[data-k]::after,.hb.hs::after,#bR::after{inset:-11% !important}
+/* panel del jugador: proporción 2,64; retrato en x 1,3-32,2 % e y 9,5-91 % */
+#yo{width:200px !important;height:76px !important;padding:0 10px 0 0 !important}
+#yo img{width:58px !important;height:58px !important;margin:0 0 0 4px !important}
+#yo>div{margin-left:10px !important}
+#yoNv{left:44px !important;top:48px !important;width:28px !important;height:28px !important;color:#e8fbff !important;-webkit-text-stroke:2px #061018 !important}
+.xp{width:110px !important;height:14px !important;padding:4px 7px 4px 13px !important}
+.xp i{background:linear-gradient(90deg,#1fa6ff,#5ff0ff) !important;border-radius:1px}
+#oro{color:#ffd35a !important}
+#vital{left:calc(212px + var(--sal)) !important}
+/* barras de vida: el hueco de cada marco medido */
+.bv.h i{width:80px !important;height:8px !important;border-radius:1px !important}
+.bv.h i::before{left:-13px;right:-12px;top:-3px;bottom:-5px}
+.bv.h.e1 i::before{left:-13px;right:-14px;top:-4px;bottom:-5px}
+.bv.h.yo i{width:90px !important;height:8px !important}
+.bv.h.yo i::before{left:-12px;right:-15px;top:-5px;bottom:-5px}
+.bv.h i u{border-radius:1px}
+.bv.h b{margin-bottom:3px !important}.bv.h .mn{margin-top:4px}
+</style></head>""", donde='html')
 # ---------- EL PUENTE (17/11, Arturo: «como si estuvieses encima de un puente cruzando algo, y a los lados paisaje») ----------
 # el tablero (|x| < 11) cruza un barranco con río entre z = -38 y 38; las bases quedan en tierra firme a los dos lados
 js = sub(js, "      gl_FragColor=vec4(col,1.);\n      #include <colorspace_fragment>", "      gl_FragColor=vec4(col,hueco);\n      #include <colorspace_fragment>")
