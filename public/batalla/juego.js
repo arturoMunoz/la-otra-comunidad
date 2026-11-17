@@ -825,7 +825,13 @@ function lanzaProy(o, d, modelo, n, tipo, esc = 1, y = 1.2) {
   S.proy.push(p); ev(['proy', modelo, o.x, o.z, d.id, o.k === 't' ? 13 : p.v, esc, y]); return p;
 }
 function mueveHacia(u, tx, tz, vel, dt) {
-  const dx = tx - u.x, dz = tz - u.z, l = Math.hypot(dx, dz); if (l < 0.05) return false;
+  let dx = tx - u.x, dz = tz - u.z; const l = Math.hypot(dx, dz); if (l < 0.05) return false;
+  /* rodear torres y estandartes: si hay uno delante en el camino, se desvía de lado (antes los súbditos se quedaban atascados detrás de las torres) */
+  if (u.k !== 'h') for (const a of ESTR) {
+    const ax = a.x - u.x, az = a.z - u.z, pr = (ax * dx + az * dz) / l; if (pr <= 0 || pr > Math.min(l, a.r + 3)) continue;
+    const lat = (ax * dz - az * dx) / l, m = a.r + 0.9; if (Math.abs(lat) >= m) continue;
+    const s0 = lat > 0 ? -1 : 1, nx = dx / l, nz = dz / l; dx = nx + s0 * nz * 1.6; dz = nz - s0 * nx * 1.6; const l2 = Math.hypot(dx, dz); dx = dx / l2 * l; dz = dz / l2 * l; break;
+  }
   const p = Math.min(l, vel * dt); u.x += dx / l * p; u.z += dz / l * p; u.rot = Math.atan2(dx, dz); limita(u); return true;
 }
 function limita(u) {u.x = Math.max(-MAPA.ancho, Math.min(MAPA.ancho, u.x)); u.z = Math.max(-MAPA.largo, Math.min(MAPA.largo, u.z)); choca(u);}

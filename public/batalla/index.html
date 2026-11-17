@@ -399,7 +399,7 @@ body.cine #mandos,body.cine #joy,body.cine #hud,body.cine #barras,body.cine #mm{
 .bv.yo b{font-size:12.5px;color:#ffe3a0}
 /* TUS CONSTANTES abajo en el centro (Pack Vado 22): botella de maná fucsia que se vacía y barra de vida dentro del marco de hierro y oro de Rohan */
 #vital{position:fixed;left:calc(50% - 50px);bottom:calc(4px + var(--sab));transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:1px;pointer-events:none}
-#vital .vCol{display:flex;flex-direction:column}
+#vital .vCol{display:none} /* la vida va solo sobre la cabeza (pedido de Arturo: «la vida ingame es una») */
 #vital .vV{position:relative;width:calc(min(250px,28 * var(--vw)));aspect-ratio:4.88;filter:drop-shadow(0 3px 4px #000a)}
 #vital .vH{position:absolute;left:13.6%;right:13.7%;top:33.5%;bottom:33.5%;background:#160d08;border-radius:4px;overflow:hidden}
 #vital .vMc{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -494,6 +494,6 @@ body.guiada #objetivo{display:none}body.cine #guia{visibility:hidden}
 <div id="fin" class="hidden"></div>
 <div id="elige" class="hidden"></div>
 <div id="girar"><div class="giraMovil">📱</div><b>Gira el móvil</b><p>La Brecha se juega en horizontal.<br>En iPhone, quita el bloqueo de rotación si no gira.</p><button class="bt s" id="bGirar">Pantalla completa</button></div>
-<script type="module" src="juego.js?v=20261116b"></script>
+<script type="module" src="juego.js?v=20261117a"></script>
 </body>
 </html>
