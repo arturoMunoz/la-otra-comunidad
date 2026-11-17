@@ -47,30 +47,30 @@ HEROES = '''const HEROES = {
       w: {n: 'Coraza de luz', cd: 14, mn: 45, tipo: 'reduce', val: 0.45, dur: 3, icono: 'escudo', d: 'Su armadura se llena de luz: recibe un 45 % menos de daño durante 3 s.'},
       e: {n: 'Caída luminosa', cd: 10, mn: 45, tipo: 'salto', dist: 7, radio: 2.6, dano: 85, lento: 0.35, durL: 1.5, icono: 'botas', d: 'Salta impulsado por la luz, hiere y frena al caer.'},
       r: {n: 'Estallido de luz', cd: 50, mn: 90, tipo: 'area', radio: 4.6, dano: 240, aturde: 1.25, icono: 'h_enano', d: 'Libera toda la luz de su armadura: daño enorme y aturde a todos alrededor.'}}},
-  gandalf: {nombre: 'Vael, el Mago', modelo: 'ap_vael', ret: 'ui/ap_r_gandalf.webp', mana: 420, crecM: 40, vida: 540, dano: 50, vatq: 0.88, alcance: 6.8, vel: 5.1, crecV: 78, crecD: 4.3, mag: true, arm: 20, rm: 32, proy: 'luz',
-    hab: {q: {n: 'Orbe ígneo', cd: 8, mn: 50, tipo: 'linea', mag: true, alc: 11.5, ancho: 0.9, dano: 110, aturde: 1.3, proy: 'luz', icono: 'h_gandalf_q', d: 'Lanza un orbe de fuego que atrapa 1,3 s al primero que toca.'},
+  gandalf: {nombre: 'Vael, el Mago', modelo: 'ap_vael', ret: 'ui/ap_r_gandalf.webp', mana: 420, crecM: 40, vida: 540, dano: 50, vatq: 0.88, alcance: 6.8, vel: 5.1, crecV: 78, crecD: 4.3, mag: true, arm: 20, rm: 32, proy: 'brasa',
+    hab: {q: {n: 'Orbe ígneo', cd: 8, mn: 50, tipo: 'linea', mag: true, alc: 11.5, ancho: 0.9, dano: 110, aturde: 1.3, proy: 'brasa', icono: 'h_gandalf_q', d: 'Lanza un orbe de fuego que atrapa 1,3 s al primero que toca.'},
       w: {n: 'Escudo de brasas', cd: 13, mn: 55, tipo: 'escudo', mag: true, val: 140, dur: 3, aliados: 7, icono: 'h_gandalf_w', d: 'Un escudo de brasas para ti y los aliados a 7 m durante 3 s.'},
       e: {n: 'Círculo de ceniza', cd: 9, mn: 60, tipo: 'zona', mag: true, alc: 10, radio: 3.2, dur: 1.5, dps: 100, lento: 0.45, icono: 'h_gandalf_e', d: 'Ceniza ardiente en el suelo que hiere y frena un 45 % a los que la pisan.'},
-      r: {n: 'Llamarada', cd: 45, mn: 100, tipo: 'linea', mag: true, alc: 16, ancho: 1.5, dano: 250, perfora: true, proy: 'luz', icono: 'h_gandalf_r', d: 'Un gran chorro de fuego que hiere a todos en una línea muy larga.'}}},
+      r: {n: 'Llamarada', cd: 45, mn: 100, tipo: 'linea', mag: true, alc: 16, ancho: 1.5, dano: 250, perfora: true, proy: 'brasa', icono: 'h_gandalf_r', d: 'Un gran chorro de fuego que hiere a todos en una línea muy larga.'}}},
   orco: {nombre: 'Grub, el Maestro', modelo: 'ap_grub', alto: 1.25, ret: 'ui/ap_r_orco.webp', mana: 280, crecM: 28, vida: 730, dano: 63, vatq: 0.84, alcance: 2.7, vel: 5.0, crecV: 88, crecD: 4.4, arm: 34, rm: 30,
     hab: {q: {n: 'Remolino de energía', cd: 8, mn: 30, tipo: 'area', radio: 3.5, dano: 100, curaH: 0.1, icono: 'h_orco_q', d: 'Gira la espada de energía: hiere a los de alrededor y se cura un 10 % de la vida que le falta por cada héroe que toca.'},
       w: {n: 'Tajo pesado', cd: 7, mn: 30, tipo: 'cono', alc: 3.4, ang: 1.2, dano: 90, lento: 0.5, durL: 1.2, icono: 'h_orco_w', d: 'Un tajo delante que frena un 50 % 1,2 s.'},
-      e: {n: 'Atracción', cd: 14, mn: 45, tipo: 'linea', alc: 6.5, ancho: 0.9, dano: 60, tira: true, lento: 0.4, durL: 1, proy: 'luz', icono: 'h_orco_e', d: 'Con la fuerza de su mente arrastra hasta él al primero que toca.'},
+      e: {n: 'Atracción', cd: 14, mn: 45, tipo: 'linea', alc: 6.5, ancho: 0.9, dano: 60, tira: true, lento: 0.4, durL: 1, proy: 'energia', icono: 'h_orco_e', d: 'Con la fuerza de su mente arrastra hasta él al primero que toca.'},
       r: {n: 'Sentencia', cd: 45, mn: 80, tipo: 'ejecuta', alc: 6, dano: 170, falta: 0.35, icono: 'h_orco_r', d: 'Salta sobre el héroe más cercano: más daño cuanta menos vida le quede (35 % de la que le falta). Si lo derriba, se recarga al momento.'}}},
-  elfo: {nombre: 'Ata, la Francotiradora', modelo: 'ap_ata', ret: 'ui/ap_r_elfo.webp', mana: 340, crecM: 32, vida: 520, dano: 50, vatq: 0.95, alcance: 7, vel: 5.3, crecV: 75, crecD: 4.5, arm: 22, rm: 28, proy: 'flecha_elfica',
-    hab: {q: {n: 'Bala perforante', cd: 6, mn: 45, tipo: 'linea', alc: 13, ancho: 0.9, dano: 125, perfora: true, proy: 'flecha_elfica', icono: 'arco', d: 'Un disparo largo que atraviesa a todos en su línea.'},
+  elfo: {nombre: 'Ata, la Francotiradora', modelo: 'ap_ata', ret: 'ui/ap_r_elfo.webp', mana: 340, crecM: 32, vida: 520, dano: 50, vatq: 0.95, alcance: 7, vel: 5.3, crecV: 75, crecD: 4.5, arm: 22, rm: 28, proy: 'bala',
+    hab: {q: {n: 'Bala perforante', cd: 6, mn: 45, tipo: 'linea', alc: 13, ancho: 0.9, dano: 125, perfora: true, proy: 'bala', icono: 'arco', d: 'Un disparo largo que atraviesa a todos en su línea.'},
       w: {n: 'Cadencia', cd: 12, mn: 40, tipo: 'rafaga', val: 0.6, dur: 4, icono: 'i_abanico', d: 'Disparas un 60 % más rápido durante 4 s.'},
       e: {n: 'Voltereta', cd: 9, mn: 35, tipo: 'dash', dist: 5, dano: 0, icono: 'i_esquivar', d: 'Ruedas hacia donde apuntes.'},
       r: {n: 'Fuego de cobertura', cd: 45, mn: 90, tipo: 'zona', alc: 10, radio: 3.6, dur: 3, dps: 80, lento: 0.3, icono: 'h_elfo', d: 'Durante 3 s barres la zona a balazos: hieres y frenas.'}}},
-  hobbit: {nombre: 'Birdie, el Golfista', modelo: 'ap_birdie', ret: 'ui/ap_r_hobbit.webp', mana: 320, crecM: 32, vida: 560, dano: 50, vatq: 1.0, alcance: 6.5, vel: 5.8, crecV: 78, crecD: 4, arm: 24, rm: 28, proy: 'piedra',
-    hab: {q: {n: 'Drive', cd: 7, mn: 40, tipo: 'linea', alc: 11, ancho: 0.8, dano: 100, aturde: 0.9, proy: 'piedra', icono: 'honda', d: 'Una bola de golf a toda velocidad: aturde al primero que toca.'},
+  hobbit: {nombre: 'Birdie, el Golfista', modelo: 'ap_birdie', ret: 'ui/ap_r_hobbit.webp', mana: 320, crecM: 32, vida: 560, dano: 50, vatq: 1.0, alcance: 6.5, vel: 5.8, crecV: 78, crecD: 4, arm: 24, rm: 28, proy: 'bola',
+    hab: {q: {n: 'Drive', cd: 7, mn: 40, tipo: 'linea', alc: 11, ancho: 0.8, dano: 100, aturde: 0.9, proy: 'bola', icono: 'honda', d: 'Una bola de golf a toda velocidad: aturde al primero que toca.'},
       w: {n: 'Bajo par', cd: 16, mn: 45, tipo: 'invis', dur: 3, vel: 0.35, icono: 'i_humo', d: 'Desapareces 3 s y corres más: ni torres ni enemigos te ven.'},
       e: {n: 'Cubo de bolas', cd: 6, mn: 35, tipo: 'cono', alc: 5.2, ang: 1.0, dano: 90, icono: 'i_piedras', d: 'Vacías el cubo: un puñado de bolas en abanico.'},
       r: {n: 'Hoyo en uno', cd: 45, mn: 80, tipo: 'suerte', cura: 0.4, vel: 0.5, dur: 5, icono: 'h_hobbit', d: 'Te curas un 40 %, corres más y pegas más fuerte 5 s.'}}},
   gollum: {nombre: 'Fu, el Ninja', modelo: 'ap_fu', ret: 'ui/ap_r_gollum.webp', mana: 280, crecM: 28, vida: 640, dano: 68, vatq: 1.1, alcance: 2.3, vel: 5.7, crecV: 90, crecD: 5, arm: 32, rm: 30,
     hab: {q: {n: 'Salto de la grulla', cd: 6, mn: 30, tipo: 'salto', dist: 6, radio: 2.2, dano: 140, lento: 0.35, durL: 1, icono: 'h_gollum_q', d: 'Salta sobre su presa: hiere y frena al caer.'},
       w: {n: 'Meditación', cd: 14, mn: 40, tipo: 'suerte', cura: 0.25, vel: 0.3, dur: 3, icono: 'h_gollum_w', d: 'Respira hondo: se cura un 25 %, corre más y pega más fuerte 3 s.'},
-      e: {n: 'Kusarigama', cd: 10, mn: 35, tipo: 'linea', alc: 9, ancho: 0.8, dano: 70, aturde: 1.0, proy: 'piedra', icono: 'h_gollum_e', d: 'Lanza la hoz con cadena: atrapa 1 s al primero que toca.'},
+      e: {n: 'Kusarigama', cd: 10, mn: 35, tipo: 'linea', alc: 9, ancho: 0.8, dano: 70, aturde: 1.0, proy: 'cadena', icono: 'h_gollum_e', d: 'Lanza la hoz con cadena: atrapa 1 s al primero que toca.'},
       r: {n: 'Bomba de humo', cd: 50, mn: 80, tipo: 'invis', dur: 5, vel: 0.6, icono: 'h_gollum_r', d: 'Desaparece 5 s entre el humo y corre mucho más: nadie le ve llegar.'}}},
   rohan: {nombre: 'Moha, el Halcón del Atlas', modelo: 'ap_moha', ret: 'ui/ap_r_rohan.webp', mana: 300, crecM: 30, vida: 650, dano: 62, vatq: 0.9, alcance: 2.5, vel: 5.2, crecV: 85, crecD: 4.5, arm: 32, rm: 30,
     hab: {q: {n: 'Gumía', cd: 6, mn: 35, tipo: 'dash', dist: 5.5, dano: 95, icono: 'lanza', d: 'Se lanza hacia delante con su daga curva y hiere a todos los que atraviesa.'},
@@ -180,7 +180,7 @@ for n, ap in [('vida_marco',)*2, ('mana_vacia',)*2, ('mana_llena',)*2, ('hz_dest
 html = sub(html, '<button class="hb ap" id="bAtT" aria-label="Atacar torre"><img src="../abismo/iconos/torre.webp" alt="">', '<button class="hb ap" id="bAtT" aria-label="Atacar torre"><img src="ui/ap_b_torre.webp" alt="">', donde='html')
 html = sub(html, '<button class="hb ap" id="bAtS" aria-label="Atacar súbditos"><img src="../abismo/iconos/uruk_acorazado.webp" alt="">', '<button class="hb ap" id="bAtS" aria-label="Atacar súbditos"><img src="ui/ap_b_subditos.webp" alt="">', donde='html')
 # batería de energía: el líquido (solo la parte fucsia) va del 15,3 % al 88,5 % de la altura; el dibujo es el doble de alto que de ancho
-js = sub(js, 'const HAY_BOTELLA = true, BOT_Y0 = 39.7, BOT_Y1 = 87;', 'const HAY_BOTELLA = true, BOT_Y0 = 15.3, BOT_Y1 = 88.5;')
+js = sub(js, 'const HAY_BOTELLA = true, BOT_Y0 = 39.7, BOT_Y1 = 87;', 'const HAY_BOTELLA = true, BOT_Y0 = 17.9, BOT_Y1 = 84.5;')  # Pack 23: hueco medido con procesa_pack23.py
 html = sub(html, '#vital .vBot{position:relative;width:51px;height:68px', '#vital .vBot{position:relative;width:40px;height:80px', donde='html')
 html = sub(html, '#vital .vV{position:relative;width:calc(min(250px,28 * var(--vw)));aspect-ratio:4.88', '#vital .vV{position:relative;width:calc(min(250px,28 * var(--vw)));aspect-ratio:3', donde='html')
 html = sub(html, '#vital .vH{position:absolute;left:13.6%;right:13.7%;top:33.5%;bottom:33.5%', '#vital .vH{position:absolute;left:15.1%;right:15.1%;top:38.5%;bottom:37.7%', donde='html')
@@ -413,6 +413,107 @@ js = sub(js, "const IND = {};", "const IND = {}; const IND_AP = {ind_alcance: 'a
 js = sub(js, "marcaObj = indicador('ind_alcance', '#ff4a3a');", "marcaObj = indicador('ap_objetivo', '#ff4a3a');")
 js = sub(js, "aroFijo = indicador('ind_alcance', '#ffd24a');", "aroFijo = indicador('ap_objetivo', '#ffd24a');")
 js = sub(js, "zona: indicador('ind_area', '#ff3a1a'),", "zona: indicador('ap_zona_torre', '#ffffff'),")
+# ---------- PACK 23 ART (17/11): botones redondos, baliza, marco del minimapa, marcador, cartel y batería (tools/autopista/procesa_pack23.py) ----------
+# b_volver, b_zoom, b_armeria, b_torre, b_subditos, baliza y baliza_off ya se cambian arriba (Pack 13): el script deja los nuevos con el mismo nombre
+html = sub(html, '<canvas id="mini" class="hidden" width="96" height="196"></canvas>', '<canvas id="mini" class="hidden" width="96" height="196"></canvas><div id="miniMarco"></div>', donde='html')
+html = sub(html, '</head>', """<style>
+/* A-6 · Pack 23: marco del minimapa (hueco x 7-93 %, y 13,5-87,3 %), el lienzo va justo en el hueco */
+#miniMarco{position:fixed;right:calc(8px + var(--sar));top:calc(6px + var(--sat));width:181px;height:92px;background:url(ui/ap_marco_minimapa.webp) center/100% 100% no-repeat;z-index:7;pointer-events:none;filter:drop-shadow(0 3px 5px #000a)}
+#mini.hidden + #miniMarco{display:none}
+#mini{right:calc(20.7px + var(--sar)) !important;top:calc(18.4px + var(--sat)) !important;width:156px !important;height:68px !important;border:0 !important;border-radius:2px !important;box-shadow:none !important;opacity:.95 !important}
+#bAjustes{right:calc(196px + var(--sar)) !important}
+#hud #ping{right:calc(12px + var(--sar)) !important;top:calc(100px + var(--sat)) !important}
+/* ajustes con el engranaje del pack (en el menú y en la partida) */
+#bAjustes,#bSon{background:url(ui/ap_b_ajustes.webp) center/100% 100% no-repeat !important;font-size:0 !important;color:transparent !important;text-shadow:none !important;border:0 !important;width:46px !important;height:46px !important}
+/* marcador: placa con tres huecos (azul 11,7-34,2 %, reloj 37,9-62 %, rojo 65,8-88,2 %; alto 24-69 %) */
+#marcador{width:262px !important;height:36px !important;display:block !important;background:url(ui/ap_marcador.webp) center/100% 100% no-repeat !important}
+#marcador .a,#marcador .b,#marcador i{position:absolute;top:24%;height:45%;padding:0 !important;min-width:0 !important;background:none !important;clip-path:none !important;border:0 !important;border-radius:0 !important;display:flex;align-items:center;justify-content:center;line-height:1}
+#marcador .a{left:11.7%;width:22.5%;font-size:16px !important;color:#bfe9ff !important;text-shadow:0 0 6px #2fb8ff !important}
+#marcador .b{left:65.8%;width:22.4%;font-size:16px !important;color:#ffc9c2 !important;text-shadow:0 0 6px #ff3a2a !important}
+#marcador i{left:37.9%;width:24.1%;font-size:12px !important;color:#ffe9a0 !important}
+/* objetivo sobre la placa fina (se estira por el centro, las puntas no) */
+#objetivo{top:calc(46px + var(--sat)) !important;background:none !important;border:solid transparent;border-width:6px 26px;border-image:url(ui/ap_cartel.webp) 18 64 fill / 6px 26px stretch;border-radius:0 !important;padding:1px 4px !important;color:#cfeeff !important;text-shadow:0 1px 2px #000}
+/* el Taller con su fondo de garaje a la vista: velo más fino y paneles translúcidos */
+#tienda{background:linear-gradient(#050a1222,#050a1288),url(ui/ap_fondo_armeria.webp) center/cover !important}
+#tienda .tDet{background:linear-gradient(#0c1724c8,#050a12dd) !important}
+#tienda .tRuta{background:linear-gradient(90deg,#0c1724cc,#0c172455) !important}
+#tienda .tI{background:radial-gradient(#101c2ae6,#0a0e14d0) !important}
+#tienda .tCats button{background:#050a12b0 !important}
+</style></head>""", donde='html')
+
+# ---------- EFECTOS DE CADA HABILIDAD (17/11, Henar: «el cubo de bolas no saca nada; que todas las habilidades y el básico tengan animación») ----------
+# Proyectiles propios (bola de golf, brasa, energía, bala, cadena): PROVISIONALES con esferas, como la «luz» de La Brecha, hasta el Pack 24 ART.
+# Se clonan compartiendo geometría y material: no suben nada nuevo a la GPU (sin tirones).
+js = sub(js, "function modeloProy(n) {", """/* A-6: [color, radio, halo, radio del halo, alargado] */
+const PROY_AP = {bola: ['#ffffff', 0.26, '#bfe6ff', 0.46], brasa: ['#fff1c0', 0.2, '#ff7a1a', 0.5], energia: ['#eaffd0', 0.18, '#3dff6a', 0.44], bala: ['#fff6c8', 0.07, '#ffc23a', 0.15, 7], cadena: ['#f0e6ff', 0.14, '#a24dff', 0.34]};
+const PROY_AP_G = {};
+function proyAP(n) {
+  if (!PROY_AP_G[n]) {const [c1, r1, c2, r2, largo = 1] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(new THREE.SphereGeometry(r1, 10, 6), new THREE.MeshBasicMaterial({color: c1})), h = new THREE.Mesh(new THREE.SphereGeometry(r2, 10, 6), new THREE.MeshBasicMaterial({color: c2, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false})); m.scale.z = h.scale.z = largo; g.add(m, h); PROY_AP_G[n] = g;}
+  return PROY_AP_G[n].clone(true);
+}
+/* ráfagas: varios proyectiles a la vez (cubo de bolas, balas de cobertura…), con bote opcional; solo dibujo, el daño lo pone la simulación */
+const RAFAGAS = []; window._rafagas = RAFAGAS;
+function rafaga({n = 1, x, z, ang, abre = 0, dist, varia = 0.25, cada = 0, y = 1.1, salta = 0, kind = 'bola', vel = 24, fin = 'impacto'}) {
+  for (let i = 0; i < n; i++) setTimeout(() => {if (RAFAGAS.length > 70) return; const a = ang + (Math.random() - 0.5) * abre, d = dist * (1 - varia + Math.random() * varia), o = proyAP(kind); scene.add(o); RAFAGAS.push({o, x, z, tx: x + Math.sin(a) * d, tz: z + Math.cos(a) * d, t: 0, dur: d / vel, y, salta, kind, fin});}, i * cada);
+}
+function animaRafagas(dt) {
+  for (let i = RAFAGAS.length - 1; i >= 0; i--) {const r = RAFAGAS[i]; r.t += dt; const k = Math.min(1, r.t / r.dur);
+    r.o.position.set(r.x + (r.tx - r.x) * k, r.y * (1 - k) + 0.25 * k + Math.sin(k * Math.PI) * r.salta, r.z + (r.tz - r.z) * k); r.o.rotation.y = Math.atan2(r.tx - r.x, r.tz - r.z);
+    if (k >= 1) {scene.remove(r.o); RAFAGAS.splice(i, 1); if (r.fin) flip(r.fin, r.tx, r.tz, r.kind === 'bala' ? 0.9 : 1.3);}}
+}
+function modeloProy(n) {if (PROY_AP[n]) return proyAP(n);""")
+js = sub(js, "function animaHabilidades(dt) {\n  animaRayos(dt);", "function animaHabilidades(dt) {\n  animaRafagas(dt); animaRayos(dt);")
+# estela de las habilidades en línea: fuego (Vael), energía (Grub), humo (Fu) en vez del polvo
+js = sub(js, "else flip('polvo', t.x + t.dx * d0, t.z + t.dz * d0, 0.9);}", "else flip(t.fx || 'polvo', t.x + t.dx * d0, t.z + t.dz * d0, t.fx === 'fuego' ? 1.4 : 0.9);}")
+# Ata: ni hojas ni lluvia de flechas (eso era el elfo); sus efectos van en fxAP
+js = sub(js, "if (v.tipo === 'elfo') flip('hojas', x, z, 3.2, true);", "if (v.tipo === 'elfo') flip('polvoA', x, z, 3.2, true);")
+js = sub(js, "else if (H.tipo === 'zona') {const d0", "else if (H.tipo === 'zona' && v.tipo !== 'elfo') {const d0")
+js = sub(js, "else if (H.tipo === 'rafaga') auraFx(o, 'hojas', du, 3.4);", "else if (H.tipo === 'rafaga') aura(o, '#ffd24a', du, 1.5);")
+# el rayo de la definitiva de Vael, de fuego (era la luz blanca de Gandalf)
+js = sub(js, "const capas = [capa(ancho * 0.18, '#ffffff', 1), capa(ancho * 0.45, '#fff2c0', 0.55), capa(ancho * 0.9, '#9fd2ff', 0.25)];",
+         "const capas = [capa(ancho * 0.18, '#fff3d0', 1), capa(ancho * 0.45, '#ffb347', 0.6), capa(ancho * 0.9, '#ff4a12', 0.3)];")
+js = sub(js, "  if (H.tipo === 'invis') {flip('humo', x, z, 4.2, false, undefined, 1.2); flip('humo', x, z, 4.6, true); suena('viento', 0.5, x, z);}\n}",
+         "  if (H.tipo === 'invis') {flip('humo', x, z, 4.2, false, undefined, 1.2); flip('humo', x, z, 4.6, true); suena('viento', 0.5, x, z);}\n  fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2);\n}")
+js = sub(js, "/* lluvia de flechas: caen flechas de verdad sobre la zona */", """/* A-6: lo propio de cada héroe, encima de lo común de La Brecha */
+function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
+  const t = v.tipo, rs = rot - Math.PI / 4, lejos = () => {const d0 = Math.min(H.alc || 0, Math.hypot(px - x, pz - z)); return [x + dx * d0, z + dz * d0];};
+  if (o.estelaTiro) o.estelaTiro.fx = {gandalf: 'fuego', orco: 'impacto', gollum: 'humo'}[t];
+  if (t === 'hobbit') {
+    if (k === 'q') {flip('ondaC', x + dx * 1.2, z + dz * 1.2, 2.4, true); temb(0.12);}  /* el drive: golpe seco y la bola sale disparada (tiro) */
+    if (k === 'e') {rafaga({n: 11, x: x + dx * 0.6, z: z + dz * 0.6, ang: rot, abre: H.ang * 1.15, dist: H.alc, cada: 30, y: 1.0, salta: 1.4, kind: 'bola', vel: 13}); suena('arco', 0.6, x, z); luego2(140, () => suena('arco', 0.45, x, z));}
+    if (k === 'r') {rafaga({n: 16, x, z, ang: 0, abre: Math.PI * 2, dist: 3.4, cada: 18, y: 2.6, salta: 2.4, kind: 'bola', vel: 9, fin: 'chispa'});}
+  }
+  if (t === 'elfo') {
+    if (k === 'q') {flip('ondaC', x + dx, z + dz, 2.2, true); temb(0.15);}
+    if (k === 'w') for (let i = 0; i < 5; i++) luego2(i * 110, () => {const p = o.raiz.position; rafaga({x: p.x, z: p.z, ang: o.raiz.rotation.y, abre: 0.12, dist: 7, kind: 'bala', vel: 40, y: 1.3}); suena('arco', 0.25, p.x, p.z);});
+    if (k === 'r') {const [cx, cz] = lejos(); let n = 0; const tira = () => {if (n++ > H.dur / 0.09 || VIS.get(v.id) !== o) return; const p = o.raiz.position, a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * H.radio, tx = cx + Math.cos(a) * r, tz = cz + Math.sin(a) * r, l = Math.hypot(tx - p.x, tz - p.z) || 1; rafaga({x: p.x, z: p.z, ang: Math.atan2(tx - p.x, tz - p.z), dist: l, varia: 0, kind: 'bala', vel: 45, y: 1.3}); if (n % 3 === 0) suena('arco', 0.3, cx, cz); setTimeout(tira, 90);}; tira();}
+  }
+  if (t === 'orco') {
+    if (k === 'q') {for (let i = 0; i < 3; i++) luego2(i * 90, () => flip('tArco', x, z, H.radio * 2.3, true, rot + i * 2.1)); rafaga({n: 10, x, z, ang: 0, abre: Math.PI * 2, dist: H.radio, varia: 0.1, kind: 'energia', vel: 22, y: 1.0});}
+    if (k === 'w') {flip('tArco', x + dx * H.alc * 0.45, z + dz * H.alc * 0.45, H.alc * 1.9, true, rs); rafaga({n: 5, x, z, ang: rot, abre: H.ang, dist: H.alc, kind: 'energia', vel: 26, y: 1.0});}
+    if (k === 'e') flip('ondaC', x + dx, z + dz, 2.2, true);
+    if (k === 'r') {o.salto = {t: 0, dur: 0.38, alto: 2.2, cx: px, cz: pz, r: 2.2}; luego2(380, () => {const p = o.raiz.position; flip('tArco', p.x, p.z, 6, true, rs); rafaga({n: 12, x: p.x, z: p.z, ang: 0, abre: Math.PI * 2, dist: 3, kind: 'energia', vel: 18, y: 1.2}); temb(0.5);});}
+  }
+  if (t === 'gandalf') {
+    if (k === 'e') {const [cx, cz] = lejos(); for (let i = 0; i < 8; i++) {const a = i / 8 * Math.PI * 2; flip('fuego', cx + Math.cos(a) * H.radio * 0.8, cz + Math.sin(a) * H.radio * 0.8, 2);} luego2(500, () => {for (let i = 0; i < 5; i++) flip('fuego', cx + rnd(-H.radio, H.radio) * 0.6, cz + rnd(-H.radio, H.radio) * 0.6, 1.8);});}
+    if (k === 'q') flip('fuego', x + dx, z + dz, 1.8);
+  }
+  if (t === 'gollum') {
+    if (k === 'q') flip('humo', x, z, 3, true);
+    if (k === 'e') flip('ondaC', x + dx, z + dz, 2, true);
+  }
+  if (t === 'rohan') {
+    if (k === 'w') for (let i = 0; i < 3; i++) luego2(i * 220, () => {const p = o.raiz.position; flip('polvoA', p.x, p.z, 3.6, true, Math.random() * 6);});
+    if (k === 'e') {for (let i = 0; i < 8; i++) luego2(i * 60, () => {const a = rot + i * 0.8, r = H.radio * 0.65; flip('polvoA', x + Math.cos(a) * r, z + Math.sin(a) * r, 2.6, true, a);}); flip('tArco', x, z, H.radio * 2, true, rot);}
+  }
+  if (t === 'enano') {
+    if (k === 'q') flip('estrellas', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, 3, true);
+    if (k === 'w') auraFx(o, 'escudo', H.dur, 3.8);
+    if (k === 'r') {for (let i = 0; i < 6; i++) {const a = i / 6 * Math.PI * 2; flip('estrellas', x + Math.cos(a) * H.radio * 0.6, z + Math.sin(a) * H.radio * 0.6, 2.4, true);}}
+  }
+}
+/* lluvia de flechas: caen flechas de verdad sobre la zona */""")
+
 # ---------- EL PUENTE (17/11, Arturo: «como si estuvieses encima de un puente cruzando algo, y a los lados paisaje») ----------
 # el tablero (|x| < 11) cruza un barranco con río entre z = -38 y 38; las bases quedan en tierra firme a los dos lados
 js = sub(js, "      gl_FragColor=vec4(col,1.);\n      #include <colorspace_fragment>", "      gl_FragColor=vec4(col,hueco);\n      #include <colorspace_fragment>")
