@@ -52,7 +52,7 @@ const HEROES = {
     hab: {q: {n: 'Giro del hacha', cd: 8, mn: 30, tipo: 'area', radio: 3.5, dano: 100, curaH: 0.1, icono: 'h_orco_q', d: 'Giras el hacha: hieres a los de alrededor y te curas un 10 % de la vida que te falta por cada héroe que tocas.'},
       w: {n: 'Golpe que aplasta', cd: 7, mn: 30, tipo: 'cono', alc: 3.4, ang: 1.2, dano: 90, lento: 0.5, durL: 1.2, icono: 'h_orco_w', d: 'Un hachazo delante que frena un 50 % 1,2 s.'},
       e: {n: 'Cadena de Mordor', cd: 14, mn: 45, tipo: 'linea', alc: 6.5, ancho: 0.9, dano: 60, tira: true, lento: 0.4, durL: 1, proy: 'hacha_arrojadiza', icono: 'h_orco_e', d: 'Lanzas la cadena y arrastras hasta ti al primero que toca.'},
-      r: {n: 'Guillotina', cd: 45, mn: 80, tipo: 'ejecuta', alc: 3.6, dano: 170, falta: 0.35, icono: 'h_orco_r', d: 'Hachazo al héroe más cercano: más daño cuanta menos vida le quede (35 % de la que le falta). Si lo derriba, se recarga al momento.'}}},
+      r: {n: 'Guillotina', cd: 45, mn: 80, tipo: 'ejecuta', alc: 6, dano: 170, falta: 0.35, icono: 'h_orco_r', d: 'Hachazo al héroe más cercano: más daño cuanta menos vida le quede (35 % de la que le falta). Si lo derriba, se recarga al momento.'}}},
 };
 /* PASIVAS (17/11): como en el LoL, cada héroe tiene una que funciona sola; copiadas de su campeón */
 const PASIVA = {
@@ -1083,7 +1083,7 @@ function usaHab(h, k, dx, dz, px, pz) {
   }
   if (H.tipo === 'ejecuta') {/* la Guillotina de Darius: daño más el que le falta; si derriba, se recarga */
     const t = masCercano(h, en().filter((e) => e.k === 'h'), H.alc + 0.6); if (!t) {h.cd[k] = 0; h.hc--; h.mana += cm; return false;}
-    h.rot = Math.atan2(t.x - h.x, t.z - h.z); const mx = stats(t).vida; luego(0.35, () => {if (t.vida <= 0 || h.muerto) return; dana(h, t, n + (mx - t.vida) * H.falta, T); if (t.vida <= 0 || t.muerto) {h.cd[k] = 0; ev(['num', h.x, h.z, '¡Otra vez!', 'v']);} ev(['fx', 'explosion', t.x, t.z, 1.6]);});
+    h.rot = Math.atan2(t.x - h.x, t.z - h.z); {const l0 = dist(h, t); if (l0 > 2.2) {h.x = t.x - (t.x - h.x) / l0 * 1.8; h.z = t.z - (t.z - h.z) / l0 * 1.8; limita(h); ev(['fx', 'polvo', h.x, h.z, 2]);}} /* salta hacia él como Darius */ const mx = stats(t).vida; luego(0.35, () => {if (t.vida <= 0 || h.muerto) return; dana(h, t, n + (mx - t.vida) * H.falta, T); if (t.vida <= 0 || t.muerto) {h.cd[k] = 0; ev(['num', h.x, h.z, '¡Otra vez!', 'v']);} ev(['fx', 'explosion', t.x, t.z, 1.6]);});
   }
   ev(['hb', h.id, k, +dx.toFixed(2), +dz.toFixed(2), +(px || 0).toFixed(1), +(pz || 0).toFixed(1)]);
   if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - h.x, pz - h.z)), x = h.x + dx * d0, z = h.z + dz * d0; S.zonas.push({x, z, r: H.radio, t: H.dur, tick: 0, dps: H.dps * escala, mag: H.mag, l: H.lento, eq: h.eq, o: h}); ev(['zona', x, z, H.radio, H.dur]);}
@@ -1248,7 +1248,7 @@ function compra(h, id) {
 const AN = {quieto: 0, correr: 1};
 /* lo que manda cada jugador (en el móvil del anfitrión o en el servidor) */
 function aplicaMando(h, o) {
-    if (o.t === 'in') {h.lat = Math.min(0.4, (o.rt || 0) / (EN_SERVIDOR ? 2000 : 1000) + INTERP_MS / 1000 + 1 / 30); /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
+    if (o.t === 'in') {h.lat = Math.min(0.5, (o.rt || 0) / 1000 + INTERP_MS / 1000 + 1 / 30); /* 17/11: antes en el servidor se usaba media ida y vuelta y los golpes del invitado se quedaban cortos */ /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; rebobinado(h, () => usaHab(h, o.k, o.dx, o.dz, o.px, o.pz));}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
@@ -1363,6 +1363,7 @@ function habVisual(e) {
   const d = animaClip(o, HAB_ANIM[v.tipo][k], H.tipo === 'dash' || H.tipo === 'salto' ? 1.3 : 1.15); o.ocup = Math.min(0.9, d * 0.85); o.habYa = true;
   const cerca = mio || Math.hypot(x - camM.x, z - camM.z) < 16, temb = (n) => {if (cerca) tiemblaCam = Math.max(tiemblaCam, n);};
   const luego2 = (ms, fn) => setTimeout(() => {if (VIS.get(id) === o) fn();}, ms), rs = rot - Math.PI / 4;
+  if (v.eq !== MI_EQ) telegrafo(H, x, z, dx, dz, px, pz);
   if (k === 'r') {ultiFx(v, H, k, mio, cerca); aura(o, v.eq === MI_EQ ? '#8fd0ff' : '#ff8a6a', 1.1, 2.6); if (H.tipo !== 'area') flip('ondaC', x, z, 7, true); o.flash = 0.13; o.punch = 1.6; o.sqA = 0.22; o.sqT = o.sqD = 0.35;}
   const anillo = (cx, cz, r, n, fx = 'polvo', tam = 1.6) => {for (let i = 0; i < n; i++) {const a = i / n * Math.PI * 2; flip(fx, cx + Math.cos(a) * r, cz + Math.sin(a) * r, tam);}};
   if (H.tipo === 'dash') {
@@ -1473,7 +1474,7 @@ function animaRayos(dt) {
   }
 }
 function animaHabilidades(dt) {
-  animaRayos(dt);
+  animaRayos(dt); animaTele(dt);
   pintaAnillo(dt);
   for (const [id, o] of VIS) {
     const vv = VISTA.get(id), atur = vv && (vv.flags & 2) && (vv.k !== 'h' || vv.muerto < 0);
@@ -2021,6 +2022,16 @@ function miraAtaque() {
   mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * alc * 256 / 235);
   const f = mira.flecha; f.visible = true; f.scale.set(alc, 1, 1.2); f.position.set(x + wx * alc / 2, 0.1, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);
 }
+/* 17/11 («que se vean las habilidades del contrario»): al lanzar el rival, su forma sale en rojo en el suelo y se apaga en medio segundo */
+const TELE = [];
+function telegrafo(H, x, z, dx, dz, px, pz) {
+  const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l; let m;
+  if (H.tipo === 'linea' || H.tipo === 'dash') {m = indicador('ind_flecha', '#ff3a2a'); const a = H.alc || H.dist; m.scale.set(a, 1, (H.ancho || 1.2) * 2.4); m.position.set(x + dx * a / 2, 0.12, z + dz * a / 2); m.rotation.y = Math.atan2(-dz, dx);}
+  else if (H.tipo === 'cono') {m = indicador('ind_cono', '#ff3a2a'); const t = H.alc * 512 / 325; m.scale.set(t, 1, t); m.position.set(x, 0.12, z); m.rotation.y = Math.atan2(-dx, -dz);}
+  else if (['area', 'zona', 'salto', 'ejecuta'].includes(H.tipo)) {m = indicador('ind_area', '#ff3a2a'); const r = H.tipo === 'ejecuta' ? 2 : H.radio || 3, lejos = H.tipo === 'zona' || H.tipo === 'salto'; const d0 = lejos ? Math.min(H.alc || H.dist, Math.hypot(px - x, pz - z)) : 0; m.scale.setScalar(2 * r * 256 / 231); m.position.set(x + dx * d0, 0.12, z + dz * d0);}
+  if (!m) return; m.visible = true; m.material.opacity = 0.9; TELE.push({m, t: 0});
+}
+function animaTele(dt) {for (let i = TELE.length - 1; i >= 0; i--) {const T = TELE[i]; T.t += dt; T.m.material.opacity = 0.9 * Math.max(0, 1 - T.t / 0.6); if (T.t > 0.6) {scene.remove(T.m); T.m.geometry.dispose(); T.m.material.dispose(); TELE.splice(i, 1);}}}
 function ocultaMira() {for (const n in MIRA_H) MIRA_H[n].visible = false; if (mira) {for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false; mira.dir = null;}}
 function lanzaMia(k, apunta) {
   const v = VISTA.get(YO); if (!v || v.muerto >= 0) return;
@@ -2032,11 +2043,13 @@ function lanzaMia(k, apunta) {
     const mejor = autoObjetivo(H, x, z);
     if (mejor) {dx = mejor.x - x; dz = mejor.z - z; px = mejor.x; pz = mejor.z;} else {const r = v.rot || 0; dx = Math.sin(r); dz = Math.cos(r); px = x + dx * 5; pz = z + dz * 5;}
   }
+  if (H.tipo === 'ejecuta') {let hay = false; for (const q of VISTA.values()) if (q.k === 'h' && q.eq !== MI_EQ && q.muerto < 0 && !q.escondido && Math.hypot((q.xi ?? q.x) - x, (q.zi ?? q.z) - z) < H.alc + 0.6) hay = true; if (!hay) {aviso('Ningún héroe enemigo a tiro (' + H.alc + ' m)'); return;}}
   suena(['dash', 'salto'].includes(H.tipo) ? 'viento' : 'espada', 0.5);
   if (S) {const h = S.u.find((q) => q.id === YO); usaHab(h, k, dx, dz, px, pz);}
   else {
     NET.manda({t: 'hab', k, dx, dz, px, pz, x: MIO.x, z: MIO.z});
     /* el movimiento de las cargas y saltos lo hace mi móvil al momento (y el anfitrión, igual) */
+    if (H.tipo === 'ejecuta') {let t = null, md = 1e9; for (const q of VISTA.values()) if (q.k === 'h' && q.eq !== MI_EQ && q.muerto < 0) {const d0 = Math.hypot((q.xi ?? q.x) - x, (q.zi ?? q.z) - z); if (d0 < md) {md = d0; t = q;}} if (t && md > 2.2) {const ux = ((t.xi ?? t.x) - x) / md, uz = ((t.zi ?? t.z) - z) / md, d0 = md - 1.8; MIO.dash = {vx: ux * d0 / 0.2, vz: uz * d0 / 0.2, t: 0.2};}}
     if (H.tipo === 'dash' || H.tipo === 'salto') {const l = Math.hypot(dx, dz) || 1, d0 = H.tipo === 'salto' ? Math.min(H.dist, Math.hypot(px - x, pz - z) || H.dist) : H.dist, T = H.tipo === 'salto' ? 0.45 : 0.28; MIO.dash = {vx: dx / l * d0 / T, vz: dz / l * d0 / T, t: T};}
   }
 }
