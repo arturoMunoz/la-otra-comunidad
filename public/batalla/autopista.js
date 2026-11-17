@@ -811,7 +811,7 @@ function atacable(u) {
   if (u.k === 'n') return !S.u.some((q) => q.k === 't' && q.eq === u.eq && q.n === 2 && q.vida > 0);
   return true;
 }
-function radio(u) {return u.rad || (u.k === 'h' ? 0.6 : 0.5);}
+function radio(u) {return u.rad || (u.k === 'h' ? 0.75 : 0.5);}
 const CHOQUE_H = 1.1; /* distancia mínima entre dos héroes (centro a centro) */
 /* protecciones de las torres del Wild Rift: las de camino llevan armadura extra al principio (300 que baja 50 por minuto)
    y ninguna estructura recibe más que un 25 % (el estandarte un 20 %) si no hay súbditos enemigos cerca (se quita a los 3 s) */
@@ -2201,10 +2201,11 @@ const APUNTABLE = {dash: 1, linea: 1, cono: 1, zona: 1, salto: 1, area: 1, ejecu
    Recortadas al borde del dibujo: el aro y el círculo llenan el cuadro, el cono tiene la punta abajo en el centro y la flecha apunta a la derecha. */
 const IND_HEROE = {rohan: 'q e r alcance basico', enano: 'q e r alcance basico', hobbit: 'q e alcance basico', gandalf: 'q e r alcance basico', gollum: 'q e alcance basico', orco: 'q w e r alcance basico', elfo: 'q e r alcance basico'};
 const MIRA_H = {};
+const IND_BANDA = {"ap_ind_elfo_basico": 0.5, "ap_ind_elfo_e": 0.39, "ap_ind_elfo_q": 0.203, "ap_ind_enano_basico": 0.534, "ap_ind_gandalf_basico": 0.431, "ap_ind_gandalf_q": 0.659, "ap_ind_gandalf_r": 0.757, "ap_ind_gollum_basico": 0.469, "ap_ind_gollum_e": 0.673, "ap_ind_hobbit_basico": 0.526, "ap_ind_hobbit_q": 0.777, "ap_ind_orco_basico": 0.526, "ap_ind_orco_e": 0.459, "ap_ind_rohan_basico": 0.435, "ap_ind_rohan_q": 0.828, "ap_ind_rohan_r": 0.652};
 function marcaH(tipo, k, forma) {
   if (!(IND_HEROE[tipo] || '').split(' ').includes(k)) return null; const n = 'ap_ind_' + tipo + '_' + k;
-  if (!MIRA_H[n]) {const t = cargaTex('../batalla/ui/' + n + '.webp'), g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); if (forma === 'cono') g.translate(0, 0, -0.5);
-    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, opacity: 0.8})); m.renderOrder = 4; m.visible = false; scene.add(m); MIRA_H[n] = m;}
+  if (!MIRA_H[n]) {const t = cargaTex('../batalla/ui/' + n + '.webp'), g = new THREE.PlaneGeometry(1, 1); t.anisotropy = renderer.capabilities.getMaxAnisotropy(); g.rotateX(-Math.PI / 2); if (forma === 'cono') g.translate(0, 0, -0.5);
+    const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, opacity: 0.85})); m.renderOrder = 4; m.visible = false; m.userData.banda = IND_BANDA[n] || 0.35; scene.add(m); MIRA_H[n] = m;}
   return MIRA_H[n];
 }
 /* objetivo automático al tocar sin arrastrar: el héroe enemigo más cercano a tiro (o lo que tengas delante) */
@@ -2230,7 +2231,7 @@ function muestraMira(k, dx, dy) {
   {const ra = H.tipo === 'area' ? H.radio : alc, a = marcaH(t, 'alcance', 'area'); if (a) {a.visible = true; a.position.set(x, 0.09, z); a.scale.setScalar(2 * ra);} else {mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * ra * 256 / 235);}}
   if (forma === 'area') {const a = propia || mira.area, r = H.tipo === 'ejecuta' ? H.alc : H.radio, lejos = H.tipo === 'zona' || H.tipo === 'salto'; a.visible = true; a.scale.setScalar(2 * r * (propia ? 1 : 256 / 231)); a.position.set(lejos ? x + wx * alc * k2 : x, 0.11, lejos ? z + wz * alc * k2 : z);}
   else if (forma === 'cono') {if (propia) {const d = H.alc * 1.05; propia.visible = true; propia.scale.set(d * Math.min(1.25, H.ang / (Math.PI / 2) + 0.2), 1, d); propia.position.set(x, 0.11, z); propia.rotation.y = Math.atan2(-wx, -wz);} else {const c = mira.cono, tam = H.alc * 512 / 325; c.visible = true; c.scale.set(tam * Math.min(1.2, H.ang / (Math.PI / 2)), 1, tam); c.position.set(x, 0.11, z); c.rotation.y = Math.atan2(-wx, -wz);}}
-  else {const f = propia || mira.flecha, an = (H.ancho ? H.ancho * 2 : H.tipo === 'dash' ? (H.dano ? 3.2 : 1.1) : 1.4) * 2 * (propia ? 1.25 : 1); /* ancho real de lo que golpea: la carga hiere a 1,6 m de cada lado; el paso élfico no hiere */ f.visible = true; f.scale.set(alc, 1, an); f.position.set(x + wx * alc / 2, 0.11, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);}
+  else {const f = propia || mira.flecha, an = (H.ancho ? H.ancho * 2 : H.tipo === 'dash' ? (H.dano ? 3.2 : 1.1) : 1.4) * 2 * (propia ? 1.25 : 1); /* ancho real de lo que golpea: la carga hiere a 1,6 m de cada lado; el paso élfico no hiere */ f.visible = true; f.scale.set(alc, 1, propia ? (H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2) / propia.userData.banda : an); f.position.set(x + wx * alc / 2, 0.11, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);}
   mira.dir = {wx, wz, px: x + wx * alc * k2, pz: z + wz * alc * k2};
 }
 /* 17/11: apuntar el golpe básico como en el LoL: al arrastrar el ataque se ve tu alcance y una flecha hacia donde apuntas (el objetivo sale con el aro blanco) */
@@ -2240,7 +2241,7 @@ function miraAtaque() {
   if (!mira) mira = {alc: indicador('ind_alcance', '#ffffff'), area: indicador('ind_area', '#ffe9a8'), flecha: indicador('ind_flecha', '#ffe9a8'), cono: indicador('ind_cono', '#ffe9a8')};
   const {F, R} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, {dx, dy} = MIRA_AT, l = Math.hypot(dx, dy) || 1, wx = (dx * R.x - dy * F.x) / l, wz = (dx * R.z - dy * F.z) / l, alc = HEROES[v.tipo].alcance;
   mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * alc * 256 / 235);
-  const f = marcaH(v.tipo, 'basico', 'flecha') || mira.flecha; f.visible = true; f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.9); f.position.set(x + wx * alc / 2, 0.1, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);
+  const f = marcaH(v.tipo, 'basico', 'flecha') || mira.flecha; f.visible = true; f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.4 / (f.userData.banda || 0.45)); f.position.set(x + wx * alc / 2, 0.1, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);
 }
 /* 17/11 («que se vean las habilidades del contrario»): al lanzar el rival, su forma sale en rojo en el suelo y se apaga en medio segundo */
 const TELE = [];

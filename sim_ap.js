@@ -304,7 +304,7 @@ function atacable(u) {
   if (u.k === 'n') return !S.u.some((q) => q.k === 't' && q.eq === u.eq && q.n === 2 && q.vida > 0);
   return true;
 }
-function radio(u) {return u.rad || (u.k === 'h' ? 0.6 : 0.5);}
+function radio(u) {return u.rad || (u.k === 'h' ? 0.75 : 0.5);}
 const CHOQUE_H = 1.1; /* distancia mínima entre dos héroes (centro a centro) */
 /* protecciones de las torres del Wild Rift: las de camino llevan armadura extra al principio (300 que baja 50 por minuto)
    y ninguna estructura recibe más que un 25 % (el estandarte un 20 %) si no hay súbditos enemigos cerca (se quita a los 3 s) */

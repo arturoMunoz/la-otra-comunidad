@@ -930,6 +930,30 @@ html = sub(html, '</head>', """<style>
 js = sub(js, "function alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene, ['draco', 'huorn', 'crebain', 'nutria', 'sapo', 'uruk_azul'].includes(n)); ALTO[n] = Math.max(0.5, b.max.y - b.min.y);} return ALTO[n];}",
          "const AJ_ALTO = {ap_brask: 1.83};\nfunction alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene, ['draco', 'huorn', 'crebain', 'nutria', 'sapo', 'uruk_azul'].includes(n)); ALTO[n] = Math.max(0.5, b.max.y - b.min.y) / (AJ_ALTO[n] || 1);} return ALTO[n];}")
 
+# ---------- HITBOX Y FLECHAS DE APUNTAR (17/11, Henar: «no se siente que le estés dando, las hitbox raras, las flechas salen muy gordas,
+# pixeladas o raras»). (1) La flecha de una habilidad en línea se dibujaba a 5 × ancho (2,5 veces más ancha que lo que golpea): apuntabas con
+# el borde y fallabas. Ahora la FRANJA dibujada (medida en cada imagen: IND_BANDA) mide justo lo que golpea: 2 × (ancho + radio del héroe).
+# (2) El héroe se ve a ×1,28 pero su radio de golpe era 0,6: ahora 0,75 (en la simulación, también en el servidor). (3) Las marcas se ven
+# en ángulo: filtro anisótropo para que no salgan borrosas ni a escalones. (4) La flecha del básico, fina (0,4 m).
+def bandas():
+    from PIL import Image
+    import numpy as np
+    out = {}
+    for f in sorted(pathlib.Path('public/batalla/ui').glob('ap_ind_*.webp')):
+        im = Image.open(f)
+        if im.width < im.height * 2: continue          # conos y círculos: no son flechas
+        a = np.array(im.getchannel('A')).astype(int); col = a[:, int(a.shape[1] * 0.4)]; ys = np.where(col > 60)[0]
+        if len(ys): out[f.stem] = round((ys.max() - ys.min() + 1) / a.shape[0], 3)
+    return out
+import json as _json
+js = sub(js, "function radio(u) {return u.rad || (u.k === 'h' ? 0.6 : 0.5);}", "function radio(u) {return u.rad || (u.k === 'h' ? 0.75 : 0.5);}")
+js = sub(js, "function marcaH(tipo, k, forma) {", "const IND_BANDA = " + _json.dumps(bandas()) + ";\nfunction marcaH(tipo, k, forma) {")
+js = sub(js, "const t = cargaTex('../batalla/ui/' + n + '.webp'), g = new THREE.PlaneGeometry(1, 1);", "const t = cargaTex('../batalla/ui/' + n + '.webp'), g = new THREE.PlaneGeometry(1, 1); t.anisotropy = renderer.capabilities.getMaxAnisotropy();")
+js = sub(js, "const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, opacity: 0.8})); m.renderOrder = 4; m.visible = false; scene.add(m); MIRA_H[n] = m;}",
+             "const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, opacity: 0.85})); m.renderOrder = 4; m.visible = false; m.userData.banda = IND_BANDA[n] || 0.35; scene.add(m); MIRA_H[n] = m;}")
+js = sub(js, "f.scale.set(alc, 1, an);", "f.scale.set(alc, 1, propia ? (H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2) / propia.userData.banda : an);")
+js = sub(js, "f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.9);", "f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.4 / (f.userData.banda || 0.45));")
+
 # ---------- MANDOS EN ARCO (17/11, Henar: «es una chapuza»: botones pisándose) ----------
 # Esquema fijo como el del Wild Rift alrededor del ataque (abajo a la derecha): Q a la izquierda, W en diagonal, E encima y la R
 # más afuera; el «+» como insignia arriba a la izquierda de cada habilidad; torre y soldados pegados al ataque; hechizos, BASE y
