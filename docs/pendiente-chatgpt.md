@@ -13,7 +13,7 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] ~~**Pack Vado 10 · WORK**~~ (llegó como Pack 13, 16/11) — rehacer el Huorn (ahora es una bola-monstruo) y el draco (ahora es un triceratops teñido).
 - [x] ~~**Uruk Azul · WORK**~~ (Pack 13) — modelo propio (ahora es el capitán teñido de azul).
 - [ ] **~~Pack Vado 18~~ (Gandalf y orco HECHOS 16/11; uruk y Gollum descartados de momento) · ART** — 4 héroes nuevos (Gandalf, orco de Mordor, Uruk-hai, Gollum): retratos grandes, 16 iconos de habilidades y 4 botones de ataque. Prompt en el chat del 16/11.
-- [ ] **Pack Vado 18 · WORK** — modelos 3D de los 4 héroes nuevos (Gandalf a partir del mago KayKit CC0 + Gollum; orco y uruk se reutilizan del Abismo). Hacer después del ART.
+- [x] (HECHO: Gandalf y orco 16/11, Gollum en el Pack 24; uruk descartado) ~~**Pack Vado 18 · WORK**~~ — modelos 3D de los 4 héroes nuevos (Gandalf a partir del mago KayKit CC0 + Gollum; orco y uruk se reutilizan del Abismo). Hacer después del ART.
 - [ ] Minimapa del mapa del ojo (el de ChatGPT era del mapa recto; ahora se pinta por código) · ART.
 
 ## La Autopista (La Brecha sin Tolkien, nombre provisional) — prompts en `docs/prompts-autopista.md`
