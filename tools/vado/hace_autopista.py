@@ -383,6 +383,29 @@ html = sub(html, '</head>', """<style>
 .bv.h i u{border-radius:1px}
 .bv.h b{margin-bottom:3px !important}.bv.h .mn{margin-top:4px}
 </style></head>""", donde='html')
+# ---------- COLOR DE CADA HÉROE EN EL HUD (17/11, Henar): aros, + y panel se tiñen con el color del héroe que llevas ----------
+# las piezas del Pack 22 son cian (~190°): se giran de tono con --tinte. Las barras de vida NO (cian/rojo = tu equipo/enemigo)
+_n = 0
+for a in ["querySelector('img').src = 'ui/at_' + tipo + '.webp';", "querySelector('img').src = 'ui/ap_at_' + tipo + '.webp';"]:
+    _n += js.count(a)
+    js = js.replace(a, a + " document.body.dataset.heroe = tipo;")
+if _n != 1: fallos.append('[tinte] botón de ataque')
+html = sub(html, '</head>', """<style>
+body{--tinte:0deg;--tsat:1;--tluz:1}
+body[data-heroe=enano]{--tinte:0deg;--tsat:.55;--tluz:1.15}   /* Brask: luz blanca azulada */
+body[data-heroe=gandalf]{--tinte:-165deg;--tsat:1.3}          /* Vael: fuego */
+body[data-heroe=orco]{--tinte:-75deg;--tsat:1.2}              /* Grub: verde energía */
+body[data-heroe=elfo]{--tinte:172deg;--tsat:1.5;--tluz:.95}              /* Ata: láser rojo */
+body[data-heroe=hobbit]{--tinte:-100deg;--tsat:1.1}           /* Birdie: verde césped */
+body[data-heroe=gollum]{--tinte:85deg;--tsat:1.2}             /* Fu: humo morado */
+body[data-heroe=rohan]{--tinte:-150deg;--tsat:.9;--tluz:.95}  /* Moha: arena dorada */
+.hb[data-k]::after,.hb.hs::after,.mas{filter:hue-rotate(var(--tinte)) saturate(var(--tsat)) brightness(var(--tluz)) drop-shadow(0 3px 3px #0008) !important}
+.hb[data-k]:not(.pronta)::after{filter:hue-rotate(var(--tinte)) saturate(calc(var(--tsat) * .75)) brightness(calc(var(--tluz) * .9)) drop-shadow(0 3px 3px #0008) !important}
+#bR::after{filter:drop-shadow(0 3px 3px #0008) !important}
+#yo{background:none !important;isolation:isolate}
+#yo::before{display:block !important;content:'' !important;position:absolute !important;inset:0 !important;left:0 !important;top:0 !important;width:auto !important;height:auto !important;background:url(ui/ap_panel_yo.webp) center/100% 100% no-repeat !important;z-index:-1 !important;filter:hue-rotate(var(--tinte)) saturate(var(--tsat)) brightness(var(--tluz))}
+.xp i{filter:hue-rotate(var(--tinte)) saturate(var(--tsat))}
+</style></head>""", donde='html')
 # ---------- EL PUENTE (17/11, Arturo: «como si estuvieses encima de un puente cruzando algo, y a los lados paisaje») ----------
 # el tablero (|x| < 11) cruza un barranco con río entre z = -38 y 38; las bases quedan en tierra firme a los dos lados
 js = sub(js, "      gl_FragColor=vec4(col,1.);\n      #include <colorspace_fragment>", "      gl_FragColor=vec4(col,hueco);\n      #include <colorspace_fragment>")

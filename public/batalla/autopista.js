@@ -2216,7 +2216,7 @@ function pantallaVS(jugadores, modo) {
 }
 const ARMA = {rohan: 'lanza', enano: 'hacha', elfo: 'arco', hobbit: 'honda', gandalf: 'baston', orco: 'hacha', gollum: 'daga'};
 function iconosHab(tipo) {
-  $('bAt').querySelector('img').src = 'ui/ap_at_' + tipo + '.webp'; $('bAt').classList.remove('arma');for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = 'ui/ap_h_' + tipo + '_' + k + '.webp'; b.title = HEROES[tipo].hab[k].n;}}
+  $('bAt').querySelector('img').src = 'ui/ap_at_' + tipo + '.webp'; document.body.dataset.heroe = tipo; $('bAt').classList.remove('arma');for (const k of ['q', 'w', 'e', 'r']) {const b = $('b' + k.toUpperCase()); b.querySelector('img').src = 'ui/ap_h_' + tipo + '_' + k + '.webp'; b.title = HEROES[tipo].hab[k].n;}}
 function subeNivelFx(v) {
   flip('onda', v.xi ?? v.x, v.zi ?? v.z, 5, true); flip('nivel', v.xi ?? v.x, v.zi ?? v.z, 4.2, false, 0, 0); suena('nivel', 0.6);
   const n = document.createElement('div'); n.className = 'nivelSube'; n.textContent = '¡Nivel ' + v.nivel + '!'; document.body.appendChild(n); setTimeout(() => n.remove(), 1400);
