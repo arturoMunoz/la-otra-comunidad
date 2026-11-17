@@ -36,3 +36,5 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [ ] Pack Vado 24 · ART (OTRA VEZ: lo que llegó era el Gollum de las películas, no se usa): arte del Rastrero de las Ciénagas (splash, retrato, ataque y 4 habilidades). Prompt en `docs/prompts-vado.md`.
 - [x] (HECHO 16/11, `tools/vado/pack24`) Pack Vado 24 · WORK: modelo `gollum.glb` con el esqueleto de KayKit. Prompt en `docs/prompts-vado.md`. Al llegar: meter en VADO, `modelo: 'gollum'`, `ret: 'ui/r_gollum.webp'`, y volver a pasar `tools/vado/adelgaza.py` si hace falta.
 - [x] (HECHO 17/11) Pack Vado 25 · ART: kit de botones del menú (7 piezas a proporción fija). Prompt en `docs/prompts-vado.md`.
+
+- [ ] (ART) Iconos de las 7 pasivas (Hemorragia, Iluminación, Acecho, Cadencia marcial, Flecha de escarcha, Piel de granito, Escondido), medallón redondo como los de las habilidades.

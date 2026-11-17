@@ -54,6 +54,16 @@ const HEROES = {
       e: {n: 'Cadena de Mordor', cd: 14, mn: 45, tipo: 'linea', alc: 6.5, ancho: 0.9, dano: 60, tira: true, lento: 0.4, durL: 1, proy: 'hacha_arrojadiza', icono: 'h_orco_e', d: 'Lanzas la cadena y arrastras hasta ti al primero que toca.'},
       r: {n: 'Guillotina', cd: 45, mn: 80, tipo: 'ejecuta', alc: 3.6, dano: 170, falta: 0.35, icono: 'h_orco_r', d: 'Hachazo al héroe más cercano: más daño cuanta menos vida le quede (35 % de la que le falta). Si lo derriba, se recarga al momento.'}}},
 };
+/* PASIVAS (17/11): como en el LoL, cada héroe tiene una que funciona sola; copiadas de su campeón */
+const PASIVA = {
+  orco: {n: 'Hemorragia', d: 'Sus golpes hacen sangrar a los héroes (hasta 5 cargas). Con 5 cargas, +40 % de daño durante 5 s. (Darius)'},
+  gandalf: {n: 'Iluminación', d: 'Sus hechizos marcan al enemigo; su siguiente golpe básico contra él estalla con daño mágico extra. (Lux)'},
+  gollum: {n: 'Acecho', d: 'Desde la hierba alta, su golpe básico es un salto hasta la presa (hasta 6 m). (Rengar)'},
+  rohan: {n: 'Cadencia marcial', d: 'El primer golpe a cada enemigo quita un 8 % de su vida actual; se repite cada 6 s por enemigo. (Jarvan IV)'},
+  elfo: {n: 'Flecha de escarcha', d: 'Sus flechas frenan un 25 % durante 1,5 s. (Ashe)'},
+  enano: {n: 'Piel de granito', d: 'Un escudo del 10 % de su vida máxima que vuelve si pasa 10 s sin recibir daño. (Malphite)'},
+  hobbit: {n: 'Escondido', d: 'Si se queda quieto 1,5 s se vuelve invisible hasta que se mueve o ataca. (Teemo)'},
+};
 const RET = (t) => {const h = HEROES[t] || HEROES.rohan; return h.ret || '../abismo/ui/' + h.retrato + '.webp';};
 const NIVEL_R = 4, NIVEL_MAX = 9;
 /* maná que cuesta una habilidad: como en el LoL, las básicas cuestan un 10 % más por rango; la definitiva, siempre lo mismo */
@@ -680,7 +690,9 @@ function stats(h) {
   if (be.uruk > S.t) {st.dano *= 1.2; st.regen += 8;}
   if (h.buf.rafaga > 0) va += 0.6;
   if (h.buf.suerte > 0) {ve += 0.5; st.dano *= 1.35;}
-  if (h.buf.invis > 0) ve += 0.35;
+  if (h.buf.invis > 0 && !(h.tipo === 'hobbit' && h.buf.escond > 0)) ve += 0.35;
+  if (h.tipo === 'gollum' && h.hierba >= 0) st.alcance = 6;
+  if (h.buf.furiaO > 0) st.dano *= 1.4;
   if (h.buf.azogue > 0) ve += 0.5;
   if (h.buf.gargola > 0) st.vida *= 1.4;
   if (h.buf.prisa > 0) ve += 0.3;
@@ -724,12 +736,15 @@ function dana(o, d, n, tipo) {
     if (d.tipo === 'x' && o && o.k === 't') n = d.max * 0.07;
     else if (d.tipo !== 'x' && S.u.some((q) => q.k === 's' && q.tipo === 'x' && !q.muerto && q.eq === d.eq && dist(q, d) < 6)) n *= 0.75;
   }
+  if (o && o.k === 'h' && o.tipo === 'gandalf' && tipo === 'mag' && d.k !== 't' && d.k !== 'n') d.luz = S.t + 6;
   if (d.k === 'h') {
     if (d.buf.estasis > 0) return;
     const st = stats(d);
     if (tipo !== 'hab' && tipo !== 'mag' && st.esquiva && Math.random() < st.esquiva) {ev(['num', d.x, d.z, '¡esquiva!', 'r']); return;}
     {const res = tipo === 'mag' ? st.rm : tipo === 'pura' ? 0 : st.arm; n *= 100 / (100 + Math.max(0, res)) * (1 - st.reduc);} /* físico contra armadura, mágico contra resistencia mágica (como el LoL) */
     if (d.buf.escudo > 0) {const a = Math.min(d.buf.escudoV || 0, n); d.buf.escudoV -= a; n -= a;}
+    if (d.granito > 0 && n > 0) {const a = Math.min(d.granito, n); d.granito -= a; n -= a;}
+    d.golpeT = S.t; if (d.tipo === 'hobbit') {d.quieto = 0; d.buf.escond = 0;}
     if (o && o.k === 'h') {d.agresor = o.id; d.agresorT = S.t + 3; o.atacoHeroeT = S.t + 2.5; d.danos[o.id] = S.t;}
     if (st.espinas && o && o.k !== 't' && tipo !== 'hab' && tipo !== 'mag' && dist(o, d) < 3) dana(null, o, n * st.espinas, 'pura');
   }
@@ -812,6 +827,7 @@ function golpea(o, d) {
     if (o.buf.troll > 0 && d.k !== 't' && d.k !== 'n') {d.quema = {dps: 10 + 3 * o.nivel, hasta: S.t + 3, o: o.id, tick: 0}; if (d.k === 'h') {d.buf.lento = 1; d.buf.lentoV = 0.2;} else d.lento = S.t + 1;}
     const st = stats(o), crit = st.crit && Math.random() < st.crit, n = st.dano * (crit ? 2 : 1), b = HEROES[o.tipo];
     o.ac++;
+    pasivaGolpe(o, d);
     if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');
     else luego(0.18, () => {if (d.vida > 0 && !o.muerto) {dana(o, d, n, crit ? 'crit' : 'at'); ev(['fx', 'impacto', d.x, d.z, 1.4]);}});
     return;
@@ -819,6 +835,15 @@ function golpea(o, d) {
   if (o.k === 's') {o.ac++; const sd = SUBD[o.tipo]; if (o.tipo === 'r') lanzaProy(o, d, o.eq ? 'flecha_orca' : 'flecha_elfica', sd.dano * (o.fuerte ? 1.5 : 1) * (SUBD_X[d.k] || 1) * (d.k === 't' || d.k === 'n' ? asedio() : 1), 'at'); else luego(0.2, () => {if (d.vida > 0 && o.vida > 0) dana(o, d, sd.dano * (o.fuerte ? 1.5 : 1) * ((d.k === 't' || d.k === 'n') ? (sd.muros || SUBD_X.t) * asedio() : (SUBD_X[d.k] || 1)), 'at');}); return;}
   if (o.k === 'j') {o.ac++; const nd = NEUTRO[o.tipo], piso = nd.jefe && o.ac % 3 === 0; luego(piso ? 0.75 : 0.3, () => {if (o.vida <= 0) return; if (piso) {for (const h of heroes()) if (!h.muerto && dist(h, o) < 4.2) dana(o, h, nd.dano * 0.8 * (1 + S.t / 900), 'at'); ev(['fx', 'onda', o.x, o.z, 8]); ev(['fx', 'explosion', o.x, o.z, 3]);} else if (d.vida > 0) {dana(o, d, nd.dano * (1 + S.t / 900), 'at'); if (nd.grande) ev(['fx', 'impacto', d.x, d.z, 2]);}}); return;}
   if (o.k === 't') {o.ac++; const n = d.k === 'h' ? 130 + 12 * Math.floor(S.t / 60) : 110; const p = lanzaProy(o, d, 'piedra', n, 'at', 2.6, 5); p.area = 2.4; p.v = 13;}
+}
+function pasivaGolpe(o, d) {
+  const t = o.tipo, heroe = d.k === 'h', vivo = () => d.vida > 0 && !d.muerto && !o.muerto;
+  if (t === 'hobbit') {o.quieto = 0; o.buf.escond = 0;}
+  if (t === 'gollum' && dist(o, d) > 3) {const l = dist(o, d), ux = (d.x - o.x) / l, uz = (d.z - o.z) / l; o.x = d.x - ux * 1.3; o.z = d.z - uz * 1.3; limita(o); ev(['fx', 'onda', o.x, o.z, 3]); ev(['num', o.x, o.z, '¡Acecho!', 'y']);}
+  if (t === 'orco' && heroe) luego(0.2, () => {if (!vivo()) return; const s0 = d.sang && d.sang.hasta > S.t ? d.sang.n : 0; d.sang = {n: Math.min(5, s0 + 1), hasta: S.t + 5, o: o.id, tick: 0}; if (d.sang.n === 5 && !(o.buf.furiaO > 0)) {o.buf.furiaO = 5; ev(['num', o.x, o.z, '¡Furia de Mordor!', 'r']);}});
+  if (t === 'gandalf' && d.luz > S.t) {d.luz = 0; const extra = 20 + 10 * o.nivel + stats(o).poder * 0.35; luego(0.3, () => {if (vivo()) {dana(o, d, extra, 'mag'); ev(['fx', 'impacto', d.x, d.z, 2.2]); ev(['num', d.x, d.z, '✦', 'y']);}});}
+  if (t === 'rohan' && d.k !== 't' && d.k !== 'n') {o.jarv = o.jarv || {}; if (!(o.jarv[d.id] > S.t)) {o.jarv[d.id] = S.t + 6; luego(0.2, () => {if (vivo()) dana(o, d, Math.min(d.k === 'h' ? 9999 : 260, d.vida * 0.08), 'pura');});}}
+  if (t === 'elfo' && d.k !== 't' && d.k !== 'n') luego(0.25, () => {if (!vivo()) return; if (heroe) {d.buf.lento = 1.5; d.buf.lentoV = Math.max(d.buf.lentoV || 0, 0.25);} else d.lento = S.t + 1.5;});
 }
 function lanzaProy(o, d, modelo, n, tipo, esc = 1, y = 1.2) {
   const p = {o, d, x: o.x, z: o.z, n, tipo, v: o.k === 't' ? 16 : 22};
@@ -904,6 +929,9 @@ function paso(dt) {
     for (const k in h.buf) if (typeof h.buf[k] === 'number' && !k.endsWith('V')) h.buf[k] = Math.max(0, h.buf[k] - dt);
     if (h.muerto) {if (S.t >= h.resp) {h.muerto = false; const f = BASES[h.eq].fuente; h.x = f.x + (h.slot >= 2 ? 1.5 : -1.5); h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; h.vida = stats(h).vida; h.mana = stats(h).mana; ev(['vive', h.id]);} continue;}
     const st = stats(h); h.oro += 2.2 * dt;
+    if (h.sang && h.sang.hasta > S.t) {h.sang.tick -= dt; if (h.sang.tick <= 0) {h.sang.tick = 1; const ob = S.porId.get(h.sang.o); dana(ob || null, h, (4 + 2 * (ob ? ob.nivel : 1)) * h.sang.n, 'pura');}} else h.sang = null;
+    if (h.tipo === 'enano' && S.t - (h.golpeT ?? -99) > 10 && !(h.granito > 0)) {h.granito = st.vida * 0.1; ev(['num', h.x, h.z, '🛡 granito', 'y']);}
+    if (h.tipo === 'hobbit') {h.quieto = h.mueve ? 0 : (h.quieto || 0) + dt; if (h.quieto > 1.5) {if (!(h.buf.escond > 0)) ev(['num', h.x, h.z, '…', 'y']); h.buf.escond = 0.2; h.buf.invis = 0.2;}}
     h.hierba = enHierba(h);
     const enFuente = dist(h, BASES[h.eq].fuente) < 8;
     h.vida = Math.min(st.vida, h.vida + (st.regen + (enFuente ? st.vida * 0.12 : 0)) * dt);
@@ -1363,6 +1391,7 @@ function habVisual(e) {
     }
     temb(k === 'r' ? 0.75 : 0.22); suena(k === 'r' ? 'fuego' : 'cuerno', 0.6, x, z);
   }
+  if (v.tipo === 'gandalf' && k === 'r') {rayoGandalf(x, z, dx, dz, H.alc, H.ancho); temb(0.7); suena('explosion', 0.8, x, z); setTimeout(() => {if (mio || cerca) {const dl = $('dolor'); if (dl) {dl.style.boxShadow = 'inset 0 0 90px 30px #e8f2ffcc'; dl.style.opacity = 1; setTimeout(() => {dl.style.opacity = 0; setTimeout(() => {dl.style.boxShadow = '';}, 200);}, 140);}}}, 40);}
   if (H.tipo === 'linea') {o.estelaTiro = {x, z, dx, dz, t: 0, alc: H.alc, verde: v.tipo === 'elfo'}; flip('impacto', x + dx * 1.2, z + dz * 1.2, 1.8); suena('arco', 0.6, x, z);}
   if (H.tipo === 'zona' && v.tipo === 'gandalf') {const d0 = Math.min(H.alc, Math.hypot(px - x, pz - z)), cx = x + dx * d0, cz = z + dz * d0; flip('ondaC', cx, cz, H.radio * 2.6, true); flip('suerte', cx, cz, H.radio * 2.2, true); flip('estrellas', cx, cz, H.radio * 2, true); luego2(H.dur * 1000, () => {flip('explosion', cx, cz, H.radio * 1.2); flip('ondaC', cx, cz, H.radio * 3, true);}); temb(0.2);}
   else if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - x, pz - z)), cx = x + dx * d0, cz = z + dz * d0; LLUVIAS.push({x: cx, z: cz, r: H.radio, t: 0, dur: H.dur, cada: 0}); flip('ondaC', cx, cz, H.radio * 2.6, true); flip('hojas', cx, cz, H.radio * 2.5, true, 0, 0.13, H.dur); luego2(H.dur * 500, () => flip('hojas', cx, cz, H.radio * 2, true, 1, 0.13, H.dur * 0.5)); temb(0.3);}
@@ -1420,7 +1449,31 @@ function pintaAnillo(dt) {
   /* llamas a lo largo del borde, solo cerca de la cámara */
   anilloFx -= dt; if (anilloFx <= 0) {anilloFx = 0.05; const a0 = Math.atan2(camM.z, camM.x); for (let i = 0; i < 2; i++) {const a = a0 + (Math.random() - 0.5) * Math.min(Math.PI * 2, 40 / r); flip('fuego', Math.cos(a) * r, Math.sin(a) * r, 2.2 + Math.random());}}
 }
+/* ¡No puedes pasar! (17/11): rayo de luz blanca de 16 m, solo visual; el efecto en juego no cambia */
+const RAYOS = [];
+function rayoGandalf(x, z, dx, dz, alc, ancho) {
+  const g = new THREE.Group(), rot = Math.atan2(dx, dz);
+  const capa = (r, col, op) => {const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.7, alc, 14, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide})); m.rotation.x = Math.PI / 2; m.position.z = alc / 2; g.add(m); return m;};
+  const capas = [capa(ancho * 0.18, '#ffffff', 1), capa(ancho * 0.45, '#fff2c0', 0.55), capa(ancho * 0.9, '#9fd2ff', 0.25)];
+  g.position.set(x, 1.3, z); g.rotation.y = rot; g.scale.set(0.05, 0.05, 0.05); scene.add(g);
+  const luz = new THREE.PointLight('#e8f2ff', 40, 22); luz.position.set(x + dx * alc * 0.5, 2.5, z + dz * alc * 0.5); scene.add(luz);
+  RAYOS.push({g, capas, luz, t: 0, dur: 0.9});
+  for (let i = 0; i <= 8; i++) {const f = i / 8 * alc; setTimeout(() => {flip('ondaC', x + dx * f, z + dz * f, ancho * 3.2, true); if (i % 2 === 0) flip('estrellas', x + dx * f, z + dz * f, 2.4);}, i * 30);}
+  setTimeout(() => {flip('explosion', x + dx * alc, z + dz * alc, 4, false, undefined, 1.4); flip('ondaC', x + dx * alc, z + dz * alc, 9, true); flip('grietas', x + dx * alc, z + dz * alc, 6, true, rot);}, 280);
+  flip('ondaC', x, z, 8, true); flip('explosion', x + dx, z + dz, 3, false, undefined, 1.6);
+}
+function animaRayos(dt) {
+  for (let i = RAYOS.length - 1; i >= 0; i--) {
+    const R = RAYOS[i]; R.t += dt; const f = R.t / R.dur;
+    if (f >= 1) {scene.remove(R.g, R.luz); R.g.traverse((m) => {if (m.geometry) {m.geometry.dispose(); m.material.dispose();}}); R.luz.dispose && R.luz.dispose(); RAYOS.splice(i, 1); continue;}
+    const sale = Math.min(1, R.t / 0.12), grueso = f < 0.15 ? sale * 1.4 : 1.4 - (f - 0.15) * 1.6;
+    R.g.scale.set(Math.max(0.02, grueso) * (1 + Math.sin(R.t * 60) * 0.08), Math.max(0.02, grueso), sale);
+    R.capas.forEach((m, k) => {m.material.opacity = [1, 0.55, 0.25][k] * (1 - Math.max(0, f - 0.4) / 0.6);});
+    R.luz.intensity = 40 * (1 - f);
+  }
+}
 function animaHabilidades(dt) {
+  animaRayos(dt);
   pintaAnillo(dt);
   for (const [id, o] of VIS) {
     const vv = VISTA.get(id), atur = vv && (vv.flags & 2) && (vv.k !== 'h' || vv.muerto < 0);
@@ -2386,7 +2439,7 @@ function eligeHeroe(titulo, listo) {
       '<div class="eLista">' + Object.entries(HEROES).map(([k, h]) => '<button class="eH' + (k === eligeSel ? ' on' : '') + '" data-h="' + k + '"><img src="ui/splash_' + k + '.webp" alt=""><span>' + h.nombre.split(' ')[0] + '</span></button>').join('') + '</div>' +
       '<div class="eFicha"><div class="eRet"><img src="ui/splash_' + eligeSel + '.webp" alt=""><b>' + H.nombre + '</b><em>' + ROL_H[eligeSel] + '</em></div>' +
       '<div class="eDatos">' + barra('Vida', H.vida, max.vida) + barra('Daño', H.dano, max.dano) + barra('Alcance', H.alcance, max.alcance) + barra('Velocidad', H.vel, max.vel) +
-      '<div class="eHabs">' + ['q', 'w', 'e', 'r'].map((k) => '<div class="eHab' + (k === 'r' ? ' ult' : '') + '"><img src="ui/h_' + eligeSel + '_' + k + '.webp" alt=""><div><b>' + H.hab[k].n + (k === 'r' ? ' · definitiva' : '') + '</b><small>' + H.hab[k].d + ' <i class="cMn">' + H.hab[k].mn + ' de maná</i></small></div></div>').join('') + '<div class="eHech"><span>Hechizos:</span><b><img src="ui/hz_destello.webp" alt="">Destello</b>' + ['f', 'c'].map((k) => '<button data-hz="' + k + '"' + (hechElegido === k ? ' class="on"' : '') + '><img src="' + HECHIZOS[k].icono + '" alt="">' + HECHIZOS[k].n + '</button>').join('') + '<small>' + (hechElegido === 'c' ? 'Castigo: golpe seco a una bestia o súbdito (para cazar en la espesura y robar el draco o el Uruk).' : 'Curar: te cura a ti y a un aliado cercano.') + '</small></div>' + '</div></div></div>' +
+      '<div class="eHabs">' + (PASIVA[eligeSel] ? '<div class="eHab pas"><span class="pasI">P</span><div><b>' + PASIVA[eligeSel].n + ' <i class="cMn" style="color:#d9c79c">pasiva</i></b><small>' + PASIVA[eligeSel].d + '</small></div></div>' : '') + ['q', 'w', 'e', 'r'].map((k) => '<div class="eHab' + (k === 'r' ? ' ult' : '') + '"><img src="ui/h_' + eligeSel + '_' + k + '.webp" alt=""><div><b>' + H.hab[k].n + (k === 'r' ? ' · definitiva' : '') + '</b><small>' + H.hab[k].d + ' <i class="cMn">' + H.hab[k].mn + ' de maná</i></small></div></div>').join('') + '<div class="eHech"><span>Hechizos:</span><b><img src="ui/hz_destello.webp" alt="">Destello</b>' + ['f', 'c'].map((k) => '<button data-hz="' + k + '"' + (hechElegido === k ? ' class="on"' : '') + '><img src="' + HECHIZOS[k].icono + '" alt="">' + HECHIZOS[k].n + '</button>').join('') + '<small>' + (hechElegido === 'c' ? 'Castigo: golpe seco a una bestia o súbdito (para cazar en la espesura y robar el draco o el Uruk).' : 'Curar: te cura a ti y a un aliado cercano.') + '</small></div>' + '</div></div></div>' +
       '<div class="eBot"><button class="bt s" id="eVolver">← Volver</button><button class="bt" id="eOk">¡Confirmar!</button></div>';
     el.querySelectorAll('[data-h]').forEach((b) => b.onclick = () => {eligeSel = b.dataset.h; pinta();});
     el.querySelectorAll('[data-hz]').forEach((b) => b.onclick = () => {hechElegido = b.dataset.hz; localStorage.setItem('vado.hech', hechElegido); pinta();});
