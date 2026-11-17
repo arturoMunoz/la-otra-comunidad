@@ -284,7 +284,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.A
 renderer.debug.checkShaderErrors = false; /* comprobar los sombreadores obliga a esperar a que compilen: tirón */
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap; /* el «suave» hace 4 veces más lecturas por píxel */
 document.body.prepend(renderer.domElement);
-const scene = new THREE.Scene(); scene.background = new THREE.Color('#14201a'); scene.fog = new THREE.Fog('#14201a', 50, 115);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#9fc3dc'); scene.fog = new THREE.Fog('#9fc3dc', 60, 170);
 const camera = new THREE.PerspectiveCamera(42, VW / VH, 0.5, 200);
 addEventListener('resize', () => {giraPantalla(); renderer.setSize(VW, VH); camera.aspect = VW / VH; camera.updateProjectionMatrix(); APAI = VW > VH;});
 scene.add(new THREE.HemisphereLight('#d6e2ff', '#20364a', 1.85));
@@ -516,24 +516,20 @@ function puente(sc, fuera) {
   const tT = tG.clone(); tT.repeat.set(26, 10); tT.source = tG.source;
   for (const sg of [1, -1]) {const g = new THREE.PlaneGeometry(260, 100); g.rotateX(-Math.PI / 2); const t = new THREE.Mesh(g, new THREE.MeshLambertMaterial({map: tT, color: '#b8d39a'})); t.position.set(0, -0.05, sg * (Z + 50)); t.receiveShadow = true; sc.add(t);}
   /* el fondo del barranco: hierba, roca en las orillas y el río que pasa por debajo del puente */
+  const tV = cargaTex('../batalla/texturas/ap_barranco.webp', true); tV.wrapT = THREE.ClampToEdgeWrapping; tV.anisotropy = 4;
   const gV = new THREE.PlaneGeometry(260, Z * 2 + 4); gV.rotateX(-Math.PI / 2);
   const mV = new THREE.MeshLambertMaterial({color: '#ffffff'});
-  mV.onBeforeCompile = (sh) => {sh.uniforms.tG = {value: tG}; sh.uniforms.tR = {value: tR}; sh.uniforms.uT = UT;
+  mV.onBeforeCompile = (sh) => {sh.uniforms.tV = {value: tV}; sh.uniforms.tG = {value: tG}; sh.uniforms.tR = {value: tR}; sh.uniforms.uT = UT;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vWV;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWV=(modelMatrix*vec4(transformed,1.)).xz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vWV; uniform sampler2D tG,tR; uniform float uT;').replace('#include <map_fragment>', `
-      vec2 w=vWV; float cauce=abs(w.y+sin(w.x*.045)*7.+sin(w.x*.11)*2.);
-      vec3 hierba=texture2D(tG,w*.06).rgb*vec3(.95,1.2,.75); vec3 roca=texture2D(tR,w*.09).rgb*.85;
-      vec3 c=mix(roca*vec3(1.05,.95,.82),hierba,smoothstep(9.5,12.5,cauce+texture2D(tR,w*.02).r*3.));
-      float agua=1.-smoothstep(7.5,9.,cauce);
-      float onda=texture2D(tR,w*vec2(.05,.12)+vec2(uT*.03,0.)).r;
-      vec3 rio=mix(vec3(.06,.3,.5),vec3(.2,.55,.75),onda)+vec3(smoothstep(.72,.9,onda)*.25);
-      c=mix(c,rio,agua); c=mix(c,vec3(.94),(1.-smoothstep(.0,.9,abs(cauce-8.)))*.35);
-      c=mix(c,vec3(.62,.75,.86),.14); /* bruma: está lejos, abajo */
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vWV; uniform sampler2D tG,tR,tV; uniform float uT;').replace('#include <map_fragment>', `
+      /* Pack 16 ART: el río visto desde arriba, se repite de lado a lado; 120 m de ancho por cada copia y los 80 m del barranco de alto */
+      vec2 w=vWV; vec3 c=texture2D(tV,vec2(w.x/120.,.5-w.y/80.)).rgb;
+      c=mix(c,vec3(.62,.75,.86),.1); /* bruma: está lejos, abajo */
       diffuseColor.rgb=c;`);};
   const valle = new THREE.Mesh(gV, mV); valle.position.y = -H; sc.add(valle);
   /* paredes del barranco bajo cada tierra firme */
-  const tRp = tR.clone(); tRp.source = tR.source; tRp.repeat.set(30, 3);
-  for (const sg of [1, -1]) {const p = new THREE.Mesh(new THREE.BoxGeometry(260, H, 2), new THREE.MeshLambertMaterial({map: tRp, color: '#c9bba8'})); p.position.set(0, -H / 2 - 0.06, sg * (Z + 1)); sc.add(p);}
+  const tRp = cargaTex('../batalla/texturas/ap_pared_roca.webp', true); tRp.wrapT = THREE.ClampToEdgeWrapping; tRp.repeat.set(260 / 36, 1); /* Pack 16 ART: 24 m de alto = la imagen entera */
+  for (const sg of [1, -1]) {const p = new THREE.Mesh(new THREE.BoxGeometry(260, H, 2), new THREE.MeshLambertMaterial({map: tRp})); p.position.set(0, -H / 2 - 0.06, sg * (Z + 1)); sc.add(p);}
   /* el tablero: cantos, panza, pretil, vigas y pilas de hormigón */
   const hc = (rx, ry) => {const t = tC.clone(); t.source = tC.source; t.repeat.set(rx, ry); return new THREE.MeshLambertMaterial({map: t, color: '#d8d8d4'});};
   const caja = (w, h, d, x, y, z, mat) => {const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.receiveShadow = true; sc.add(b); return b;};

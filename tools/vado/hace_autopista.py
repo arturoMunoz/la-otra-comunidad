@@ -261,6 +261,8 @@ js = sub(js, "      float isen=smoothstep(-2.,24.,dot(w,uEje)); col=mix(col,vec3
 js = sub(js, "const tF = cargaTex('texturas/campo.webp', true); tF.repeat.set(30, 36); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#9ab870'});",
          "const tF = cargaTex('../batalla/texturas/ap_arcen.webp', true); tF.repeat.set(20, 24); const mF = new THREE.MeshLambertMaterial({map: tF, color: '#ead8c8'});")
 js = sub(js, "diffuseColor.rgb*=clamp(.55+dot(dt,vec3(.3,.6,.1))*9.,.75,1.25);", "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1);")
+# niebla de día y clara (la de La Brecha era verde oscura y a 24 m de bajada el barranco salía casi negro)
+js = sub(js, "scene.background = new THREE.Color('#14201a'); scene.fog = new THREE.Fog('#14201a', 50, 115);", "scene.background = new THREE.Color('#9fc3dc'); scene.fog = new THREE.Fog('#9fc3dc', 60, 170);")
 # ---------- EL PUENTE (17/11, Arturo: «como si estuvieses encima de un puente cruzando algo, y a los lados paisaje») ----------
 # el tablero (|x| < 11) cruza un barranco con río entre z = -38 y 38; las bases quedan en tierra firme a los dos lados
 js = sub(js, "      gl_FragColor=vec4(col,1.);\n      #include <colorspace_fragment>", "      gl_FragColor=vec4(col,hueco);\n      #include <colorspace_fragment>")
@@ -279,24 +281,20 @@ function puente(sc, fuera) {
   const tT = tG.clone(); tT.repeat.set(26, 10); tT.source = tG.source;
   for (const sg of [1, -1]) {const g = new THREE.PlaneGeometry(260, 100); g.rotateX(-Math.PI / 2); const t = new THREE.Mesh(g, new THREE.MeshLambertMaterial({map: tT, color: '#b8d39a'})); t.position.set(0, -0.05, sg * (Z + 50)); t.receiveShadow = true; sc.add(t);}
   /* el fondo del barranco: hierba, roca en las orillas y el río que pasa por debajo del puente */
+  const tV = cargaTex('../batalla/texturas/ap_barranco.webp', true); tV.wrapT = THREE.ClampToEdgeWrapping; tV.anisotropy = 4;
   const gV = new THREE.PlaneGeometry(260, Z * 2 + 4); gV.rotateX(-Math.PI / 2);
   const mV = new THREE.MeshLambertMaterial({color: '#ffffff'});
-  mV.onBeforeCompile = (sh) => {sh.uniforms.tG = {value: tG}; sh.uniforms.tR = {value: tR}; sh.uniforms.uT = UT;
+  mV.onBeforeCompile = (sh) => {sh.uniforms.tV = {value: tV}; sh.uniforms.tG = {value: tG}; sh.uniforms.tR = {value: tR}; sh.uniforms.uT = UT;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\\nvarying vec2 vWV;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\\nvWV=(modelMatrix*vec4(transformed,1.)).xz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\\nvarying vec2 vWV; uniform sampler2D tG,tR; uniform float uT;').replace('#include <map_fragment>', `
-      vec2 w=vWV; float cauce=abs(w.y+sin(w.x*.045)*7.+sin(w.x*.11)*2.);
-      vec3 hierba=texture2D(tG,w*.06).rgb*vec3(.95,1.2,.75); vec3 roca=texture2D(tR,w*.09).rgb*.85;
-      vec3 c=mix(roca*vec3(1.05,.95,.82),hierba,smoothstep(9.5,12.5,cauce+texture2D(tR,w*.02).r*3.));
-      float agua=1.-smoothstep(7.5,9.,cauce);
-      float onda=texture2D(tR,w*vec2(.05,.12)+vec2(uT*.03,0.)).r;
-      vec3 rio=mix(vec3(.06,.3,.5),vec3(.2,.55,.75),onda)+vec3(smoothstep(.72,.9,onda)*.25);
-      c=mix(c,rio,agua); c=mix(c,vec3(.94),(1.-smoothstep(.0,.9,abs(cauce-8.)))*.35);
-      c=mix(c,vec3(.62,.75,.86),.14); /* bruma: está lejos, abajo */
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\\nvarying vec2 vWV; uniform sampler2D tG,tR,tV; uniform float uT;').replace('#include <map_fragment>', `
+      /* Pack 16 ART: el río visto desde arriba, se repite de lado a lado; 120 m de ancho por cada copia y los 80 m del barranco de alto */
+      vec2 w=vWV; vec3 c=texture2D(tV,vec2(w.x/120.,.5-w.y/80.)).rgb;
+      c=mix(c,vec3(.62,.75,.86),.1); /* bruma: está lejos, abajo */
       diffuseColor.rgb=c;`);};
   const valle = new THREE.Mesh(gV, mV); valle.position.y = -H; sc.add(valle);
   /* paredes del barranco bajo cada tierra firme */
-  const tRp = tR.clone(); tRp.source = tR.source; tRp.repeat.set(30, 3);
-  for (const sg of [1, -1]) {const p = new THREE.Mesh(new THREE.BoxGeometry(260, H, 2), new THREE.MeshLambertMaterial({map: tRp, color: '#c9bba8'})); p.position.set(0, -H / 2 - 0.06, sg * (Z + 1)); sc.add(p);}
+  const tRp = cargaTex('../batalla/texturas/ap_pared_roca.webp', true); tRp.wrapT = THREE.ClampToEdgeWrapping; tRp.repeat.set(260 / 36, 1); /* Pack 16 ART: 24 m de alto = la imagen entera */
+  for (const sg of [1, -1]) {const p = new THREE.Mesh(new THREE.BoxGeometry(260, H, 2), new THREE.MeshLambertMaterial({map: tRp})); p.position.set(0, -H / 2 - 0.06, sg * (Z + 1)); sc.add(p);}
   /* el tablero: cantos, panza, pretil, vigas y pilas de hormigón */
   const hc = (rx, ry) => {const t = tC.clone(); t.source = tC.source; t.repeat.set(rx, ry); return new THREE.MeshLambertMaterial({map: t, color: '#d8d8d4'});};
   const caja = (w, h, d, x, y, z, mat) => {const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.receiveShadow = true; sc.add(b); return b;};
@@ -335,8 +333,8 @@ for v in ["'ui/h_' + ", "'ui/p_' + ", "'ui/at_' + "]:
 html = sub(html, '<script type="module" src="juego.js?', '<script type="module" src="autopista.js?', donde='html')
 html = sub(html, '<h1>La Brecha</h1><p class="sub">Rohan contra Isengard</p>', '<h1>La Autopista</h1><p class="sub">Azules contra rojos</p>', donde='html')
 # 17/11: el juego se llama «A-6»; título de texto hasta que llegue el logo nuevo (Pack 17 ART). Los logos del Pack 15 decían «La Autopista»
-html = sub(html, '<h1>La Autopista</h1><p class="sub">Azules contra rojos</p>', '<h1 class="apA6">A-6</h1>', donde='html')
-html = sub(html, '</head>', '<style>.mTit h1.apA6{margin:6px 0 0;font:italic 900 46px \'Arial Black\',system-ui,sans-serif!important;color:#ffd21f!important;letter-spacing:.04em;line-height:1;-webkit-text-stroke:2px #10161f;text-shadow:0 4px 0 #10161f,0 0 18px #2f8cff88}</style></head>', donde='html')
+html = sub(html, '<h1>La Autopista</h1><p class="sub">Azules contra rojos</p>', '<h1 class="apLogo"><img src="ui/ap_logo_a6.webp" alt="A-6"></h1>', donde='html')
+html = sub(html, '</head>', '<style>.mTit h1.apLogo{margin:6px 0 0;line-height:0}.mTit h1.apLogo img{width:min(200px,calc(24 * var(--vw)));height:auto;filter:drop-shadow(0 4px 6px #000a)}.mTit h1.apA6{margin:6px 0 0;font:italic 900 46px \'Arial Black\',system-ui,sans-serif!important;color:#ffd21f!important;letter-spacing:.04em;line-height:1;-webkit-text-stroke:2px #10161f;text-shadow:0 4px 0 #10161f,0 0 18px #2f8cff88}</style></head>', donde='html')
 html = sub(html, '<span>1 contra 1 · el Abismo</span>', '<span>1 contra 1 · la autopista</span>', donde='html')
 html = re.sub(r'\s*<button data-m="2v2">.*?</button>', '', html, count=1)  # la Batalla 2v2 (mapa del Vado, bestias de Tolkien) aún no
 html = html.replace("'vado.heroe'", "'auto.heroe'")
