@@ -741,6 +741,16 @@ html = sub(html, '</head>', """<style>
 # las flechas de los soldados sonaban al 50 % estuvieran donde estuvieran: ahora bajan con la distancia y mucho más flojas; su muerte, también
 js = sub(js, "suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', 0.5);}", "{const sh = {bala: 'ap_fusil', bola: 'ap_golf'}[e[1]]; suena(sh || 'arco', sh ? 0.5 : 0.12, e[2], e[3]);}}")
 js = sub(js, "else suena('muerte', 0.35, v.x, v.z);}", "else suena('muerte', v.k === 's' ? 0.14 : 0.35, v.x, v.z);}")
+# ---------- IGNICIÓN EN VEZ DE CASTIGO Y UN SOLO BOTIQUÍN (17/11, Henar; dentro de la simulación: volver a sacar sim_ap.js) ----------
+# en el Duelo no hay bestias: el Castigo no servía. Ignición como en el Wild Rift: quema al héroe enemigo más cercano (7 m) durante 5 s
+js = sub(js, "c: {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'}", "c: {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_castigo.webp'}")
+js = sub(js, """    const t = masCercano(h, S.u.filter((u) => (u.k === 'j' || u.k === 's') && u.eq !== h.eq && !u.muerto && u.vida > 0), 5.5); if (!t) return false;
+    h.cd.f = HECHIZOS.c.cd; dana(h, t, 380 + 45 * h.nivel, 'hab'); ev(['castigo', t.x, t.z]); return true;""",
+"""    const t = masCercano(h, S.u.filter((u) => u.k === 'h' && u.eq !== h.eq && !u.muerto && u.vida > 0), 7); if (!t) return false;
+    h.cd.f = HECHIZOS.c.cd; t.quema = {dps: (80 + 45 * h.nivel) / 5, hasta: S.t + 5, o: h.id, tick: 0}; ev(['castigo', t.x, t.z]); ev(['num', t.x, t.z, '🔥', 'r']); return true;""")
+# un solo botiquín, en mitad del puente (salía uno delante y otro detrás de cada torre: cuatro)
+js = sub(js, "if (tipo === 'linea') {const t = puntoCarril(0, TORRE_F).z; for (const [z, t0] of [[t - 7, 105], [t + 8, 150]]) for (const sg of [1, -1]) RELIQ.push({x: -6.8, z: z * sg, t0});}",
+         "if (tipo === 'linea') RELIQ.push({x: 0, z: 0, t0: 105});")
 # menú: fondo = la imagen de carga (los dos peajes), retrato sin cortar la cabeza, sin Gamling (Tolkien) ni el jinete
 html = sub(html, '</head>', '<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}'
            '#menu .mSplash img{object-position:50% 0%!important}</style></head>', donde='html')

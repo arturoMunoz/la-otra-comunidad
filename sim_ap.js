@@ -70,7 +70,7 @@ function puedeSubir(h, k) {return h.pts > 0 && h.rk[k] < rangoMax(h.nivel, k);}
 function subeHab(h, k) {if (!puedeSubir(h, k)) return false; h.rk[k]++; h.pts--; return true;}
 function autoSube(h) {let n = 0; while (h.pts > 0 && n++ < 6) {const o = ['r', 'q', 'e', 'w', 'q', 'e'].find((k) => puedeSubir(h, k) && (k === 'r' || h.rk[k] <= Math.min(h.rk.q, h.rk.e, h.rk.w) + (k === 'q' ? 1 : 0))) || ['q', 'w', 'e'].find((k) => puedeSubir(h, k)); if (!o) break; subeHab(h, o);}}
 /* hechizos de invocador: Destello y Curar */
-const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/ap_hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/ap_hz_curar.webp'}, c: {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'}};
+const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/ap_hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/ap_hz_curar.webp'}, c: {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_castigo.webp'}};
 const OBJ = {
   hoja: {t: 'Barra de hierro', i: 'ui/ap_obj_hoja.webp', c: 350, st: {dano: 18}},
   daga: {t: 'Navaja automática', i: 'ui/ap_obj_daga.webp', c: 300, st: {vatq: 0.2}},
@@ -149,7 +149,7 @@ function ponMapa(modo) {
   for (const q of ORILLA) HIERBAS.push({...q, r: 2.4});
   /* reliquias de vida del ARAM: dos por lado, una delante de la torre de camino y otra detrás; salen a 1:45 y 2:30 y vuelven 90 s después de cogerlas */
   RELIQ = [];
-  if (tipo === 'linea') {const t = puntoCarril(0, TORRE_F).z; for (const [z, t0] of [[t - 7, 105], [t + 8, 150]]) for (const sg of [1, -1]) RELIQ.push({x: -6.8, z: z * sg, t0});}
+  if (tipo === 'linea') RELIQ.push({x: 0, z: 0, t0: 105});
   ARB.clear(); FUEGOS.length = 0;
   NAV = haceNav();
   return true;
@@ -704,8 +704,8 @@ function usaEnc(h) {
 function usaHechizo(h, k, dx, dz) {
   if (!h || h.muerto || h.cd[k] > 0 || h.aturd > S.t) return false;
   if (k === 'f' && h.hf === 'c') {/* Castigo: golpe seco a la bestia o súbdito más cercano (como el Smite del LoL) */
-    const t = masCercano(h, S.u.filter((u) => (u.k === 'j' || u.k === 's') && u.eq !== h.eq && !u.muerto && u.vida > 0), 5.5); if (!t) return false;
-    h.cd.f = HECHIZOS.c.cd; dana(h, t, 380 + 45 * h.nivel, 'hab'); ev(['castigo', t.x, t.z]); return true;
+    const t = masCercano(h, S.u.filter((u) => u.k === 'h' && u.eq !== h.eq && !u.muerto && u.vida > 0), 7); if (!t) return false;
+    h.cd.f = HECHIZOS.c.cd; t.quema = {dps: (80 + 45 * h.nivel) / 5, hasta: S.t + 5, o: h.id, tick: 0}; ev(['castigo', t.x, t.z]); ev(['num', t.x, t.z, '🔥', 'r']); return true;
   }
   h.cd[k] = HECHIZOS[k].cd;
   if (k === 'd') {const l = Math.hypot(dx, dz) || 1, r = h.rot || 0; if (!dx && !dz) {dx = Math.sin(r); dz = Math.cos(r);} else {dx /= l; dz /= l;} ev(['fx', 'onda', h.x, h.z, 2]); h.x += dx * 4.5; h.z += dz * 4.5; h.px = undefined; limita(h); h.rot = Math.atan2(dx, dz); ev(['fx', 'onda', h.x, h.z, 2.4]); ev(['tp', h.id, h.x, h.z]);}
