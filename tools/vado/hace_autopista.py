@@ -715,6 +715,27 @@ html = sub(html, '</body>', """<script>
   setTimeout(rayo, 1800);
 })();
 </script></body>""", donde='html')
+# ---------- MENÚ REORDENADO (17/11, Henar: «el orden de los botones no tiene sentido; quita el logo y que se vea el peaje») ----------
+# abajo a la derecha, de abajo arriba: [Duelo | JUGAR] y encima [Crear sala | código + Unirse]; la partida guiada,
+# pequeña y redonda arriba junto a ⚙ (su dibujo propio llega con el Pack Autopista 28 ART); el fondo sube para que el peaje quede a la vista
+html = sub(html, '</head>', """<style>
+#menu #mFondo .fc,#menu #mFondo .tL{background-position:62% 100%!important}
+#menu .mTit{display:none!important}
+#menu .mPanel{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,2fr)!important;grid-template-areas:"crear amigos" "modo jugar"!important;align-items:end!important;align-content:end!important;gap:8px 10px!important;top:auto!important;left:auto!important;right:calc(12px + var(--sar))!important;bottom:calc(10px + var(--sab))!important;width:min(60%,500px)!important;padding:0!important}
+#menu .mFila2{display:contents!important}
+#menu .modos{grid-area:modo;width:100%!important;margin:0!important;display:block!important}
+#menu .modos button{width:100%!important}
+#menu .jugar{grid-area:jugar;width:100%!important;margin:0!important}
+#menu #bCrear{grid-area:crear;grid-column:1/2;width:100%!important;height:44px!important;min-height:44px!important}
+#menu .mAmigos{grid-area:amigos;width:100%!important;margin:0!important;height:44px!important;min-height:44px!important}
+#menu #sala,#menu #heroes,#menu #msg{grid-column:1/-1}
+#menu #bGuia.mT{aspect-ratio:1!important;position:fixed!important;inset:calc(14px + var(--sat)) calc(76px + var(--sar)) auto auto!important;width:52px!important;height:52px!important;min-height:0!important;padding:0!important;border-radius:50%!important;background:none!important;border:0!important;overflow:visible!important}
+#menu #bGuia img{width:100%!important;height:100%!important;margin:0!important;border-radius:50%!important;border:2px solid #7dff6a;box-shadow:0 0 10px #7dff6a88}
+#menu #bGuia span{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:3px;white-space:nowrap}
+#menu #bGuia span b{font-size:10px!important;color:#cfffc4;text-shadow:0 1px 2px #000}
+#menu #bGuia span small{display:none!important}
+#menu #bGuia.nueva::after{right:-8px!important;top:-6px!important}
+</style></head>""", donde='html')
 # menú: fondo = la imagen de carga (los dos peajes), retrato sin cortar la cabeza, sin Gamling (Tolkien) ni el jinete
 html = sub(html, '</head>', '<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}'
            '#menu .mSplash img{object-position:50% 0%!important}</style></head>', donde='html')

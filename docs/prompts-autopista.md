@@ -166,3 +166,8 @@ Cuatro pedidos ART en el mismo chat y en orden (el 2 rehace el 1 con la luz del 
 2. La MISMA imagen, idéntica, iluminada desde dentro de las nubes por un relámpago fuera de cuadro (sin dibujar el rayo).
 3. Hoja 2048x2048, 4x4 de 512, fondo negro: rayo 1 vertical ramificado (fotogramas 1-8) y rayo 2 horizontal nube-nube (9-16), chispa → impacto → destello → se apaga.
 4. Hoja 2048x2048, 2x2 de 1024, fondo negro: lluvia inclinada ~15°, 3 tamaños, mismo patrón en bucle y repetible en mosaico.
+
+## 17/11 · Pack Autopista 28 ART — medallones del menú (partida guiada y crear sala)
+Dos medallones redondos 512x512 sobre fondo transparente (o magenta #FF00FF para recortar), mismo estilo metal oscuro + neón del HUD de A-6, sin texto:
+1. Partida guiada: casco de obra / instructor con silbato o un cono con un signo de interrogación, aro verde neón.
+2. Crear sala: dos o tres siluetas de jugadores juntas con un walkie-talkie, aro dorado.
