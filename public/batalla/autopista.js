@@ -1341,7 +1341,7 @@ function recibeFoto(o) {
 const VIS = new Map();
 const PROY_MODELOS = {};
 function modeloProy(n) {if (n === 'luz' && !PROY_MODELOS.luz) {const g = new THREE.Group(), m = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), new THREE.MeshBasicMaterial({color: '#fffbe8'})), h = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 8), new THREE.MeshBasicMaterial({color: '#ffe9a8', transparent: true, opacity: 0.35, depthWrite: false})); g.add(m, h); PROY_MODELOS.luz = g;} if (!PROY_MODELOS[n]) {const o = M.proyectiles.scene.getObjectByName(n); PROY_MODELOS[n] = o ? o.clone(true) : new THREE.Object3D(); PROY_MODELOS[n].position.set(0, 0, 0);} return PROY_MODELOS[n].clone(true);}
-const texAro = cargaTex('ui/aro_heroe.webp');
+const texAro = cargaTex('../batalla/ui/ap_aro_heroe.webp');
 function aro(color, r) {const g = new THREE.PlaneGeometry(r * 2, r * 2); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: texAro, color, transparent: true, depthWrite: false, opacity: 0.85})); m.renderOrder = 2; return m;}
 function creaVis(v) {
   let o = {};
@@ -2008,9 +2008,9 @@ function subeMia(k) {
 let volverBase = 0, volverVida = 0, circVuelta = null; const VOLVER_T = 4.5;
 let mira = null;
 /* miras en el suelo con los indicadores de ChatGPT (blancos, se tiñen): alcance alrededor del héroe + flecha, cono o círculo */
-const IND = {};
+const IND = {}; const IND_AP = {ind_alcance: 'ap_alcance'};
 function indicador(n, color) {
-  if (!IND[n]) {const t = cargaTex('../batalla/ui/' + n + '.webp'); IND[n] = t;}
+  if (!IND[n]) {const t = cargaTex('../batalla/ui/' + (IND_AP[n] || n) + '.webp'); IND[n] = t;}
   const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2);
   if (n === 'ind_cono') g.translate(0, 0, -(418 - 256) / 512);
   const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: IND[n], color, transparent: true, depthWrite: false, opacity: 1, blending: THREE.AdditiveBlending}));
@@ -2337,7 +2337,7 @@ function hud() {
   {const r = $('retratos'), cerca = [...VISTA.values()].filter((q) => q.k === 'h' && q.eq !== MI_EQ && q.muerto < 0 && !q.escondido && Math.hypot(q.x - v.x, q.z - v.z) < 13).slice(0, 2);
    const key = cerca.map((q) => q.id + (q.id === MANDO.fijo ? 'f' : '')).join(','); if (r.dataset.k !== key) {r.dataset.k = key; pon_(r, 'innerHTML', cerca.map((q) => '<button data-id="' + q.id + '"' + (q.id === MANDO.fijo ? ' class="on"' : '') + '><img src="' + RET(q.tipo) + '" alt=""></button>').join(''));}
    if (MANDO.fijo) {const f = VISTA.get(MANDO.fijo); if (!f || f.vida <= 0 || (f.k === 'h' && (f.muerto >= 0 || f.escondido)) || Math.hypot(f.x - v.x, f.z - v.z) > 16) MANDO.fijo = 0;}
-   if (!aroFijo) {aroFijo = indicador('ind_alcance', '#ffd24a'); aroFijo.renderOrder = 6;}
+   if (!aroFijo) {aroFijo = indicador('ap_objetivo', '#ffd24a'); aroFijo.renderOrder = 6;}
    const af = VISTA.get(MANDO.cand || MANDO.fijo); aroFijo.visible = !!af && v.muerto < 0;
    if (af) {const rr = af.k === 't' ? 2.4 : af.k === 'n' ? 2.8 : af.k === 'h' ? 1.3 : 1.1; aroFijo.position.set(af.xi ?? af.x, 0.18, af.zi ?? af.z); aroFijo.scale.setScalar(2 * rr * 256 / 235 * (1 + 0.1 * Math.sin(performance.now() / 70))); aroFijo.material.color.set(MANDO.cand ? '#ffffff' : '#ffd24a');}}
   {const bf = $('bF').querySelector('img'), src = v.hf === 'c' ? 'ui/ap_hz_castigo.webp' : 'ui/ap_hz_curar.webp'; if (!bf.src.endsWith(src)) bf.src = src; const bd = $('bD').querySelector('img'); if (!bd.src.endsWith('hz_destello.webp')) bd.src = 'ui/ap_hz_destello.webp';}
@@ -2352,7 +2352,7 @@ function hud() {
   if (sug && enF) {const o = OBJ[sug], pr = precio(v.inv, sug), ok = v.oro >= pr; cr.classList.remove('hidden'); if (cr.dataset.id !== sug || cr.dataset.oro !== String(ok) || cr.dataset.pr !== String(pr)) {cr.dataset.id = sug; cr.dataset.oro = String(ok); cr.dataset.pr = String(pr); pon_(cr, 'innerHTML', '<img src="' + ICO(o.i) + '" alt=""><span>' + o.t + '</span><b>' + pr + '</b>'); cr.classList.toggle('caro', !ok);}} else cr.classList.add('hidden');
   pon_(renderer.domElement.style, 'filter', v.muerto >= 0 ? 'grayscale(.85) brightness(.8)' : '');
   aroTorre(v);
-  if (!marcaObj) {marcaObj = indicador('ind_alcance', '#ff4a3a'); marcaObj.renderOrder = 5;}
+  if (!marcaObj) {marcaObj = indicador('ap_objetivo', '#ff4a3a'); marcaObj.renderOrder = 5;}
   const ob = v.objAt && VISTA.get(v.objAt); marcaObj.visible = !!ob && v.muerto < 0 && ob.vida > 0 && !ob.escondido;
   if (marcaObj.visible) {const r = ob.k === 't' ? 2.2 : ob.k === 'n' ? 2.6 : ob.k === 'j' && NEUTRO[ob.tipo].grande ? 1.8 : 1; marcaObj.position.set(ob.xi ?? ob.x, 0.16, ob.zi ?? ob.z); marcaObj.scale.setScalar(2 * r * 256 / 235 * (1 + 0.06 * Math.sin(performance.now() / 90)));}
   ['q', 'w', 'e', 'r'].forEach((k, i) => {
@@ -2374,7 +2374,7 @@ function aroTorre(v) {
     if (q.k !== 't') continue;
     let a = AROS.get(q.id);
     if (!a) {
-      a = {borde: indicador('ind_alcance', '#ff5a3a'), zona: indicador('ind_area', '#ff3a1a'), rayo: new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 1), new THREE.MeshBasicMaterial({color: '#ff3a1a', transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending}))};
+      a = {borde: indicador('ind_alcance', '#ff5a3a'), zona: indicador('ap_zona_torre', '#ffffff'), rayo: new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 1), new THREE.MeshBasicMaterial({color: '#ff3a1a', transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending}))};
       a.borde.scale.setScalar(2 * 9.5 * 256 / 235); a.zona.scale.setScalar(2 * 9.5 * 256 / 231); a.borde.position.set(q.x, 0.14, q.z); a.zona.position.set(q.x, 0.12, q.z); a.rayo.renderOrder = 6; a.rayo.visible = false; scene.add(a.rayo); AROS.set(q.id, a);
     }
     const d = Math.hypot(q.x - hx, q.z - hz), enemiga = q.eq !== MI_EQ && q.vida > 0, ver = enemiga && v.muerto < 0 && d < 24, mira = enemiga && q.hc === YO;

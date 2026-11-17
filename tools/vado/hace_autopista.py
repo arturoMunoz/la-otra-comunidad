@@ -406,6 +406,13 @@ body[data-heroe=rohan]{--tinte:-150deg;--tsat:.9;--tluz:.95}  /* Moha: arena dor
 #yo::before{display:block !important;content:'' !important;position:absolute !important;inset:0 !important;left:0 !important;top:0 !important;width:auto !important;height:auto !important;background:url(ui/ap_panel_yo.webp) center/100% 100% no-repeat !important;z-index:-1 !important;filter:hue-rotate(var(--tinte)) saturate(var(--tsat)) brightness(var(--tluz))}
 .xp i{filter:hue-rotate(var(--tinte)) saturate(var(--tsat))}
 </style></head>""", donde='html')
+# ---------- PACK 18 ART (17/11): marcas del suelo (tools/autopista/procesa_pack18.py las deja al mismo radio que las de La Brecha) ----------
+js = sub(js, "const texAro = cargaTex('ui/aro_heroe.webp');", "const texAro = cargaTex('../batalla/ui/ap_aro_heroe.webp');")
+js = sub(js, "if (!IND[n]) {const t = cargaTex('../batalla/ui/' + n + '.webp'); IND[n] = t;}", "if (!IND[n]) {const t = cargaTex('../batalla/ui/' + (IND_AP[n] || n) + '.webp'); IND[n] = t;}")
+js = sub(js, "const IND = {};", "const IND = {}; const IND_AP = {ind_alcance: 'ap_alcance'};")
+js = sub(js, "marcaObj = indicador('ind_alcance', '#ff4a3a');", "marcaObj = indicador('ap_objetivo', '#ff4a3a');")
+js = sub(js, "aroFijo = indicador('ind_alcance', '#ffd24a');", "aroFijo = indicador('ap_objetivo', '#ffd24a');")
+js = sub(js, "zona: indicador('ind_area', '#ff3a1a'),", "zona: indicador('ap_zona_torre', '#ffffff'),")
 # ---------- EL PUENTE (17/11, Arturo: «como si estuvieses encima de un puente cruzando algo, y a los lados paisaje») ----------
 # el tablero (|x| < 11) cruza un barranco con río entre z = -38 y 38; las bases quedan en tierra firme a los dos lados
 js = sub(js, "      gl_FragColor=vec4(col,1.);\n      #include <colorspace_fragment>", "      gl_FragColor=vec4(col,hueco);\n      #include <colorspace_fragment>")
