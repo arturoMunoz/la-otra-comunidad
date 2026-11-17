@@ -302,3 +302,17 @@ Juego «La Brecha» (Three.js, móvil). Necesito el modelo 3D de un héroe ORIGI
 - Solo recursos CC0 si usas de otros, con LICENCIAS.txt.
 Devuélvelo en un zip con gollum.glb y LICENCIAS.txt.
 ```
+
+## Pack Vado 25 · ART (17/11): kit de botones del menú («los botones son horribles»)
+Problema de los de antes: se estiraban a cualquier tamaño y se deformaban. Estos se usan a su proporción exacta.
+```
+Kit de botones para el menú del juego de móvil «La Brecha» (El Señor de los Anillos: Rohan contra Isengard, Vado del Isen). Estilo Supercell (Clash Royale / Brawl Stars): formas gordas y redondeadas, contorno oscuro grueso, brillos limpios, que parezcan pulsables; materiales de Rohan: madera oscura, hierro negro y oro viejo, con un toque verde de Rohan. Cada pieza en una imagen suelta, FONDO TRANSPARENTE de verdad, SIN TEXTO (el texto lo pongo yo encima), vista de frente, centrada, ocupando todo el lienzo:
+
+1. jugar.png (1200x300): botón principal ancho, placa dorada brillante con borde de hierro y un caballo de Rohan pequeño en cada punta; el centro liso para el texto.
+2. jugar_on.png (1200x300): el mismo botón PULSADO (un poco más oscuro y hundido), mismo encuadre exacto.
+3. secundario.png (800x200): botón secundario, madera oscura con remaches y filo de oro; centro liso para texto.
+4. secundario_on.png (800x200): el mismo pulsado, mismo encuadre.
+5. redondo.png (256x256): botón redondo pequeño de hierro y oro para iconos (atrás, ajustes); centro oscuro liso.
+6. campo.png (800x200): hueco para escribir un código: placa de piedra oscura hundida con marco de hierro; centro liso.
+7. marco_modo.png (1000x700): marco dorado para la tarjeta de modo SELECCIONADA, con el hueco del centro transparente y un caballo de Rohan arriba en el centro, que no sobresalga más de un 6 % por cada lado.
+```
