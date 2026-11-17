@@ -187,6 +187,25 @@ js = js[:i0] + cuerpo + js[i1:]
 for v, n in [("estasis: {t: 'Estasis'", "estasis: {t: 'Airbag'"), ("gargola: {t: 'Gárgola'", "gargola: {t: 'Jaula antivuelco'"),
              ("azogue: {t: 'Azogue'", "azogue: {t: 'Nitro'"), ("medallon: {t: 'Medallón'", "medallon: {t: 'Bengala de emergencia'")]:
     js = sub(js, v, n)
+# ---------- FUERA EL AIRE MEDIEVAL (17/11): letra moderna y gruesa, paneles asfalto/acero en vez de cuero/pergamino ----------
+html = re.sub(r"@font-face\{font-family:'(Cinzel|Alegreya Sans)'[^}]*\}", '', html)
+for v, n in [("'Cinzel',Georgia,serif", "'Arial Black','Segoe UI Black',system-ui,sans-serif"), ("'Cinzel'", "'Arial Black',system-ui"),
+             ("'Alegreya Sans',system-ui,sans-serif", "system-ui,'Segoe UI',Roboto,sans-serif"), ("'Alegreya Sans'", "system-ui,'Segoe UI',Roboto")]:
+    html, js = html.replace(v, n), js.replace(v, n)
+COLORES = {'1d140c': '141b26', '0c0806': '0a0e14', '0b0705': '090c12', '1a0f07': '111824', '6b5236': '3c4a5e', '8a6a3a': '5a6b82',
+           'd9c49a': 'c8d4e3', 'f2e3c0': 'eef3f9', 'b8a27a': '93a3b8', 'd9c79c': 'c8d4e3', 'c99a3a': 'e0a91c', '2a1d10': '1b2433', '3a2a18': '28344a',
+           '2b1d10': '1b2433', '120c07': '0c1119', '24180c': '172030', '4a3520': '34425a', 'e8d5a8': 'dfe8f2', 'a8875a': '7d8ea6'}
+for a, b in COLORES.items():
+    html = re.sub('#' + a, '#' + b, html, flags=re.I); js = re.sub('#' + a, '#' + b, js, flags=re.I)
+def enfria(m):
+    h = m.group(1); r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    if r > g > b and max(r, g, b) < 130 and r - b > 8:   # marrones oscuros (cuero, madera) → el mismo tono en azul asfalto
+        return '#%02x%02x%02x' % (b, g, r)
+    return m.group(0)
+html = re.sub(r'#([0-9a-fA-F]{6})(?![0-9a-fA-F]{3}\b)', enfria, html); js = re.sub(r"(?<=[\'\"( ,:])#([0-9a-fA-F]{6})", enfria, js)
+html = re.sub(r"Cinzel,(Georgia,)?serif", "'Arial Black',system-ui,sans-serif", html)
+html = html.replace('url(../abismo/ui/boton2.webp) 72 64 fill', 'url(ui/ap_m_secundario.webp) 90 120 fill').replace('url(../abismo/ui/boton.webp);border-image-slice:92 100', 'url(ui/ap_m_jugar.webp);border-image-slice:90 120')
+html = html.replace('url(../abismo/ui/boton.webp) 92 100 fill', 'url(ui/ap_m_secundario.webp) 90 120 fill').replace('url(../abismo/ui/boton2.webp) 92 100 fill', 'url(ui/ap_m_jugar.webp) 90 120 fill')
 js = sub(js, 'const HAY_PALANTIR = true;', 'const HAY_PALANTIR = false;')
 # ---------- EL MAPA DE AUTOPISTA (17/11): suelo de asfalto/arcén/hormigón (Pack 11) y piezas de Kenney (Pack 2) ----------
 js = sub(js, "const VADO = ['ap_brask',", "const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask',")

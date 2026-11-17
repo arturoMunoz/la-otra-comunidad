@@ -287,7 +287,7 @@ document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#14201a'); scene.fog = new THREE.Fog('#14201a', 50, 115);
 const camera = new THREE.PerspectiveCamera(42, VW / VH, 0.5, 200);
 addEventListener('resize', () => {giraPantalla(); renderer.setSize(VW, VH); camera.aspect = VW / VH; camera.updateProjectionMatrix(); APAI = VW > VH;});
-scene.add(new THREE.HemisphereLight('#d6e2ff', '#4a3620', 1.85));
+scene.add(new THREE.HemisphereLight('#d6e2ff', '#20364a', 1.85));
 const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30, 10); sol.castShadow = GRAF.cal !== 'baja';
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
@@ -520,7 +520,7 @@ function ponPalantir() {
   const b = BASES[1], o = M.palantir.scene.clone(true), dx = b.nexo.x - b.fuente.x, dz = b.nexo.z - b.fuente.z, l = Math.hypot(dx, dz) || 1;
   o.position.set(b.nexo.x + dz / l * 4.8, 0, b.nexo.z - dx / l * 4.8); o.scale.setScalar(1.75); o.traverse((q) => {if (q.isMesh) q.castShadow = true;}); MAPA_G.add(o);
   /* el cristal venía con «transmisión» (obliga a dibujar la escena dos veces): cristal oscuro semitransparente de toda la vida */
-  const cr = o.getObjectByName('cristal'); if (cr) cr.traverse((q) => {if (q.isMesh) {q.material = new THREE.MeshStandardMaterial({color: '#1b1f2a', emissive: '#3a0a02', emissiveIntensity: 0.6, roughness: 0.08, metalness: 0.3, transparent: true, opacity: 0.5, depthWrite: false}); q.renderOrder = 3; q.castShadow = false;}});
+  const cr = o.getObjectByName('cristal'); if (cr) cr.traverse((q) => {if (q.isMesh) {q.material = new THREE.MeshStandardMaterial({color: '#1b1f2a', emissive: '#020a3a', emissiveIntensity: 0.6, roughness: 0.08, metalness: 0.3, transparent: true, opacity: 0.5, depthWrite: false}); q.renderOrder = 3; q.castShadow = false;}});
   const ojo = o.getObjectByName('ojo'); if (ojo) ojo.rotation.order = 'YXZ'; const mats = []; if (ojo) ojo.traverse((q) => {if (q.isMesh) {q.material = q.material.clone(); q.material.fog = false; mats.push(q.material);}});
   PALANTIR = {o, ojo, mats}; luzFuego(o.position.x, o.position.z);
 }
@@ -1450,7 +1450,7 @@ function pintaAnillo(dt) {
     const g = new THREE.RingGeometry(0.985, 1, 128, 1); g.rotateX(-Math.PI / 2);
     ANILLO = new THREE.Mesh(g, new THREE.MeshBasicMaterial({color: '#ff6a1a', transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending}));
     const g2 = new THREE.RingGeometry(1, 3, 96, 1); g2.rotateX(-Math.PI / 2);
-    ANILLO.add(new THREE.Mesh(g2, new THREE.MeshBasicMaterial({color: '#5a0a00', transparent: true, opacity: 0.45, depthWrite: false})));
+    ANILLO.add(new THREE.Mesh(g2, new THREE.MeshBasicMaterial({color: '#000a5a', transparent: true, opacity: 0.45, depthWrite: false})));
     ANILLO.position.y = 0.25; ANILLO.renderOrder = 4; scene.add(ANILLO);
   }
   ANILLO.visible = true; ANILLO.scale.set(r, 1, r); ANILLO.material.opacity = 0.65 + 0.25 * Math.sin(performance.now() / 160);
@@ -2187,7 +2187,7 @@ function subeNivelFx(v) {
   const n = document.createElement('div'); n.className = 'nivelSube'; n.textContent = '¡Nivel ' + v.nivel + '!'; document.body.appendChild(n); setTimeout(() => n.remove(), 1400);
   $('yo').classList.remove('brilla'); void $('yo').offsetWidth; $('yo').classList.add('brilla');
 }
-function marcador(m, t) {$('marcador').dataset.t = t;$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span> · <span class="b">' + m[1 - MI_EQ] + '</span><div style="font-size:11px;color:#d9c49a">' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</div>';}
+function marcador(m, t) {$('marcador').dataset.t = t;$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span> · <span class="b">' + m[1 - MI_EQ] + '</span><div style="font-size:11px;color:#c8d4e3">' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</div>';}
 let miniT = 0, consejoI = 0;
 const CONSEJOS = ['Pulsa el + verde encima de una habilidad para aprenderla: cada nivel te da un punto', 'Mueve con el joystick y mantén ⚔ para atacar. Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Dentro de la hierba alta los enemigos no te ven (salvo que estén a tu lado)', 'Los botones pequeños son Destello (un salto corto) y Curar (a ti y a tu compañero)', 'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos', 'En la espesura (a los lados, cruzando los huecos de la empalizada) hay huargos: dan oro y experiencia', 'El troll (oeste) y el huargo alfa (este) dan una bendición a todo tu equipo durante 90 s', 'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en la armería'];
 function consejos(t) {if (localStorage.getItem('auto.consejos') === '3') return; const i = Math.floor((t - 2) / 14); if (i >= 0 && i < CONSEJOS.length && i >= consejoI) {consejoI = i + 1; aviso('💡 ' + CONSEJOS[i]); if (i === CONSEJOS.length - 1) localStorage.setItem('auto.consejos', String(+(localStorage.getItem('auto.consejos') || 0) + 1));}}
@@ -2242,9 +2242,9 @@ function minimapa() {
   const KX = TIPO_MAPA === 'linea' ? 16 : 34, px = (x) => W / 2 + s * x / KX * (W / 2), pz = (z) => H / 2 + s * z / 59 * (H / 2);
   g.clearRect(0, 0, W, H); g.fillStyle = '#16210f'; g.fillRect(0, 0, W, H);
   g.strokeStyle = '#2b4a5a'; g.lineWidth = 5; if (TIPO_MAPA === 'ojo') {g.beginPath(); g.moveTo(px(-40 * 0.906), pz(-40 * 0.423)); g.lineTo(px(40 * 0.906), pz(40 * 0.423)); g.stroke();}
-  g.strokeStyle = '#7a5a36'; g.lineWidth = 6; g.lineCap = g.lineJoin = 'round';
+  g.strokeStyle = '#365a7a'; g.lineWidth = 6; g.lineCap = g.lineJoin = 'round';
   CARRILES.forEach((L, l) => {g.globalAlpha = MODO === '2v2' || l === 0 ? 1 : 0.3; g.beginPath(); L.forEach((p, i) => i ? g.lineTo(px(p.x), pz(p.z)) : g.moveTo(px(p.x), pz(p.z))); g.stroke();}); g.globalAlpha = 1;
-  for (const b of BASES) {g.fillStyle = b === BASES[0] ? '#35552a' : '#4a2220'; g.beginPath(); g.arc(px(b.nexo.x), pz(b.nexo.z), 11, 0, 7); g.fill();}
+  for (const b of BASES) {g.fillStyle = b === BASES[0] ? '#35552a' : '#20224a'; g.beginPath(); g.arc(px(b.nexo.x), pz(b.nexo.z), 11, 0, 7); g.fill();}
   const MM = {warg: 'huargo', crebain: 'crebain', troll: 'troll', huorn: 'huorn', uruk: 'uruk', draco: 'draco', nutria: 'nutria', sapo: 'huargo', orco: 'huargo', alfa: 'huargo'};
   CAMPOS.forEach((cp, i) => {
     const t = EXTRA.cp[i], nd = NEUTRO[cp.tipo], tam = nd.jefe || nd.draco ? 17 : nd.grande ? 15 : 11, x = px(cp.x), y = pz(cp.z);
@@ -2513,7 +2513,7 @@ function pintaSala() {
   let col = (eq) => {let h = ''; for (let i = eq; i < plazas; i += 2) h += plaza(i); return '<div style="display:flex;flex-direction:column;gap:5px">' + h + '</div>';};
   s.innerHTML = '<div class="cab"><span>Código de la sala · ' + (NET.modo === '2v2' ? 'Batalla 2 contra 2' : 'Duelo') + '</span><div class="cod">' + NET.codigo + '</div><small style="display:block;color:#cdb98a;font-size:11px">' + (NET.srv ? '☁ Partida en el servidor de Cloudflare' : '📱 Partida en el móvil del anfitrión') + '</small></div>' +
     '<div class="bandos">' + col(0) + col(1) + '</div>' +
-    (soyAnf ? '<button class="bt v" id="bEmpezar">⚔ Empezar</button>' : '<div style="font-size:13px;text-align:center;color:#d9c49a">Esperando a que el anfitrión empiece…</div>');
+    (soyAnf ? '<button class="bt v" id="bEmpezar">⚔ Empezar</button>' : '<div style="font-size:13px;text-align:center;color:#c8d4e3">Esperando a que el anfitrión empiece…</div>');
   if (soyAnf) $('bEmpezar').onclick = () => NET.manda({t: 'empezar'});
 }
 function nombreJugador() {let n = localStorage.getItem('vado.nombre'); if (!n) {try {const a = JSON.parse(localStorage.getItem('loc.yo') || 'null'); n = a && a.nombre;} catch (e) {} } return n || 'Jugador' + Math.floor(Math.random() * 90 + 10);}

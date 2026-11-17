@@ -55,3 +55,5 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [ ] Pack Autopista 10 WORK: vegetación de autopista, piezas de borde (muro antirruido, New Jersey, taludes, valla publicitaria, paso elevado) y objetos de suelo
 - [x] Pack Autopista 11 ART: texturas de asfalto, arcén y hormigón (17/11)
 - [x] Pack Autopista 12 ART: iconos de la tienda (17 objetos + oro en 6x3) y de encantamientos y pestañas (3x3)
+- [ ] Pack Autopista 13 ART: HUD de partida sin aire medieval (botones Taller/Base/zoom/ataque/torre/súbditos, baliza, hechizos, batería de energía, marco de vida, botiquín animado)
+- [ ] Pack Autopista 14 WORK: súbditos modernos (azules y rojos, cuerpo a cuerpo, a distancia y súper) con los esqueletos y clips de los de La Brecha
