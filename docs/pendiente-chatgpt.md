@@ -37,4 +37,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] (HECHO 16/11, `tools/vado/pack24`) Pack Vado 24 · WORK: modelo `gollum.glb` con el esqueleto de KayKit. Prompt en `docs/prompts-vado.md`. Al llegar: meter en VADO, `modelo: 'gollum'`, `ret: 'ui/r_gollum.webp'`, y volver a pasar `tools/vado/adelgaza.py` si hace falta.
 - [x] (HECHO 17/11) Pack Vado 25 · ART: kit de botones del menú (7 piezas a proporción fija). Prompt en `docs/prompts-vado.md`.
 
-- [ ] Pack Vado 26 · ART: iconos de las 7 pasivas (prompt en docs/prompts-vado.md)
+- [x] ~~Pack Vado 26 · ART: iconos de las 7 pasivas~~ (metidos 17/11)
