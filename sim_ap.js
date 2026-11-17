@@ -305,6 +305,7 @@ function atacable(u) {
   return true;
 }
 function radio(u) {return u.rad || (u.k === 'h' ? 0.6 : 0.5);}
+const CHOQUE_H = 1.1; /* distancia mínima entre dos héroes (centro a centro) */
 /* protecciones de las torres del Wild Rift: las de camino llevan armadura extra al principio (300 que baja 50 por minuto)
    y ninguna estructura recibe más que un 25 % (el estandarte un 20 %) si no hay súbditos enemigos cerca (se quita a los 3 s) */
 function protegida(d) {
@@ -613,7 +614,8 @@ function paso(dt) {
   }
   /* separación entre súbditos para que no se monten */
   const ss = S.u.filter((u) => (u.k === 's' || u.k === 'h') && !u.muerto);
-  for (let i = 0; i < ss.length; i++) for (let j = i + 1; j < ss.length; j++) {const a = ss[i], b = ss[j], dx = a.x - b.x, dz = a.z - b.z, d0 = Math.hypot(dx, dz), m = 0.9; if (d0 < m && d0 > 0.001) {const p = (m - d0) / 2; if (a.k === 's') {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's') {b.x -= dx / d0 * p; b.z -= dz / d0 * p;}}}
+  for (let i = 0; i < ss.length; i++) for (let j = i + 1; j < ss.length; j++) {const a = ss[i], b = ss[j], hh = a.k === 'h' && b.k === 'h'; if (hh && (a.dash || b.dash)) continue; let dx = a.x - b.x, dz = a.z - b.z, d0 = Math.hypot(dx, dz); const m = hh ? CHOQUE_H : 0.9; if (d0 < m) {if (d0 < 0.001) {dx = a.id < b.id ? 1 : -1; dz = 0; d0 = 1;} const p = (m - d0) / 2; if (a.k === 's' || hh) {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's' || hh) {b.x -= dx / d0 * p; b.z -= dz / d0 * p;} if (hh) {choca(a); choca(b);}}}
+  /* 17/11 (Henar): los héroes chocan entre sí, como en el Wild Rift (antes se atravesaban); en las cargas y saltos no */
   /* torres */
   for (const t of S.u) {
     if (t.k === 't' && t.vida <= 0 && t.respInh && S.t >= t.respInh && S.modo !== '1v1') {t.vida = t.max; t.inhib = true; t.respInh = 0; ev(['aviso', 0, 'La torre de la base de ' + (t.eq ? 'los rojos' : 'los azules') + ' se ha alzado de nuevo (sin disparar)']);}

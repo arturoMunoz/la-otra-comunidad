@@ -719,6 +719,7 @@ function atacable(u) {
   return true;
 }
 function radio(u) {return u.rad || (u.k === 'h' ? 0.6 : 0.5);}
+const CHOQUE_H = 1.1; /* distancia mínima entre dos héroes (centro a centro) */
 /* protecciones de las torres del Wild Rift: las de camino llevan armadura extra al principio (300 que baja 50 por minuto)
    y ninguna estructura recibe más que un 25 % (el estandarte un 20 %) si no hay súbditos enemigos cerca (se quita a los 3 s) */
 function protegida(d) {
@@ -1027,7 +1028,8 @@ function paso(dt) {
   }
   /* separación entre súbditos para que no se monten */
   const ss = S.u.filter((u) => (u.k === 's' || u.k === 'h') && !u.muerto);
-  for (let i = 0; i < ss.length; i++) for (let j = i + 1; j < ss.length; j++) {const a = ss[i], b = ss[j], dx = a.x - b.x, dz = a.z - b.z, d0 = Math.hypot(dx, dz), m = 0.9; if (d0 < m && d0 > 0.001) {const p = (m - d0) / 2; if (a.k === 's') {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's') {b.x -= dx / d0 * p; b.z -= dz / d0 * p;}}}
+  for (let i = 0; i < ss.length; i++) for (let j = i + 1; j < ss.length; j++) {const a = ss[i], b = ss[j], hh = a.k === 'h' && b.k === 'h'; if (hh && (a.dash || b.dash)) continue; let dx = a.x - b.x, dz = a.z - b.z, d0 = Math.hypot(dx, dz); const m = hh ? CHOQUE_H : 0.9; if (d0 < m) {if (d0 < 0.001) {dx = a.id < b.id ? 1 : -1; dz = 0; d0 = 1;} const p = (m - d0) / 2; if (a.k === 's' || hh) {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's' || hh) {b.x -= dx / d0 * p; b.z -= dz / d0 * p;} if (hh) {choca(a); choca(b);}}}
+  /* 17/11 (Henar): los héroes chocan entre sí, como en el Wild Rift (antes se atravesaban); en las cargas y saltos no */
   /* torres */
   for (const t of S.u) {
     if (t.k === 't' && t.vida <= 0 && t.respInh && S.t >= t.respInh && S.modo !== '1v1') {t.vida = t.max; t.inhib = true; t.respInh = 0; ev(['aviso', 0, 'La torre de la base de ' + (t.eq ? 'Isengard' : 'Rohan') + ' se ha alzado de nuevo (sin disparar)']);}
@@ -2105,6 +2107,7 @@ function mueveMio(dt) {
   const st = {vel: HEROES[v.tipo].vel * (v.inv.includes('botas') ? 1.12 : 1) * (v.inv.includes('capa') ? 1.18 : 1)};
   if (MIO.dash) {MIO.x += MIO.dash.vx * dt; MIO.z += MIO.dash.vz * dt; MIO.dash.t -= dt; if (MIO.dash.t <= 0) MIO.dash = null;}
   else {const ac = acercaAtaque(MIO.x, MIO.z), mx = ac ? ac.x : MANDO.mx, mz = ac ? ac.z : MANDO.mz; MIO.mueve = !!(mx || mz) && !(v.flags & 2); if (MIO.mueve) {const l = Math.hypot(mx, mz), k = ac ? 1 : Math.min(1, l); MIO.x += mx / l * st.vel * k * dt; MIO.z += mz / l * st.vel * k * dt; MIO.rot = Math.atan2(mx, mz);}}
+  if (!MIO.dash) for (const q of VISTA.values()) {if (q.k !== 'h' || q.id === YO || q.muerto >= 0 || q.escondido) continue; const dx = MIO.x - (q.xi ?? q.x), dz = MIO.z - (q.zi ?? q.z), d = Math.hypot(dx, dz); if (d < CHOQUE_H) {const l = d > 0.001 ? d : 1, ux = d > 0.001 ? dx / l : 1, uz = d > 0.001 ? dz / l : 0; MIO.x += ux * (CHOQUE_H - d) * 0.6; MIO.z += uz * (CHOQUE_H - d) * 0.6;}} /* 17/11: en línea tu móvil manda tu posición: aquí te apartas tú de los demás héroes (el servidor aparta a los bots) */
   limita(MIO);
   /* si el anfitrión me ve muy lejos (me han empujado, he reaparecido), manda él */
   if (Math.hypot(v.x - MIO.x, v.z - MIO.z) > 6 && !MIO.dash) {MIO.x = v.x; MIO.z = v.z;}
