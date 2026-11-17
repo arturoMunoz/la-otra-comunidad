@@ -70,7 +70,7 @@ function puedeSubir(h, k) {return h.pts > 0 && h.rk[k] < rangoMax(h.nivel, k);}
 function subeHab(h, k) {if (!puedeSubir(h, k)) return false; h.rk[k]++; h.pts--; return true;}
 function autoSube(h) {let n = 0; while (h.pts > 0 && n++ < 6) {const o = ['r', 'q', 'e', 'w', 'q', 'e'].find((k) => puedeSubir(h, k) && (k === 'r' || h.rk[k] <= Math.min(h.rk.q, h.rk.e, h.rk.w) + (k === 'q' ? 1 : 0))) || ['q', 'w', 'e'].find((k) => puedeSubir(h, k)); if (!o) break; subeHab(h, o);}}
 /* hechizos de invocador: Destello y Curar */
-const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/ap_hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/ap_hz_curar.webp'}, c: {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_castigo.webp'}};
+const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/ap_hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/ap_hz_curar.webp'}, c: {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_ignicion.webp'}};
 const OBJ = {
   hoja: {t: 'Barra de hierro', i: 'ui/ap_obj_hoja.webp', c: 350, st: {dano: 18}},
   daga: {t: 'Navaja automática', i: 'ui/ap_obj_daga.webp', c: 300, st: {vatq: 0.2}},

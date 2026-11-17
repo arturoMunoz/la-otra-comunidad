@@ -72,7 +72,7 @@ function puedeSubir(h, k) {return h.pts > 0 && h.rk[k] < rangoMax(h.nivel, k);}
 function subeHab(h, k) {if (!puedeSubir(h, k)) return false; h.rk[k]++; h.pts--; return true;}
 function autoSube(h) {let n = 0; while (h.pts > 0 && n++ < 6) {const o = ['r', 'q', 'e', 'w', 'q', 'e'].find((k) => puedeSubir(h, k) && (k === 'r' || h.rk[k] <= Math.min(h.rk.q, h.rk.e, h.rk.w) + (k === 'q' ? 1 : 0))) || ['q', 'w', 'e'].find((k) => puedeSubir(h, k)); if (!o) break; subeHab(h, o);}}
 /* hechizos de invocador: Destello y Curar */
-const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/ap_hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/ap_hz_curar.webp'}, c: {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_castigo.webp'}};
+const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/ap_hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/ap_hz_curar.webp'}, c: {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_ignicion.webp'}};
 const OBJ = {
   hoja: {t: 'Barra de hierro', i: 'ui/ap_obj_hoja.webp', c: 350, st: {dano: 18}},
   daga: {t: 'Navaja automática', i: 'ui/ap_obj_daga.webp', c: 300, st: {vatq: 0.2}},
@@ -306,7 +306,9 @@ function cargaTex(n, rep) {const t = new THREE.TextureLoader().load('../abismo/'
 
 /* alto de cada modelo para escalarlos igual (héroes ~2 m, súbditos ~1,7) */
 /* un objeto del pack del Vado (cada .glb es un catálogo con todo en el origen) */
-function pieza(archivo, nombre) {const o = M[archivo] && M[archivo].scene.getObjectByName(nombre); if (!o) return new THREE.Group(); const c = o.clone(true); c.position.set(0, 0, 0); c.rotation.set(0, 0, 0); c.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); return c;}
+const MAT_UNI = new Map();
+function unificaMats(raiz) {raiz.traverse((q) => {if (!q.isMesh || Array.isArray(q.material) || !q.material.isMeshStandardMaterial) return; const m = q.material, k = (m.map ? m.map.uuid : '-') + '|' + Math.round(m.metalness * 3) + '|' + m.emissive.getHexString() + '|' + m.transparent; if (!MAT_UNI.has(k)) {const n = m.clone(); n.metalness = Math.round(m.metalness * 3) / 3; MAT_UNI.set(k, n);} q.material = MAT_UNI.get(k);});}
+function pieza(archivo, nombre) {const o = M[archivo] && M[archivo].scene.getObjectByName(nombre); if (!o) return new THREE.Group(); const c = o.clone(true); c.position.set(0, 0, 0); c.rotation.set(0, 0, 0); c.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); if (archivo === 'ap_estructuras') unificaMats(c); return c;}
 /* muchas copias del mismo objeto en pocas llamadas de dibujo: un InstancedMesh por cada malla del objeto */
 /* el decorado repetido (árboles, matas, rocas) con luz Lambert: se ve casi igual en estos modelos de colores planos y cuesta bastante menos por píxel */
 const LAMB = new Map();
@@ -333,7 +335,7 @@ function cullBosque(cx, cz, forzar) {
   for (const im of BOSQUE) {
     const c = im.userData.cull, dst = im.instanceMatrix.array; let k = 0;
     for (let i = 0; i < c.xs.length; i++) {const dx = c.xs[i] - cx, dz = c.zs[i] - cz; if (dx * dx + dz * dz < R2) {if (k !== i) dst.set(c.todo.subarray(i * 16, i * 16 + 16), k * 16); k++;}}
-    im.count = k; im.instanceMatrix.clearUpdateRanges(); im.instanceMatrix.addUpdateRange(0, k * 16); im.instanceMatrix.needsUpdate = true;
+    im.count = k; im.visible = k > 0; im.instanceMatrix.clearUpdateRanges(); im.instanceMatrix.addUpdateRange(0, k * 16); im.instanceMatrix.needsUpdate = true;
   }
 }
 const ALTO = {};
@@ -370,7 +372,22 @@ function vistePiezas(raiz, tipo) {
   }
   for (const n of V.oculta) {const o = raiz.getObjectByName(n); if (o) o.visible = false;}
 }
+function juntaPiezas(n) {
+  const sc = M[n] && M[n].scene; if (!sc || sc.userData.juntado || !/^ap_/.test(n)) return; sc.userData.juntado = true;
+  const grupos = new Map();
+  sc.traverse((o) => {if (!o.isSkinnedMesh || !o.parent) return; const m = o.material, k = o.parent.uuid + '|' + o.skeleton.uuid + '|' + (m.map ? m.map.uuid : '-') + '|' + (m.metalness > 0.3 ? 'met' : 'mate') + '|' + !!m.transparent; (grupos.get(k) || grupos.set(k, []).get(k)).push(o);});
+  for (const lista of grupos.values()) {
+    if (lista.length < 2) continue; const a = lista[0];
+    let g = null; try {g = mergeGeometries(lista.map((o) => {const q = o.geometry.clone(); for (const k of Object.keys(q.attributes)) if (!a.geometry.attributes[k]) q.deleteAttribute(k); return q;}), false);} catch (e) {g = null;}
+    if (!g) continue;
+    const r = lista.reduce((s, o) => s + o.material.roughness, 0) / lista.length, mt = lista.reduce((s, o) => s + o.material.metalness, 0) / lista.length;
+    const mat = a.material.clone(); mat.roughness = r; mat.metalness = mt; mat.color.set('#ffffff');
+    const j = new THREE.SkinnedMesh(g, mat); j.name = a.name; j.position.copy(a.position); j.quaternion.copy(a.quaternion); j.scale.copy(a.scale);
+    a.parent.add(j); j.bind(a.skeleton, a.bindMatrix); for (const o of lista) o.parent.remove(o);
+  }
+}
 function montar(n, altura) {
+  juntaPiezas(n);
   const raiz = SkeletonUtils.clone(M[n].scene); raiz.scale.setScalar(altura / alto(n));
   /* rendimiento: las piezas que comparten los mismos huesos usan UN esqueleto (antes cada pieza recalculaba y subía el suyo),
      y los personajes fuera de cámara no se dibujan (antes se dibujaban todos, también en la sombra) */
@@ -530,7 +547,7 @@ function puente(sc, fuera) {
   const tRp = cargaTex('../batalla/texturas/ap_pared_roca.webp', true); tRp.wrapT = THREE.ClampToEdgeWrapping; tRp.repeat.set(260 / 36, 1); /* Pack 16 ART: 24 m de alto = la imagen entera */
   for (const sg of [1, -1]) {const p = new THREE.Mesh(new THREE.BoxGeometry(260, H, 2), new THREE.MeshLambertMaterial({map: tRp})); p.position.set(0, -H / 2 - 0.06, sg * (Z + 1)); sc.add(p);}
   /* el tablero: cantos, panza, pretil, vigas y pilas de hormigón */
-  const hc = (rx, ry) => {const t = tC.clone(); t.source = tC.source; t.repeat.set(rx, ry); return new THREE.MeshLambertMaterial({map: t, color: '#d8d8d4'});};
+  const HC = {}, hc = (rx, ry) => HC[rx + 'x' + ry] || (HC[rx + 'x' + ry] = (() => {const t = tC.clone(); t.source = tC.source; t.repeat.set(rx, ry); return new THREE.MeshLambertMaterial({map: t, color: '#d8d8d4'});})());  /* 17/11: mismo material para piezas iguales → fusiona() las junta */
   const caja = (w, h, d, x, y, z, mat) => {const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.receiveShadow = true; sc.add(b); return b;};
   const L = Z * 2 + 2;
   for (const sg of [1, -1]) {caja(0.7, 2.2, L, sg * (A + 0.05), -1.1, 0, hc(1, 24)); caja(0.55, 0.75, L, sg * (A + 0.05), 0.37, 0, hc(1, 30)).castShadow = true;}
@@ -557,14 +574,14 @@ function decoradoPack10(al) {
   for (let i = 0; i < 4; i++) mete(V, 'palmera_1', sg() * (20 + al() * 10), sg() * (60 + al() * 12));
   for (let i = 0; i < 150; i++) {const z = sg() * (41 + al() * 36); mete(V, uno(['hierba_1', 'hierba_2', 'hierba_3']), sg() * (9.6 + al() * 22), z, 1 + al() * 0.7);}
   for (let i = 0; i < 40; i++) mete(V, uno(['hierba_1', 'hierba_2', 'hierba_3']), sg() * (9.4 + al() * 1.3), (al() - 0.5) * 74, 0.8 + al() * 0.4);
-  for (const n in V) instancias('ap_vegetacion', n, V[n]);
+  for (const n in V) instancias('ap_vegetacion', n, V[n], /pino|eucalipto|palmera/.test(n));  /* sombra solo los árboles (17/11: rendimiento) */
   const cosas = ['neumatico_1', 'neumatico_2', 'bidon_1', 'bidon_2', 'palé', 'cascotes_1', 'cascotes_2', 'cascotes_3', 'señal_caida_1', 'señal_caida_2', 'cono_tumbado'];
   for (let i = 0; i < 30; i++) mete(P, uno(cosas), sg() * (8.4 + al() * 1.9), (al() - 0.5) * 74);
   for (let i = 0; i < 26; i++) mete(P, uno(cosas), sg() * (11.5 + al() * 22), sg() * (42 + al() * 30));
   for (let i = 0; i < 9; i++) mete(P, 'mancha_aceite', (al() - 0.5) * 11, (al() - 0.5) * 100, 0.8 + al() * 0.8, al() * 6.283, 0.02);
-  for (const n in P) instancias('ap_suelo_props', n, P[n], n !== 'mancha_aceite');
+  for (const n in P) instancias('ap_suelo_props', n, P[n], false);
   for (const s of [1, -1]) for (let x = 14; x < 78; x += 7.4) for (const sx of [1, -1]) mete(B, uno(['talud_roca_1', 'talud_roca_2', 'talud_roca_3']), sx * x, s * 41.3, 1, s > 0 ? 0 : Math.PI);
-  for (const n in B) instancias('ap_borde', n, B[n]);
+  for (const n in B) instancias('ap_borde', n, B[n], false);
   const G = MAPA_G || scene, pz = (n, x, z, ry) => {const o = pieza('ap_borde', n); o.position.set(x, 0, z); o.rotation.y = ry; G.add(o); return o;};
   for (const s of [1, -1]) {
     for (let z = 44; z < 86; z += 6) pz('muro_antirruido', s * 36, s * z, Math.PI / 2);
@@ -597,7 +614,7 @@ function colorFuentes() {for (const a of FUENTE_AROS) a.material.color.set(a.use
 const FUENTES_A6 = [];
 function ponFuentesA6() {
   for (const o of FUENTES_A6) o.parent && o.parent.remove(o); FUENTES_A6.length = 0;
-  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja'); o.position.set(f.x, 0, f.z); o.rotation.y = eq ? 0 : Math.PI; (MAPA_G || scene).add(o); FUENTES_A6.push(o);}
+  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja'); fusiona(o); o.position.set(f.x, 0, f.z); o.rotation.y = eq ? 0 : Math.PI; (MAPA_G || scene).add(o); FUENTES_A6.push(o);}
 }
 const GLSL_RUIDO = `float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
   float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
@@ -1632,6 +1649,17 @@ function animaHabilidades(dt) {
     if (l.cada <= 0) {l.cada = 0.07; const a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * l.r, fx = l.x + Math.cos(a) * r, fz = l.z + Math.sin(a) * r, f = modeloProy('flecha_elfica'); f.scale.multiplyScalar(1.4); f.rotation.x = Math.PI / 2; scene.add(f); FXP.push({tipo: 'cae', o: f, x: fx, z: fz, y: 9, t: 0});}
   }
 }
+const TAJO_B = {enano: 'ap_enano_tajo', orco: 'ap_orco_tajo', gollum: 'ap_gollum_tajo', rohan: 'ap_rohan_tajo'};
+function basicoFx(v, o, n, rot) {
+  if (!v || !o || v.k !== 'h') return; const H = HEROES[v.tipo]; if (!H) return;
+  const espera = Math.min(150, 120 / Math.max(0.6, H.vatq));
+  setTimeout(() => {const p = o.raiz.position, r = rot ?? o.rv ?? 0, dx = Math.sin(r), dz = Math.cos(r), lado = n % 2 ? 1 : -1;
+    if (TAJO_B[v.tipo]) {const d = Math.min(H.alcance, 2.2) * 0.6; flip(TAJO_B[v.tipo], p.x + dx * d, p.z + dz * d, 2.6 + H.alcance * 0.5, true, r - Math.PI / 4 + (lado > 0 ? 0 : Math.PI / 2));}
+    else if (v.tipo === 'elfo') {flip('ap_elfo_fogonazo', p.x + dx * 1.1, p.z + dz * 1.1, 1.7, false, undefined, 1.25); o.kb = {x: -dx * 0.18, z: -dz * 0.18, t: 0.12, d: 0.12};}
+    else if (v.tipo === 'gandalf') flip('fuego', p.x + dx * 0.8, p.z + dz * 0.8, 1.3, false, undefined, 1.3, 0.3);
+    else if (v.tipo === 'hobbit') flip('tArco', p.x + dx * 0.7, p.z + dz * 0.7, 2, true, r - Math.PI / 4);
+  }, espera);
+}
 function golpeVisual(id, de, fuerte) {
   const o = VIS.get(id), v = VISTA.get(id); if (!o || !v) return;
   o.flash = 0.13; o.punch = fuerte ? 1 : 0.6; o.sqA = -(fuerte ? 0.2 : 0.12); o.sqT = o.sqD = 0.24;
@@ -1640,7 +1668,7 @@ function golpeVisual(id, de, fuerte) {
     if (f) o.kb = {x: dx / l * f, z: dz / l * f, t: 0.17, d: 0.17}; const oa = VIS.get(de); if (oa && va.k === 'h' && !(HEROES[va.tipo] || {}).proy) oa.kb = {x: dx / l * 0.22, z: dz / l * 0.22, t: 0.12, d: 0.12};}}
   const yoPego = de === YO, meDan = id === YO;
   const ahora = performance.now(); /* como mucho una chispa cada 0,18 s por personaje: en una pelea grande eran decenas a la vez */
-  if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2 : 1.3); suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}
+  if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; {const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);} suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}
   if (meDan) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.35 : 0.18);
   else if (yoPego && (fuerte || v.k === 'h')) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.22 : 0.1);
   if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140);}
@@ -1680,7 +1708,7 @@ function dibuja(dt) {
       else {
         if (v.hc !== o.hc) {o.hc = v.hc; if (!o.habYa) {otraVez(o, 'hab'); o.ocup = 0.45;} o.habYa = false;}
         else if (v.ac !== o.ac && v.id === YO && !S && o.predAc > 0) {o.ac = v.ac; o.predAc--;}
-        else if (v.ac !== o.ac) {o.ac = v.ac; if (v.k === 'j' && NEUTRO[v.tipo].jefe && v.ac % 3 === 0 && o.todos && o.todos.pisoton) {o.ocup = animaClip(o, 'pisoton', 1.6); suena('grito', 0.7, v.x, v.z); setTimeout(() => {tiemblaCam = Math.max(tiemblaCam, 0.35); suena('explosion', 0.8, v.x, v.z); flip('grietas', v.xi ?? v.x, v.zi ?? v.z, 8, true);}, 650);} else if (v.k === 'h' && BASICOS[v.tipo] && o.todos) {const lista = BASICOS[v.tipo], n = lista[v.ac % lista.length], H = HEROES[v.tipo]; o.ocup = animaClip(o, n, Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9;} else otraVez(o, 'atacar'); o.ocup = o.ocup || 0.35; if (v.k === 'h') {o.sqA = 0.1; o.sqT = o.sqD = 0.22;} if (v.id === YO && !HEROES[v.tipo].proy) suena('espada', 0.25);}
+        else if (v.ac !== o.ac) {o.ac = v.ac; if (v.k === 'j' && NEUTRO[v.tipo].jefe && v.ac % 3 === 0 && o.todos && o.todos.pisoton) {o.ocup = animaClip(o, 'pisoton', 1.6); suena('grito', 0.7, v.x, v.z); setTimeout(() => {tiemblaCam = Math.max(tiemblaCam, 0.35); suena('explosion', 0.8, v.x, v.z); flip('grietas', v.xi ?? v.x, v.zi ?? v.z, 8, true);}, 650);} else if (v.k === 'h' && BASICOS[v.tipo] && o.todos) {const lista = BASICOS[v.tipo], n = lista[v.ac % lista.length], H = HEROES[v.tipo]; o.ocup = animaClip(o, n, Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9; basicoFx(v, o, v.ac);} else otraVez(o, 'atacar'); o.ocup = o.ocup || 0.35; if (v.k === 'h') {o.sqA = 0.1; o.sqT = o.sqD = 0.22;} if (v.id === YO && !HEROES[v.tipo].proy) suena('espada', 0.25);}
         o.ocup = (o.ocup || 0) - dt;
         const vel = o.lx === undefined ? 0 : Math.hypot(x - o.lx, z - o.lz) / Math.max(dt, 0.001); o.lx = x; o.lz = z; o.vel = (o.vel || 0) + (Math.min(vel, 12) - (o.vel || 0)) * Math.min(1, dt * 10);
         const corre = v.mueve || o.vel > 0.6;
@@ -2001,7 +2029,7 @@ const camM = new THREE.Vector3();
    F = hacia dónde mira la cámara (arriba en pantalla), R = la derecha de la pantalla, en coordenadas del mundo. */
 let APAI = VW > VH;
 function ejes() {const s = signo(MI_EQ); return APAI ? {F: {x: -s, z: 0}, R: {x: 0, z: -s}} : {F: {x: 0, z: -s}, R: {x: s, z: 0}};}
-const ESC_H = 1.6; const ZOOMS = [[17, 14], [21, 17], [27, 21.5]]; let zoomI = +(localStorage.getItem('auto.zoom') ?? 1);
+const ESC_H = 1.28; const ZOOMS = [[17, 14], [21, 17], [27, 21.5]]; let zoomI = +(localStorage.getItem('auto.zoom') ?? 1);
 const INTERP_MS = 100;
 let CAM_FIN = null; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
 function camara(dt) {
@@ -2235,7 +2263,7 @@ function prediceGolpe() {
   for (const q of VISTA.values()) {if (q.eq === MI_EQ || q.vida <= 0 || (q.k === 'h' && (q.muerto >= 0 || q.escondido)) || q.k === 'p') continue; const d = Math.hypot((q.xi ?? q.x) - MIO.x, (q.zi ?? q.z) - MIO.z) - (RADIO_V[q.k] || 0.6); if (d < alc && (d < md || (q.k === 'h' && obj && obj.k !== 'h'))) {md = d; obj = q;}}
   if (!obj && !(tap && !(MANDO.mx || MANDO.mz))) return;
   PRED.lista = ahora + 1000 / (H.vatq * 1.05);
-  const lista = BASICOS[v.tipo] || ['atacar']; o.ocup = animaClip(o, lista[((v.ac || 0) + 1 + (o.predAc || 0)) % lista.length], Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9; o.predAc = (o.predAc || 0) + 1; o.predT = ahora; o.sqA = 0.1; o.sqT = o.sqD = 0.22;
+  const lista = BASICOS[v.tipo] || ['atacar']; o.ocup = animaClip(o, lista[((v.ac || 0) + 1 + (o.predAc || 0)) % lista.length], Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9; o.predAc = (o.predAc || 0) + 1; o.predT = ahora; o.sqA = 0.1; o.sqT = o.sqD = 0.22; basicoFx(v, o, (v.ac || 0) + o.predAc, obj ? Math.atan2((obj.xi ?? obj.x) - MIO.x, (obj.zi ?? obj.z) - MIO.z) : MIO.rot);
   if (obj) {MIO.rot = Math.atan2((obj.xi ?? obj.x) - MIO.x, (obj.zi ?? obj.z) - MIO.z); v.rot = MIO.rot; if (!H.proy) {const id = obj.id; setTimeout(() => {PRED.hit.set(id, performance.now()); golpeVisual(id, YO, false);}, 170);}}
 }
 function mueveMio(dt) {
@@ -2442,7 +2470,7 @@ function hud() {
    if (!aroFijo) {aroFijo = indicador('ap_objetivo', '#ffd24a'); aroFijo.renderOrder = 6;}
    const af = VISTA.get(MANDO.cand || MANDO.fijo); aroFijo.visible = !!af && v.muerto < 0;
    if (af) {const rr = af.k === 't' ? 2.4 : af.k === 'n' ? 2.8 : af.k === 'h' ? 1.3 : 1.1; aroFijo.position.set(af.xi ?? af.x, 0.18, af.zi ?? af.z); aroFijo.scale.setScalar(2 * rr * 256 / 235 * (1 + 0.1 * Math.sin(performance.now() / 70))); aroFijo.material.color.set(MANDO.cand ? '#ffffff' : '#ffd24a');}}
-  {const bf = $('bF').querySelector('img'), src = v.hf === 'c' ? 'ui/ap_hz_castigo.webp' : 'ui/ap_hz_curar.webp'; if (!bf.src.endsWith(src)) bf.src = src; const bd = $('bD').querySelector('img'); if (!bd.src.endsWith('hz_destello.webp')) bd.src = 'ui/ap_hz_destello.webp';}
+  {const bf = $('bF').querySelector('img'), src = v.hf === 'c' ? 'ui/ap_hz_ignicion.webp' : 'ui/ap_hz_curar.webp'; if (!bf.src.endsWith(src)) bf.src = src; const bd = $('bD').querySelector('img'); if (!bd.src.endsWith('hz_destello.webp')) bd.src = 'ui/ap_hz_destello.webp';}
   for (const [k, cd] of [['d', v.cdD], ['f', v.cdF]]) {const c = $('b' + k.toUpperCase()).querySelector('.cd'); c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / HECHIZOS[k === 'f' && v.hf === 'c' ? 'c' : k].cd * 100) + '%' : '0%');}
   /* volver a la fuente: el botón se va llenando */
   $('bBase').style.setProperty('--p', volverBase > 0 ? (1 - volverBase / VOLVER_T) * 100 + '%' : '0%'); $('bBase').classList.toggle('cargando', volverBase > 0);

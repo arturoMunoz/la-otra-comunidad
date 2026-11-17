@@ -335,7 +335,7 @@ function cullBosque(cx, cz, forzar) {
   for (const im of BOSQUE) {
     const c = im.userData.cull, dst = im.instanceMatrix.array; let k = 0;
     for (let i = 0; i < c.xs.length; i++) {const dx = c.xs[i] - cx, dz = c.zs[i] - cz; if (dx * dx + dz * dz < R2) {if (k !== i) dst.set(c.todo.subarray(i * 16, i * 16 + 16), k * 16); k++;}}
-    im.count = k; im.instanceMatrix.clearUpdateRanges(); im.instanceMatrix.addUpdateRange(0, k * 16); im.instanceMatrix.needsUpdate = true;
+    im.count = k; im.visible = k > 0; im.instanceMatrix.clearUpdateRanges(); im.instanceMatrix.addUpdateRange(0, k * 16); im.instanceMatrix.needsUpdate = true;
   }
 }
 const ALTO = {};

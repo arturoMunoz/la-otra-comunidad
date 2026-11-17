@@ -100,7 +100,7 @@ js = sub(js, "const VADO = ['vado_arboles',", "const VADO = ['ap_brask', 'ap_vae
 js = sub(js, 'o = montar(HEROES[v.tipo].modelo, 2.05);', 'o = montar(HEROES[v.tipo].modelo, (HEROES[v.tipo].alto || 2.05) * ESC_H);')
 js = sub(js, "o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95);", "o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95 * ESC_H);")
 js = sub(js, "const altoB = v.k === 'h' ? 2.6 :", "const altoB = v.k === 'h' ? (HEROES[v.tipo].alto || 2.05) * ESC_H + 0.55 :")
-js = sub(js, 'const ZOOMS = [[24, 14], [31, 18], [40, 23]];', 'const ESC_H = 1.6; const ZOOMS = [[17, 14], [21, 17], [27, 21.5]];')
+js = sub(js, 'const ZOOMS = [[24, 14], [31, 18], [40, 23]];', 'const ESC_H = 1.28; const ZOOMS = [[17, 14], [21, 17], [27, 21.5]];')
 js = bloque(js, 'const VESTIR = {', '};', 'const VESTIR = {};\n')
 # retratos grandes de La Autopista
 n = js.count('ui/splash_'); assert n >= 6, n
@@ -594,7 +594,7 @@ function puente(sc, fuera) {
   const tRp = cargaTex('../batalla/texturas/ap_pared_roca.webp', true); tRp.wrapT = THREE.ClampToEdgeWrapping; tRp.repeat.set(260 / 36, 1); /* Pack 16 ART: 24 m de alto = la imagen entera */
   for (const sg of [1, -1]) {const p = new THREE.Mesh(new THREE.BoxGeometry(260, H, 2), new THREE.MeshLambertMaterial({map: tRp})); p.position.set(0, -H / 2 - 0.06, sg * (Z + 1)); sc.add(p);}
   /* el tablero: cantos, panza, pretil, vigas y pilas de hormigón */
-  const hc = (rx, ry) => {const t = tC.clone(); t.source = tC.source; t.repeat.set(rx, ry); return new THREE.MeshLambertMaterial({map: t, color: '#d8d8d4'});};
+  const HC = {}, hc = (rx, ry) => HC[rx + 'x' + ry] || (HC[rx + 'x' + ry] = (() => {const t = tC.clone(); t.source = tC.source; t.repeat.set(rx, ry); return new THREE.MeshLambertMaterial({map: t, color: '#d8d8d4'});})());  /* 17/11: mismo material para piezas iguales → fusiona() las junta */
   const caja = (w, h, d, x, y, z, mat) => {const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); b.position.set(x, y, z); b.receiveShadow = true; sc.add(b); return b;};
   const L = Z * 2 + 2;
   for (const sg of [1, -1]) {caja(0.7, 2.2, L, sg * (A + 0.05), -1.1, 0, hc(1, 24)); caja(0.55, 0.75, L, sg * (A + 0.05), 0.37, 0, hc(1, 30)).castShadow = true;}
@@ -643,7 +643,7 @@ js = sub(js, "function colorFuentes() {for (const a of FUENTE_AROS) a.material.c
 const FUENTES_A6 = [];
 function ponFuentesA6() {
   for (const o of FUENTES_A6) o.parent && o.parent.remove(o); FUENTES_A6.length = 0;
-  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja'); o.position.set(f.x, 0, f.z); o.rotation.y = eq ? 0 : Math.PI; (MAPA_G || scene).add(o); FUENTES_A6.push(o);}
+  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja'); fusiona(o); o.position.set(f.x, 0, f.z); o.rotation.y = eq ? 0 : Math.PI; (MAPA_G || scene).add(o); FUENTES_A6.push(o);}
 }""")
 # decorado del Pack 10: matas, adelfas, pinos, eucaliptos y hierba en tierra firme; taludes de roca al borde del barranco;
 # cascotes, neumáticos, bidones y manchas de aceite por el puente; vallas, muros antirruido y un paso elevado al fondo
@@ -660,14 +660,14 @@ function decoradoPack10(al) {
   for (let i = 0; i < 4; i++) mete(V, 'palmera_1', sg() * (20 + al() * 10), sg() * (60 + al() * 12));
   for (let i = 0; i < 150; i++) {const z = sg() * (41 + al() * 36); mete(V, uno(['hierba_1', 'hierba_2', 'hierba_3']), sg() * (9.6 + al() * 22), z, 1 + al() * 0.7);}
   for (let i = 0; i < 40; i++) mete(V, uno(['hierba_1', 'hierba_2', 'hierba_3']), sg() * (9.4 + al() * 1.3), (al() - 0.5) * 74, 0.8 + al() * 0.4);
-  for (const n in V) instancias('ap_vegetacion', n, V[n]);
+  for (const n in V) instancias('ap_vegetacion', n, V[n], /pino|eucalipto|palmera/.test(n));  /* sombra solo los árboles (17/11: rendimiento) */
   const cosas = ['neumatico_1', 'neumatico_2', 'bidon_1', 'bidon_2', 'palé', 'cascotes_1', 'cascotes_2', 'cascotes_3', 'señal_caida_1', 'señal_caida_2', 'cono_tumbado'];
   for (let i = 0; i < 30; i++) mete(P, uno(cosas), sg() * (8.4 + al() * 1.9), (al() - 0.5) * 74);
   for (let i = 0; i < 26; i++) mete(P, uno(cosas), sg() * (11.5 + al() * 22), sg() * (42 + al() * 30));
   for (let i = 0; i < 9; i++) mete(P, 'mancha_aceite', (al() - 0.5) * 11, (al() - 0.5) * 100, 0.8 + al() * 0.8, al() * 6.283, 0.02);
-  for (const n in P) instancias('ap_suelo_props', n, P[n], n !== 'mancha_aceite');
+  for (const n in P) instancias('ap_suelo_props', n, P[n], false);
   for (const s of [1, -1]) for (let x = 14; x < 78; x += 7.4) for (const sx of [1, -1]) mete(B, uno(['talud_roca_1', 'talud_roca_2', 'talud_roca_3']), sx * x, s * 41.3, 1, s > 0 ? 0 : Math.PI);
-  for (const n in B) instancias('ap_borde', n, B[n]);
+  for (const n in B) instancias('ap_borde', n, B[n], false);
   const G = MAPA_G || scene, pz = (n, x, z, ry) => {const o = pieza('ap_borde', n); o.position.set(x, 0, z); o.rotation.y = ry; G.add(o); return o;};
   for (const s of [1, -1]) {
     for (let z = 44; z < 86; z += 6) pz('muro_antirruido', s * 36, s * z, Math.PI / 2);
@@ -743,7 +743,7 @@ js = sub(js, "suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', 0.5);}"
 js = sub(js, "else suena('muerte', 0.35, v.x, v.z);}", "else suena('muerte', v.k === 's' ? 0.14 : 0.35, v.x, v.z);}")
 # ---------- IGNICIÓN EN VEZ DE CASTIGO Y UN SOLO BOTIQUÍN (17/11, Henar; dentro de la simulación: volver a sacar sim_ap.js) ----------
 # en el Duelo no hay bestias: el Castigo no servía. Ignición como en el Wild Rift: quema al héroe enemigo más cercano (7 m) durante 5 s
-js = sub(js, "c: {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'}", "c: {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_castigo.webp'}")
+js = sub(js, "c: {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'}", "c: {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_ignicion.webp'}")  # icono del Pack 29 ART (tools/autopista/procesa_pack29.py)
 js = sub(js, """    const t = masCercano(h, S.u.filter((u) => (u.k === 'j' || u.k === 's') && u.eq !== h.eq && !u.muerto && u.vida > 0), 5.5); if (!t) return false;
     h.cd.f = HECHIZOS.c.cd; dana(h, t, 380 + 45 * h.nivel, 'hab'); ev(['castigo', t.x, t.z]); return true;""",
 """    const t = masCercano(h, S.u.filter((u) => u.k === 'h' && u.eq !== h.eq && !u.muerto && u.vida > 0), 7); if (!t) return false;
@@ -798,6 +798,83 @@ html = re.sub(r'\s*<button data-m="2v2">.*?</button>', '', html, count=1)  # la 
 html = html.replace("'vado.heroe'", "'auto.heroe'")
 html = sub(html, 'La Brecha se juega en horizontal.', 'A-6 se juega en horizontal.', donde='html')
 html = sub(html, '<p>Preparando el campo de batalla</p>', '<p>Preparando la autopista</p>', donde='html')
+
+# Ignición: su icono en todas partes (botón de la partida, elegir héroe)
+js = js.replace('ui/ap_hz_castigo.webp', 'ui/ap_hz_ignicion.webp'); html = html.replace('ui/ap_hz_castigo.webp', 'ui/ap_hz_ignicion.webp')
+
+# ---------- GOLPES BÁSICOS QUE SE VEN (17/11, Henar: «más reales, más visibles»; héroes un 20 % más pequeños: ESC_H 1,28) ----------
+# Al soltar el básico, en el instante del golpe: los de cuerpo a cuerpo dejan un tajo de su color delante (alterna lado, como el
+# gesto), Ata un fogonazo en el cañón y retroceso, Vael una llamarada en la mano, Birdie el arco blanco del palo. En el que recibe,
+# chispa más grande cuando pega un héroe. Solo dibujo (la simulación no cambia); lo propio de tu móvil al predecir el golpe.
+js = sub(js, "function golpeVisual(id, de, fuerte) {", """const TAJO_B = {enano: 'ap_enano_tajo', orco: 'ap_orco_tajo', gollum: 'ap_gollum_tajo', rohan: 'ap_rohan_tajo'};
+function basicoFx(v, o, n, rot) {
+  if (!v || !o || v.k !== 'h') return; const H = HEROES[v.tipo]; if (!H) return;
+  const espera = Math.min(150, 120 / Math.max(0.6, H.vatq));
+  setTimeout(() => {const p = o.raiz.position, r = rot ?? o.rv ?? 0, dx = Math.sin(r), dz = Math.cos(r), lado = n % 2 ? 1 : -1;
+    if (TAJO_B[v.tipo]) {const d = Math.min(H.alcance, 2.2) * 0.6; flip(TAJO_B[v.tipo], p.x + dx * d, p.z + dz * d, 2.6 + H.alcance * 0.5, true, r - Math.PI / 4 + (lado > 0 ? 0 : Math.PI / 2));}
+    else if (v.tipo === 'elfo') {flip('ap_elfo_fogonazo', p.x + dx * 1.1, p.z + dz * 1.1, 1.7, false, undefined, 1.25); o.kb = {x: -dx * 0.18, z: -dz * 0.18, t: 0.12, d: 0.12};}
+    else if (v.tipo === 'gandalf') flip('fuego', p.x + dx * 0.8, p.z + dz * 0.8, 1.3, false, undefined, 1.3, 0.3);
+    else if (v.tipo === 'hobbit') flip('tArco', p.x + dx * 0.7, p.z + dz * 0.7, 2, true, r - Math.PI / 4);
+  }, espera);
+}
+function golpeVisual(id, de, fuerte) {""")
+js = sub(js, "o.ocup = animaClip(o, n, Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9;}", "o.ocup = animaClip(o, n, Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9; basicoFx(v, o, v.ac);}")
+js = sub(js, "o.predAc = (o.predAc || 0) + 1; o.predT = ahora; o.sqA = 0.1; o.sqT = o.sqD = 0.22;", "o.predAc = (o.predAc || 0) + 1; o.predT = ahora; o.sqA = 0.1; o.sqT = o.sqD = 0.22; basicoFx(v, o, (v.ac || 0) + o.predAc, obj ? Math.atan2((obj.xi ?? obj.x) - MIO.x, (obj.zi ?? obj.z) - MIO.z) : MIO.rot);")
+# la chispa del que recibe, más grande si pega un héroe
+js = sub(js, "flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2 : 1.3);",
+         "{const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);}")
+
+# ---------- RENDIMIENTO (17/11): cada héroe de A-6 venía en 12-16 trozos con la misma textura (= 12-16 dibujos, y otros tantos en
+# la sombra). Al cargarlo se juntan en 2 (metal y resto) sin cambiar cómo se ve; los decorados pequeños ya no echan sombra.
+js = sub(js, "function montar(n, altura) {\n", """function juntaPiezas(n) {
+  const sc = M[n] && M[n].scene; if (!sc || sc.userData.juntado || !/^ap_/.test(n)) return; sc.userData.juntado = true;
+  const grupos = new Map();
+  sc.traverse((o) => {if (!o.isSkinnedMesh || !o.parent) return; const m = o.material, k = o.parent.uuid + '|' + o.skeleton.uuid + '|' + (m.map ? m.map.uuid : '-') + '|' + (m.metalness > 0.3 ? 'met' : 'mate') + '|' + !!m.transparent; (grupos.get(k) || grupos.set(k, []).get(k)).push(o);});
+  for (const lista of grupos.values()) {
+    if (lista.length < 2) continue; const a = lista[0];
+    let g = null; try {g = mergeGeometries(lista.map((o) => {const q = o.geometry.clone(); for (const k of Object.keys(q.attributes)) if (!a.geometry.attributes[k]) q.deleteAttribute(k); return q;}), false);} catch (e) {g = null;}
+    if (!g) continue;
+    const r = lista.reduce((s, o) => s + o.material.roughness, 0) / lista.length, mt = lista.reduce((s, o) => s + o.material.metalness, 0) / lista.length;
+    const mat = a.material.clone(); mat.roughness = r; mat.metalness = mt; mat.color.set('#ffffff');
+    const j = new THREE.SkinnedMesh(g, mat); j.name = a.name; j.position.copy(a.position); j.quaternion.copy(a.quaternion); j.scale.copy(a.scale);
+    a.parent.add(j); j.bind(a.skeleton, a.bindMatrix); for (const o of lista) o.parent.remove(o);
+  }
+}
+function montar(n, altura) {
+  juntaPiezas(n);
+""")
+
+# torres, nexos y fuentes: 21 materiales con la MISMA textura que solo cambian en lo metálico y en el brillo propio; se igualan
+# (uno por textura + metal + brillo) para que fusiona() los junte: de 8-16 dibujos por edificio a 3-5
+js = sub(js, "c.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); return c;",
+         "c.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); if (archivo === 'ap_estructuras') unificaMats(c); return c;")
+js = sub(js, "function pieza(archivo, nombre) {", """const MAT_UNI = new Map();
+function unificaMats(raiz) {raiz.traverse((q) => {if (!q.isMesh || Array.isArray(q.material) || !q.material.isMeshStandardMaterial) return; const m = q.material, k = (m.map ? m.map.uuid : '-') + '|' + Math.round(m.metalness * 3) + '|' + m.emissive.getHexString() + '|' + m.transparent; if (!MAT_UNI.has(k)) {const n = m.clone(); n.metalness = Math.round(m.metalness * 3) / 3; MAT_UNI.set(k, n);} q.material = MAT_UNI.get(k);});}
+function pieza(archivo, nombre) {""")
+
+# ---------- MANDOS EN ARCO (17/11, Henar: «es una chapuza»: botones pisándose) ----------
+# Esquema fijo como el del Wild Rift alrededor del ataque (abajo a la derecha): Q a la izquierda, W en diagonal, E encima y la R
+# más afuera; el «+» como insignia arriba a la izquierda de cada habilidad; torre y soldados pegados al ataque; hechizos, BASE y
+# baliza en fila a la izquierda de la Q. Medidas = centro de cada botón contado desde la esquina de #mandos (que no recibe toques;
+# solo sus botones). Los aros visibles salen un 11 % por fuera del botón: los centros están separados para que no se toquen.
+MANDO_POS = {  # id: (centro desde la derecha, centro desde abajo, tamaño)
+    'bAt': (66, 62, 92), 'bQ': (179, 78, 62), 'bW': (142, 147, 62), 'bE': (70, 176, 62), 'bR': (186, 230, 66),
+    'mq': (204, 103, 30), 'mw': (167, 172, 30), 'me': (95, 201, 30), 'mr': (213, 257, 30),
+    'bAtT': (26, 131, 36), 'bAtS': (137, 29, 36),
+    'bF': (252, 34, 46), 'bD': (306, 34, 46), 'bAlm': (262, 100, 44), 'bEnc': (316, 100, 44),
+}
+_css = ['#mandos{right:calc(8px + var(--sar)) !important;bottom:calc(6px + var(--sab)) !important;width:340px !important;height:300px !important;pointer-events:none}',
+        '#mandos > *{pointer-events:auto}']
+for k, (cx, cy, t) in MANDO_POS.items():
+    _css.append(f'body #mandos #{k}{{position:absolute !important;left:auto !important;top:auto !important;right:{cx - t / 2:g}px !important;bottom:{cy - t / 2:g}px !important;width:{t}px !important;height:{t}px !important;margin:0 !important;transform:none !important}}')
+_css += [
+    'body #mandos .mas{background-size:100% 100% !important;z-index:4}',
+    # BASE a la izquierda de los hechizos, con su letrero encima (abajo no cabe)
+    'body #bBase{right:calc(8px + 337px + var(--sar)) !important;bottom:calc(6px + 11px + var(--sab)) !important;width:46px !important;height:46px !important}',
+    'body #bBase span{bottom:auto !important;top:-13px !important}',
+    'body #mandos #retratos{right:250px !important;bottom:150px !important}',
+]
+html = sub(html, '</head>', '<style>\n/* A-6 · MANDOS EN ARCO */\n' + '\n'.join(_css) + '\n</style></head>', donde='html')
 
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
