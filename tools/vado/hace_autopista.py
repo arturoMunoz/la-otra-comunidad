@@ -164,6 +164,23 @@ for n, ap in [('menu_cielo',)*2, ('menu_fondo',)*2, ('menu_medio',)*2, ('menu_fr
     c = js.count(v) + html.count(v)
     if c == 0: fallos.append('[arte] ' + v + ' ya no aparece')
     js, html = js.replace(v, nv), html.replace(v, nv)
+# ---------- LA TIENDA (17/11): objetos de autopista, mismas estadísticas y recetas que La Brecha ----------
+NOMBRES_OBJ = {'hoja': ('Barra de hierro', None), 'daga': ('Navaja automática', None), 'cota': ('Chaleco reflectante', None),
+    'yelmo': ('Casco de obra', None), 'manto': ('Mono ignífugo', None), 'tomo': ('Batería de litio', None), 'botas': ('Zapatillas de correr', None),
+    'amuleto': ('Termo de café', None), 'herugrim': ('Bate de acero', None), 'guthwine': ('Machetes gemelos', None),
+    'escudo': ('Escudo antidisturbios', None), 'capa': ('Patinete eléctrico', None), 'hacha': ('Motosierra', 'Robo de vida del 12 %.'),
+    'baculo': ('Bobina de alta tensión', None), 'narya': ('Generador portátil', None), 'velo': ('Traje aislante', None),
+    'mithril': ('Armadura de kevlar', 'Ligera y casi irrompible: protege de golpes y de la magia.')}
+i0 = js.index('const OBJ = {'); i1 = js.index('\n};', i0)
+cuerpo = js[i0:i1]
+for k, (n, p_) in NOMBRES_OBJ.items():
+    cuerpo, c = re.subn(r"(\n  " + k + r": \{t: ')[^']*'", lambda m: m.group(1) + n + "'", cuerpo)
+    if c != 1: fallos.append('[tienda] ' + k)
+    if p_: cuerpo = re.sub(r"(\n  " + k + r": \{[^\n]*p: ')[^']*'", lambda m: m.group(1) + p_ + "'", cuerpo)
+js = js[:i0] + cuerpo + js[i1:]
+for v, n in [("estasis: {t: 'Estasis'", "estasis: {t: 'Airbag'"), ("gargola: {t: 'Gárgola'", "gargola: {t: 'Jaula antivuelco'"),
+             ("azogue: {t: 'Azogue'", "azogue: {t: 'Nitro'"), ("medallon: {t: 'Medallón'", "medallon: {t: 'Bengala de emergencia'")]:
+    js = sub(js, v, n)
 js = sub(js, 'const HAY_PALANTIR = true;', 'const HAY_PALANTIR = false;')
 # ---------- EL MAPA DE AUTOPISTA (17/11): suelo de asfalto/arcén/hormigón (Pack 11) y piezas de Kenney (Pack 2) ----------
 js = sub(js, "const VADO = ['ap_brask',", "const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask',")
