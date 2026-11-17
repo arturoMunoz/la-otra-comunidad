@@ -54,4 +54,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [ ] Pack Autopista 9 ART: retrato del guía de la partida guiada (`ap_guia.png`) e icono de «Crear sala»
 - [ ] Pack Autopista 10 WORK: vegetación de autopista, piezas de borde (muro antirruido, New Jersey, taludes, valla publicitaria, paso elevado) y objetos de suelo
 - [x] Pack Autopista 11 ART: texturas de asfalto, arcén y hormigón (17/11)
-- [ ] Pack Autopista 12 ART: iconos de la tienda (17 objetos + oro en 6x3) y de encantamientos y pestañas (3x3)
+- [x] Pack Autopista 12 ART: iconos de la tienda (17 objetos + oro en 6x3) y de encantamientos y pestañas (3x3)

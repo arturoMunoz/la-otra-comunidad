@@ -130,6 +130,22 @@ def main():
     at = rejilla(f'{P6}/ap_ataque.png', 7, 1)[0]
     for i, clave in enumerate(ORDEN):
         guarda(at[i], f'ap_at_{clave}', q=88)
+    # ---- Pack 12: iconos de la tienda (círculos sueltos: se buscan por el alfa) ----
+    P12 = f'{R}/pack12'
+    def circulos(ruta, n):
+        im = Image.open(ruta).convert('RGBA'); a = np.asarray(im)[..., 3] > 40
+        lab, k = ndimage.label(a); cajas = [c for c in ndimage.find_objects(lab) if (c[0].stop - c[0].start) > 100]
+        assert len(cajas) == n, (ruta, len(cajas))
+        filas = sorted(cajas, key=lambda c: c[0].start); orden = []
+        while filas:
+            y0 = filas[0][0].start; fila = [c for c in filas if abs(c[0].start - y0) < 60]
+            orden += sorted(fila, key=lambda c: c[1].start); filas = [c for c in filas if c not in fila]
+        return [im.crop((c[1].start, c[0].start, c[1].stop, c[0].stop)).resize((160, 160), Image.LANCZOS) for c in orden]
+    for img, k in zip(circulos(f'{P12}/ap_objetos.png', 18), ['hoja', 'daga', 'cota', 'yelmo', 'manto', 'tomo', 'botas', 'amuleto', 'herugrim',
+            'guthwine', 'escudo', 'capa', 'hacha', 'baculo', 'narya', 'velo', 'mithril', 'oro']):
+        guarda(img, 'ap_obj_' + k, q=86)
+    for img, k in zip(circulos(f'{P12}/ap_encantos.png', 9), ['enc_estasis', 'enc_gargola', 'enc_azogue', 'enc_medallon', 'tab_rec', 'tab_atq', 'tab_def', 'tab_mov', 'tab_enc']):
+        guarda(img, 'ap_' + k, q=86)
     print('ok')
 
 

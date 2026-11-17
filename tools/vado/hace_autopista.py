@@ -112,6 +112,10 @@ for v, n in [("'Daga de Bree'", "'Daga ligera'"), ("'Cota de anillas'", "'Chalec
              ("'Báculo de los Istari'", "'Báculo arcano'"), ("'Narya, el Anillo de Fuego'", "'Anillo de fuego'"), ("'Velo de Galadriel'", "'Velo de plata'"),
              ("t: 'Cota de mithril'", "t: 'Armadura de titanio'")]:
     js = sub(js, v, n)
+js = js.replace('Armería', 'Taller').replace('a tu campamento', 'a tu peaje'); html = html.replace('Armería', 'Taller')
+for k in ['estasis', 'gargola', 'azogue', 'medallon']:
+    js = sub(js, "i: 'ui/enc_" + k + ".webp'", "i: 'ui/ap_enc_" + k + ".webp'")
+js = sub(js, '<img src="ui/tab_\' + k + \'.webp"', '<img src="ui/ap_tab_\' + k + \'.webp"')
 
 # ---------- equipos: azul y rojo ----------
 js = sub(js, "(eq === 0 ? 'Rohan' : 'Isengard')", "(eq === 0 ? 'El equipo azul' : 'El equipo rojo')", 0)
@@ -176,6 +180,8 @@ cuerpo = js[i0:i1]
 for k, (n, p_) in NOMBRES_OBJ.items():
     cuerpo, c = re.subn(r"(\n  " + k + r": \{t: ')[^']*'", lambda m: m.group(1) + n + "'", cuerpo)
     if c != 1: fallos.append('[tienda] ' + k)
+    cuerpo, c = re.subn(r"(\n  " + k + r": \{[^\n]*?i: ')[^']*'", lambda m: m.group(1) + 'ui/ap_obj_' + k + ".webp'", cuerpo)
+    if c != 1: fallos.append('[tienda icono] ' + k)
     if p_: cuerpo = re.sub(r"(\n  " + k + r": \{[^\n]*p: ')[^']*'", lambda m: m.group(1) + p_ + "'", cuerpo)
 js = js[:i0] + cuerpo + js[i1:]
 for v, n in [("estasis: {t: 'Estasis'", "estasis: {t: 'Airbag'"), ("gargola: {t: 'Gárgola'", "gargola: {t: 'Jaula antivuelco'"),

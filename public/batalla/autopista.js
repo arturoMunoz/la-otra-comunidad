@@ -74,23 +74,23 @@ function autoSube(h) {let n = 0; while (h.pts > 0 && n++ < 6) {const o = ['r', '
 /* hechizos de invocador: Destello y Curar */
 const HECHIZOS = {d: {n: 'Destello', cd: 100, icono: 'ui/hz_destello.webp'}, f: {n: 'Curar', cd: 90, icono: 'ui/hz_curar.webp'}, c: {n: 'Castigo', cd: 60, icono: 'ui/hz_castigo.webp'}};
 const OBJ = {
-  hoja: {t: 'Barra de hierro', i: 'obj_01', c: 350, st: {dano: 18}},
-  daga: {t: 'Navaja automática', i: 'obj_02', c: 300, st: {vatq: 0.2}},
-  cota: {t: 'Chaleco reflectante', i: 'obj_03', c: 350, st: {vida: 160, arm: 10}},
-  yelmo: {t: 'Casco de obra', i: 'obj_04', c: 350, st: {arm: 25}},
-  manto: {t: 'Mono ignífugo', i: '../batalla/ui/obj_manto.webp', c: 350, st: {rm: 25}},
-  tomo: {t: 'Batería de litio', i: '../batalla/ui/obj_tomo.webp', c: 350, st: {poder: 30, mana: 150}},
-  botas: {t: 'Zapatillas de correr', i: 'obj_05', c: 300, st: {vel: 0.12}},
-  amuleto: {t: 'Termo de café', i: 'obj_06', c: 300, st: {regen: 3}},
-  herugrim: {t: 'Bate de acero', i: 'obj_07', leg: 1, rec: ['hoja', 'hoja'], c: 500, st: {dano: 50, crit: 0.2}, p: 'Un 20 % de golpes críticos (doble daño).'},
-  guthwine: {t: 'Machetes gemelos', i: 'obj_08', leg: 1, rec: ['hoja', 'daga'], c: 450, st: {dano: 28, vatq: 0.35}, p: 'Daño y velocidad de ataque.'},
-  escudo: {t: 'Escudo antidisturbios', i: 'obj_09', leg: 1, rec: ['cota', 'yelmo'], c: 500, st: {vida: 300, arm: 45, espinas: 0.15}, p: 'Quien te pega cuerpo a cuerpo se lleva un 15 %.'},
-  capa: {t: 'Patinete eléctrico', i: 'obj_10', leg: 1, rec: ['botas', 'amuleto'], c: 400, st: {vel: 0.18, regen: 5, esquiva: 0.12}, p: 'Un 12 % de golpes no te tocan.'},
-  hacha: {t: 'Motosierra', i: 'obj_11', leg: 1, rec: ['hoja', 'amuleto'], c: 450, st: {dano: 30, robo: 0.12}, p: 'Robo de vida del 12 %.'},
-  baculo: {t: 'Bobina de alta tensión', i: '../batalla/ui/obj_baculo.webp', leg: 1, rec: ['tomo', 'tomo'], c: 500, st: {poder: 90, mana: 300}, p: 'Mucho poder mágico: las habilidades mágicas pegan bastante más.'},
-  narya: {t: 'Generador portátil', i: '../batalla/ui/obj_narya.webp', leg: 1, rec: ['tomo', 'manto'], c: 450, st: {poder: 50, rm: 30, vida: 150, mana: 200}, p: 'Poder mágico y protección contra la magia.'},
-  velo: {t: 'Traje aislante', i: '../batalla/ui/obj_velo.webp', leg: 1, rec: ['manto', 'cota'], c: 450, st: {vida: 300, rm: 50, regen: 3}, p: 'Mucha resistencia mágica: contra magos.'},
-  mithril: {t: 'Armadura de kevlar', i: 'obj_14', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 450, arm: 30, rm: 30, regen: 4}, p: 'Ligera y casi irrompible: protege de golpes y de la magia.'},
+  hoja: {t: 'Barra de hierro', i: 'ui/ap_obj_hoja.webp', c: 350, st: {dano: 18}},
+  daga: {t: 'Navaja automática', i: 'ui/ap_obj_daga.webp', c: 300, st: {vatq: 0.2}},
+  cota: {t: 'Chaleco reflectante', i: 'ui/ap_obj_cota.webp', c: 350, st: {vida: 160, arm: 10}},
+  yelmo: {t: 'Casco de obra', i: 'ui/ap_obj_yelmo.webp', c: 350, st: {arm: 25}},
+  manto: {t: 'Mono ignífugo', i: 'ui/ap_obj_manto.webp', c: 350, st: {rm: 25}},
+  tomo: {t: 'Batería de litio', i: 'ui/ap_obj_tomo.webp', c: 350, st: {poder: 30, mana: 150}},
+  botas: {t: 'Zapatillas de correr', i: 'ui/ap_obj_botas.webp', c: 300, st: {vel: 0.12}},
+  amuleto: {t: 'Termo de café', i: 'ui/ap_obj_amuleto.webp', c: 300, st: {regen: 3}},
+  herugrim: {t: 'Bate de acero', i: 'ui/ap_obj_herugrim.webp', leg: 1, rec: ['hoja', 'hoja'], c: 500, st: {dano: 50, crit: 0.2}, p: 'Un 20 % de golpes críticos (doble daño).'},
+  guthwine: {t: 'Machetes gemelos', i: 'ui/ap_obj_guthwine.webp', leg: 1, rec: ['hoja', 'daga'], c: 450, st: {dano: 28, vatq: 0.35}, p: 'Daño y velocidad de ataque.'},
+  escudo: {t: 'Escudo antidisturbios', i: 'ui/ap_obj_escudo.webp', leg: 1, rec: ['cota', 'yelmo'], c: 500, st: {vida: 300, arm: 45, espinas: 0.15}, p: 'Quien te pega cuerpo a cuerpo se lleva un 15 %.'},
+  capa: {t: 'Patinete eléctrico', i: 'ui/ap_obj_capa.webp', leg: 1, rec: ['botas', 'amuleto'], c: 400, st: {vel: 0.18, regen: 5, esquiva: 0.12}, p: 'Un 12 % de golpes no te tocan.'},
+  hacha: {t: 'Motosierra', i: 'ui/ap_obj_hacha.webp', leg: 1, rec: ['hoja', 'amuleto'], c: 450, st: {dano: 30, robo: 0.12}, p: 'Robo de vida del 12 %.'},
+  baculo: {t: 'Bobina de alta tensión', i: 'ui/ap_obj_baculo.webp', leg: 1, rec: ['tomo', 'tomo'], c: 500, st: {poder: 90, mana: 300}, p: 'Mucho poder mágico: las habilidades mágicas pegan bastante más.'},
+  narya: {t: 'Generador portátil', i: 'ui/ap_obj_narya.webp', leg: 1, rec: ['tomo', 'manto'], c: 450, st: {poder: 50, rm: 30, vida: 150, mana: 200}, p: 'Poder mágico y protección contra la magia.'},
+  velo: {t: 'Traje aislante', i: 'ui/ap_obj_velo.webp', leg: 1, rec: ['manto', 'cota'], c: 450, st: {vida: 300, rm: 50, regen: 3}, p: 'Mucha resistencia mágica: contra magos.'},
+  mithril: {t: 'Armadura de kevlar', i: 'ui/ap_obj_mithril.webp', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 450, arm: 30, rm: 30, regen: 4}, p: 'Ligera y casi irrompible: protege de golpes y de la magia.'},
 };
 const PLAN_BOT = {gandalf: ['tomo', 'tomo', 'baculo', 'botas', 'manto', 'tomo', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'cota', 'manto', 'velo'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};
 /* El mapa en «ojo» (dibujo de Arturo, 14/11): dos caminos curvos de la base de Rohan (abajo a la izquierda) a la de Isengard
@@ -222,10 +222,10 @@ const SUBD_X = {s: 1.6, t: 2.2, n: 2.2};
 SUBD.x = {vida: 1500, dano: 40, alcance: 2.2, vatq: 0.85, vel: 3.3, oro: 60, xp: 90, muros: 1.1};
 /* encantamientos de botas (Wild Rift): mejoran las botas y dan un botón propio; uno a la vez (se puede cambiar) */
 const ENC = {
-  estasis: {t: 'Airbag', i: 'ui/enc_estasis.webp', c: 400, cd: 120, d: 'Te vuelves invulnerable 2,5 s, pero no puedes moverte ni atacar.'},
-  gargola: {t: 'Jaula antivuelco', i: 'ui/enc_gargola.webp', c: 200, cd: 45, d: '+40 % de vida durante 4 s, pero haces un 60 % menos de daño.'},
-  azogue: {t: 'Nitro', i: 'ui/enc_azogue.webp', c: 320, cd: 70, d: 'Te quita aturdimientos y frenos y corres un 50 % más 1,5 s.'},
-  medallon: {t: 'Bengala de emergencia', i: 'ui/enc_medallon.webp', c: 200, cd: 90, d: 'Escudo para ti y los aliados cercanos durante 2,5 s.'},
+  estasis: {t: 'Airbag', i: 'ui/ap_enc_estasis.webp', c: 400, cd: 120, d: 'Te vuelves invulnerable 2,5 s, pero no puedes moverte ni atacar.'},
+  gargola: {t: 'Jaula antivuelco', i: 'ui/ap_enc_gargola.webp', c: 200, cd: 45, d: '+40 % de vida durante 4 s, pero haces un 60 % menos de daño.'},
+  azogue: {t: 'Nitro', i: 'ui/ap_enc_azogue.webp', c: 320, cd: 70, d: 'Te quita aturdimientos y frenos y corres un 50 % más 1,5 s.'},
+  medallon: {t: 'Bengala de emergencia', i: 'ui/ap_enc_medallon.webp', c: 200, cd: 90, d: 'Escudo para ti y los aliados cercanos durante 2,5 s.'},
 };
 const tieneBotas = (inv) => inv.includes('botas') || inv.includes('capa');
 /* Duelo (modo 1 contra 1 del Wild Rift): gana quien derriba 2 veces al rival o tira la primera torre; en el minuto 8 aparece
@@ -2202,7 +2202,7 @@ const GUIA_PASOS = [
   {t: 'Cada habilidad gasta MANÁ: la botella fucsia de abajo. Se rellena sola poco a poco, y muy deprisa en tu campamento.', ojo: () => 'vital', seg: 8},
   {t: 'Mantén pulsado el botón grande para atacar. Remata a 3 soldados enemigos (los rojos): el ÚLTIMO golpe es el que da oro.', ojo: () => 'bAt', ok: (v, g) => csDe(v) >= g.cs0 + 3, cuenta: (v, g) => Math.min(3, csDe(v) - g.cs0) + ' / 3'},
   {t: 'La torre enemiga dispara a quien pisa su zona roja. Entra siempre DETRÁS de tus soldados (los azules): les pegará a ellos y no a ti.', seg: 10},
-  {t: 'Con el oro se compra equipo. Pulsa BASE para volver a tu campamento, abre la Armería (arriba a la izquierda) y compra algo.', ojo: (v) => enMiFuente(v) ? 'bTienda' : 'bBase', ok: (v, g) => (v.inv || []).length > g.inv0},
+  {t: 'Con el oro se compra equipo. Pulsa BASE para volver a tu peaje, abre la Taller (arriba a la izquierda) y compra algo.', ojo: (v) => enMiFuente(v) ? 'bTienda' : 'bBase', ok: (v, g) => (v.inv || []).length > g.inv0},
   {t: 'Si te quedas con poca vida, vuelve a la base: allí te curas. Morir le regala oro y tiempo al rival.', ojo: () => 'vital', seg: 8},
   {t: 'Ya sabes lo básico. Para ganar: tira la torre del camino, luego la de su base y por último su estandarte. ¡A por ellos!', seg: 9},
 ];
@@ -2447,8 +2447,8 @@ function pintaTienda() {
       (usos.length ? '<div class="tRec"><small>Sirve para</small><div>' + usos.map((u) => '<span data-id="' + u + '"><img src="' + ICO(OBJ[u].i) + '" alt=""></span>').join('') + '</div></div>' : '') +
       '<button class="tBuy" id="tComprar"' + (puede ? '' : ' disabled') + '>' + (v.oro < pr ? 'Faltan ' + (pr - v.oro) + ' de oro' : !puede ? 'No caben más' : 'Comprar') + '</button>';
   }
-  t.innerHTML = '<div class="tCab"><button class="tX" id="tX" aria-label="Volver">←</button><b>Armería</b><div class="tInv">' + Array.from({length: 6}, (_, i) => v.inv[i] ? '<span class="tHueco lleno" data-id="' + v.inv[i] + '"><img src="' + ICO(OBJ[v.inv[i]].i) + '" alt=""></span>' : '<span class="tHueco"></span>').join('') + '</div><span class="tOro">🪙 ' + v.oro + '</span></div>' +
-    '<div class="tCuerpo"><nav class="tCats">' + T_CATS.map(([k, n]) => '<button data-cat="' + k + '" class="' + (k === tCat ? 'on' : '') + '"><img src="ui/tab_' + k + '.webp" alt=""><span>' + n + '</span></button>').join('') + '</nav>' +
+  t.innerHTML = '<div class="tCab"><button class="tX" id="tX" aria-label="Volver">←</button><b>Taller</b><div class="tInv">' + Array.from({length: 6}, (_, i) => v.inv[i] ? '<span class="tHueco lleno" data-id="' + v.inv[i] + '"><img src="' + ICO(OBJ[v.inv[i]].i) + '" alt=""></span>' : '<span class="tHueco"></span>').join('') + '</div><span class="tOro">🪙 ' + v.oro + '</span></div>' +
+    '<div class="tCuerpo"><nav class="tCats">' + T_CATS.map(([k, n]) => '<button data-cat="' + k + '" class="' + (k === tCat ? 'on' : '') + '"><img src="ui/ap_tab_' + k + '.webp" alt=""><span>' + n + '</span></button>').join('') + '</nav>' +
     '<div class="tLista">' + centro + '</div><div class="tDet">' + det + '</div></div>';
   t.querySelectorAll('[data-id]').forEach((b) => b.onclick = () => {tSel = b.dataset.id; pintaTienda();});
   t.querySelectorAll('[data-cat]').forEach((b) => b.onclick = () => {tCat = b.dataset.cat; const l = tCat === 'rec' ? null : tCat === 'enc' ? Object.keys(ENC) : CAT_OBJ[tCat]; if (l && !l.includes(tSel)) tSel = l[0]; pintaTienda();});
