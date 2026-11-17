@@ -322,6 +322,45 @@ js = js.replace("VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 13]); else if (q.k === '
 for a, b in [('La armería está en tu fuente', 'El taller está en tu base'), ('puedes comprar en la armería', 'puedes comprar en el taller'), ('compras en la armería', 'compras en el taller')]:
     if a not in js: fallos.append('[texto] ' + a)
     js = js.replace(a, b)
+# ---------- PACK 19 ART (17/11): HUD estilo Supercell (tools/autopista/procesa_pack19.py) ----------
+js = sub(js, "pon_($('oro'), 'textContent', '🪙 ' + v.oro);", "pon_($('oro'), 'textContent', String(v.oro));")
+js = sub(js, "pon_($('yoNv'), 'textContent', 'Nv ' + v.nivel);", "pon_($('yoNv'), 'textContent', String(v.nivel));")
+html = sub(html, '</head>', """<style>
+/* A-6 · Pack 19: aros de habilidad (hueco del 71 %; la definitiva, 66 %) */
+.hb[data-k]::after,.hb.hs::after{border:0 !important;box-shadow:none !important;border-radius:0 !important;background:url(ui/ap_aro_hab.webp) center/contain no-repeat !important;inset:-8% !important;opacity:1 !important;filter:drop-shadow(0 3px 3px #0008) !important}
+.hb[data-k].pronta::after{background-image:url(ui/ap_aro_hab_lista.webp) !important}
+#bR::after{background-image:url(ui/ap_aro_ulti.webp) !important;inset:-17% !important}
+#bR.pronta::after{background-image:url(ui/ap_aro_ulti_lista.webp) !important}
+.hb.hs::after{background-image:url(ui/ap_aro_hechizo.webp) !important}
+.hb[data-k]:not(.pronta)::after{filter:saturate(.75) brightness(.9) drop-shadow(0 3px 3px #0008) !important}
+.hb[data-k] img,.hb.hs img{inset:6% !important;width:88% !important;height:88% !important}
+.hb[data-k] .cd,.hb.hs .cd{inset:6% !important}
+.mas{background:url(ui/ap_mas.webp) center/contain no-repeat !important;border:0 !important;box-shadow:none !important;color:transparent !important;font-size:0 !important}
+.pip{gap:1px !important}.pip i{width:13px !important;height:7px !important;border:0 !important;border-radius:0 !important;background:url(ui/ap_punto_off.webp) center/contain no-repeat !important}
+.pip i.on{background-image:url(ui/ap_punto_on.webp) !important}
+/* panel del jugador: placa con el hueco del retrato (6,6 %–27,5 % del ancho) */
+#yo{width:196px;height:72px;box-sizing:border-box;background:url(ui/ap_panel_yo.webp) center/100% 100% no-repeat !important;border:0 !important;border-radius:0 !important;padding:0 10px 0 0 !important;gap:0 !important;position:relative}
+#yo::before{display:none !important}
+#yo img{width:44px !important;height:44px !important;margin:0 0 0 10px !important;border-radius:50%;border:0 !important}
+#yo>div{margin-left:18px;line-height:1.15;font-size:11px}
+#yoNv{position:absolute;left:38px;top:40px;width:26px;height:26px;background:url(ui/ap_insignia_nivel.webp) center/contain no-repeat;display:flex;align-items:center;justify-content:center;font:900 12px 'Arial Black',system-ui,sans-serif;color:#fff;-webkit-text-stroke:2px #0b1430;paint-order:stroke fill;z-index:2}
+#oro{display:flex;align-items:center;gap:3px;font-weight:900}#oro::before{content:'';width:15px;height:15px;background:url(ui/ap_moneda.webp) center/contain no-repeat;flex:none}
+.xp{width:92px !important;height:24px !important;box-sizing:border-box;background:url(ui/ap_barra_xp.webp) center/100% 100% no-repeat !important;border-radius:0 !important;padding:7px 14px 8px 16px;overflow:visible !important;margin:0 !important}
+.xp i{border-radius:3px}
+#vital{left:calc(208px + var(--sal)) !important}
+#kda{color:#fff !important;text-shadow:0 1px 0 #0b1430}
+#bTienda{top:calc(84px + var(--sat)) !important;width:54px !important;height:54px !important}
+#bZoom{top:calc(142px + var(--sat)) !important;width:46px !important;height:46px !important}
+#compraRapida{top:calc(84px + var(--sat)) !important}
+/* barras de vida de los héroes: la barra ocupa el hueco y el marco va encima (azul los tuyos, rojo enemigos, dorado tú) */
+.bv.h i{width:76px !important;height:9px !important;border:0 !important;border-radius:2px !important;box-shadow:none !important;background:#0b1220 !important;overflow:visible !important;z-index:0}
+.bv.h i u,.bv.h i s{border-radius:2px}
+.bv.h i::before{content:'';position:absolute;left:-15px;right:-13px;top:-6px;bottom:-6px;background:url(ui/ap_bv_azul.webp) center/100% 100% no-repeat;pointer-events:none;z-index:3}
+.bv.h.e1 i::before{background-image:url(ui/ap_bv_rojo.webp)}
+.bv.h.yo i{width:84px !important;height:10px !important}
+.bv.h.yo i::before{left:-20px;right:-20px;top:-8px;bottom:-8px;background-image:url(ui/ap_bv_yo.webp)}
+.bv.h b{margin-bottom:6px !important}.bv.h .mn{margin-top:6px}
+</style></head>""", donde='html')
 # ---------- EL PUENTE (17/11, Arturo: «como si estuvieses encima de un puente cruzando algo, y a los lados paisaje») ----------
 # el tablero (|x| < 11) cruza un barranco con río entre z = -38 y 38; las bases quedan en tierra firme a los dos lados
 js = sub(js, "      gl_FragColor=vec4(col,1.);\n      #include <colorspace_fragment>", "      gl_FragColor=vec4(col,hueco);\n      #include <colorspace_fragment>")

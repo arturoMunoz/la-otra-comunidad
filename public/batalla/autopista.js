@@ -2326,7 +2326,7 @@ function hud() {
    /* la botella llena se destapa de abajo arriba: el líquido ocupa del BOT_Y0 al BOT_Y1 de la altura del dibujo */
    if (HAY_BOTELLA) pon_($('vLle').style, 'clipPath', 'inset(' + (BOT_Y0 + (BOT_Y1 - BOT_Y0) * (1 - pm / 100)).toFixed(1) + '% 0 0 0)');
    const bj = pv < 30; if (vt._bj !== bj) {vt._bj = bj; vt.classList.toggle('poca', bj);} const sm = pm < 12; if (vt._sm !== sm) {vt._sm = sm; vt.classList.toggle('seca', sm);}}
-  pon_($('yoNv'), 'textContent', 'Nv ' + v.nivel); pon_($('oro'), 'textContent', '🪙 ' + v.oro); pon_($('xpBar').style, 'width', (v.nivel >= NIVEL_MAX ? 100 : Math.round((v.xpP || 0) * 100)) + '%');
+  pon_($('yoNv'), 'textContent', String(v.nivel)); pon_($('oro'), 'textContent', String(v.oro)); pon_($('xpBar').style, 'width', (v.nivel >= NIVEL_MAX ? 100 : Math.round((v.xpP || 0) * 100)) + '%');
   if (GUIA) guiaPaso(v);
   if (hud.nv !== undefined && v.nivel > hud.nv) subeNivelFx(v); hud.nv = v.nivel; rotuloZona(v);
   pon_($('kda'), 'textContent', (v.kda || '0/0/0/0').split('/').slice(0, 3).join(' / ') + '  ·  🗡 ' + (v.kda || '0/0/0/0').split('/')[3]);
