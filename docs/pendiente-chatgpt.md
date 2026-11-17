@@ -64,3 +64,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [ ] Pack Autopista 18 ART (A y B): marcas de apuntado y alcance propias de cada héroe de A-6 (`ap_ind_<clave>_<q|w|e|r|alcance>.png`; líneas 1024x256 hacia la derecha, conos y círculos 512x512) — 17/11
 - [x] (HECHO 17/11, `tools/autopista/pack19`) Pack Autopista 19 ART: HUD estilo Supercell — aros de habilidad (normal/lista/definitiva), botón +, puntos de rango, aro de hechizo, panel del jugador (retrato, nivel, experiencia, oro, KDA), barras de vida sobre la cabeza (17/11)
 - [ ] Pack Autopista 20 ART: Taller estilo Supercell — panel, huecos de objeto (normal/legendario/seleccionado), pestañas, botón COMPRAR, etiqueta de precio, ficha de objeto (17/11)
+- [ ] Pack Autopista 21 ART: panel del jugador y escudo de nivel otra vez, sin el azul (3 versiones de color para elegir) — 17/11
