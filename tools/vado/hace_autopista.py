@@ -890,6 +890,18 @@ html = sub(html, '</head>', """<style>
 .bv.h.yo .mn{width:100px !important;height:3.8px !important;margin-top:2.1px !important}
 .bv.h .mn u{background:linear-gradient(180deg,#ffe0f8 0,#ff6fe0 30%,#e0189a 70%,#8a0a5e 100%) !important}
 .bv.h b{margin-bottom:5px !important}
+/* imágenes 2-4: líquido viscoso de verdad (textura que fluye despacio) y la punta redondeada donde se acaba */
+.bv.h i u,.bv.h .mn u{position:relative;overflow:visible;background:url(ui/ap_liq_verde.webp) 0 0/auto 100% repeat-x !important;box-shadow:none !important;animation:apLiq 7s linear infinite}
+.bv.h.e0:not(.yo) i u{background-image:url(ui/ap_liq_azul.webp) !important}
+.bv.h.e1 i u{background-image:url(ui/ap_liq_rojo.webp) !important}
+.bv.h .mn u{background-image:url(ui/ap_liq_fucsia.webp) !important;animation-duration:9s}
+@keyframes apLiq{to{background-position:-138px 0}}
+.bv.h i u::before{content:none !important}
+.bv.h i u::after,.bv.h .mn u::after{content:'';position:absolute;top:-6%;bottom:-6%;left:calc(100% - 2px);aspect-ratio:3/4;background:url(ui/ap_liq_punta_verde.webp) 0 0/100% 100% no-repeat}
+.bv.h.e0:not(.yo) i u::after{background-image:url(ui/ap_liq_punta_azul.webp)}
+.bv.h.e1 i u::after{background-image:url(ui/ap_liq_punta_rojo.webp)}
+.bv.h .mn u::after{background-image:url(ui/ap_liq_punta_fucsia.webp)}
+.bv.h .mn{overflow:visible !important}
 </style>
 </head>""", donde='html')
 

@@ -30,3 +30,29 @@ for nombre, s in zip(['azul', 'rojo', 'yo'], placas):
     W, H = x1 - x0, y1 - y0
     med[nombre] = {'w': W, 'h': H, 'vent': [[v[2] / W * 100, v[0] / H * 100, v[3] / W * 100, v[1] / H * 100] for v in vent]}
 print(json.dumps(med, indent=1))
+
+# ---------- imágenes 2-4: líquidos viscosos (vida.png = tiras verde/azul/rojo, energia.png = fucsia horizontal y vertical, frentes.png = remates)
+from scipy import ndimage as nd
+def carga(n):
+    a = np.array(Image.open(R + n + '.png').convert('RGB')); m = (a[..., 0] > 150) & (a[..., 2] > 150) & (a[..., 1] < 130); return a, m
+a, m = carga('vida')
+for nombre, (y0, y1) in zip(['verde', 'azul', 'rojo'], [(162, 418), (514, 771), (868, 1124)]):
+    Image.fromarray(a[y0:y1]).resize((1024, 128), Image.LANCZOS).save(S + 'ap_liq_' + nombre + '.webp', quality=88)
+a, m = carga('energia')
+v = a[380:1228, 440:814]                                 # vertical sin la ola de arriba
+Image.fromarray(v).save(S + 'ap_liq_fucsia_v.webp', quality=88)
+Image.fromarray(np.rot90(v, 1).copy()).resize((1024, 128), Image.LANCZOS).save(S + 'ap_liq_fucsia.webp', quality=88)
+# remates: la punta redondeada de cada gota (lo de la derecha), con transparencia
+a, m = carga('frentes')
+for nombre, (y0, y1) in zip(['verde', 'azul', 'rojo', 'fucsia'], [(61, 250), (300, 490), (539, 728), (784, 971)]):
+    sub = ~m[y0:y1]; xs = np.where(sub.any(0))[0]; x1 = xs.max() + 2; h = y1 - y0; x0 = x1 - int(h * 0.75)
+    rgb = a[y0:y1, x0:x1]; al = np.where(sub[:, x0:x1], 255, 0).astype(np.uint8)
+    al = nd.uniform_filter(al.astype(float), 3).astype(np.uint8)
+    Image.fromarray(np.dstack([rgb, al]), 'RGBA').resize((96, 128), Image.LANCZOS).save(S + 'ap_liq_punta_' + nombre + '.webp', quality=90)
+# batería del HUD: el mismo hueco de la llena, relleno con el líquido vertical
+ll = np.array(Image.open(S + 'ap_mana_llena.webp').convert('RGBA')); al = ll[..., 3]
+ys, xs = np.where(al > 20); bx0, bx1, by0, by1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
+tex = np.array(Image.fromarray(v).resize((bx1 - bx0, by1 - by0), Image.LANCZOS))
+nuevo = ll.copy(); nuevo[by0:by1, bx0:bx1, :3] = tex
+Image.fromarray(nuevo, 'RGBA').save(S + 'ap_mana_llena.webp', quality=90)
+print('líquidos hechos')
