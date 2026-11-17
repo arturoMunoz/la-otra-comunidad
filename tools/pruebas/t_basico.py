@@ -25,7 +25,7 @@ async def main():
             if intento % 10 == 0: print(await pg.evaluate("() => {const V = window._vado, h = V.S.u.find(u => u.id === V.YO), v = V.VISTA.get(V.YO); return [h.ac, v && v.ac, h.tipo, Math.round(h.x), Math.round(h.z), h.vida]}"))
         d = await pg.evaluate("""() => {const V = window._vado, nom = [];
           for (const p of V.FXP) if (p.flip) {const {c, r} = p.flip, i = Math.floor(p.flip.n * 0.35); p.o.material.map.offset.set((i % c) / c, 1 - (Math.floor(i / c) + 1) / r); p.o.material.opacity = 1; p.o.scale.setScalar(p.esc); p.t = -99; nom.push(p.o.material.map.source.data && p.o.material.map.source.data.src ? p.o.material.map.source.data.src.split('/').pop() : '?');}
-          V.renderer.render(V.scene, V.camera); return [nom, V.renderer.domElement.toDataURL('image/png')];}""")
+          V.renderer.setPixelRatio(1.5); V.renderer.render(V.scene, V.camera); return [nom, V.renderer.domElement.toDataURL('image/png')];}""")
         print(HEROE, 'hojas', d[0], 'ERR', errs[:2]); open('/home/claude/pruebas/bas_%s.png' % HEROE, 'wb').write(base64.b64decode(d[1].split(',')[1]))
         await b.close()
 asyncio.run(main())

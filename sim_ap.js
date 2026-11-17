@@ -834,7 +834,7 @@ function compra(h, id) {
 const AN = {quieto: 0, correr: 1};
 /* lo que manda cada jugador (en el móvil del anfitrión o en el servidor) */
 function aplicaMando(h, o) {
-    if (o.t === 'in') {h.lat = Math.min(0.5, (o.rt || 0) / 1000 + INTERP_MS / 1000 + 1 / 30); /* 17/11: antes en el servidor se usaba media ida y vuelta y los golpes del invitado se quedaban cortos */ /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
+    if (o.t === 'in') {h.lat = Math.min(0.5, (o.rt || 0) / 1000 + (+o.ip || INTERP_MS) / 1000 + 1 / 30); /* 17/11: antes en el servidor se usaba media ida y vuelta y los golpes del invitado se quedaban cortos */ /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; rebobinado(h, () => usaHab(h, o.k, o.dx, o.dz, o.px, o.pz));}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);

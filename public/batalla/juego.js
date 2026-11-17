@@ -1248,7 +1248,7 @@ function compra(h, id) {
 const AN = {quieto: 0, correr: 1};
 /* lo que manda cada jugador (en el móvil del anfitrión o en el servidor) */
 function aplicaMando(h, o) {
-    if (o.t === 'in') {h.lat = Math.min(0.5, (o.rt || 0) / 1000 + INTERP_MS / 1000 + 1 / 30); /* 17/11: antes en el servidor se usaba media ida y vuelta y los golpes del invitado se quedaban cortos */ /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
+    if (o.t === 'in') {h.lat = Math.min(0.5, (o.rt || 0) / 1000 + (+o.ip || INTERP_MS) / 1000 + 1 / 30); /* 17/11: antes en el servidor se usaba media ida y vuelta y los golpes del invitado se quedaban cortos */ /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; rebobinado(h, () => usaHab(h, o.k, o.dx, o.dz, o.px, o.pz));}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
@@ -1288,7 +1288,7 @@ function pintaConexion() {
   if (mal && ahora - CONEX.aviso > 20000 && ESTADO === 'juego') {CONEX.aviso = ahora; aviso('⚠ Conexión inestable: se están perdiendo datos');}
 }
 function recibeFoto(o) {
-  {const ahora = performance.now(); if (CONEX.ult && ahora - CONEX.ult > 300) CONEX.huecos.push(ahora); CONEX.ult = ahora;}
+  {const ahora = performance.now(); if (CONEX.ult) {const g = ahora - CONEX.ult; if (g > 300) CONEX.huecos.push(ahora); if (g < 1000) {HUECOS_F.push(g); if (HUECOS_F.length > 45) HUECOS_F.shift(); if (HUECOS_F.length >= 15) {const o2 = [...HUECOS_F].sort((a, b) => a - b), p90 = o2[Math.floor(o2.length * 0.9)], obj = Math.max(90, Math.min(180, p90 + 22)); INTERP_MS += (obj - INTERP_MS) * 0.08;}}} CONEX.ult = ahora;}
   for (const v of VISTA.values()) v.visto = false;
   for (const f of o.u) aplicaFila(f, o.t);
   for (const [id, v] of VISTA) if (!v.visto) {quitaVis(id); VISTA.delete(id);}
@@ -1861,7 +1861,7 @@ const camM = new THREE.Vector3();
 let APAI = VW > VH;
 function ejes() {const s = signo(MI_EQ); return APAI ? {F: {x: -s, z: 0}, R: {x: 0, z: -s}} : {F: {x: 0, z: -s}, R: {x: s, z: 0}};}
 const ZOOMS = [[24, 14], [31, 18], [40, 23]]; let zoomI = +(localStorage.getItem('vado.zoom') ?? 1);
-const INTERP_MS = 100;
+let INTERP_MS = 100; const HUECOS_F = []; /* 17/11: el retraso de pintado se adapta a la red (fotos a trompicones → más colchón; red buena → menos retraso) */
 let CAM_FIN = null; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
 function camara(dt) {
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
@@ -2369,11 +2369,11 @@ function bucle() {
         if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0 && h && !h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; aviso('En la fuente: ya puedes comprar');}}
         acum += dt; let pasos = 0; const ts = performance.now(); while (acum >= 1 / 30 && pasos < 4) {paso(1 / 30); acum -= 1 / 30; pasos++;} if (acum > 0.1) acum = 0; ALFA = Math.min(1, acum * 30);
         fotoT -= dt;
-        if (pasos) {const f = foto(); recibeFotoLocal(f); PERF.sim += performance.now() - ts; if (NET.online && fotoT <= 0) {fotoT = 1 / 15; NET.manda({t: 'foto', f: {...f, ev: ENVIAR.splice(0)}});}}
+        if (pasos) {const f = foto(); recibeFotoLocal(f); PERF.sim += performance.now() - ts; if (NET.online && fotoT <= 0) {fotoT = Math.max(fotoT + 1 / 15, 0); NET.manda({t: 'foto', f: {...f, ev: ENVIAR.splice(0)}});}}
       } else if (!S && ESTADO === 'juego') {
         mueveMio(dt);
         if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0) {NET.manda({t: 'volver'}); MIO.listo = false;}}
-        inT -= dt; if (inT <= 0 && MIO.listo) {inT = 1 / 15; NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0, rt: NET.ping || 0});}
+        inT -= dt; const golpeNuevo = (MANDO.golpes || 0) !== NET.gEnv || atacando() !== NET.aEnv; if ((inT <= 0 || golpeNuevo) && MIO.listo) {inT = Math.max(inT + 1 / 15, 0); NET.gEnv = MANDO.golpes || 0; NET.aEnv = atacando(); /* 17/11: el golpe se manda al momento, sin esperar al siguiente envío (hasta 66 ms menos) */ NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0, rt: NET.ping || 0, ip: Math.round(INTERP_MS)});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
       UT.value += dt; animaPalantir(); const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); else if (MIRA_AT) miraAtaque(); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
@@ -2622,4 +2622,4 @@ bucle();
 /* primero que se vea el menú (retrato, fondo y letras) y después, los modelos: si no, los 16 MB se comen la conexión y el retrato tarda */
 {const img = $('mSplash'); const listo = () => new Promise((r) => {if (img.complete && img.naturalWidth) r(); else {img.addEventListener('load', r, {once: true}); img.addEventListener('error', r, {once: true});}});
  Promise.race([Promise.all([listo(), document.fonts ? document.fonts.ready : 0]), new Promise((r) => setTimeout(r, 2500))]).then(() => cargaTodo());}
-window._vado = {get MIO() {return MIO;}, MIRA_H, get MIRA_ACT() {return MIRA_ACT;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {get MIO() {return MIO;}, MANDO, PRED, CONEX, get INTERP() {return INTERP_MS;}, MIRA_H, get MIRA_ACT() {return MIRA_ACT;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};

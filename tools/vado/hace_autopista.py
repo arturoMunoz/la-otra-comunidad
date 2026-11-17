@@ -487,10 +487,10 @@ html = sub(html, '</head>', """<style>
 js = sub(js, "function modeloProy(n) {", """/* A-6 (Pack 24 ART, 17/11): proyectiles dibujados vistos desde arriba (ui/ap_pr_*.webp, apuntan a +X con la estela detrás).
    Un plano tumbado y girado para que el dibujo mire a +Z, que es hacia donde se orientan los proyectiles (rotation.y = atan2(dx, dz)).
    [archivo, tamaño en metros] */
-const PROY_AP = {bola: ['bola', 1.4], brasa: ['brasa', 1.8], energia: ['energia', 1.7], bala: ['bala', 1.5], cadena: ['hoz', 1.8]};
+const PROY_AP = {bola: ['bola', 1.9], brasa: ['brasa', 2.4], energia: ['energia', 2.3], bala: ['bala', 2.2], cadena: ['hoz', 2.2]};  /* 17/11: más grandes y por encima de todo (antes los tapaban los personajes) */
 const PROY_AP_G = {}, GEO_PROY = (() => {const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); g.rotateY(-Math.PI / 2); return g;})();
 function proyAP(n) {
-  if (!PROY_AP_G[n]) {const [f, tam] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false})); m.scale.setScalar(tam); m.renderOrder = 5; g.add(m); PROY_AP_G[n] = g;}
+  if (!PROY_AP_G[n]) {const [f, tam] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false})); m.scale.setScalar(tam); m.renderOrder = 6; g.add(m); PROY_AP_G[n] = g;}
   return PROY_AP_G[n].clone(true);
 }
 /* golpe al llegar, propio de cada proyectil (Pack 25 ART) */
@@ -812,10 +812,11 @@ function basicoFx(v, o, n, rot) {
   if (!v || !o || v.k !== 'h') return; const H = HEROES[v.tipo]; if (!H) return;
   const espera = Math.min(150, 120 / Math.max(0.6, H.vatq));
   setTimeout(() => {const p = o.raiz.position, r = rot ?? o.rv ?? 0, dx = Math.sin(r), dz = Math.cos(r), lado = n % 2 ? 1 : -1;
-    if (TAJO_B[v.tipo]) {const d = Math.min(H.alcance, 2.2) * 0.6; flip(TAJO_B[v.tipo], p.x + dx * d, p.z + dz * d, 2.6 + H.alcance * 0.5, true, r - Math.PI / 4 + (lado > 0 ? 0 : Math.PI / 2));}
-    else if (v.tipo === 'elfo') {flip('ap_elfo_fogonazo', p.x + dx * 1.1, p.z + dz * 1.1, 1.7, false, undefined, 1.25); o.kb = {x: -dx * 0.18, z: -dz * 0.18, t: 0.12, d: 0.12};}
-    else if (v.tipo === 'gandalf') flip('fuego', p.x + dx * 0.8, p.z + dz * 0.8, 1.3, false, undefined, 1.3, 0.3);
-    else if (v.tipo === 'hobbit') flip('tArco', p.x + dx * 0.7, p.z + dz * 0.7, 2, true, r - Math.PI / 4);
+    /* 17/11 (Henar: «los básicos no se ven bien»): además del tajo en el suelo (que el propio héroe tapaba), otro de pie delante, a la altura del pecho, y más grandes */
+    if (TAJO_B[v.tipo]) {const d = Math.min(H.alcance, 2.4) * 0.8; flip(TAJO_B[v.tipo], p.x + dx * d, p.z + dz * d, 3.4 + H.alcance * 0.7, true, r - Math.PI / 4 + (lado > 0 ? 0 : Math.PI / 2)); flip(TAJO_B[v.tipo], p.x + dx * (d + 0.3), p.z + dz * (d + 0.3), 2.4 + H.alcance * 0.4, false, undefined, 1.15);}
+    else if (v.tipo === 'elfo') {flip('ap_elfo_fogonazo', p.x + dx * 1.2, p.z + dz * 1.2, 2.4, false, undefined, 1.25); o.kb = {x: -dx * 0.25, z: -dz * 0.25, t: 0.12, d: 0.12};}
+    else if (v.tipo === 'gandalf') {flip('fuego', p.x + dx * 0.9, p.z + dz * 0.9, 1.9, false, undefined, 1.3, 0.35); flip('ap_gandalf_impacto', p.x + dx * 0.9, p.z + dz * 0.9, 1.3, false, undefined, 1.3);}
+    else if (v.tipo === 'hobbit') {flip('tArco', p.x + dx * 0.8, p.z + dz * 0.8, 2.8, true, r - Math.PI / 4); flip('ap_hobbit_impacto', p.x + dx * 0.9, p.z + dz * 0.9, 1.2, false, undefined, 0.6);}
   }, espera);
 }
 function golpeVisual(id, de, fuerte) {""")
@@ -859,6 +860,11 @@ function pieza(archivo, nombre) {""")
 js = sub(js, "  fusiona(MAPA_G);\n", """  {const bb = new THREE.Box3(); MAPA_G.updateMatrixWorld(true); MAPA_G.traverse((q) => {if (!q.isMesh || q.isInstancedMesh || q.isSkinnedMesh || !q.castShadow) return; bb.setFromObject(q); if (bb.max.y - Math.max(0, bb.min.y) < 2.2) q.castShadow = false;});}
   fusiona(MAPA_G);
 """)
+
+# los proyectiles propios (bola, brasa, bala…) también se calientan en la pantalla VS: antes el primer disparo subía su dibujo y
+# compilaba su material en plena pelea (tirón en el primer básico)
+js = sub(js, "  try {for (const n in FB) {flip(n, 0, 0, 0.01, false, 0, -40, 0.3); flip(n, 0, 0, 0.01, true, 0, -40, 0.3);}} catch (e) {}",
+         "  try {for (const n in FB) {flip(n, 0, 0, 0.01, false, 0, -40, 0.3); flip(n, 0, 0, 0.01, true, 0, -40, 0.3);}} catch (e) {}\n  try {for (const n in PROY_AP) {const o = proyAP(n); o.position.set(0, -40, 0); scene.add(o); setTimeout(() => scene.remove(o), 1500);}} catch (e) {}")
 
 # ---------- MANDOS EN ARCO (17/11, Henar: «es una chapuza»: botones pisándose) ----------
 # Esquema fijo como el del Wild Rift alrededor del ataque (abajo a la derecha): Q a la izquierda, W en diagonal, E encima y la R

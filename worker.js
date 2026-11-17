@@ -117,7 +117,7 @@ export class Sala {
         const ahora = Date.now(), dt = Math.min(0.25, (ahora - t) / 1000); t = ahora; acum += dt; let n = 0;
         while (acum >= 1 / 30 && n < 6) { sim.paso(1 / 30); acum -= 1 / 30; n++; }
         fotoT -= dt;
-        if (fotoT <= 0) { fotoT = 1 / 15; this.todos({ t: 'foto', f: sim.foto() }); }
+        if (fotoT <= 0) { fotoT = Math.max(fotoT + 1 / 15, 0); this.todos({ t: 'foto', f: sim.foto() }); }  /* 17/11: se suma (antes se reiniciaba y salían 12 fotos/s en vez de 15) */
         if (sim.S.fin >= 0 && (finT += dt) > 8) this.paraSim();
         if (!this.socks().length) this.paraSim();
       } catch (e) { this.todos({ t: 'error', txt: 'Fallo en el servidor: ' + (e && e.message) }); this.paraSim(); }
