@@ -1,0 +1,182 @@
+[
+  {
+    "file": "ap_sub_azul_m.glb",
+    "base": "ballestero2.glb",
+    "triangles": 1348,
+    "bones": 41,
+    "clips": [
+      "apuntar",
+      "morir",
+      "recibir_golpe",
+      "quieto",
+      "disparar",
+      "cargar",
+      "correr",
+      "andar"
+    ],
+    "rest_bounds": {
+      "min": [
+        -0.6463323917818818,
+        -6.521789583246148e-13,
+        -0.2949999984026829
+      ],
+      "max": [
+        0.7843230992981923,
+        1.7999999945745446,
+        0.24900001015261347
+      ]
+    },
+    "rig_and_animation_identical": true
+  },
+  {
+    "file": "ap_sub_azul_r.glb",
+    "base": "arquero_rohan2.glb",
+    "triangles": 1336,
+    "bones": 41,
+    "clips": [
+      "apuntar",
+      "cargar",
+      "disparar",
+      "morir",
+      "recibir_golpe",
+      "quieto",
+      "correr",
+      "andar"
+    ],
+    "rest_bounds": {
+      "min": [
+        -0.6463323917818818,
+        -6.521789583246148e-13,
+        -0.2949999984026829
+      ],
+      "max": [
+        0.6463323705902871,
+        1.7999999945745446,
+        0.6999994214141477
+      ]
+    },
+    "rig_and_animation_identical": true
+  },
+  {
+    "file": "ap_sub_rojo_m.glb",
+    "base": "uruk.glb",
+    "triangles": 1348,
+    "bones": 17,
+    "clips": [
+      "andar",
+      "correr",
+      "quieto",
+      "atacar",
+      "recibir_golpe",
+      "morir",
+      "morir_2",
+      "morir_3",
+      "trepar",
+      "saltar",
+      "golpear_puerta",
+      "empujado",
+      "aturdido",
+      "rugir",
+      "pasar_almena",
+      "caer"
+    ],
+    "rest_bounds": {
+      "min": [
+        -0.638012952627354,
+        0.0,
+        -0.31138888001441956
+      ],
+      "max": [
+        0.5941022714785544,
+        1.9000000006346938,
+        0.2883288547333819
+      ]
+    },
+    "rig_and_animation_identical": true
+  },
+  {
+    "file": "ap_sub_rojo_r.glb",
+    "base": "q_arquero.glb",
+    "triangles": 1436,
+    "bones": 32,
+    "clips": [
+      "andar",
+      "apuntar",
+      "atacar",
+      "correr",
+      "disparar",
+      "morir",
+      "quieto",
+      "recibir",
+      "rodar",
+      "tensar_arco"
+    ],
+    "rest_bounds": {
+      "min": [
+        -0.6684430146014035,
+        -4.931681226588713e-10,
+        -0.3698341025049685
+      ],
+      "max": [
+        0.37620161918207495,
+        1.7676963694339238,
+        0.701466498421419
+      ]
+    },
+    "rig_and_animation_identical": true
+  },
+  {
+    "file": "ap_super_azul.glb",
+    "base": "super_rohan.glb",
+    "triangles": 1572,
+    "bones": 17,
+    "clips": [
+      "andar",
+      "morir",
+      "correr",
+      "recibir_golpe",
+      "quieto",
+      "atacar",
+      "disparar"
+    ],
+    "rest_bounds": {
+      "min": [
+        -0.9804305018189854,
+        8.659739605311111e-17,
+        -0.3071390289068222
+      ],
+      "max": [
+        1.31262682260311,
+        3.141194842517037,
+        0.4958566439101081
+      ]
+    },
+    "rig_and_animation_identical": true
+  },
+  {
+    "file": "ap_super_rojo.glb",
+    "base": "super_isengard.glb",
+    "triangles": 1616,
+    "bones": 17,
+    "clips": [
+      "andar",
+      "atacar",
+      "morir",
+      "correr",
+      "quieto"
+    ],
+    "rest_bounds": {
+      "min": [
+        -0.969094564819336,
+        1.5321077769605662e-16,
+        -0.5387526726722717
+      ],
+      "max": [
+        1.3086608707427978,
+        3.287304424285889,
+        0.48270724991858005
+      ]
+    },
+    "rig_and_animation_identical": true
+  }
+]

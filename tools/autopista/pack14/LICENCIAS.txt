@@ -1,0 +1,9 @@
+Las nuevas mallas y atlas se han creado para este encargo. No se descargaron
+modelos ni texturas de terceros. El usuario puede utilizar y modificar
+las nuevas mallas y texturas en su juego.
+
+Esqueletos y animaciones: Pack14_referencia_subditos.zip aportado por el
+usuario (ballestero2.glb, arquero_rohan2.glb, uruk.glb, q_arquero.glb,
+super_rohan.glb y super_isengard.glb). Sus licencias y derechos originales
+se mantienen; no se afirma que esos datos aportados sean CC0. Las mallas
+visibles originales no se utilizan en las nuevas escenas.

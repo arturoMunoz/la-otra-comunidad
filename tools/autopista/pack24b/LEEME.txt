@@ -1,0 +1,9 @@
+A-6 — PACK AUTOPISTA 24 · TANDA 2
+
+Contiene:
+- ap_ind_gollum_basico.png — 1024 x 256 · flecha morada · Fu
+- ap_ind_rohan_basico.png — 1024 x 256 · flecha arena/dorada · Moha
+
+PNG RGBA, fondo transparente real. Flechas horizontales de izquierda a derecha, listas para aplicar sobre el suelo como indicadores de ataque básico.
+
+El ZIP Pack_Autopista_24_ART.zip contiene además los 10 PNG de la tanda 1.

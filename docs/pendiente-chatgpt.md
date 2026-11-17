@@ -50,22 +50,24 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] Pack Autopista 5 ART: kit de botones del menú y de la partida
 - [x] Pack Autopista 6 ART: hoja de iconos de habilidades y pasivas (7×5) + botones de ataque (7)
 - [x] Pack Autopista 7 WORK: mejorar los 7 héroes 3D (detalle, proporciones, armas) sobre los ap_*.glb actuales
-- [ ] Pack Autopista 8 WORK: torres-edificio (azul/roja, 3 estados), nexos y fuentes → `ap_estructuras.glb` (prompt en el chat del 17/11)
+- [x] (METIDO 17/11) (PRIORIDAD 1) Pack Autopista 8 WORK: torres-edificio (azul/roja, 3 estados), nexos y fuentes → `ap_estructuras.glb` (prompt en `docs/prompts-autopista.md`, «WORK pendientes»)
 - [ ] Pack Autopista 9 ART: retrato del guía de la partida guiada (`ap_guia.png`) e icono de «Crear sala»
-- [ ] Pack Autopista 10 WORK: vegetación de autopista, piezas de borde (muro antirruido, New Jersey, taludes, valla publicitaria, paso elevado) y objetos de suelo
+- [x] (METIDO 17/11) (PRIORIDAD 4) Pack Autopista 10 WORK: vegetación de autopista, piezas de borde (muro antirruido, New Jersey, taludes, valla publicitaria, paso elevado) y objetos de suelo
 - [x] Pack Autopista 11 ART: texturas de asfalto, arcén y hormigón (17/11)
 - [x] Pack Autopista 12 ART: iconos de la tienda (17 objetos + oro en 6x3) y de encantamientos y pestañas (3x3)
 - [x] (HECHO 17/11, `tools/autopista/pack13`) Pack Autopista 13 ART: HUD de partida sin aire medieval (botones Taller/Base/zoom/ataque/torre/súbditos, baliza, hechizos, batería de energía, marco de vida, botiquín animado)
-- [ ] Pack Autopista 14 WORK: súbditos modernos (azules y rojos, cuerpo a cuerpo, a distancia y súper) con los esqueletos y clips de los de La Brecha
+- [x] (METIDO 17/11) (PRIORIDAD 2) Pack Autopista 14 WORK: súbditos modernos (azules y rojos, cuerpo a cuerpo, a distancia y súper) con los esqueletos y clips de los de La Brecha
 - [x] (HECHO 17/11, `tools/autopista/pack15`) Pack Autopista 15 ART: logo «LA AUTOPISTA» del menú (`ap_logo.png`, 1600x640, transparente) → sustituye al título de texto `.mTit h1`
 - [x] (HECHO 17/11, `tools/autopista/pack16`) Pack Autopista 16 ART: lo de debajo del puente — suelo del barranco con río visto desde arriba (`ap_barranco.png`, 1536x1024, se repite de lado a lado) y pared de roca (`ap_pared_roca.png`, 1536x1024, se repite de lado a lado)
-- [ ] Pack Autopista 16 WORK: decorado del fondo del barranco (`ap_barranco_props.glb`: rocas, árboles, arbustos, troncos caídos, juncos) y pilas del puente (`ap_pila.glb`, `ap_estribo.glb`), CC0
+- [ ] (PRIORIDAD 3) Pack Autopista 16 WORK: decorado del fondo del barranco (`ap_barranco_props.glb`: rocas, árboles, arbustos, troncos caídos, juncos) y pilas del puente (`ap_pila.glb`, `ap_estribo.glb`), CC0
 - [x] (HECHO 17/11, `tools/autopista/pack17`) Pack Autopista 17 ART: logo «A-6» del menú (`ap_logo_a6.png`, 1600x640, transparente) e icono de la app con la señal A-6 — el juego pasa a llamarse A-6 (17/11)
-- [ ] Pack Autopista 18 ART A y B (C HECHO 17/11, `tools/autopista/pack18c`) — en el MISMO chat del 22 y con su estilo: marcas de apuntado y alcance propias de cada héroe de A-6 (`ap_ind_<clave>_<q|w|e|r|alcance>.png`; líneas 1024x256 hacia la derecha, conos y círculos 512x512) — 17/11
+- [x] (HECHO 17/11, `tools/autopista/pack18ab` y `pack18c`) Pack Autopista 18 ART A, B y C — en el MISMO chat del 22 y con su estilo: marcas de apuntado y alcance propias de cada héroe de A-6 (`ap_ind_<clave>_<q|w|e|r|alcance>.png`; líneas 1024x256 hacia la derecha, conos y círculos 512x512) — 17/11
 - [x] (HECHO 17/11, `tools/autopista/pack19`) Pack Autopista 19 ART: HUD estilo Supercell — aros de habilidad (normal/lista/definitiva), botón +, puntos de rango, aro de hechizo, panel del jugador (retrato, nivel, experiencia, oro, KDA), barras de vida sobre la cabeza (17/11)
 - [x] ~~Pack Autopista 20 ART~~ (anulado 17/11, Henar: «el Taller me gusta como ha quedado»)
 - [x] ~~Pack Autopista 21 ART~~ (anulado 17/11: lo sustituye el 22, estilo cyberpunk)
 - [x] (HECHO 17/11, `tools/autopista/pack22`) Pack Autopista 22 ART (cyberpunk serio, sustituye al HUD del 19): paso 1 hoja de estilo para aprobar; paso 2 las piezas sueltas (aros, +, rangos, hechizo, panel del jugador, nivel, experiencia, moneda, barras de vida) — 17/11
 - [x] (HECHO 17/11, `tools/autopista/pack23`) Pack Autopista 23 ART (cyberpunk, mismo chat del 22): batería de energía, botones redondos (Taller, Base, zoom, torre, soldados, baliza encendida/apagada, ajustes), marco del minimapa, marcador, cartel del objetivo — 17/11
-- [ ] Pack Autopista 24 ART (mismo chat del 22): proyectiles de cada héroe vistos desde arriba (`ap_pr_<bola|brasa|energia|bala|hoz>.png`) y la flecha de apuntar el golpe básico de cada uno (`ap_ind_<clave>_basico.png`) — 17/11
-- [ ] Pack Autopista 25 ART (mismo chat del 22): hojas de efectos 4x4 propias de cada héroe (2 por héroe, 14 en total, `ap_fx_<heroe>_<efecto>.png`) — 17/11
+- [x] (HECHO 17/11, `tools/autopista/pack24a`/`pack24b`) Pack Autopista 24 ART (mismo chat del 22): proyectiles de cada héroe vistos desde arriba (`ap_pr_<bola|brasa|energia|bala|hoz>.png`) y la flecha de apuntar el golpe básico de cada uno (`ap_ind_<clave>_basico.png`) — 17/11
+- [x] (HECHO 17/11, `tools/autopista/pack25`) Pack Autopista 25 ART (mismo chat del 22): hojas de efectos 4x4 propias de cada héroe (2 por héroe, 14 en total, `ap_fx_<heroe>_<efecto>.png`) — 17/11
+- [ ] Sonidos de A-6 — efectos generales HECHOS 17/11 con Kenney desde GitHub (`public/batalla/sonidos_ap`); fusil, golf, arena, música de partida y ambiente HECHOS 17/11; FALTAN cadena (Fu) y música de victoria y derrota (17/11, YA NO es WORK: Henar/Arturo los descargan a mano —Kenney Sci-fi/Impact/Interface/Digital Audio + Pixabay para fusil, golf, cadena, arena, llamas, explosiones, ambiente y música— y Claude los recorta y nombra con ffmpeg). Antes era el Pack Autopista 26 WORK: sin aire medieval — mismos nombres de fx que `public/abismo/sonidos/fx` (3 variantes), 7 sonidos propios `ap_<fusil|golf|llama|energia|luz|cadena|arena>_N.mp3`, clic, música (menu, batalla, victoria, derrota) y ambiente `trafico_puente.mp3`. Prompt en `docs/prompts-autopista.md`.
+- [x] (HECHO 17/11, `public/batalla/voces_ap`) Voz del anunciador de A-6 (ElevenLabs, lo hacen Henar/Arturo): 13 frases sin el Uruk (lista en `docs/prompts-autopista.md`).

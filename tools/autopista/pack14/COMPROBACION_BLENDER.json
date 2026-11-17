@@ -1,0 +1,326 @@
+[
+  {
+    "hero": "ap_sub_azul_m",
+    "clip": "andar",
+    "frames_evaluated": 27,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_m",
+    "clip": "cargar",
+    "frames_evaluated": 33,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_m",
+    "clip": "morir",
+    "frames_evaluated": 21,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_m",
+    "clip": "disparar",
+    "frames_evaluated": 33,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_m",
+    "clip": "correr",
+    "frames_evaluated": 21,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_m",
+    "clip": "recibir_golpe",
+    "frames_evaluated": 17,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_m",
+    "clip": "quieto",
+    "frames_evaluated": 27,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_m",
+    "clip": "apuntar",
+    "frames_evaluated": 40,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_r",
+    "clip": "andar",
+    "frames_evaluated": 27,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_r",
+    "clip": "morir",
+    "frames_evaluated": 21,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_r",
+    "clip": "apuntar",
+    "frames_evaluated": 30,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_r",
+    "clip": "recibir_golpe",
+    "frames_evaluated": 17,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_r",
+    "clip": "disparar",
+    "frames_evaluated": 28,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_r",
+    "clip": "cargar",
+    "frames_evaluated": 33,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_r",
+    "clip": "quieto",
+    "frames_evaluated": 27,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_azul_r",
+    "clip": "correr",
+    "frames_evaluated": 21,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "aturdido_Isengard",
+    "frames_evaluated": 50,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "saltar_Isengard",
+    "frames_evaluated": 24,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "morir_Isengard",
+    "frames_evaluated": 34,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "recibir_golpe_Isengard",
+    "frames_evaluated": 15,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "correr_Isengard",
+    "frames_evaluated": 17,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "andar_Isengard",
+    "frames_evaluated": 26,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "rugir_Isengard",
+    "frames_evaluated": 39,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "golpear_puerta_Isengard",
+    "frames_evaluated": 26,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "trepar_Isengard",
+    "frames_evaluated": 35,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "morir_2_Isengard",
+    "frames_evaluated": 33,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "quieto_Isengard",
+    "frames_evaluated": 81,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "empujado_Isengard",
+    "frames_evaluated": 19,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "pasar_almena_Isengard",
+    "frames_evaluated": 38,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "morir_3_Isengard",
+    "frames_evaluated": 45,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "atacar_Isengard",
+    "frames_evaluated": 21,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_m",
+    "clip": "caer_Isengard",
+    "frames_evaluated": 24,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "morir_CharacterArmature",
+    "frames_evaluated": 29,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "recibir_CharacterArmature",
+    "frames_evaluated": 16,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "apuntar_CharacterArmature",
+    "frames_evaluated": 76,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "quieto_CharacterArmature",
+    "frames_evaluated": 76,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "rodar_CharacterArmature",
+    "frames_evaluated": 25,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "disparar_CharacterArmature",
+    "frames_evaluated": 16,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "atacar_CharacterArmature",
+    "frames_evaluated": 19,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "tensar_arco_CharacterArmature",
+    "frames_evaluated": 31,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "correr_CharacterArmature",
+    "frames_evaluated": 22,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_sub_rojo_r",
+    "clip": "andar_CharacterArmature",
+    "frames_evaluated": 31,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_azul",
+    "clip": "atacar_super_rohan",
+    "frames_evaluated": 23,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_azul",
+    "clip": "disparar_super_rohan",
+    "frames_evaluated": 23,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_azul",
+    "clip": "correr_super_rohan",
+    "frames_evaluated": 25,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_azul",
+    "clip": "quieto_super_rohan",
+    "frames_evaluated": 49,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_azul",
+    "clip": "recibir_golpe_super_rohan",
+    "frames_evaluated": 19,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_azul",
+    "clip": "andar_super_rohan",
+    "frames_evaluated": 25,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_azul",
+    "clip": "morir_super_rohan",
+    "frames_evaluated": 30,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_rojo",
+    "clip": "correr_super_isengard",
+    "frames_evaluated": 17,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_rojo",
+    "clip": "quieto_super_isengard",
+    "frames_evaluated": 25,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_rojo",
+    "clip": "andar_super_isengard",
+    "frames_evaluated": 25,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_rojo",
+    "clip": "atacar_super_isengard",
+    "frames_evaluated": 24,
+    "rendered_samples": 1
+  },
+  {
+    "hero": "ap_super_rojo",
+    "clip": "morir_super_isengard",
+    "frames_evaluated": 30,
+    "rendered_samples": 1
+  }
+]

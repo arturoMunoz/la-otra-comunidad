@@ -1,0 +1,23 @@
+A-6 — Pack Autopista 24 · Tanda 1
+
+5 proyectiles (512 x 512):
+ ap_pr_bola.png
+ ap_pr_brasa.png
+ ap_pr_energia.png
+ ap_pr_bala.png
+ ap_pr_hoz.png
+
+5 marcadores de ataque básico (1024 x 256):
+ ap_ind_enano_basico.png
+ ap_ind_gandalf_basico.png
+ ap_ind_orco_basico.png
+ ap_ind_elfo_basico.png
+ ap_ind_hobbit_basico.png
+
+Todos los PNG son RGBA, sin texto y con fondo transparente.
+Proyectiles orientados hacia +X, con estela hacia -X.
+Flechas de izquierda a derecha, con la punta en el límite derecho.
+Los ataques básicos son visualmente más finos que las marcas de habilidades.
+
+Quedan pendientes para Tanda 2:
+ ap_ind_gollum_basico.png, ap_ind_rohan_basico.png

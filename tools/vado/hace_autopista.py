@@ -413,6 +413,47 @@ js = sub(js, "const IND = {};", "const IND = {}; const IND_AP = {ind_alcance: 'a
 js = sub(js, "marcaObj = indicador('ind_alcance', '#ff4a3a');", "marcaObj = indicador('ap_objetivo', '#ff4a3a');")
 js = sub(js, "aroFijo = indicador('ind_alcance', '#ffd24a');", "aroFijo = indicador('ap_objetivo', '#ffd24a');")
 js = sub(js, "zona: indicador('ind_area', '#ff3a1a'),", "zona: indicador('ap_zona_torre', '#ffffff'),")
+# ---------- PACK 18 A/B ART (17/11): marcas de apuntado propias (tools/autopista/procesa_pack18ab.py -> ui/ap_ind_<clave>_<k>.webp).
+# Los 7 héroes completos (Grub y Ata llegaron el último). ----------
+js = sub(js, "const IND_HEROE = {rohan: 'q r e alcance', enano: 'q e r alcance', elfo: 'q e r alcance', hobbit: 'q e alcance', gandalf: 'q e r alcance', orco: 'w e r alcance'};",
+         "const IND_HEROE = {rohan: 'q e r alcance', enano: 'q e r alcance', hobbit: 'q e alcance', gandalf: 'q e r alcance', gollum: 'q e alcance', orco: 'q w e r alcance', elfo: 'q e r alcance'};".replace(" alcance'", " alcance basico'"))
+js = sub(js, "const n = 'ind_' + tipo + '_' + k;", "const n = 'ap_ind_' + tipo + '_' + k;")
+# ---------- PACKS 24 y 25 ART (17/11): proyectiles, flecha del golpe básico y efectos propios (tools/autopista/procesa_pack24_25.py) ----------
+# flecha del golpe básico de cada héroe al arrastrar el ataque (antes la genérica)
+js = sub(js, "const f = mira.flecha; f.visible = true; f.scale.set(alc, 1, 1.2);", "const f = marcaH(v.tipo, 'basico', 'flecha') || mira.flecha; f.visible = true; f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.9);")
+# hojas de efectos 4x4 (fondo negro = se suma la luz; humo y arena con transparencia = mezcla normal)
+js = sub(js, "const fbTex = {};", """Object.assign(FB, {ap_enano_tajo: ['../batalla/fx/ap_enano_tajo.webp', 4, 4], ap_enano_estallido: ['../batalla/fx/ap_enano_estallido.webp', 4, 4], ap_gandalf_impacto: ['../batalla/fx/ap_gandalf_impacto.webp', 4, 4], ap_gandalf_ceniza: ['../batalla/fx/ap_gandalf_ceniza.webp', 4, 4],
+  ap_orco_remolino: ['../batalla/fx/ap_orco_remolino.webp', 4, 4], ap_orco_tajo: ['../batalla/fx/ap_orco_tajo.webp', 4, 4], ap_elfo_fogonazo: ['../batalla/fx/ap_elfo_fogonazo.webp', 4, 4], ap_elfo_impacto: ['../batalla/fx/ap_elfo_impacto.webp', 4, 4],
+  ap_hobbit_impacto: ['../batalla/fx/ap_hobbit_impacto.webp', 4, 4], ap_hobbit_hoyo: ['../batalla/fx/ap_hobbit_hoyo.webp', 4, 4], ap_gollum_humo: ['../batalla/fx/ap_gollum_humo.webp', 4, 4, 'n'], ap_gollum_tajo: ['../batalla/fx/ap_gollum_tajo.webp', 4, 4],
+  ap_rohan_arena: ['../batalla/fx/ap_rohan_arena.webp', 4, 4, 'n'], ap_rohan_tajo: ['../batalla/fx/ap_rohan_tajo.webp', 4, 4]});
+Object.assign(FB_DUR, {ap_enano_tajo: 0.45, ap_enano_estallido: 0.8, ap_gandalf_impacto: 0.6, ap_gandalf_ceniza: 1.5, ap_orco_remolino: 0.7, ap_orco_tajo: 0.45, ap_elfo_fogonazo: 0.22, ap_elfo_impacto: 0.4,
+  ap_hobbit_impacto: 0.45, ap_hobbit_hoyo: 1.1, ap_gollum_humo: 1.1, ap_gollum_tajo: 0.45, ap_rohan_arena: 1, ap_rohan_tajo: 0.45});
+const fbTex = {};""")
+# lo heredado de La Brecha que tapa los efectos propios (17/11): la Furia de Durin (fuego y grietas) en la definitiva de Brask,
+# la explosión naranja en las áreas de Grub y Moha, y el fuego de la Carga de los Rohirrim en el picado de Moha
+js = sub(js, "flip('ondaC', x, z, H.radio * 2.6, true); flip('polvoA', x, z, H.radio * 2.2, true); flip('explosion', x, z, H.radio * 1.2);\n    if (k === 'r') {/* Furia de Durin",
+         "flip('ondaC', x, z, H.radio * 2.6, true); flip('polvoA', x, z, H.radio * 2.2, true);\n    if (k === 'r' && v.tipo !== 'enano') {/* Furia de Durin")
+js = sub(js, "fx: k === 'r' ? 'fuego' : 'polvo', tam: k === 'r' ? 2.4 : 1.5}", "fx: k === 'r' ? 'ap_rohan_arena' : 'polvo', tam: k === 'r' ? 2.4 : 1.5}")
+js = sub(js, "else if (k !== 'r') flip('tArco', x + dx * H.dist * 0.5", "else if (k !== 'r' && v.tipo !== 'rohan') flip('tArco', x + dx * H.dist * 0.5")
+js = sub(js, "flip('tArco', x + dx * f, z + dz * f, 5.5, true, rs + (i % 2 ? 0 : Math.PI)); flip('fuego', x + dx * f + rnd(-1, 1), z + dz * f + rnd(-1, 1), 2.2);",
+         "flip('ap_rohan_tajo', x + dx * f, z + dz * f, 4.6, true, rs + (i % 2 ? 0 : Math.PI)); flip('ap_rohan_arena', x + dx * f + rnd(-1, 1), z + dz * f + rnd(-1, 1), 2.4, true);")
+# VOZ DEL ANUNCIADOR DE A-6 (17/11, ElevenLabs, original en tools/autopista/voz/anunciador_a6.mp3, cortada por silencios en voces_ap/): sin las frases del Uruk
+js = sub(js, "'voces/' + n", "'voces_ap/' + n", n=2)
+js = sub(js, "'uruk_despierta', 'uruk_muerto', ", "")
+# SONIDOS DE A-6 (17/11, Kenney CC0 desde GitHub, tools/autopista/hace_sonidos.py -> public/batalla/sonidos_ap/fx con los mismos nombres)
+js = sub(js, "'../abismo/sonidos/fx/'", "'../batalla/sonidos_ap/fx/'", n=2)
+js = sub(js, "const SON_LISTA = {", "const SON_LISTA = {ap_llama: 'ap_llama', ap_energia: 'ap_energia', ap_luz: 'ap_luz', ap_fusil: 'ap_fusil', ap_golf: 'ap_golf', ap_arena: 'ap_arena', ")
+# sonidos bajados a mano (tools/autopista/hace_sonidos2.py): el golpe básico de Ata suena a fusil y el de Birdie a palo de golf;
+# música de acción (menú y partida) y ambiente de tráfico en el puente. Victoria y derrota siguen siendo las de La Brecha.
+js = sub(js, "} else suena('arco', 0.25);", "} else suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', {bala: 0.35, bola: 0.45}[e[1]] || 0.25);")
+js = sub(js, "t: 0}); suena('arco', 0.5);}", "t: 0}); suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', 0.5);}")
+js = sub(js, "menu: ['mus/tregua_tensa.mp3', 0.5], batalla: ['mus/batalla_epica.mp3', 0.38], amb: ['amb/batalla_lejana.mp3', 0.16]",
+         "menu: ['../../batalla/sonidos_ap/mus/accion.mp3', 0.32], batalla: ['../../batalla/sonidos_ap/mus/accion.mp3', 0.38], amb: ['../../batalla/sonidos_ap/amb/trafico.mp3', 0.3]")
+# cada proyectil recuerda qué es y al llegar suelta su golpe propio
+js = sub(js, "const pr = {tipo: 'proy', o, x: e[2],", "const pr = {tipo: 'proy', k: e[1], o, x: e[2],")
+js = sub(js, "suena('explosion', 0.45, p.x, p.z);} scene.remove(p.o); FXP.splice(i, 1); continue;}", "suena('explosion', 0.45, p.x, p.z);} if (IMPACTO_AP[p.k]) flip(IMPACTO_AP[p.k], p.x, p.z, 1.1, false, undefined, p.y); scene.remove(p.o); FXP.splice(i, 1); continue;}")
+js = sub(js, "FXP.push({tipo: 'tiro', o, x: e[2],", "FXP.push({tipo: 'tiro', k: e[1], o, x: e[2],")
+js = sub(js, "p.o.position.set(p.x + (p.tx - p.x) * k, 1.2, p.z + (p.tz - p.z) * k); if (k >= 1) {scene.remove(p.o); FXP.splice(i, 1);}}", "p.o.position.set(p.x + (p.tx - p.x) * k, 1.2, p.z + (p.tz - p.z) * k); if (k >= 1) {if (IMPACTO_AP[p.k]) flip(IMPACTO_AP[p.k], p.tx, p.tz, 1.5); scene.remove(p.o); FXP.splice(i, 1);}}")
 # ---------- PACK 23 ART (17/11): botones redondos, baliza, marco del minimapa, marcador, cartel y batería (tools/autopista/procesa_pack23.py) ----------
 # b_volver, b_zoom, b_armeria, b_torre, b_subditos, baliza y baliza_off ya se cambian arriba (Pack 13): el script deja los nuevos con el mismo nombre
 html = sub(html, '<canvas id="mini" class="hidden" width="96" height="196"></canvas>', '<canvas id="mini" class="hidden" width="96" height="196"></canvas><div id="miniMarco"></div>', donde='html')
@@ -444,16 +485,21 @@ html = sub(html, '</head>', """<style>
 # ---------- EFECTOS DE CADA HABILIDAD (17/11, Henar: «el cubo de bolas no saca nada; que todas las habilidades y el básico tengan animación») ----------
 # Proyectiles propios (bola de golf, brasa, energía, bala, cadena): PROVISIONALES con esferas, como la «luz» de La Brecha, hasta el Pack 24 ART.
 # Se clonan compartiendo geometría y material: no suben nada nuevo a la GPU (sin tirones).
-js = sub(js, "function modeloProy(n) {", """/* A-6: [color, radio, halo, radio del halo, alargado] */
-const PROY_AP = {bola: ['#ffffff', 0.26, '#bfe6ff', 0.46], brasa: ['#fff1c0', 0.2, '#ff7a1a', 0.5], energia: ['#eaffd0', 0.18, '#3dff6a', 0.44], bala: ['#fff6c8', 0.07, '#ffc23a', 0.15, 7], cadena: ['#f0e6ff', 0.14, '#a24dff', 0.34]};
-const PROY_AP_G = {};
+js = sub(js, "function modeloProy(n) {", """/* A-6 (Pack 24 ART, 17/11): proyectiles dibujados vistos desde arriba (ui/ap_pr_*.webp, apuntan a +X con la estela detrás).
+   Un plano tumbado y girado para que el dibujo mire a +Z, que es hacia donde se orientan los proyectiles (rotation.y = atan2(dx, dz)).
+   [archivo, tamaño en metros] */
+const PROY_AP = {bola: ['bola', 1.4], brasa: ['brasa', 1.8], energia: ['energia', 1.7], bala: ['bala', 1.5], cadena: ['hoz', 1.8]};
+const PROY_AP_G = {}, GEO_PROY = (() => {const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); g.rotateY(-Math.PI / 2); return g;})();
 function proyAP(n) {
-  if (!PROY_AP_G[n]) {const [c1, r1, c2, r2, largo = 1] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(new THREE.SphereGeometry(r1, 10, 6), new THREE.MeshBasicMaterial({color: c1})), h = new THREE.Mesh(new THREE.SphereGeometry(r2, 10, 6), new THREE.MeshBasicMaterial({color: c2, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false})); m.scale.z = h.scale.z = largo; g.add(m, h); PROY_AP_G[n] = g;}
+  if (!PROY_AP_G[n]) {const [f, tam] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false})); m.scale.setScalar(tam); m.renderOrder = 5; g.add(m); PROY_AP_G[n] = g;}
   return PROY_AP_G[n].clone(true);
 }
+/* golpe al llegar, propio de cada proyectil (Pack 25 ART) */
+const IMPACTO_AP = {bola: 'ap_hobbit_impacto', brasa: 'ap_gandalf_impacto', bala: 'ap_elfo_impacto', energia: 'ap_orco_tajo'};
 /* ráfagas: varios proyectiles a la vez (cubo de bolas, balas de cobertura…), con bote opcional; solo dibujo, el daño lo pone la simulación */
 const RAFAGAS = []; window._rafagas = RAFAGAS;
-function rafaga({n = 1, x, z, ang, abre = 0, dist, varia = 0.25, cada = 0, y = 1.1, salta = 0, kind = 'bola', vel = 24, fin = 'impacto'}) {
+function rafaga({n = 1, x, z, ang, abre = 0, dist, varia = 0.25, cada = 0, y = 1.1, salta = 0, kind = 'bola', vel = 24, fin}) {
+  if (fin === undefined) fin = IMPACTO_AP[kind] || 'impacto';
   for (let i = 0; i < n; i++) setTimeout(() => {if (RAFAGAS.length > 70) return; const a = ang + (Math.random() - 0.5) * abre, d = dist * (1 - varia + Math.random() * varia), o = proyAP(kind); scene.add(o); RAFAGAS.push({o, x, z, tx: x + Math.sin(a) * d, tz: z + Math.cos(a) * d, t: 0, dur: d / vel, y, salta, kind, fin});}, i * cada);
 }
 function animaRafagas(dt) {
@@ -478,38 +524,41 @@ js = sub(js, "/* lluvia de flechas: caen flechas de verdad sobre la zona */", ""
 function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
   const t = v.tipo, rs = rot - Math.PI / 4, lejos = () => {const d0 = Math.min(H.alc || 0, Math.hypot(px - x, pz - z)); return [x + dx * d0, z + dz * d0];};
   if (o.estelaTiro) o.estelaTiro.fx = {gandalf: 'fuego', orco: 'impacto', gollum: 'humo'}[t];
+  {const sn = {gandalf: 'ap_llama', orco: 'ap_energia', enano: 'ap_luz', elfo: 'ap_fusil', hobbit: 'ap_golf', rohan: 'ap_arena'}[t]; if (sn) suena(sn, k === 'r' ? 0.8 : 0.55, x, z);}
   if (t === 'hobbit') {
     if (k === 'q') {flip('ondaC', x + dx * 1.2, z + dz * 1.2, 2.4, true); temb(0.12);}  /* el drive: golpe seco y la bola sale disparada (tiro) */
     if (k === 'e') {rafaga({n: 11, x: x + dx * 0.6, z: z + dz * 0.6, ang: rot, abre: H.ang * 1.15, dist: H.alc, cada: 30, y: 1.0, salta: 1.4, kind: 'bola', vel: 13}); suena('arco', 0.6, x, z); luego2(140, () => suena('arco', 0.45, x, z));}
-    if (k === 'r') {rafaga({n: 16, x, z, ang: 0, abre: Math.PI * 2, dist: 3.4, cada: 18, y: 2.6, salta: 2.4, kind: 'bola', vel: 9, fin: 'chispa'});}
+    if (k === 'r') {flip('ap_hobbit_hoyo', x, z, 4.2, false, undefined, 1.2); rafaga({n: 16, x, z, ang: 0, abre: Math.PI * 2, dist: 3.4, cada: 18, y: 2.6, salta: 2.4, kind: 'bola', vel: 9, fin: 'chispa'});}
   }
   if (t === 'elfo') {
-    if (k === 'q') {flip('ondaC', x + dx, z + dz, 2.2, true); temb(0.15);}
-    if (k === 'w') for (let i = 0; i < 5; i++) luego2(i * 110, () => {const p = o.raiz.position; rafaga({x: p.x, z: p.z, ang: o.raiz.rotation.y, abre: 0.12, dist: 7, kind: 'bala', vel: 40, y: 1.3}); suena('arco', 0.25, p.x, p.z);});
+    if (k === 'q') {flip('ap_elfo_fogonazo', x + dx * 1.3, z + dz * 1.3, 2, false, undefined, 1.3); flip('ondaC', x + dx, z + dz, 2.2, true); temb(0.15);}
+    if (k === 'w') for (let i = 0; i < 5; i++) luego2(i * 110, () => {const p = o.raiz.position; rafaga({x: p.x, z: p.z, ang: o.raiz.rotation.y, abre: 0.12, dist: 7, kind: 'bala', vel: 40, y: 1.3}); flip('ap_elfo_fogonazo', p.x + Math.sin(o.raiz.rotation.y) * 1.3, p.z + Math.cos(o.raiz.rotation.y) * 1.3, 1.4, false, undefined, 1.3); suena('arco', 0.25, p.x, p.z);});
     if (k === 'r') {const [cx, cz] = lejos(); let n = 0; const tira = () => {if (n++ > H.dur / 0.09 || VIS.get(v.id) !== o) return; const p = o.raiz.position, a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * H.radio, tx = cx + Math.cos(a) * r, tz = cz + Math.sin(a) * r, l = Math.hypot(tx - p.x, tz - p.z) || 1; rafaga({x: p.x, z: p.z, ang: Math.atan2(tx - p.x, tz - p.z), dist: l, varia: 0, kind: 'bala', vel: 45, y: 1.3}); if (n % 3 === 0) suena('arco', 0.3, cx, cz); setTimeout(tira, 90);}; tira();}
   }
   if (t === 'orco') {
-    if (k === 'q') {for (let i = 0; i < 3; i++) luego2(i * 90, () => flip('tArco', x, z, H.radio * 2.3, true, rot + i * 2.1)); rafaga({n: 10, x, z, ang: 0, abre: Math.PI * 2, dist: H.radio, varia: 0.1, kind: 'energia', vel: 22, y: 1.0});}
-    if (k === 'w') {flip('tArco', x + dx * H.alc * 0.45, z + dz * H.alc * 0.45, H.alc * 1.9, true, rs); rafaga({n: 5, x, z, ang: rot, abre: H.ang, dist: H.alc, kind: 'energia', vel: 26, y: 1.0});}
+    if (k === 'q') {flip('ap_orco_remolino', x, z, H.radio * 2, true, rot); rafaga({n: 10, x, z, ang: 0, abre: Math.PI * 2, dist: H.radio, varia: 0.1, kind: 'energia', vel: 22, y: 1.0});}
+    if (k === 'w') {flip('ap_orco_tajo', x + dx * H.alc * 0.45, z + dz * H.alc * 0.45, H.alc * 1.6, true, rs); rafaga({n: 5, x, z, ang: rot, abre: H.ang, dist: H.alc, kind: 'energia', vel: 26, y: 1.0});}
     if (k === 'e') flip('ondaC', x + dx, z + dz, 2.2, true);
-    if (k === 'r') {o.salto = {t: 0, dur: 0.38, alto: 2.2, cx: px, cz: pz, r: 2.2}; luego2(380, () => {const p = o.raiz.position; flip('tArco', p.x, p.z, 6, true, rs); rafaga({n: 12, x: p.x, z: p.z, ang: 0, abre: Math.PI * 2, dist: 3, kind: 'energia', vel: 18, y: 1.2}); temb(0.5);});}
+    if (k === 'r') {o.salto = {t: 0, dur: 0.38, alto: 2.2, cx: px, cz: pz, r: 2.2}; luego2(380, () => {const p = o.raiz.position; flip('ap_orco_tajo', p.x, p.z, 5, true, rs); flip('ap_orco_remolino', p.x, p.z, 4, true); rafaga({n: 12, x: p.x, z: p.z, ang: 0, abre: Math.PI * 2, dist: 3, kind: 'energia', vel: 18, y: 1.2}); temb(0.5);});}
   }
   if (t === 'gandalf') {
-    if (k === 'e') {const [cx, cz] = lejos(); for (let i = 0; i < 8; i++) {const a = i / 8 * Math.PI * 2; flip('fuego', cx + Math.cos(a) * H.radio * 0.8, cz + Math.sin(a) * H.radio * 0.8, 2);} luego2(500, () => {for (let i = 0; i < 5; i++) flip('fuego', cx + rnd(-H.radio, H.radio) * 0.6, cz + rnd(-H.radio, H.radio) * 0.6, 1.8);});}
+    if (k === 'e') {const [cx, cz] = lejos(); flip('ap_gandalf_ceniza', cx, cz, H.radio * 2, true, rot, 0.13, H.dur + 0.4); for (let i = 0; i < 4; i++) {const a = i / 8 * Math.PI * 2; flip('fuego', cx + Math.cos(a) * H.radio * 0.8, cz + Math.sin(a) * H.radio * 0.8, 2);} luego2(500, () => {for (let i = 0; i < 5; i++) flip('fuego', cx + rnd(-H.radio, H.radio) * 0.6, cz + rnd(-H.radio, H.radio) * 0.6, 1.8);});}
     if (k === 'q') flip('fuego', x + dx, z + dz, 1.8);
   }
   if (t === 'gollum') {
-    if (k === 'q') flip('humo', x, z, 3, true);
-    if (k === 'e') flip('ondaC', x + dx, z + dz, 2, true);
+    if (k === 'q') {flip('ap_gollum_humo', x, z, 2.6, true); luego2(300, () => {const p = o.raiz.position; flip('ap_gollum_tajo', p.x, p.z, 3, true, rs);});}
+    if (k === 'e') flip('ap_gollum_tajo', x + dx * 1.2, z + dz * 1.2, 2.2, true, rs);
+    if (k === 'r') {flip('ap_gollum_humo', x, z, 4.6, false, undefined, 1.2); flip('ap_gollum_humo', x, z, 4, true);}
   }
   if (t === 'rohan') {
-    if (k === 'w') for (let i = 0; i < 3; i++) luego2(i * 220, () => {const p = o.raiz.position; flip('polvoA', p.x, p.z, 3.6, true, Math.random() * 6);});
-    if (k === 'e') {for (let i = 0; i < 8; i++) luego2(i * 60, () => {const a = rot + i * 0.8, r = H.radio * 0.65; flip('polvoA', x + Math.cos(a) * r, z + Math.sin(a) * r, 2.6, true, a);}); flip('tArco', x, z, H.radio * 2, true, rot);}
+    if (k === 'w') for (let i = 0; i < 3; i++) luego2(i * 220, () => {const p = o.raiz.position; flip('ap_rohan_arena', p.x, p.z, 3.2, true, Math.random() * 6);});
+    if (k === 'q' || k === 'r') {const d = H.dist || 5; flip('ap_rohan_tajo', x + dx * d * 0.5, z + dz * d * 0.5, k === 'r' ? 4.4 : 3, true, rs); luego2(k === 'r' ? 350 : 220, () => {const p = o.raiz.position; flip('ap_rohan_tajo', p.x, p.z, k === 'r' ? 4 : 2.6, true, rs + 1.2);});}
+    if (k === 'e') {flip('ap_rohan_arena', x, z, H.radio * 2, true, rot); for (let i = 0; i < 4; i++) luego2(i * 90, () => {const a = rot + i * 1.6, r = H.radio * 0.6; flip('ap_rohan_arena', x + Math.cos(a) * r, z + Math.sin(a) * r, 2.2, true, a);});}
   }
   if (t === 'enano') {
-    if (k === 'q') flip('estrellas', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, 3, true);
+    if (k === 'q') flip('ap_enano_tajo', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, H.alc * 1.5, true, rs);
     if (k === 'w') auraFx(o, 'escudo', H.dur, 3.8);
-    if (k === 'r') {for (let i = 0; i < 6; i++) {const a = i / 6 * Math.PI * 2; flip('estrellas', x + Math.cos(a) * H.radio * 0.6, z + Math.sin(a) * H.radio * 0.6, 2.4, true);}}
+    if (k === 'r') {flip('ap_enano_estallido', x, z, H.radio * 2, true); flip('ap_enano_estallido', x, z, H.radio * 1.4, false, undefined, 1.4);}
   }
 }
 /* lluvia de flechas: caen flechas de verdad sobre la zona */""")
@@ -572,6 +621,63 @@ function decoradoAutopista(pon2, al) {
 }
 /* el palantír junto al estandarte de Isengard:""")
 
+# ---------- PACKS 8, 14 y 10 WORK (17/11): torres/nexos/fuentes, súbditos y decorado de la autopista ----------
+# los modelos van adelgazados a public/batalla/modelos con tools/vado/adelgaza.py (originales en tools/autopista/pack8, pack14, pack10)
+js = sub(js, "'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard',",
+         "'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props',")
+js = sub(js, "'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles'", "'proyectiles'")
+# súbditos: los tuyos siempre azules y los del rival rojos (como el aro y la barra); casi sin teñir, ya traen su color
+js = sub(js, "const MODELO_SUBD = [{m: 'ballestero2', r: 'arquero_rohan2', a: 'ballestero2', x: 'super_rohan'}, {m: 'uruk', r: 'q_arquero', a: 'uruk', x: 'super_isengard'}];",
+         "const MODELO_SUBD = [{m: 'ap_sub_azul_m', r: 'ap_sub_azul_r', a: 'ap_sub_azul_m', x: 'ap_super_azul'}, {m: 'ap_sub_rojo_m', r: 'ap_sub_rojo_r', a: 'ap_sub_rojo_m', x: 'ap_super_rojo'}];")
+js = sub(js, "o = montar(MODELO_SUBD[v.eq][v.tipo], ALTO_SUBD[v.tipo]); const col = v.eq === MI_EQ ? '#3d8bff' : '#ff3b30';\n    tiñe(o.raiz, col, v.hk === 'F' ? 1 : 0.75);",
+         "o = montar(MODELO_SUBD[v.eq === MI_EQ ? 0 : 1][v.tipo], ALTO_SUBD[v.tipo]); const col = v.eq === MI_EQ ? '#3d8bff' : '#ff3b30';\n    tiñe(o.raiz, col, v.hk === 'F' ? 1 : 0.12);")
+# torres y nexos: los del Pack 8, ya a su tamaño (torre 8 m, nexo 9 m); azul = tu equipo
+js = sub(js, "lado = v.eq ? 'isengard' : 'rohan', est = [1, 2, 3].map((n) => {const p = pieza('vado_torres', 'torre_' + lado + '_' + n);",
+         "lado = v.eq === MI_EQ ? 'azul' : 'roja', est = [1, 2, 3].map((n) => {const p = pieza('ap_estructuras', 'torre_' + lado + '_' + n);")
+js = sub(js, "g.rotation.y = v.eq ? 0 : Math.PI; g.scale.setScalar(0.82);", "g.rotation.y = v.eq ? 0 : Math.PI; g.scale.setScalar(1);")
+js = sub(js, "b = pieza('vado_nexos', v.eq ? 'nexo_isengard' : 'nexo_rohan'); fusiona(b); b.scale.setScalar(1.35);",
+         "b = pieza('ap_estructuras', v.eq === MI_EQ ? 'nexo_azul' : 'nexo_rojo'); fusiona(b); b.scale.setScalar(1);")
+# fuentes: se ponen al empezar la partida (hasta entonces no se sabe cuál es la tuya); fuera la tienda de campaña y los braseros
+js = sub(js, "    const b = BASES[eq], o = pieza('vado_fuentes', eq ? 'fuente_isengard' : 'fuente_rohan'); o.position.set(b.fuente.x, 0, b.fuente.z); o.scale.setScalar(1.3); scene_.add(o);\n    const s = signo(eq); pon2('tienda', b.fuente.x - 3 * s, b.fuente.z + 3.5 * s, eq ? 0 : Math.PI, 1.6);\n    for (const [dx, dz] of [[4, -4], [-1, -6]]) {pon2('brasero', b.fuente.x + dx * s, b.fuente.z + dz * s, 0, 1.4); luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);}",
+         "    const b = BASES[eq], s = signo(eq);\n    for (const [dx, dz] of [[4, -4], [-4, -4]]) luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);")
+js = sub(js, "function colorFuentes() {for (const a of FUENTE_AROS) a.material.color.set(a.userData.eq === MI_EQ ? '#4fb6ff' : '#ff5a4a');}",
+         """function colorFuentes() {for (const a of FUENTE_AROS) a.material.color.set(a.userData.eq === MI_EQ ? '#4fb6ff' : '#ff5a4a'); ponFuentesA6();}
+const FUENTES_A6 = [];
+function ponFuentesA6() {
+  for (const o of FUENTES_A6) o.parent && o.parent.remove(o); FUENTES_A6.length = 0;
+  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja'); o.position.set(f.x, 0, f.z); o.rotation.y = eq ? 0 : Math.PI; (MAPA_G || scene).add(o); FUENTES_A6.push(o);}
+}""")
+# decorado del Pack 10: matas, adelfas, pinos, eucaliptos y hierba en tierra firme; taludes de roca al borde del barranco;
+# cascotes, neumáticos, bidones y manchas de aceite por el puente; vallas, muros antirruido y un paso elevado al fondo
+js = sub(js, "  for (let i = 0; i < 8; i++) {const lado = al() < 0.5 ? -1 : 1, z = (al() - 0.5) * 100; if (!lejosBase(z)) continue; if (Math.abs(z) > 40) pon2(al() < 0.5 ? 'ap_senal' : 'ap_valla', lado * (12 + al() * 3), z, al() * 6.3, 1.3);}\n}",
+         """  for (let i = 0; i < 8; i++) {const lado = al() < 0.5 ? -1 : 1, z = (al() - 0.5) * 100; if (!lejosBase(z)) continue; if (Math.abs(z) > 40) pon2(al() < 0.5 ? 'ap_senal' : 'ap_valla', lado * (12 + al() * 3), z, al() * 6.3, 1.3);}
+  decoradoPack10(al);
+}
+function decoradoPack10(al) {
+  const V = {}, P = {}, B = {}, mete = (L, n, x, z, s = 1, ry = al() * 6.283, y = 0) => (L[n] = L[n] || []).push({x, z, y, s, ry});
+  const sg = () => (al() < 0.5 ? -1 : 1), uno = (a) => a[Math.floor(al() * a.length)];
+  const matas = ['mata_seca_1', 'mata_seca_2', 'mata_seca_3', 'mata_seca_4', 'adelfa_1', 'adelfa_2'];
+  for (let i = 0; i < 110; i++) mete(V, uno(matas), sg() * (12 + al() * 34), sg() * (41.5 + al() * 36), 0.8 + al() * 0.6);
+  for (let i = 0; i < 34; i++) mete(V, uno(['pino_1', 'pino_2', 'pino_3', 'pino_3', 'eucalipto_1', 'eucalipto_2']), sg() * (17 + al() * 36), sg() * (44 + al() * 34), 0.9 + al() * 0.35);
+  for (let i = 0; i < 4; i++) mete(V, 'palmera_1', sg() * (20 + al() * 10), sg() * (60 + al() * 12));
+  for (let i = 0; i < 150; i++) {const z = sg() * (41 + al() * 36); mete(V, uno(['hierba_1', 'hierba_2', 'hierba_3']), sg() * (9.6 + al() * 22), z, 1 + al() * 0.7);}
+  for (let i = 0; i < 40; i++) mete(V, uno(['hierba_1', 'hierba_2', 'hierba_3']), sg() * (9.4 + al() * 1.3), (al() - 0.5) * 74, 0.8 + al() * 0.4);
+  for (const n in V) instancias('ap_vegetacion', n, V[n]);
+  const cosas = ['neumatico_1', 'neumatico_2', 'bidon_1', 'bidon_2', 'palé', 'cascotes_1', 'cascotes_2', 'cascotes_3', 'señal_caida_1', 'señal_caida_2', 'cono_tumbado'];
+  for (let i = 0; i < 30; i++) mete(P, uno(cosas), sg() * (8.4 + al() * 1.9), (al() - 0.5) * 74);
+  for (let i = 0; i < 26; i++) mete(P, uno(cosas), sg() * (11.5 + al() * 22), sg() * (42 + al() * 30));
+  for (let i = 0; i < 9; i++) mete(P, 'mancha_aceite', (al() - 0.5) * 11, (al() - 0.5) * 100, 0.8 + al() * 0.8, al() * 6.283, 0.02);
+  for (const n in P) instancias('ap_suelo_props', n, P[n], n !== 'mancha_aceite');
+  for (const s of [1, -1]) for (let x = 14; x < 78; x += 7.4) for (const sx of [1, -1]) mete(B, uno(['talud_roca_1', 'talud_roca_2', 'talud_roca_3']), sx * x, s * 41.3, 1, s > 0 ? 0 : Math.PI);
+  for (const n in B) instancias('ap_borde', n, B[n]);
+  const G = MAPA_G || scene, pz = (n, x, z, ry) => {const o = pieza('ap_borde', n); o.position.set(x, 0, z); o.rotation.y = ry; G.add(o); return o;};
+  for (const s of [1, -1]) {
+    for (let z = 44; z < 86; z += 6) pz('muro_antirruido', s * 36, s * z, Math.PI / 2);
+    pz('valla_publicitaria', s * 24, s * 64, s > 0 ? Math.PI * 0.75 : -Math.PI * 0.25);
+    for (let k = 0; k < 5; k++) pz('new_jersey', s * (12.5 + (k % 2) * 0.4), s * (60 + k * 3.2), Math.PI / 2 + (al() - 0.5) * 0.3);
+    pz('paso_elevado', 0, s * 82, 0);
+  }
+}""")
 # menú: fondo = la imagen de carga (los dos peajes), retrato sin cortar la cabeza, sin Gamling (Tolkien) ni el jinete
 html = sub(html, '</head>', '<style>#mFondo .fc{background-image:url(ui/ap_carga.webp)!important}#mFondo .ff,#mFondo .fm,#mFondo .fr{display:none}'
            '#menu .mSplash img{object-position:50% 0%!important}</style></head>', donde='html')
@@ -586,6 +692,25 @@ html = sub(html, '<h1>La Brecha</h1><p class="sub">Rohan contra Isengard</p>', '
 # 17/11: el juego se llama «A-6»; título de texto hasta que llegue el logo nuevo (Pack 17 ART). Los logos del Pack 15 decían «La Autopista»
 html = sub(html, '<h1>La Autopista</h1><p class="sub">Azules contra rojos</p>', '<h1 class="apLogo"><img src="ui/ap_logo_a6.webp" alt="A-6"></h1>', donde='html')
 html = sub(html, '</head>', '<style>.mTit h1.apLogo{margin:6px 0 0;line-height:0}.mTit h1.apLogo img{width:min(200px,calc(24 * var(--vw)));height:auto;filter:drop-shadow(0 4px 6px #000a)}.mTit h1.apA6{margin:6px 0 0;font:italic 900 46px \'Arial Black\',system-ui,sans-serif!important;color:#ffd21f!important;letter-spacing:.04em;line-height:1;-webkit-text-stroke:2px #10161f;text-shadow:0 4px 0 #10161f,0 0 18px #2f8cff88}</style></head>', donde='html')
+# ---------- MENÚ EN PANTALLAS BAJAS + FONDO DE ELEGIR HÉROE (17/11, Henar: «qué horror el menú») ----------
+html = sub(html, '</head>', """<style>
+#menu #bSon{background:url(ui/ap_b_ajustes.webp) center/100% 100% no-repeat !important;width:48px !important;height:48px !important}
+#bGuia{overflow:visible !important}
+#bGuia.nueva::after{right:10px !important;top:-9px !important;z-index:3}
+#elige{background:linear-gradient(90deg,#05080d99 0%,#05080d33 30%,#05080db3 50%,#05080dbf 100%),linear-gradient(0deg,#05080dcc,#05080d00 35%),url(ui/ap_fondo_vs.webp) center/cover no-repeat,#05080d !important}
+#elige.e2 .eDet,#elige .eDet{background:#070b12d9 !important}
+@media (max-height:440px){
+ .mPanel{padding-top:0 !important;gap:4px !important;bottom:calc(6px + var(--sab)) !important}
+ .mTit h1.apLogo img{width:min(150px,calc(34 * var(--vh))) !important}
+ .modos{width:min(100%,calc(70 * var(--vh)));margin:0 auto}
+ #menu .modos button span,#menu .modos button small{display:none}
+ #menu .modos button{padding-bottom:14% !important;overflow:visible !important}
+ #menu .modos button b{font-size:15px !important;text-shadow:0 2px 3px #000,0 0 6px #000}
+ .jugar{width:min(100%,calc(52 * var(--vh))) !important;margin:0 auto !important}
+ .mFila2 .mT{height:42px !important;min-height:42px !important}
+ .mAmigos{height:34px !important;min-height:34px !important;margin:2px auto 0 !important}
+}
+</style></head>""", donde='html')
 html = sub(html, '<span>1 contra 1 · el Abismo</span>', '<span>1 contra 1 · la autopista</span>', donde='html')
 html = re.sub(r'\s*<button data-m="2v2">.*?</button>', '', html, count=1)  # la Batalla 2v2 (mapa del Vado, bestias de Tolkien) aún no
 html = html.replace("'vado.heroe'", "'auto.heroe'")

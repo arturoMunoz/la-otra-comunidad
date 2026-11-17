@@ -236,7 +236,7 @@ const DUELO = {activo: false, anillo: 480, cierra: 30, dura: 90, r0: 62, r1: 5, 
 const radioAnillo = (t) => !DUELO.activo || t < DUELO.anillo ? 0 : t < DUELO.anillo + DUELO.cierra ? DUELO.r0 : DUELO.r0 + (DUELO.r1 - DUELO.r0) * Math.min(1, (t - DUELO.anillo - DUELO.cierra) / DUELO.dura);
 /* desde el minuto 5 las hordas pegan cada vez más fuerte a las torres, para que las partidas no se eternicen */
 const asedio = () => 1 + Math.max(0, (S.t - 300) / 240);   /* multiplicador contra súbditos y contra torres/estandarte */
-const MODELO_SUBD = [{m: 'ballestero2', r: 'arquero_rohan2', a: 'ballestero2', x: 'super_rohan'}, {m: 'uruk', r: 'q_arquero', a: 'uruk', x: 'super_isengard'}];
+const MODELO_SUBD = [{m: 'ap_sub_azul_m', r: 'ap_sub_azul_r', a: 'ap_sub_azul_m', x: 'ap_super_azul'}, {m: 'ap_sub_rojo_m', r: 'ap_sub_rojo_r', a: 'ap_sub_rojo_m', x: 'ap_super_rojo'}];
 const ALTO_SUBD = {m: 1.7, r: 1.6, a: 2.6, x: 2.7};
 const signo = (eq) => eq === 0 ? 1 : -1;
 const ORDA = 3;   /* cuerpo a cuerpo por oleada y camino (más 2 arqueros) */
@@ -292,12 +292,12 @@ const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30,
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'vado_arboles', 'vado_rocas', 'vado_torres', 'vado_nexos', 'vado_cubiles', 'vado_fuentes', 'super_rohan', 'super_isengard', 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
+const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'vado_arboles', 'vado_rocas', 'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props', 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
 /* modelos: los de la jungla solo hacen falta en la Batalla (2 contra 2) y se bajan después; los que no se usaban (capitán, estandartes, barriles…: casi 3 MB) ya no se bajan.
    Los del Abismo van adelgazados en modelos_l/ (sin los clips que aquí no se usan y con las texturas en WebP: tools/vado/adelgaza.py). */
 const JUNGLA = ['huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'warg', 'huargo_alfa', 'troll', 'orco'];
 const LIGEROS = ['warg', 'huargo_alfa', 'troll', 'orco', 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'brasero', 'tienda'];
-const NOMBRES = [...VADO.filter((n) => !JUNGLA.includes(n) && n !== 'palantir'), 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'proyectiles', 'brasero', 'tienda'];
+const NOMBRES = [...VADO.filter((n) => !JUNGLA.includes(n) && n !== 'palantir'), 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'proyectiles', 'brasero', 'tienda'];
 async function cargaModelo(n) {
   const r = await fetch((VADO.includes(n) ? 'modelos/' : LIGEROS.includes(n) ? 'modelos_l/' : '../abismo/modelos/') + n + '.glb'); if (!r.ok) throw new Error(n);
   return new Promise(async (res, rej) => loader.parse(await r.arrayBuffer(), '', res, rej));
@@ -499,9 +499,8 @@ function construyeMapa() {
   /* braseros a lo largo del puente del Abismo */
   if (TIPO_MAPA === 'linea') for (const z of [-30, -12, 12, 30]) for (const x of [-11.1, 11.1]) luzFuego(x, z);
   for (const eq of [0, 1]) {
-    const b = BASES[eq], o = pieza('vado_fuentes', eq ? 'fuente_isengard' : 'fuente_rohan'); o.position.set(b.fuente.x, 0, b.fuente.z); o.scale.setScalar(1.3); scene_.add(o);
-    const s = signo(eq); pon2('tienda', b.fuente.x - 3 * s, b.fuente.z + 3.5 * s, eq ? 0 : Math.PI, 1.6);
-    for (const [dx, dz] of [[4, -4], [-1, -6]]) {pon2('brasero', b.fuente.x + dx * s, b.fuente.z + dz * s, 0, 1.4); luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);}
+    const b = BASES[eq], s = signo(eq);
+    for (const [dx, dz] of [[4, -4], [-4, -4]]) luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);
   }
   fusiona(MAPA_G);
   vidaMapa(scene_); PALANTIR = null; ponPalantir();
@@ -547,6 +546,32 @@ function decoradoAutopista(pon2, al) {
   for (let i = 0; i < 22; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (13 + al() * 14), z = (al() < 0.5 ? -1 : 1) * (41 + al() * 30); if (Math.abs(z) < 41) continue; pon2(coches[i % 4], x, z, (al() - 0.5) * 1.2 + (al() < 0.5 ? 0 : Math.PI), 1);}
   for (let i = 0; i < 26; i++) {const lado = al() < 0.5 ? -1 : 1, x = lado * (8.2 + al() * 2), z = (al() - 0.5) * 110; if (!lejosBase(z)) continue; pon2('ap_cono', x, z, al() * 6.3, 1.6);}
   for (let i = 0; i < 8; i++) {const lado = al() < 0.5 ? -1 : 1, z = (al() - 0.5) * 100; if (!lejosBase(z)) continue; if (Math.abs(z) > 40) pon2(al() < 0.5 ? 'ap_senal' : 'ap_valla', lado * (12 + al() * 3), z, al() * 6.3, 1.3);}
+  decoradoPack10(al);
+}
+function decoradoPack10(al) {
+  const V = {}, P = {}, B = {}, mete = (L, n, x, z, s = 1, ry = al() * 6.283, y = 0) => (L[n] = L[n] || []).push({x, z, y, s, ry});
+  const sg = () => (al() < 0.5 ? -1 : 1), uno = (a) => a[Math.floor(al() * a.length)];
+  const matas = ['mata_seca_1', 'mata_seca_2', 'mata_seca_3', 'mata_seca_4', 'adelfa_1', 'adelfa_2'];
+  for (let i = 0; i < 110; i++) mete(V, uno(matas), sg() * (12 + al() * 34), sg() * (41.5 + al() * 36), 0.8 + al() * 0.6);
+  for (let i = 0; i < 34; i++) mete(V, uno(['pino_1', 'pino_2', 'pino_3', 'pino_3', 'eucalipto_1', 'eucalipto_2']), sg() * (17 + al() * 36), sg() * (44 + al() * 34), 0.9 + al() * 0.35);
+  for (let i = 0; i < 4; i++) mete(V, 'palmera_1', sg() * (20 + al() * 10), sg() * (60 + al() * 12));
+  for (let i = 0; i < 150; i++) {const z = sg() * (41 + al() * 36); mete(V, uno(['hierba_1', 'hierba_2', 'hierba_3']), sg() * (9.6 + al() * 22), z, 1 + al() * 0.7);}
+  for (let i = 0; i < 40; i++) mete(V, uno(['hierba_1', 'hierba_2', 'hierba_3']), sg() * (9.4 + al() * 1.3), (al() - 0.5) * 74, 0.8 + al() * 0.4);
+  for (const n in V) instancias('ap_vegetacion', n, V[n]);
+  const cosas = ['neumatico_1', 'neumatico_2', 'bidon_1', 'bidon_2', 'palé', 'cascotes_1', 'cascotes_2', 'cascotes_3', 'señal_caida_1', 'señal_caida_2', 'cono_tumbado'];
+  for (let i = 0; i < 30; i++) mete(P, uno(cosas), sg() * (8.4 + al() * 1.9), (al() - 0.5) * 74);
+  for (let i = 0; i < 26; i++) mete(P, uno(cosas), sg() * (11.5 + al() * 22), sg() * (42 + al() * 30));
+  for (let i = 0; i < 9; i++) mete(P, 'mancha_aceite', (al() - 0.5) * 11, (al() - 0.5) * 100, 0.8 + al() * 0.8, al() * 6.283, 0.02);
+  for (const n in P) instancias('ap_suelo_props', n, P[n], n !== 'mancha_aceite');
+  for (const s of [1, -1]) for (let x = 14; x < 78; x += 7.4) for (const sx of [1, -1]) mete(B, uno(['talud_roca_1', 'talud_roca_2', 'talud_roca_3']), sx * x, s * 41.3, 1, s > 0 ? 0 : Math.PI);
+  for (const n in B) instancias('ap_borde', n, B[n]);
+  const G = MAPA_G || scene, pz = (n, x, z, ry) => {const o = pieza('ap_borde', n); o.position.set(x, 0, z); o.rotation.y = ry; G.add(o); return o;};
+  for (const s of [1, -1]) {
+    for (let z = 44; z < 86; z += 6) pz('muro_antirruido', s * 36, s * z, Math.PI / 2);
+    pz('valla_publicitaria', s * 24, s * 64, s > 0 ? Math.PI * 0.75 : -Math.PI * 0.25);
+    for (let k = 0; k < 5; k++) pz('new_jersey', s * (12.5 + (k % 2) * 0.4), s * (60 + k * 3.2), Math.PI / 2 + (al() - 0.5) * 0.3);
+    pz('paso_elevado', 0, s * 82, 0);
+  }
 }
 /* el palantír junto al estandarte de Isengard: el Ojo late y mira al héroe más cercano */
 let PALANTIR = null; const HAY_PALANTIR = false; /* poner a true cuando llegue modelos/palantir.glb (Pack Vado 14) */
@@ -568,7 +593,12 @@ function animaPalantir() {
 /* ---------- vida del mapa (estilo Supercell): agua que corre, aros de las fuentes, luciérnagas y árboles que se mecen ---------- */
 const UT = {value: 0}, FUENTE_AROS = []; let LUCES_AIRE = null;
 /* el aro de tu fuente, azul; el del enemigo, rojo (se llama al saber de qué bando eres) */
-function colorFuentes() {for (const a of FUENTE_AROS) a.material.color.set(a.userData.eq === MI_EQ ? '#4fb6ff' : '#ff5a4a');}
+function colorFuentes() {for (const a of FUENTE_AROS) a.material.color.set(a.userData.eq === MI_EQ ? '#4fb6ff' : '#ff5a4a'); ponFuentesA6();}
+const FUENTES_A6 = [];
+function ponFuentesA6() {
+  for (const o of FUENTES_A6) o.parent && o.parent.remove(o); FUENTES_A6.length = 0;
+  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja'); o.position.set(f.x, 0, f.z); o.rotation.y = eq ? 0 : Math.PI; (MAPA_G || scene).add(o); FUENTES_A6.push(o);}
+}
 const GLSL_RUIDO = `float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
   float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
   float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.03;a*=.5;}return s;}`;
@@ -1340,16 +1370,21 @@ function recibeFoto(o) {
 /* ---------- dibujo ---------- */
 const VIS = new Map();
 const PROY_MODELOS = {};
-/* A-6: [color, radio, halo, radio del halo, alargado] */
-const PROY_AP = {bola: ['#ffffff', 0.26, '#bfe6ff', 0.46], brasa: ['#fff1c0', 0.2, '#ff7a1a', 0.5], energia: ['#eaffd0', 0.18, '#3dff6a', 0.44], bala: ['#fff6c8', 0.07, '#ffc23a', 0.15, 7], cadena: ['#f0e6ff', 0.14, '#a24dff', 0.34]};
-const PROY_AP_G = {};
+/* A-6 (Pack 24 ART, 17/11): proyectiles dibujados vistos desde arriba (ui/ap_pr_*.webp, apuntan a +X con la estela detrás).
+   Un plano tumbado y girado para que el dibujo mire a +Z, que es hacia donde se orientan los proyectiles (rotation.y = atan2(dx, dz)).
+   [archivo, tamaño en metros] */
+const PROY_AP = {bola: ['bola', 1.4], brasa: ['brasa', 1.8], energia: ['energia', 1.7], bala: ['bala', 1.5], cadena: ['hoz', 1.8]};
+const PROY_AP_G = {}, GEO_PROY = (() => {const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); g.rotateY(-Math.PI / 2); return g;})();
 function proyAP(n) {
-  if (!PROY_AP_G[n]) {const [c1, r1, c2, r2, largo = 1] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(new THREE.SphereGeometry(r1, 10, 6), new THREE.MeshBasicMaterial({color: c1})), h = new THREE.Mesh(new THREE.SphereGeometry(r2, 10, 6), new THREE.MeshBasicMaterial({color: c2, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false})); m.scale.z = h.scale.z = largo; g.add(m, h); PROY_AP_G[n] = g;}
+  if (!PROY_AP_G[n]) {const [f, tam] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false})); m.scale.setScalar(tam); m.renderOrder = 5; g.add(m); PROY_AP_G[n] = g;}
   return PROY_AP_G[n].clone(true);
 }
+/* golpe al llegar, propio de cada proyectil (Pack 25 ART) */
+const IMPACTO_AP = {bola: 'ap_hobbit_impacto', brasa: 'ap_gandalf_impacto', bala: 'ap_elfo_impacto', energia: 'ap_orco_tajo'};
 /* ráfagas: varios proyectiles a la vez (cubo de bolas, balas de cobertura…), con bote opcional; solo dibujo, el daño lo pone la simulación */
 const RAFAGAS = []; window._rafagas = RAFAGAS;
-function rafaga({n = 1, x, z, ang, abre = 0, dist, varia = 0.25, cada = 0, y = 1.1, salta = 0, kind = 'bola', vel = 24, fin = 'impacto'}) {
+function rafaga({n = 1, x, z, ang, abre = 0, dist, varia = 0.25, cada = 0, y = 1.1, salta = 0, kind = 'bola', vel = 24, fin}) {
+  if (fin === undefined) fin = IMPACTO_AP[kind] || 'impacto';
   for (let i = 0; i < n; i++) setTimeout(() => {if (RAFAGAS.length > 70) return; const a = ang + (Math.random() - 0.5) * abre, d = dist * (1 - varia + Math.random() * varia), o = proyAP(kind); scene.add(o); RAFAGAS.push({o, x, z, tx: x + Math.sin(a) * d, tz: z + Math.cos(a) * d, t: 0, dur: d / vel, y, salta, kind, fin});}, i * cada);
 }
 function animaRafagas(dt) {
@@ -1364,18 +1399,18 @@ function creaVis(v) {
   let o = {};
   if (v.k === 'h') {o = montar(HEROES[v.tipo].modelo, (HEROES[v.tipo].alto || 2.05) * ESC_H); o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95 * ESC_H); if (v.id === YO) o.aro.material.color.set('#ffd24a'); scene.add(o.aro);}
   else if (v.k === 's') {
-    o = montar(MODELO_SUBD[v.eq][v.tipo], ALTO_SUBD[v.tipo]); const col = v.eq === MI_EQ ? '#3d8bff' : '#ff3b30';
-    tiñe(o.raiz, col, v.hk === 'F' ? 1 : 0.75);
+    o = montar(MODELO_SUBD[v.eq === MI_EQ ? 0 : 1][v.tipo], ALTO_SUBD[v.tipo]); const col = v.eq === MI_EQ ? '#3d8bff' : '#ff3b30';
+    tiñe(o.raiz, col, v.hk === 'F' ? 1 : 0.12);
     o.aro = aro(col, v.tipo === 'a' ? 1 : v.tipo === 'x' ? 1.25 : 0.62); o.aro.material.opacity = 0.95; scene.add(o.aro);
   }
   else if (v.k === 'j') {o = montar(NEUTRO[v.tipo].modelo, NEUTRO[v.tipo].alto); if (NEUTRO[v.tipo].azul) tiñe(o.raiz, '#4a7dff', 0.9); if (NEUTRO[v.tipo].draco) tiñe(o.raiz, v.hk === 'h' ? '#8fd0ff' : '#ff5a24', 0.7); /* Pack 13: huorn, draco y Uruk Azul con modelo propio */ if (v.tipo === 'crebain') o.raiz.traverse((q) => {if (q.isMesh) q.material.color.set('#2a2a30');});}
   else if (v.k === 't') {
-    const g = new THREE.Group(), lado = v.eq ? 'isengard' : 'rohan', est = [1, 2, 3].map((n) => {const p = pieza('vado_torres', 'torre_' + lado + '_' + n); fusiona(p); p.visible = n === 1; g.add(p); return p;});
-    g.rotation.y = v.eq ? 0 : Math.PI; g.scale.setScalar(0.82);
+    const g = new THREE.Group(), lado = v.eq === MI_EQ ? 'azul' : 'roja', est = [1, 2, 3].map((n) => {const p = pieza('ap_estructuras', 'torre_' + lado + '_' + n); fusiona(p); p.visible = n === 1; g.add(p); return p;});
+    g.rotation.y = v.eq ? 0 : Math.PI; g.scale.setScalar(1);
     const mats = []; g.traverse((q) => {if (q.isMesh) {q.material = q.material.clone(); q.material.transparent = true; mats.push(q.material);}});
     o = {raiz: g, est, mats}; luzFuego(1.6, v.z);
   } else if (v.k === 'n') {
-    const g = new THREE.Group(), b = pieza('vado_nexos', v.eq ? 'nexo_isengard' : 'nexo_rohan'); fusiona(b); b.scale.setScalar(1.35); g.add(b); g.rotation.y = v.eq ? 0 : Math.PI;
+    const g = new THREE.Group(), b = pieza('ap_estructuras', v.eq === MI_EQ ? 'nexo_azul' : 'nexo_rojo'); fusiona(b); b.scale.setScalar(1); g.add(b); g.rotation.y = v.eq ? 0 : Math.PI;
     o = {raiz: g}; luzFuego(0, v.z);
   }
   o.raiz.position.set(v.x, 0, v.z); scene.add(o.raiz); o.ac = v.ac; o.hc = v.hc;
@@ -1425,11 +1460,11 @@ function habVisual(e) {
   if (k === 'r') {ultiFx(v, H, k, mio, cerca); aura(o, v.eq === MI_EQ ? '#8fd0ff' : '#ff8a6a', 1.1, 2.6); if (H.tipo !== 'area') flip('ondaC', x, z, 7, true); o.flash = 0.13; o.punch = 1.6; o.sqA = 0.22; o.sqT = o.sqD = 0.35;}
   const anillo = (cx, cz, r, n, fx = 'polvo', tam = 1.6) => {for (let i = 0; i < n; i++) {const a = i / n * Math.PI * 2; flip(fx, cx + Math.cos(a) * r, cz + Math.sin(a) * r, tam);}};
   if (H.tipo === 'dash') {
-    o.estela = {t: H.dist / 18 + 0.15, cada: 0, fx: k === 'r' ? 'fuego' : 'polvo', tam: k === 'r' ? 2.4 : 1.5}; flip('polvoA', x, z, 3.4, true); suena('viento', 0.5, x, z);
-    if (v.tipo === 'elfo') flip('polvoA', x, z, 3.2, true); else if (k !== 'r') flip('tArco', x + dx * H.dist * 0.5, z + dz * H.dist * 0.5, 4.2, true, rs);
+    o.estela = {t: H.dist / 18 + 0.15, cada: 0, fx: k === 'r' ? 'ap_rohan_arena' : 'polvo', tam: k === 'r' ? 2.4 : 1.5}; flip('polvoA', x, z, 3.4, true); suena('viento', 0.5, x, z);
+    if (v.tipo === 'elfo') flip('polvoA', x, z, 3.2, true); else if (k !== 'r' && v.tipo !== 'rohan') flip('tArco', x + dx * H.dist * 0.5, z + dz * H.dist * 0.5, 4.2, true, rs);
     if (k === 'r') {/* Carga de los Rohirrim: tajos a lo largo de la carga y el suelo reventado al final */
       temb(0.45); const n = Math.floor(H.dist / 2.2);
-      for (let i = 1; i <= n; i++) luego2(i * 55, () => {const f = i / n * H.dist; flip('tArco', x + dx * f, z + dz * f, 5.5, true, rs + (i % 2 ? 0 : Math.PI)); flip('fuego', x + dx * f + rnd(-1, 1), z + dz * f + rnd(-1, 1), 2.2);});
+      for (let i = 1; i <= n; i++) luego2(i * 55, () => {const f = i / n * H.dist; flip('ap_rohan_tajo', x + dx * f, z + dz * f, 4.6, true, rs + (i % 2 ? 0 : Math.PI)); flip('ap_rohan_arena', x + dx * f + rnd(-1, 1), z + dz * f + rnd(-1, 1), 2.4, true);});
       luego2(H.dist / 18 * 1000, () => {const p = o.raiz.position; flip('grietas', p.x, p.z, 7, true); flip('ondaC', p.x, p.z, 8, true); flip('polvoA', p.x, p.z, 7, true); flip('explosion', p.x, p.z, 3.2); temb(0.65); suena('explosion', 0.7, x, z);});
     }
   }
@@ -1443,8 +1478,8 @@ function habVisual(e) {
     suena('espada', 0.7, x, z); temb(0.18);
   }
   if (H.tipo === 'area') {
-    flip('ondaC', x, z, H.radio * 2.6, true); flip('polvoA', x, z, H.radio * 2.2, true); flip('explosion', x, z, H.radio * 1.2);
-    if (k === 'r') {/* Furia de Durin: el suelo se abre bajo el enano y luego alrededor, en dos oleadas */
+    flip('ondaC', x, z, H.radio * 2.6, true); flip('polvoA', x, z, H.radio * 2.2, true);
+    if (k === 'r' && v.tipo !== 'enano') {/* Furia de Durin: el suelo se abre bajo el enano y luego alrededor, en dos oleadas */
       flip('grietas', x, z, H.radio * 2.7, true, rot, 0.13, 1.5); anillo(x, z, H.radio * 0.8, 8, 'fuego', 2.2);
       luego2(150, () => {for (let i = 0; i < 6; i++) {const a = i / 6 * Math.PI * 2 + rot; flip('grietas', x + Math.cos(a) * H.radio * 0.72, z + Math.sin(a) * H.radio * 0.72, 3.4, true, a, 0.14, 1.1); flip('explosion', x + Math.cos(a) * H.radio * 0.72, z + Math.sin(a) * H.radio * 0.72, 1.8);} temb(0.5);});
       luego2(330, () => {flip('ondaC', x, z, H.radio * 3.6, true); flip('polvoA', x, z, H.radio * 3.2, true); auraFx(o, 'piedra', 0.9, H.radio * 1.6); temb(0.6); suena('explosion', 0.6, x, z);});
@@ -1472,38 +1507,41 @@ function habVisual(e) {
 function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
   const t = v.tipo, rs = rot - Math.PI / 4, lejos = () => {const d0 = Math.min(H.alc || 0, Math.hypot(px - x, pz - z)); return [x + dx * d0, z + dz * d0];};
   if (o.estelaTiro) o.estelaTiro.fx = {gandalf: 'fuego', orco: 'impacto', gollum: 'humo'}[t];
+  {const sn = {gandalf: 'ap_llama', orco: 'ap_energia', enano: 'ap_luz', elfo: 'ap_fusil', hobbit: 'ap_golf', rohan: 'ap_arena'}[t]; if (sn) suena(sn, k === 'r' ? 0.8 : 0.55, x, z);}
   if (t === 'hobbit') {
     if (k === 'q') {flip('ondaC', x + dx * 1.2, z + dz * 1.2, 2.4, true); temb(0.12);}  /* el drive: golpe seco y la bola sale disparada (tiro) */
     if (k === 'e') {rafaga({n: 11, x: x + dx * 0.6, z: z + dz * 0.6, ang: rot, abre: H.ang * 1.15, dist: H.alc, cada: 30, y: 1.0, salta: 1.4, kind: 'bola', vel: 13}); suena('arco', 0.6, x, z); luego2(140, () => suena('arco', 0.45, x, z));}
-    if (k === 'r') {rafaga({n: 16, x, z, ang: 0, abre: Math.PI * 2, dist: 3.4, cada: 18, y: 2.6, salta: 2.4, kind: 'bola', vel: 9, fin: 'chispa'});}
+    if (k === 'r') {flip('ap_hobbit_hoyo', x, z, 4.2, false, undefined, 1.2); rafaga({n: 16, x, z, ang: 0, abre: Math.PI * 2, dist: 3.4, cada: 18, y: 2.6, salta: 2.4, kind: 'bola', vel: 9, fin: 'chispa'});}
   }
   if (t === 'elfo') {
-    if (k === 'q') {flip('ondaC', x + dx, z + dz, 2.2, true); temb(0.15);}
-    if (k === 'w') for (let i = 0; i < 5; i++) luego2(i * 110, () => {const p = o.raiz.position; rafaga({x: p.x, z: p.z, ang: o.raiz.rotation.y, abre: 0.12, dist: 7, kind: 'bala', vel: 40, y: 1.3}); suena('arco', 0.25, p.x, p.z);});
+    if (k === 'q') {flip('ap_elfo_fogonazo', x + dx * 1.3, z + dz * 1.3, 2, false, undefined, 1.3); flip('ondaC', x + dx, z + dz, 2.2, true); temb(0.15);}
+    if (k === 'w') for (let i = 0; i < 5; i++) luego2(i * 110, () => {const p = o.raiz.position; rafaga({x: p.x, z: p.z, ang: o.raiz.rotation.y, abre: 0.12, dist: 7, kind: 'bala', vel: 40, y: 1.3}); flip('ap_elfo_fogonazo', p.x + Math.sin(o.raiz.rotation.y) * 1.3, p.z + Math.cos(o.raiz.rotation.y) * 1.3, 1.4, false, undefined, 1.3); suena('arco', 0.25, p.x, p.z);});
     if (k === 'r') {const [cx, cz] = lejos(); let n = 0; const tira = () => {if (n++ > H.dur / 0.09 || VIS.get(v.id) !== o) return; const p = o.raiz.position, a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * H.radio, tx = cx + Math.cos(a) * r, tz = cz + Math.sin(a) * r, l = Math.hypot(tx - p.x, tz - p.z) || 1; rafaga({x: p.x, z: p.z, ang: Math.atan2(tx - p.x, tz - p.z), dist: l, varia: 0, kind: 'bala', vel: 45, y: 1.3}); if (n % 3 === 0) suena('arco', 0.3, cx, cz); setTimeout(tira, 90);}; tira();}
   }
   if (t === 'orco') {
-    if (k === 'q') {for (let i = 0; i < 3; i++) luego2(i * 90, () => flip('tArco', x, z, H.radio * 2.3, true, rot + i * 2.1)); rafaga({n: 10, x, z, ang: 0, abre: Math.PI * 2, dist: H.radio, varia: 0.1, kind: 'energia', vel: 22, y: 1.0});}
-    if (k === 'w') {flip('tArco', x + dx * H.alc * 0.45, z + dz * H.alc * 0.45, H.alc * 1.9, true, rs); rafaga({n: 5, x, z, ang: rot, abre: H.ang, dist: H.alc, kind: 'energia', vel: 26, y: 1.0});}
+    if (k === 'q') {flip('ap_orco_remolino', x, z, H.radio * 2, true, rot); rafaga({n: 10, x, z, ang: 0, abre: Math.PI * 2, dist: H.radio, varia: 0.1, kind: 'energia', vel: 22, y: 1.0});}
+    if (k === 'w') {flip('ap_orco_tajo', x + dx * H.alc * 0.45, z + dz * H.alc * 0.45, H.alc * 1.6, true, rs); rafaga({n: 5, x, z, ang: rot, abre: H.ang, dist: H.alc, kind: 'energia', vel: 26, y: 1.0});}
     if (k === 'e') flip('ondaC', x + dx, z + dz, 2.2, true);
-    if (k === 'r') {o.salto = {t: 0, dur: 0.38, alto: 2.2, cx: px, cz: pz, r: 2.2}; luego2(380, () => {const p = o.raiz.position; flip('tArco', p.x, p.z, 6, true, rs); rafaga({n: 12, x: p.x, z: p.z, ang: 0, abre: Math.PI * 2, dist: 3, kind: 'energia', vel: 18, y: 1.2}); temb(0.5);});}
+    if (k === 'r') {o.salto = {t: 0, dur: 0.38, alto: 2.2, cx: px, cz: pz, r: 2.2}; luego2(380, () => {const p = o.raiz.position; flip('ap_orco_tajo', p.x, p.z, 5, true, rs); flip('ap_orco_remolino', p.x, p.z, 4, true); rafaga({n: 12, x: p.x, z: p.z, ang: 0, abre: Math.PI * 2, dist: 3, kind: 'energia', vel: 18, y: 1.2}); temb(0.5);});}
   }
   if (t === 'gandalf') {
-    if (k === 'e') {const [cx, cz] = lejos(); for (let i = 0; i < 8; i++) {const a = i / 8 * Math.PI * 2; flip('fuego', cx + Math.cos(a) * H.radio * 0.8, cz + Math.sin(a) * H.radio * 0.8, 2);} luego2(500, () => {for (let i = 0; i < 5; i++) flip('fuego', cx + rnd(-H.radio, H.radio) * 0.6, cz + rnd(-H.radio, H.radio) * 0.6, 1.8);});}
+    if (k === 'e') {const [cx, cz] = lejos(); flip('ap_gandalf_ceniza', cx, cz, H.radio * 2, true, rot, 0.13, H.dur + 0.4); for (let i = 0; i < 4; i++) {const a = i / 8 * Math.PI * 2; flip('fuego', cx + Math.cos(a) * H.radio * 0.8, cz + Math.sin(a) * H.radio * 0.8, 2);} luego2(500, () => {for (let i = 0; i < 5; i++) flip('fuego', cx + rnd(-H.radio, H.radio) * 0.6, cz + rnd(-H.radio, H.radio) * 0.6, 1.8);});}
     if (k === 'q') flip('fuego', x + dx, z + dz, 1.8);
   }
   if (t === 'gollum') {
-    if (k === 'q') flip('humo', x, z, 3, true);
-    if (k === 'e') flip('ondaC', x + dx, z + dz, 2, true);
+    if (k === 'q') {flip('ap_gollum_humo', x, z, 2.6, true); luego2(300, () => {const p = o.raiz.position; flip('ap_gollum_tajo', p.x, p.z, 3, true, rs);});}
+    if (k === 'e') flip('ap_gollum_tajo', x + dx * 1.2, z + dz * 1.2, 2.2, true, rs);
+    if (k === 'r') {flip('ap_gollum_humo', x, z, 4.6, false, undefined, 1.2); flip('ap_gollum_humo', x, z, 4, true);}
   }
   if (t === 'rohan') {
-    if (k === 'w') for (let i = 0; i < 3; i++) luego2(i * 220, () => {const p = o.raiz.position; flip('polvoA', p.x, p.z, 3.6, true, Math.random() * 6);});
-    if (k === 'e') {for (let i = 0; i < 8; i++) luego2(i * 60, () => {const a = rot + i * 0.8, r = H.radio * 0.65; flip('polvoA', x + Math.cos(a) * r, z + Math.sin(a) * r, 2.6, true, a);}); flip('tArco', x, z, H.radio * 2, true, rot);}
+    if (k === 'w') for (let i = 0; i < 3; i++) luego2(i * 220, () => {const p = o.raiz.position; flip('ap_rohan_arena', p.x, p.z, 3.2, true, Math.random() * 6);});
+    if (k === 'q' || k === 'r') {const d = H.dist || 5; flip('ap_rohan_tajo', x + dx * d * 0.5, z + dz * d * 0.5, k === 'r' ? 4.4 : 3, true, rs); luego2(k === 'r' ? 350 : 220, () => {const p = o.raiz.position; flip('ap_rohan_tajo', p.x, p.z, k === 'r' ? 4 : 2.6, true, rs + 1.2);});}
+    if (k === 'e') {flip('ap_rohan_arena', x, z, H.radio * 2, true, rot); for (let i = 0; i < 4; i++) luego2(i * 90, () => {const a = rot + i * 1.6, r = H.radio * 0.6; flip('ap_rohan_arena', x + Math.cos(a) * r, z + Math.sin(a) * r, 2.2, true, a);});}
   }
   if (t === 'enano') {
-    if (k === 'q') flip('estrellas', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, 3, true);
+    if (k === 'q') flip('ap_enano_tajo', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, H.alc * 1.5, true, rs);
     if (k === 'w') auraFx(o, 'escudo', H.dur, 3.8);
-    if (k === 'r') {for (let i = 0; i < 6; i++) {const a = i / 6 * Math.PI * 2; flip('estrellas', x + Math.cos(a) * H.radio * 0.6, z + Math.sin(a) * H.radio * 0.6, 2.4, true);}}
+    if (k === 'r') {flip('ap_enano_estallido', x, z, H.radio * 2, true); flip('ap_enano_estallido', x, z, H.radio * 1.4, false, undefined, 1.4);}
   }
 }
 /* lluvia de flechas: caen flechas de verdad sobre la zona */
@@ -1698,11 +1736,11 @@ function dibuja(dt) {
   /* proyectiles y efectos */
   for (let i = FXP.length - 1; i >= 0; i--) {
     const p = FXP[i]; p.t += dt;
-    if (p.tipo === 'proy') {const d = VISTA.get(p.d); const tx = d ? (d.xi ?? d.x) : p.tx, tz = d ? (d.zi ?? d.z) : p.tz; p.tx = tx; p.tz = tz; const dx = tx - p.x, dz = tz - p.z, l = Math.hypot(dx, dz); if (l < 0.5 || p.t > 2) {if (p.torre) {flip('explosion', p.x, p.z, 2.6, false, undefined, 1, 0.5); flip('ondaC', p.x, p.z, 4.6, true); flip('polvoA', p.x, p.z, 3.4, true); suena('explosion', 0.45, p.x, p.z);} scene.remove(p.o); FXP.splice(i, 1); continue;} p.x += dx / l * Math.min(l, p.v * dt); p.z += dz / l * Math.min(l, p.v * dt);
+    if (p.tipo === 'proy') {const d = VISTA.get(p.d); const tx = d ? (d.xi ?? d.x) : p.tx, tz = d ? (d.zi ?? d.z) : p.tz; p.tx = tx; p.tz = tz; const dx = tx - p.x, dz = tz - p.z, l = Math.hypot(dx, dz); if (l < 0.5 || p.t > 2) {if (p.torre) {flip('explosion', p.x, p.z, 2.6, false, undefined, 1, 0.5); flip('ondaC', p.x, p.z, 4.6, true); flip('polvoA', p.x, p.z, 3.4, true); suena('explosion', 0.45, p.x, p.z);} if (IMPACTO_AP[p.k]) flip(IMPACTO_AP[p.k], p.x, p.z, 1.1, false, undefined, p.y); scene.remove(p.o); FXP.splice(i, 1); continue;} p.x += dx / l * Math.min(l, p.v * dt); p.z += dz / l * Math.min(l, p.v * dt);
       if (p.torre) {const f = Math.max(0, Math.min(1, 1 - l / (p.d0 || 1))); p.y = p.y0 * (1 - f) + 1 * f + Math.sin(f * Math.PI) * 2.6; p.o.rotation.x += dt * 9; p.est -= dt; if (p.est <= 0) {p.est = 0.035; flip('fuego', p.x, p.z, 1.3, false, undefined, p.y, 0.35);}}
       p.o.position.set(p.x, p.y, p.z); p.o.rotation.y = Math.atan2(dx, dz);}
     else if (p.tipo === 'cae') {p.y -= dt * 26; p.o.position.set(p.x, p.y, p.z); if (p.y <= 0.2) {scene.remove(p.o); FXP.splice(i, 1); flip('impacto', p.x, p.z, 0.9);}}
-    else if (p.tipo === 'tiro') {const k = Math.min(1, p.t / p.dur); p.o.position.set(p.x + (p.tx - p.x) * k, 1.2, p.z + (p.tz - p.z) * k); if (k >= 1) {scene.remove(p.o); FXP.splice(i, 1);}}
+    else if (p.tipo === 'tiro') {const k = Math.min(1, p.t / p.dur); p.o.position.set(p.x + (p.tx - p.x) * k, 1.2, p.z + (p.tz - p.z) * k); if (k >= 1) {if (IMPACTO_AP[p.k]) flip(IMPACTO_AP[p.k], p.tx, p.tz, 1.5); scene.remove(p.o); FXP.splice(i, 1);}}
     else {const k = p.t / p.dur; if (k >= 1) {fuera(p.o); FXP.splice(i, 1); continue;} if (p.flip) {const i0 = p.flip.i0 || 0, f = Math.min(p.flip.n - 1, i0 + Math.floor(k * (p.flip.n - i0))); p.o.material.map.offset.set((f % p.flip.c) / p.flip.c, 1 - (Math.floor(f / p.flip.c) + 1) / p.flip.r);} if (p.crece) p.o.scale.setScalar(p.esc * (0.6 + 0.6 * k)); if (p.o.material) p.o.material.opacity = (p.op || 1) * (1 - k * k);}
   }
   for (let i = NUMS.length - 1; i >= 0; i--) {
@@ -1725,6 +1763,12 @@ const FB_INI = {muerteS: 6}, FB_ANCLA = {nivel: 0.12, base: 0.2};
 const FB_TINTE = {polvoA: '#a88c6c', humo: '#a0a0a0', piedra: '#d0c8be'};
 const FB_OP = {ondaC: 0.6, polvoA: 0.75, grietas: 1.2, tFuego: 1.1, hojas: 0.9, humo: 0.85};
 const FB_DUR = {chispa: 0.38, critico: 0.5, muerteS: 0.75, nivel: 1.2, monedas: 0.7, tArco: 0.5, tFuego: 0.6, ondaC: 0.7, grietas: 1.2, polvoA: 0.85, humo: 0.9, hojas: 0.9, estelaF: 0.4, suerte: 1, escudo: 0.9, piedra: 0.9, estrellas: 0.9};
+Object.assign(FB, {ap_enano_tajo: ['../batalla/fx/ap_enano_tajo.webp', 4, 4], ap_enano_estallido: ['../batalla/fx/ap_enano_estallido.webp', 4, 4], ap_gandalf_impacto: ['../batalla/fx/ap_gandalf_impacto.webp', 4, 4], ap_gandalf_ceniza: ['../batalla/fx/ap_gandalf_ceniza.webp', 4, 4],
+  ap_orco_remolino: ['../batalla/fx/ap_orco_remolino.webp', 4, 4], ap_orco_tajo: ['../batalla/fx/ap_orco_tajo.webp', 4, 4], ap_elfo_fogonazo: ['../batalla/fx/ap_elfo_fogonazo.webp', 4, 4], ap_elfo_impacto: ['../batalla/fx/ap_elfo_impacto.webp', 4, 4],
+  ap_hobbit_impacto: ['../batalla/fx/ap_hobbit_impacto.webp', 4, 4], ap_hobbit_hoyo: ['../batalla/fx/ap_hobbit_hoyo.webp', 4, 4], ap_gollum_humo: ['../batalla/fx/ap_gollum_humo.webp', 4, 4, 'n'], ap_gollum_tajo: ['../batalla/fx/ap_gollum_tajo.webp', 4, 4],
+  ap_rohan_arena: ['../batalla/fx/ap_rohan_arena.webp', 4, 4, 'n'], ap_rohan_tajo: ['../batalla/fx/ap_rohan_tajo.webp', 4, 4]});
+Object.assign(FB_DUR, {ap_enano_tajo: 0.45, ap_enano_estallido: 0.8, ap_gandalf_impacto: 0.6, ap_gandalf_ceniza: 1.5, ap_orco_remolino: 0.7, ap_orco_tajo: 0.45, ap_elfo_fogonazo: 0.22, ap_elfo_impacto: 0.4,
+  ap_hobbit_impacto: 0.45, ap_hobbit_hoyo: 1.1, ap_gollum_humo: 1.1, ap_gollum_tajo: 0.45, ap_rohan_arena: 1, ap_rohan_tajo: 0.45});
 const fbTex = {};
 for (const n in FB) if (!fbTex[FB[n][0]]) fbTex[FB[n][0]] = cargaTex(FB[n][0]); /* cargadas de antemano: que el primer efecto no salga en blanco */
 /* los efectos de hoja se reciclan: cada uno tiene su copia de la textura (para su fotograma) pero comparte la imagen en la tarjeta gráfica.
@@ -1763,12 +1807,12 @@ function flip(nombre, x, z, tam, suelo, rot, y, dur) {
 /* sonido con WebAudio: cada archivo se descodifica una vez y se reproduce sin crear reproductores nuevos */
 let AC = null; const SON = {}, SON_T = {};
 /* el anunciador (voz «Gala» de ElevenLabs, cortada en voces/): las frases se ponen en cola para no pisarse */
-const VOCES = ['primera', 'doble', 'triple', 'racha', 'imparable', 'leyenda', 'cortada', 'aniquilacion', 'torre_enemiga', 'torre_nuestra', 'uruk_despierta', 'uruk_muerto', 'hordas', 'victoria', 'derrota'];
+const VOCES = ['primera', 'doble', 'triple', 'racha', 'imparable', 'leyenda', 'cortada', 'aniquilacion', 'torre_enemiga', 'torre_nuestra', 'hordas', 'victoria', 'derrota'];
 let vozLibre = 0;
-function precargaVoces() {try {if (!audio()) return; for (const n of VOCES) {const f = 'voces/' + n + '.mp3'; if (!SON[f]) {SON[f] = 'cargando'; fetch(f).then((r) => r.arrayBuffer()).then((b) => AC.decodeAudioData(b)).then((buf) => {SON[f] = buf;}).catch(() => {SON[f] = null;});}}} catch (e) {}}
+function precargaVoces() {try {if (!audio()) return; for (const n of VOCES) {const f = 'voces_ap/' + n + '.mp3'; if (!SON[f]) {SON[f] = 'cargando'; fetch(f).then((r) => r.arrayBuffer()).then((b) => AC.decodeAudioData(b)).then((buf) => {SON[f] = buf;}).catch(() => {SON[f] = null;});}}} catch (e) {}}
 function voz(n) {
   try {
-    const buf = SON['voces/' + n + '.mp3']; if (!AC || !(buf instanceof AudioBuffer)) return;
+    const buf = SON['voces_ap/' + n + '.mp3']; if (!AC || !(buf instanceof AudioBuffer)) return;
     if (AC.state === 'suspended') AC.resume();
     const t = Math.max(AC.currentTime, vozLibre); if (t - AC.currentTime > 3) return;
     const src = AC.createBufferSource(), g = AC.createGain(); g.gain.value = 0.95; src.buffer = buf; src.connect(g).connect(AUD.voz || AC.destination); src.start(t); vozLibre = t + buf.duration + 0.15; setTimeout(() => agacha(buf.duration), (t - AC.currentTime) * 1000);
@@ -1783,7 +1827,7 @@ function vozDeTexto(txt, mio) {
    Mezcla: efectos, voz y música van a buses separados → compresor (que las peleas no saturen) → altavoz.
    Los efectos suenan según dónde pasan: más flojos lejos de la cámara y a izquierda/derecha según la pantalla.
    Se precargan al primer toque (antes el primer golpe de cada tipo no sonaba). Música con <audio> por WebAudio (en iPhone el volumen de <audio> no se puede tocar). */
-const SON_LISTA = {golpe: 'golpe_carne', golpeH: 'espada_armadura', espada: 'espada_corte', arco: 'disparo_arco', clavada: 'flecha_clavada', muerte: 'muerte_orco', nivel: 'subir_nivel', moneda: 'recoger_moneda', cuerno: 'cuerno_lejano', explosion: 'explosion_piedras', fuego: 'explosion_fuego', viento: 'rafaga_viento', magia: 'rayo_magico', derrumbe: 'derrumbe_muro', grito: 'grito_guerra_orco', aullido: 'aullido_huargo', madera: 'madera_rota', cofre: 'abrir_cofre', gema: 'recoger_gema'};
+const SON_LISTA = {ap_llama: 'ap_llama', ap_energia: 'ap_energia', ap_luz: 'ap_luz', ap_fusil: 'ap_fusil', ap_golf: 'ap_golf', ap_arena: 'ap_arena', golpe: 'golpe_carne', golpeH: 'espada_armadura', espada: 'espada_corte', arco: 'disparo_arco', clavada: 'flecha_clavada', muerte: 'muerte_orco', nivel: 'subir_nivel', moneda: 'recoger_moneda', cuerno: 'cuerno_lejano', explosion: 'explosion_piedras', fuego: 'explosion_fuego', viento: 'rafaga_viento', magia: 'rayo_magico', derrumbe: 'derrumbe_muro', grito: 'grito_guerra_orco', aullido: 'aullido_huargo', madera: 'madera_rota', cofre: 'abrir_cofre', gema: 'recoger_gema'};
 const SON_N = {muerte: 6};
 const AUD = {fx: null, voz: null, mus: null, musOn: localStorage.getItem('auto.mus') !== '0', fxOn: localStorage.getItem('auto.fx') !== '0', pista: null, el: {}, vivos: 0};
 function audio() {
@@ -1793,7 +1837,7 @@ function audio() {
     const comp = AC.createDynamicsCompressor(); comp.threshold.value = -16; comp.knee.value = 10; comp.ratio.value = 5; comp.attack.value = 0.004; comp.release.value = 0.2; comp.connect(AC.destination);
     for (const k of ['fx', 'voz', 'mus']) {AUD[k] = AC.createGain(); AUD[k].connect(comp);}
     AUD.fx.gain.value = AUD.fxOn ? 0.9 : 0; AUD.voz.gain.value = AUD.fxOn ? 1 : 0; AUD.mus.gain.value = AUD.musOn ? 0.55 : 0;
-    for (const k in SON_LISTA) for (let i = 1; i <= (SON_N[k] || 3); i++) cargaSon('../abismo/sonidos/fx/' + SON_LISTA[k] + '_' + i + '.mp3');
+    for (const k in SON_LISTA) for (let i = 1; i <= (SON_N[k] || 3); i++) cargaSon('../batalla/sonidos_ap/fx/' + SON_LISTA[k] + '_' + i + '.mp3');
   } catch (e) {AC = null;}
   return AC;
 }
@@ -1807,7 +1851,7 @@ function suena(n, vol = 0.5, x, z) {
   let pan = 0;
   if (x !== undefined) {const d = Math.hypot(x - camM.x, z - camM.z); vol *= d < 12 ? 1 : Math.max(0, 1 - (d - 12) / 26); if (vol < 0.03) return; _p.set(x, 0.5, z).project(camera); pan = Math.max(-0.8, Math.min(0.8, _p.x * 0.7));}
   if (AUD.vivos > 14) return; /* tope de sonidos a la vez */
-  const f = '../abismo/sonidos/fx/' + lista + '_' + (1 + Math.floor(Math.random() * (SON_N[n] || 3))) + '.mp3';
+  const f = '../batalla/sonidos_ap/fx/' + lista + '_' + (1 + Math.floor(Math.random() * (SON_N[n] || 3))) + '.mp3';
   if (!(SON[f] instanceof AudioBuffer)) {cargaSon(f); return;}
   try {
     const src = AC.createBufferSource(), g = AC.createGain(); src.buffer = SON[f]; src.playbackRate.value = 0.93 + Math.random() * 0.14; g.gain.value = vol;
@@ -1816,7 +1860,7 @@ function suena(n, vol = 0.5, x, z) {
   } catch (e) {}
 }
 /* música: menú → tregua_tensa, partida → batalla_epica (+ batalla lejana de fondo), victoria → alba_triunfal */
-const PISTAS = {menu: ['mus/tregua_tensa.mp3', 0.5], batalla: ['mus/batalla_epica.mp3', 0.38], amb: ['amb/batalla_lejana.mp3', 0.16], victoria: ['mus/alba_triunfal.mp3', 0.6], derrota: ['mus/tregua_tensa.mp3', 0.45]};
+const PISTAS = {menu: ['../../batalla/sonidos_ap/mus/accion.mp3', 0.32], batalla: ['../../batalla/sonidos_ap/mus/accion.mp3', 0.38], amb: ['../../batalla/sonidos_ap/amb/trafico.mp3', 0.3], victoria: ['mus/alba_triunfal.mp3', 0.6], derrota: ['mus/tregua_tensa.mp3', 0.45]};
 function pistaEl(k) {
   if (AUD.el[k]) return AUD.el[k];
   const el = new Audio('../abismo/sonidos/' + PISTAS[k][0]); el.loop = true; el.preload = 'auto'; el.playsInline = true; el.setAttribute('playsinline', '');
@@ -1862,14 +1906,14 @@ function efectoLocal(e) {
   const t = e[0];
   if (t === 'num') {if (e[4] === 'o' && e[5] !== YO) return; if ((e[4] === '' || e[4] === 'c') && e[6] !== undefined && e[5] !== YO && e[6] !== YO) return; /* como en el Wild Rift: solo los números de tus golpes y de los que te dan */ if (e[6] === YO && e[4] !== 'c') e[4] = 'r'; numero(e[1], e[2], e[3], e[4]); if (e[4] === 'o') {suena('moneda', 0.3); flip('monedas', e[1], e[2], 1.8, false, 0, 1.4);}}
   if (t === 'fx') {if (e[1] === 'onda') flip('onda', e[2], e[3], e[4], true); else flip(e[1], e[2], e[3], e[4], e[1] === 'tajo'); if (e[1] === 'explosion') suena('explosion', 0.6, e[2], e[3]); if (e[1] === 'onda') suena('viento', 0.4, e[2], e[3]);}
-  if (t === 'proy') {const o = modeloProy(e[1]); o.scale.multiplyScalar(e[6] || 1); scene.add(o); const pr = {tipo: 'proy', o, x: e[2], z: e[3], y: e[7] || 1.2, d: e[4], v: e[5], t: 0};
+  if (t === 'proy') {const o = modeloProy(e[1]); o.scale.multiplyScalar(e[6] || 1); scene.add(o); const pr = {tipo: 'proy', k: e[1], o, x: e[2], z: e[3], y: e[7] || 1.2, d: e[4], v: e[5], t: 0};
     if (e[1] === 'piedra' && (e[6] || 1) > 2) {/* 17/11 (solo las torres: la honda del hobbit no lleva fuego) («los cañonazos de las torres son cutres»): pedrusco ardiendo con halo, estela de fuego, parábola y estallido al caer */
       if (!HALO_T) {HALO_T = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({color: '#ff9a3a', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false}));}
       const h = HALO_T.clone(); h.scale.setScalar(0.45); o.add(h); const ob = VISTA.get(e[4]); pr.torre = 1; pr.y0 = e[7] || 5; pr.d0 = ob ? Math.hypot((ob.xi ?? ob.x) - e[2], (ob.zi ?? ob.z) - e[3]) : 10; pr.est = 0;
       flip('explosion', e[2], e[3], 2, false, undefined, pr.y0, 0.35); suena('explosion', 0.35, e[2], e[3]);
-    } else suena('arco', 0.25);
+    } else suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', {bala: 0.35, bola: 0.45}[e[1]] || 0.25);
     FXP.push(pr);}
-  if (t === 'tiro') {const o = modeloProy(e[1]); o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); suena('arco', 0.5);}
+  if (t === 'tiro') {const o = modeloProy(e[1]); o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', 0.5);}
   if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.userData.tira = 1; a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}
   if (t === 'muere') {const v = VISTA.get(e[1]); if (v) {if (v.k === 'j' && /warg|alfa/.test(v.tipo)) suena('aullido', 0.5, v.x, v.z); else if (v.k === 'h') {suena('golpeH', 0.7, v.x, v.z); suena('cuerno', v.id === YO ? 0.5 : 0.25);} else suena('muerte', 0.35, v.x, v.z);} if (v && v.k === 's') flip('muerteS', v.xi ?? v.x, v.zi ?? v.z, 2.6, false, 0, 1.1);}
   if (t === 'alm') {if (e[1] === MI_EQ) {flip('ondaC', e[2], e[3], 2.2, true); suena('gema', 0.5, e[2], e[3]);}}
@@ -2076,10 +2120,10 @@ function indicador(n, color) {
 const APUNTABLE = {dash: 1, linea: 1, cono: 1, zona: 1, salto: 1, area: 1, ejecuta: 1};
 /* Pack Vado 19 (16/11): marcas de apuntado propias de cada héroe (como los indicadores de cada campeón del Wild Rift).
    Recortadas al borde del dibujo: el aro y el círculo llenan el cuadro, el cono tiene la punta abajo en el centro y la flecha apunta a la derecha. */
-const IND_HEROE = {rohan: 'q r e alcance', enano: 'q e r alcance', elfo: 'q e r alcance', hobbit: 'q e alcance', gandalf: 'q e r alcance', orco: 'w e r alcance'};
+const IND_HEROE = {rohan: 'q e r alcance basico', enano: 'q e r alcance basico', hobbit: 'q e alcance basico', gandalf: 'q e r alcance basico', gollum: 'q e alcance basico', orco: 'q w e r alcance basico', elfo: 'q e r alcance basico'};
 const MIRA_H = {};
 function marcaH(tipo, k, forma) {
-  if (!(IND_HEROE[tipo] || '').split(' ').includes(k)) return null; const n = 'ind_' + tipo + '_' + k;
+  if (!(IND_HEROE[tipo] || '').split(' ').includes(k)) return null; const n = 'ap_ind_' + tipo + '_' + k;
   if (!MIRA_H[n]) {const t = cargaTex('../batalla/ui/' + n + '.webp'), g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); if (forma === 'cono') g.translate(0, 0, -0.5);
     const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, opacity: 0.8})); m.renderOrder = 4; m.visible = false; scene.add(m); MIRA_H[n] = m;}
   return MIRA_H[n];
@@ -2117,7 +2161,7 @@ function miraAtaque() {
   if (!mira) mira = {alc: indicador('ind_alcance', '#ffffff'), area: indicador('ind_area', '#ffe9a8'), flecha: indicador('ind_flecha', '#ffe9a8'), cono: indicador('ind_cono', '#ffe9a8')};
   const {F, R} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, {dx, dy} = MIRA_AT, l = Math.hypot(dx, dy) || 1, wx = (dx * R.x - dy * F.x) / l, wz = (dx * R.z - dy * F.z) / l, alc = HEROES[v.tipo].alcance;
   mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * alc * 256 / 235);
-  const f = mira.flecha; f.visible = true; f.scale.set(alc, 1, 1.2); f.position.set(x + wx * alc / 2, 0.1, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);
+  const f = marcaH(v.tipo, 'basico', 'flecha') || mira.flecha; f.visible = true; f.scale.set(alc, 1, f === mira.flecha ? 1.2 : 0.9); f.position.set(x + wx * alc / 2, 0.1, z + wz * alc / 2); f.rotation.y = Math.atan2(-wz, wx);
 }
 /* 17/11 («que se vean las habilidades del contrario»): al lanzar el rival, su forma sale en rojo en el suelo y se apaga en medio segundo */
 const TELE = [];

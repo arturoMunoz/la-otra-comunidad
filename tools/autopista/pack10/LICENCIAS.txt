@@ -1,0 +1,5 @@
+Mallas y atlas de color creados para este encargo. No se han descargado ni
+incorporado modelos o texturas de terceros. El usuario puede utilizar y
+modificar estos recursos en su juego. Sin marcas ni logotipos en las mallas.
+La tipografía de las etiquetas de la lámina es DejaVu Sans instalada en
+el entorno (licencia libre DejaVu/Bitstream Vera); no se distribuye la fuente.

@@ -1,0 +1,152 @@
+[
+  {
+    "node": "torre_azul_1",
+    "independentImport": true,
+    "triangles": 1016,
+    "boundsMinXYZ": [
+      -1.75,
+      0.0,
+      -1.75
+    ],
+    "boundsMaxXYZ": [
+      1.75,
+      8.0,
+      1.75
+    ]
+  },
+  {
+    "node": "torre_azul_2",
+    "independentImport": true,
+    "triangles": 1448,
+    "boundsMinXYZ": [
+      -1.75,
+      0.0,
+      -1.75
+    ],
+    "boundsMaxXYZ": [
+      1.75,
+      7.008488655090332,
+      1.75
+    ]
+  },
+  {
+    "node": "torre_azul_3",
+    "independentImport": true,
+    "triangles": 812,
+    "boundsMinXYZ": [
+      -2.0,
+      0.0,
+      -2.0
+    ],
+    "boundsMaxXYZ": [
+      2.0,
+      2.0,
+      2.0
+    ]
+  },
+  {
+    "node": "torre_roja_1",
+    "independentImport": true,
+    "triangles": 1016,
+    "boundsMinXYZ": [
+      -1.75,
+      0.0,
+      -1.75
+    ],
+    "boundsMaxXYZ": [
+      1.75,
+      8.0,
+      1.75
+    ]
+  },
+  {
+    "node": "torre_roja_2",
+    "independentImport": true,
+    "triangles": 1448,
+    "boundsMinXYZ": [
+      -1.75,
+      0.0,
+      -1.75
+    ],
+    "boundsMaxXYZ": [
+      1.75,
+      7.008488655090332,
+      1.75
+    ]
+  },
+  {
+    "node": "torre_roja_3",
+    "independentImport": true,
+    "triangles": 812,
+    "boundsMinXYZ": [
+      -2.0,
+      0.0,
+      -2.0
+    ],
+    "boundsMaxXYZ": [
+      2.0,
+      2.0,
+      2.0
+    ]
+  },
+  {
+    "node": "nexo_azul",
+    "independentImport": true,
+    "triangles": 1124,
+    "boundsMinXYZ": [
+      -3.0,
+      0.0,
+      -3.0
+    ],
+    "boundsMaxXYZ": [
+      3.0,
+      9.06553840637207,
+      3.0
+    ]
+  },
+  {
+    "node": "nexo_rojo",
+    "independentImport": true,
+    "triangles": 1124,
+    "boundsMinXYZ": [
+      -3.0,
+      0.0,
+      -3.0
+    ],
+    "boundsMaxXYZ": [
+      3.0,
+      9.06553840637207,
+      3.0
+    ]
+  },
+  {
+    "node": "fuente_azul",
+    "independentImport": true,
+    "triangles": 808,
+    "boundsMinXYZ": [
+      -2.0,
+      0.0,
+      -2.0
+    ],
+    "boundsMaxXYZ": [
+      2.0,
+      3.5,
+      2.0
+    ]
+  },
+  {
+    "node": "fuente_roja",
+    "independentImport": true,
+    "triangles": 808,
+    "boundsMinXYZ": [
+      -2.0,
+      0.0,
+      -2.0
+    ],
+    "boundsMaxXYZ": [
+      2.0,
+      3.5,
+      2.0
+    ]
+  }
+]

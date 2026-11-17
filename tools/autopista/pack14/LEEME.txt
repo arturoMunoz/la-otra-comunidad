@@ -1,0 +1,54 @@
+A-6 — PACK AUTOPISTA 14 WORK
+Seis sustituciones. Esqueletos, jerarquías, transformaciones de reposo,
+matrices inversas de enlace y datos de los clips conservados exactamente.
+Se compararon los objetos skins/animations y los bloques binarios originales.
+Sólo cambian las mallas, sus pesos y los materiales visibles.
+
+Un material y una textura PNG integrada por archivo: 512 px normales,
+1024 px supers. Ninguna dependencia externa. +Y arriba, frente +Z.
+Pies en Y=0 en reposo. Las alturas de caja incluyen equipo y antenas de
+radio; no son medidas anatómicas hasta la coronilla. Se conserva la altura
+total medida en cada referencia; las botas nuevas se apoyan en el suelo.
+
+ap_sub_azul_m.glb ← ballestero2.glb
+1348 triángulos; 41 huesos; altura 1.8000 m.
+Clips: apuntar, morir, recibir_golpe, quieto, disparar, cargar, correr, andar
+
+ap_sub_azul_r.glb ← arquero_rohan2.glb
+1336 triángulos; 41 huesos; altura 1.8000 m.
+Clips: apuntar, cargar, disparar, morir, recibir_golpe, quieto, correr, andar
+
+ap_sub_rojo_m.glb ← uruk.glb
+1348 triángulos; 17 huesos; altura 1.9000 m.
+Clips: andar, correr, quieto, atacar, recibir_golpe, morir, morir_2, morir_3, trepar, saltar, golpear_puerta, empujado, aturdido, rugir, pasar_almena, caer
+
+ap_sub_rojo_r.glb ← q_arquero.glb
+1436 triángulos; 32 huesos; altura 1.7677 m.
+Clips: andar, apuntar, atacar, correr, disparar, morir, quieto, recibir, rodar, tensar_arco
+
+ap_super_azul.glb ← super_rohan.glb
+1572 triángulos; 17 huesos; altura 3.1412 m.
+Clips: andar, morir, correr, recibir_golpe, quieto, atacar, disparar
+
+ap_super_rojo.glb ← super_isengard.glb
+1616 triángulos; 17 huesos; altura 3.2873 m.
+Clips: andar, atacar, morir, correr, quieto
+
+VALIDACIÓN
+Importados en Blender 4.3.2. Evaluados 1606 fotogramas de los 54 clips,
+con un render intermedio por clip y una captura andando por modelo.
+Informes incluidos en VERIFICACION.json y COMPROBACION_BLENDER.json.
+No se ha probado la integración dentro de la aplicación móvil.
+
+CLIPS HEREDADOS
+uruk.glb contiene 16 clips, no 14: se conservan los 16.
+q_arquero conserva recibir y tensar_arco, sin renombrarlos.
+Los gestos de apuntar/cargar/disparar del ballestero permanecen aunque
+ahora lleve porra y escudo. No se han creado ataques nuevos de porra.
+Los supers mantienen las inclinaciones y poses originales de sus clips,
+incluidas las poses muy inclinadas de algunos movimientos. No se han
+corregido ni retocado esas animaciones.
+
+INSTALACIÓN
+Usar los seis nuevos nombres de archivo y mantener la escala de carga
+actual. Crear las acciones con los nombres originales enumerados arriba.

@@ -1,0 +1,38 @@
+A-6 — PACK AUTOPISTA 8, REVISIÓN CON MEDIDAS FINALES
+10 nodos raíz con los nombres solicitados. La lista enumera 10 piezas;
+la captura muestra las diez más dos vistas de detalle, en una única fila.
+
+Escala: metros, +Y arriba y frente +Z. Origen en el centro de la base,
+Y=0. Bases: torres 3,5×3,5; ruinas 4×4; nexos 6×6; fuentes diámetro 4.
+Las nuevas medidas del usuario sustituyen las referencias medievales.
+Los héroes de 3,3 m equivalen aproximadamente al 41 % de la torre intacta.
+
+SIN animaciones, luces ni cámaras dentro del GLB. Los focos y anillos
+son mallas con emisión; no iluminan otras piezas como luces del motor.
+KHR_materials_emissive_strength. El halo de la captura depende de bloom.
+Una textura PNG de 1024×1024 integrada, compartida por todas las piezas.
+Se mantienen materiales separados para hormigón, acero y superficies
+emisivas: esta versión no utiliza un único material por pieza.
+
+INSTALACIÓN
+Las raíces están superpuestas en el origen, como catálogo de variantes.
+Extraer por nombre y clonar únicamente la raíz elegida y sus descendientes.
+No mostrar simultáneamente los tres estados de una torre. Mantener escala 1.
+No se incluyen colisiones ni lógica de daño, curación o disparo.
+
+CAJAS (X ancho × Y alto × Z fondo, metros) Y TRIÁNGULOS
+torre_azul_1: 3.500 × 8.000 × 3.500 m; 1016 triángulos
+torre_azul_2: 3.500 × 7.008 × 3.500 m; 1448 triángulos
+torre_azul_3: 4.000 × 2.000 × 4.000 m; 812 triángulos
+torre_roja_1: 3.500 × 8.000 × 3.500 m; 1016 triángulos
+torre_roja_2: 3.500 × 7.008 × 3.500 m; 1448 triángulos
+torre_roja_3: 4.000 × 2.000 × 4.000 m; 812 triángulos
+nexo_azul: 6.000 × 9.066 × 6.000 m; 1124 triángulos
+nexo_rojo: 6.000 × 9.066 × 6.000 m; 1124 triángulos
+fuente_azul: 4.000 × 3.500 × 4.000 m; 808 triángulos
+fuente_roja: 4.000 × 3.500 × 4.000 m; 808 triángulos
+
+La antena dañada llega a 7,01 m y los soportes inclinados del núcleo a
+9,07 m: diferencias inferiores al 1 % respecto de las alturas nominales.
+Cada nodo fue importado solo en Blender 4.3.2 y renderizado para comprobar
+su geometría. No se ha probado la integración dentro del juego móvil.

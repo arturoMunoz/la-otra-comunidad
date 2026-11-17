@@ -1,0 +1,4 @@
+A-6 · Efectos de sonido
+Kenney (kenney.nl): Sci-fi Sounds, Impact Sounds, Interface Sounds, Digital Audio · CC0 1.0 Universal
+espada_corte, rafaga_viento, grito_guerra_orco, aullido_huargo: los de La Brecha (ver public/abismo/sonidos/CREDITOS_audio.txt)
+Voz del anunciador (voces_ap): ElevenLabs

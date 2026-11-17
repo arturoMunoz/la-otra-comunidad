@@ -1,0 +1,7 @@
+Geometría y atlas creados para este encargo; no se incorporan modelos ni
+texturas descargados de terceros. Uso y modificación permitidos al usuario.
+Las referencias medievales se usaron únicamente para estudiar su organización;
+las dimensiones finales proceden del último mensaje del usuario.
+No se redistribuyen los archivos de referencia.
+Las etiquetas del PNG usan DejaVu Sans del entorno (licencia DejaVu/Bitstream
+Vera). La fuente no se distribuye ni aparece en las mallas del juego.
