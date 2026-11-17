@@ -283,6 +283,9 @@ for v in ["'ui/h_' + ", "'ui/p_' + ", "'ui/at_' + "]:
     js = js.replace(v, v.replace('ui/', 'ui/ap_'))
 html = sub(html, '<script type="module" src="juego.js?', '<script type="module" src="autopista.js?', donde='html')
 html = sub(html, '<h1>La Brecha</h1><p class="sub">Rohan contra Isengard</p>', '<h1>La Autopista</h1><p class="sub">Azules contra rojos</p>', donde='html')
+# logo del Pack 15 (17/11) en vez del título de texto; la versión 2 queda en ui/ap_logo_2.webp por si se prefiere
+html = sub(html, '<h1>La Autopista</h1><p class="sub">Azules contra rojos</p>', '<h1 class="apLogo"><img src="ui/ap_logo_1.webp" alt="La Autopista"></h1>', donde='html')
+html = sub(html, '</head>', '<style>.mTit h1.apLogo{margin:8px 0 0;line-height:0}.mTit h1.apLogo img{width:min(225px,calc(27 * var(--vw)));height:auto;filter:drop-shadow(0 4px 6px #000a)}</style></head>', donde='html')
 html = sub(html, '<span>1 contra 1 · el Abismo</span>', '<span>1 contra 1 · la autopista</span>', donde='html')
 html = re.sub(r'\s*<button data-m="2v2">.*?</button>', '', html, count=1)  # la Batalla 2v2 (mapa del Vado, bestias de Tolkien) aún no
 html = html.replace("'vado.heroe'", "'auto.heroe'")

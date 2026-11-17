@@ -57,4 +57,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] Pack Autopista 12 ART: iconos de la tienda (17 objetos + oro en 6x3) y de encantamientos y pestañas (3x3)
 - [x] (HECHO 17/11, `tools/autopista/pack13`) Pack Autopista 13 ART: HUD de partida sin aire medieval (botones Taller/Base/zoom/ataque/torre/súbditos, baliza, hechizos, batería de energía, marco de vida, botiquín animado)
 - [ ] Pack Autopista 14 WORK: súbditos modernos (azules y rojos, cuerpo a cuerpo, a distancia y súper) con los esqueletos y clips de los de La Brecha
-- [ ] Pack Autopista 15 ART: logo «LA AUTOPISTA» del menú (`ap_logo.png`, 1600x640, transparente) → sustituye al título de texto `.mTit h1`
+- [x] (HECHO 17/11, `tools/autopista/pack15`) Pack Autopista 15 ART: logo «LA AUTOPISTA» del menú (`ap_logo.png`, 1600x640, transparente) → sustituye al título de texto `.mTit h1`
