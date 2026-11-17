@@ -1,0 +1,8 @@
+<resources>
+    <!-- mientras arranca se ve la pantalla de carga (no un fondo blanco) -->
+    <style name="Brecha" parent="@android:style/Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@drawable/carga</item>
+        
+        <item name="android:navigationBarColor">#000000</item>
+    </style>
+</resources>

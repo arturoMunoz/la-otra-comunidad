@@ -1,0 +1,118 @@
+PACK AUTOPISTA 2 — ORIGEN Y LICENCIAS
+Fecha de preparación: 17 de noviembre de 2026
+
+ESCENARIO: todos los recursos descargados son de Kenney y están bajo
+Creative Commons Zero 1.0 Universal (CC0).
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Autor: Kenney (https://kenney.nl/).
+Se incluyen los textos de licencia que acompañaban a los tres archivos
+originales descargados en LICENCIAS_ORIGINALES/.
+
+ORIGEN EXACTO POR MODELO
+
+ap_tramo_recto.glb
+  Autor: Kenney
+  Pack: City Kit Roads 2.2
+  Modelo original: road-straight.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Escalado a 8 x 12 unidades; materiales de asfalto y marcas viales añadidas.
+
+ap_quitamiedos.glb
+  Autor: Kenney
+  Pack: City Kit Roads 2.2
+  Modelo original: road-straight-barrier.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Extracción de una barrera lateral; escalado y postes añadidos.
+
+ap_farola.glb
+  Autor: Kenney
+  Pack: City Kit Roads 2.2
+  Modelo original: light-curved.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Escalado; acabado metálico y panel luminoso añadidos.
+
+ap_cono.glb
+  Autor: Kenney
+  Pack: City Kit Roads 2.2
+  Modelo original: construction-cone.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Escalado.
+
+ap_senal.glb
+  Autor: Kenney
+  Pack: City Kit Roads 2.2
+  Modelo original: road-sign-warning.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Escalado.
+
+ap_valla.glb
+  Autor: Kenney
+  Pack: City Kit Roads 2.2
+  Modelo original: construction-fence.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Escalado y recoloreado naranja.
+
+ap_coche_1.glb
+  Autor: Kenney
+  Pack: Car Kit 3.1
+  Modelo original: sedan.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Paleta apagada, óxido y una rueda inclinada.
+
+ap_coche_2.glb
+  Autor: Kenney
+  Pack: Car Kit 3.1
+  Modelo original: hatchback-sports.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Paleta apagada, óxido y una rueda inclinada.
+
+ap_coche_3.glb
+  Autor: Kenney
+  Pack: Car Kit 3.1
+  Modelo original: suv.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Paleta apagada, óxido y una rueda inclinada.
+
+ap_camion.glb
+  Autor: Kenney
+  Pack: Car Kit 3.1
+  Modelo original: truck.glb
+  Licencia: CC0 1.0 Universal
+  Adaptación: Escalado; modelo de camión ligero con caja abierta.
+
+ap_peaje.glb
+  Autor: Kenney
+  Pack: Racing Kit 1.2
+  Modelo original: pitsOffice.gltf
+  Licencia: CC0 1.0 Universal
+  Adaptación: Oficina adaptada como cabina; marquesina, barrera y ventanilla añadidas.
+
+PÁGINAS ORIGINALES
+https://kenney.nl/assets/car-kit
+https://kenney.nl/assets/city-kit-roads
+https://kenney.nl/assets/racing-kit
+
+DESCARGAS UTILIZADAS (publicadas por Kenney en OpenGameArt)
+https://opengameart.org/sites/default/files/kenney_car-kit_3.1.zip
+https://opengameart.org/sites/default/files/kenney_city-kit-roads_2.2.zip
+https://opengameart.org/sites/default/files/Racing%20Kit%20%281.2%29.zip
+
+Las piezas nuevas y modificaciones de geometría/materiales del escenario
+creadas para este pack se entregan también bajo CC0 1.0 Universal.
+No se han incorporado modelos de terceros con otras licencias al escenario.
+
+HUELLAS SHA-256 DE LOS ARCHIVOS DESCARGADOS
+car.zip: fac7dacac5c7874348cf19729af3ef205f3d366493edaf0a827d93f4fdf3d0c4
+roads.zip: 374a4552115cbd11b4ec5c930ee31a533562dc78a09af249a655d03f7ea3b959
+racing.zip: 103acf8a85a04e94e2d3a9933fbcea12e9422c14d5e364eb013019a882af7f48
+
+HÉROES
+Las siete mallas visibles son nuevas y se han construido para este encargo.
+Los esqueletos y datos de animación proceden exclusivamente de los GLB que
+aportó el usuario en Autopista_WORK_base.zip. No se han descargado héroes.
+Los retratos se utilizaron como referencia visual y no se incluyen como
+texturas ni forman parte de los GLB.
+Las mallas nuevas se entregan para su utilización y modificación por el
+usuario. Los derechos/licencias de los archivos base aportados se mantienen;
+la declaración CC0 del escenario no cambia la licencia de esas bases.

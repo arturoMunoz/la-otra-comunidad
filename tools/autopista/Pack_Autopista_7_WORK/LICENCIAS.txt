@@ -1,0 +1,43 @@
+PACK AUTOPISTA 7 — ORIGEN Y LICENCIAS
+17 de noviembre de 2026
+
+ANATOMÍA DESCARGADA
+Autor: Quaternius
+Colección: Universal Base Characters, Standard FREE.
+Licencia: CC0 1.0 Universal (dominio público).
+Página del autor: https://quaternius.com/packs/universalbasecharacters.html
+Distribución oficial: https://quaternius.itch.io/universal-base-characters
+Texto CC0: https://creativecommons.org/publicdomain/zero/1.0/
+Se incluye el archivo de licencia que acompaña a los modelos.
+
+Archivos de origen utilizados:
+- Superhero_Male_FullBody.fbx: Brask, Vael, Grub, Birdie, Fu y Moha.
+- Superhero_Female_FullBody.fbx: Ata.
+
+Descarga de las copias FBX y su licencia desde este espejo público:
+https://github.com/zongjunlv/FPS/tree/main/Assets/ThirdParty/Quaternius/UniversalBaseCharacters
+URLs exactas:
+https://raw.githubusercontent.com/zongjunlv/FPS/main/Assets/ThirdParty/Quaternius/UniversalBaseCharacters/Models/Superhero_Male_FullBody.fbx
+SHA-256: 79344418d754a59730b79d1874752e9592143db34abe8adf138fa9a92a4768e9
+
+https://raw.githubusercontent.com/zongjunlv/FPS/main/Assets/ThirdParty/Quaternius/UniversalBaseCharacters/Models/Superhero_Female_FullBody.fbx
+SHA-256: 0727e7b236eeea4115531e07aeb2bb7690c1a58155f743bbf54282944fb97ea9
+
+https://raw.githubusercontent.com/zongjunlv/FPS/main/Assets/ThirdParty/Quaternius/UniversalBaseCharacters/License/License_Standard.txt
+SHA-256: 0f4beaf0fe360a7732e58bbe3dbf60a2422367fbea60cb9ea4add968f383268e
+
+Adaptaciones: reducción de polígonos, nuevas proporciones, pesos transferidos
+al esqueleto existente, eliminación de geometría tapada y material pintado.
+El esqueleto del modelo Quaternius NO se incorpora a los GLB de salida.
+
+ESQUELETOS Y ANIMACIONES
+Procedencia: los siete GLB del Pack_Autopista_2_WORK.zip facilitado por el
+usuario. Se conservan sus datos. Esta entrega no otorga una nueva licencia
+sobre archivos aportados por el usuario ni modifica sus condiciones previas.
+
+DISEÑO NUEVO
+Ropa, placas, pliegues, cinturones, rostros complementarios, armas, halcón,
+bolsa de golf y atlas de color: geometría/materiales elaborados para esta
+entrega. No se descargaron otras mallas, texturas ni animaciones.
+Los retratos aportados se utilizaron como referencia visual; no se incluyen
+como texturas ni se redistribuyen en este ZIP.

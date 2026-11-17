@@ -1,0 +1,50 @@
+LA AUTOPISTA — PACK 7 WORK
+Sustitución de los siete héroes del Pack 2.
+
+CONTENIDO
+7 GLB con los mismos nombres de archivo, VISTA_HEROES.jpg (misma escala de cámara para los siete), licencias,
+VERIFICACION.json y COMPROBACION_BLENDER.json.
+
+MODELOS (triángulos renderizables; no cuentan huesos auxiliares del visor)
+ap_brask.glb        6061 triángulos | 41 huesos | 15 clips
+ap_vael.glb         6357 triángulos | 41 huesos | 12 clips
+ap_grub.glb         6693 triángulos | 41 huesos | 14 clips
+ap_ata.glb          7831 triángulos | 41 huesos | 13 clips
+ap_birdie.glb       5677 triángulos | 41 huesos | 14 clips
+ap_fu.glb           7817 triángulos | 41 huesos | 9 clips
+ap_moha.glb         7185 triángulos | 41 huesos | 15 clips
+
+MATERIALES
+Una textura PNG de 1024x1024 integrada en cada GLB. Ninguna dependencia
+externa. Atlas de colores con sombreado suave y variaciones por superficie.
+Materiales emisivos en las juntas/gemas de Brask, brasas de Vael, hoja VERDE
+de Grub y visor de Ata. KHR_materials_emissive_strength para la intensidad.
+El halo alrededor de la emisión depende del bloom del juego.
+
+COMPATIBILIDAD COMPROBADA
+Comparación con los siete GLB del Pack 2: mismos 41 huesos, nombres,
+jerarquía, transformaciones de reposo y matrices inversas de enlace.
+Los objetos de animación y todos sus accesores de tiempos/valores coinciden
+exactamente. Se conservan las transformaciones de escala y orientación.
+Convención glTF: +Y arriba, +Z delante; se mantiene el origen del pack base.
+Las animaciones originales conservan sus desplazamientos verticales.
+
+Las mallas de anatomía Quaternius se han reducido y adaptado al esqueleto
+existente. El equipamiento rígido sigue los huesos de manos, cabeza o torso;
+el halcón no tiene animación independiente. Las túnicas usan pesos del
+esqueleto existente; capas y cadena no tienen simulación física.
+
+VALIDACIÓN
+Se evaluaron 15 instantes por cada uno de los 92 clips (1.380 poses) y se
+comprobaron valores finitos, pesos normalizados y referencias de huesos.
+Además se importaron los siete GLB en Blender y se evaluaron los
+2.013 fotogramas de los 92 clips; se renderizaron 276 poses (tres por clip).
+Los resultados numéricos se incluyen en los dos JSON de comprobación.
+Las hojas de contacto de animaciones se incluyen en COMPROBACION_VISUAL.
+La comprobación se ha hecho en Blender y sobre los datos glTF, no dentro
+de la aplicación móvil. La iluminación del juego puede cambiar el aspecto.
+
+INSTALACIÓN
+Reemplazar los siete archivos ap_*.glb conservando las rutas que ya usa
+el juego. No sustituir mapas de clips ni recrear el esqueleto. Mantener la
+escala de carga actual y las opciones de materiales/emisión del motor.

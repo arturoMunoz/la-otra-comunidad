@@ -1,0 +1,67 @@
+LA AUTOPISTA — PACK 2 WORK
+18 modelos GLB autónomos: 7 héroes animados + 11 piezas de escenario.
+No necesitan archivos BIN ni texturas externas.
+
+HÉROES
+Mallas originales low poly con colores planos. Miran a +Z; eje vertical +Y.
+Se han mantenido los 41 huesos de cada base, incluidos sus nombres,
+jerarquía, transformaciones locales y matrices inversas de enlace.
+Se han conservado todos los clips de cada base, con sus nombres originales,
+canales, interpolación, duraciones y valores de keyframes intactos.
+Los accesorios previos de las bases no se muestran: las mallas visibles y
+armas son las nuevas. Los nodos originales permanecen para no romper pistas.
+
+Base y escala:
+  ap_ata.glb: elfo_kk.glb; escala global adicional x1; 2720 triángulos.
+  ap_birdie.glb: hobbit_kk.glb; escala global adicional x1.17; 2388 triángulos.
+  ap_brask.glb: enano_kk.glb; escala global adicional x1.32; 2548 triángulos.
+  ap_fu.glb: gollum.glb; escala global adicional x1; 2140 triángulos.
+  ap_grub.glb: hobbit_kk.glb; escala global adicional x1; 2244 triángulos.
+  ap_moha.glb: rohan_kk.glb; escala global adicional x1; 3008 triángulos.
+  ap_vael.glb: gandalf_kk.glb; escala global adicional x1; 2912 triángulos.
+
+Brask y Birdie se escalan mediante un único padre exterior, por lo que las
+proporciones de huesos y los datos originales no cambian.
+Grub mantiene la escala de hobbit_kk.glb. Su haz es VIOLETA, como indica el
+encargo escrito, aunque el retrato adjunto lo muestra verde.
+Fu utiliza compensación de la geometría de reposo para verse erguido en el
+clip quieto; los huesos y los datos de animación de gollum.glb no se alteran.
+El movimiento sigue los clips de su base, incluidos agachamientos propios
+de acciones de ataque, carrera o muerte.
+El halcón de Moha forma una pieza rígida ligada al torso; no tiene clips ni
+huesos adicionales.
+
+EMISIVOS
+Brask: juntas, gemas y vetas del espadón blanco azulado.
+Vael: brasas naranjas dentro de la jaula del bastón.
+Grub: tubo de energía violeta y cuatro ojos amarillos.
+Ata: visor cian.
+La intensidad utiliza KHR_materials_emissive_strength. El efecto de halo
+alrededor del modelo depende del bloom de tu juego; el GLB contiene la
+emisión, no una imagen de halo pegada al arma.
+
+ESCENARIO
++Y vertical. Las piezas, salvo el tramo de carretera, apoyan sobre Y=0.
+ap_tramo_recto.glb: 8 unidades de ancho por 12 de largo, superficie Y=0.
+Su base queda por debajo de Y=0; repetir cada 12 unidades en Z.
+ap_quitamiedos.glb: módulo lateral de 10 unidades de longitud con postes.
+ap_farola.glb: altura aproximada 6,75 unidades, luminaria emisiva.
+ap_peaje.glb: cabina adaptada de una oficina CC0 de Racing Kit, con
+marquesina, ventanilla y barrera cerrada, todo estático. El origen está en la
+cabina. La barrera se extiende hacia un lado de la cabina.
+Los tres coches llevan paletas apagadas, parches de óxido y una rueda
+ligeramente inclinada. El camión corresponde a un camión ligero abierto.
+Consultar LICENCIAS.txt para autor, modelo de origen y cambios por archivo.
+
+COMPROBACIONES
+VERIFICACION.json contiene nombres de huesos y clips, recuentos de triángulos,
+SHA-256 de cada GLB y las comprobaciones contra cada base original.
+Se compararon los valores de todos los accessors de animación y enlace:
+son idénticos a los originales. Se evaluaron 5 instantes de cada uno de los
+92 clips (460 poses en total), comprobando coordenadas finitas y dimensiones.
+Se importaron los 18 GLB en Blender y se generaron vistas previas.
+Esta revisión no sustituye una prueba de integración en tu juego móvil.
+
+VISTAS PREVIAS
+VISTA_HEROES.jpg y VISTA_ESCENARIO.jpg muestran los modelos renderizados.
+Las luces, cámara y suelo de esas imágenes no forman parte de los GLB.

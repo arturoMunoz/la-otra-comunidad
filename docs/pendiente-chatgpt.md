@@ -16,6 +16,11 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [ ] **Pack Vado 18 · WORK** — modelos 3D de los 4 héroes nuevos (Gandalf a partir del mago KayKit CC0 + Gollum; orco y uruk se reutilizan del Abismo). Hacer después del ART.
 - [ ] Minimapa del mapa del ojo (el de ChatGPT era del mapa recto; ahora se pinta por código) · ART.
 
+## La Autopista (La Brecha sin Tolkien, nombre provisional) — prompts en `docs/prompts-autopista.md`
+- [x] **Pack Autopista 1 · ART** — 6 retratos grandes y 6 redondos de los héroes nuevos, carta del Duelo y fondo del menú.
+- [x] **Pack Autopista 2 · WORK** — 6 modelos 3D con el esqueleto de los de La Brecha + escenario de autopista CC0 (Kenney). Hacer después del ART.
+- [ ] Iconos de las 24 habilidades y 6 pasivas de los héroes nuevos · ART (pedir cuando estén los retratos, para que casen).
+
 ## La Otra Comunidad
 - [ ] Medallón de «Comunidad» del menú: lleva una figura de mago que parece Gandalf (contra las reglas). Pedir otro con tres hobbits · ART.
 - [ ] Sello del Acto III (bronce/plata/oro) · ART.
@@ -38,3 +43,10 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] (HECHO 17/11) Pack Vado 25 · ART: kit de botones del menú (7 piezas a proporción fija). Prompt en `docs/prompts-vado.md`.
 
 - [x] ~~Pack Vado 26 · ART: iconos de las 7 pasivas~~ (metidos 17/11)
+
+- [x] Pack Autopista 3 ART: mago Vael y maestro Grub (splash + retrato redondo)
+- [x] Pack Autopista 2 WORK rehecho para 7 héroes (17/11)
+- [x] Pack Autopista 4 ART: menú animado por capas, fondo VS, pantalla de carga, icono de la app
+- [x] Pack Autopista 5 ART: kit de botones del menú y de la partida
+- [x] Pack Autopista 6 ART: hoja de iconos de habilidades y pasivas (7×5) + botones de ataque (7)
+- [x] Pack Autopista 7 WORK: mejorar los 7 héroes 3D (detalle, proporciones, armas) sobre los ap_*.glb actuales

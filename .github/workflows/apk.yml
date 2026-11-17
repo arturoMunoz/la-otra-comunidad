@@ -18,7 +18,7 @@ jobs:
         run: |
           set -o pipefail
           gradle -p android assembleRelease --no-daemon 2>&1 | tee build.log || { grep -E "^e: |error:|What went wrong|Could not|> " build.log | head -40 | while IFS= read -r l; do echo "::error::$l"; done; exit 1; }
-      - run: cp android/app/build/outputs/apk/release/app-release.apk la-otra-comunidad.apk && cp android/brecha/build/outputs/apk/release/brecha-release.apk la-brecha.apk
+      - run: cp android/app/build/outputs/apk/release/app-release.apk la-otra-comunidad.apk && cp android/brecha/build/outputs/apk/release/brecha-release.apk la-brecha.apk && cp android/autopista/build/outputs/apk/release/autopista-release.apk la-autopista.apk
       - uses: actions/upload-artifact@v4
         with: { name: la-otra-comunidad-apk, path: la-otra-comunidad.apk }
       - name: Publicar como descarga
@@ -38,4 +38,14 @@ jobs:
           name: La Brecha para Android
           body: Descarga la-brecha.apk e instálala en el móvil (juego de duelos de Rohan, a pantalla completa y en horizontal).
           files: la-brecha.apk
+          make_latest: false
+      - uses: actions/upload-artifact@v4
+        with: { name: la-autopista-apk, path: la-autopista.apk }
+      - name: Publicar La Autopista como descarga
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: autopista-latest
+          name: La Autopista para Android
+          body: Descarga la-autopista.apk e instálala en el móvil (duelos de héroes en la autopista, a pantalla completa y en horizontal).
+          files: la-autopista.apk
           make_latest: false

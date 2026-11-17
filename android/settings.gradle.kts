@@ -3,3 +3,4 @@ dependencyResolutionManagement { repositories { google(); mavenCentral() } }
 rootProject.name = "LaOtraComunidad"
 include(":app")
 include(":brecha")
+include(":autopista")

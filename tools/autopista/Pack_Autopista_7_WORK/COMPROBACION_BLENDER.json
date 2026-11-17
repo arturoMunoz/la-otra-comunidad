@@ -1,0 +1,554 @@
+[
+  {
+    "hero": "ap_ata",
+    "clip": "andar",
+    "frames_evaluated": 16,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "atacar_2",
+    "frames_evaluated": 16,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "atacar",
+    "frames_evaluated": 16,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "aturdido",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "celebrar",
+    "frames_evaluated": 41,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "correr",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "esquivar",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "golpe_cargado",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "morir_2",
+    "frames_evaluated": 65,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "morir",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "quieto_2",
+    "frames_evaluated": 40,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "quieto",
+    "frames_evaluated": 16,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_ata",
+    "clip": "recibir_golpe",
+    "frames_evaluated": 12,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "andar",
+    "frames_evaluated": 27,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "atacar_2",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "atacar_3",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "atacar",
+    "frames_evaluated": 16,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "aturdido",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "celebrar",
+    "frames_evaluated": 41,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "correr",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "esquivar",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "golpe_cargado",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "morir_2",
+    "frames_evaluated": 65,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "morir",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "quieto_2",
+    "frames_evaluated": 27,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "quieto",
+    "frames_evaluated": 27,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_birdie",
+    "clip": "recibir_golpe",
+    "frames_evaluated": 12,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_fu",
+    "clip": "andar",
+    "frames_evaluated": 27,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_fu",
+    "clip": "atacar_2",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_fu",
+    "clip": "atacar_3",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_fu",
+    "clip": "atacar",
+    "frames_evaluated": 16,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_fu",
+    "clip": "celebrar",
+    "frames_evaluated": 41,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_fu",
+    "clip": "correr",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_fu",
+    "clip": "esquivar",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_fu",
+    "clip": "morir",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_fu",
+    "clip": "quieto",
+    "frames_evaluated": 27,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "andar",
+    "frames_evaluated": 27,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "atacar_2",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "atacar_3",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "atacar",
+    "frames_evaluated": 16,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "aturdido",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "celebrar",
+    "frames_evaluated": 41,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "correr",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "esquivar",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "golpe_cargado",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "morir_2",
+    "frames_evaluated": 65,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "morir",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "quieto_2",
+    "frames_evaluated": 27,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "quieto",
+    "frames_evaluated": 27,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_grub",
+    "clip": "recibir_golpe",
+    "frames_evaluated": 12,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "andar",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "atacar_2",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "atacar_3",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "atacar",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "aturdido",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "celebrar",
+    "frames_evaluated": 41,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "correr",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "esquivar",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "giro",
+    "frames_evaluated": 19,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "golpe_cargado",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "morir_2",
+    "frames_evaluated": 65,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "morir",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "quieto_2",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "quieto",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_moha",
+    "clip": "recibir_golpe",
+    "frames_evaluated": 12,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "andar",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "atacar_2",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "atacar_3",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "atacar",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "aturdido",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "celebrar",
+    "frames_evaluated": 41,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "correr",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "esquivar",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "golpe_cargado",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "morir",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "quieto",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_vael",
+    "clip": "recibir_golpe",
+    "frames_evaluated": 12,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "andar",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "atacar_2",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "atacar_3",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "atacar",
+    "frames_evaluated": 15,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "aturdido",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "celebrar",
+    "frames_evaluated": 41,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "correr",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "esquivar",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "giro",
+    "frames_evaluated": 19,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "golpe_cargado",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "morir_2",
+    "frames_evaluated": 65,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "morir",
+    "frames_evaluated": 21,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "quieto_2",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "quieto",
+    "frames_evaluated": 13,
+    "rendered_samples": 3
+  },
+  {
+    "hero": "ap_brask",
+    "clip": "recibir_golpe",
+    "frames_evaluated": 19,
+    "rendered_samples": 3
+  }
+]
