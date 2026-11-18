@@ -1703,7 +1703,7 @@ function rayoVisor(x, z, dx, dz, L, W, dur, y = 1.9) {
 }
 function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
   if (v.tipo === 'visor') {
-    suena('ap_energia', k === 'r' ? 0.8 : 0.5, x, z);
+    suena('ap_laser', k === 'r' ? 0.8 : 0.5, x, z);
     if (k === 'q' || k === 'w') flip('ap_visor_impacto', x + dx * 1.1, z + dz * 1.1, k === 'q' ? 1.5 : 1.2, false, undefined, 1.9);
     if (k === 'e') {flip('ap_visor_abanico', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, H.alc * 1.2, true, rot + Math.PI); temb(0.1);}
     if (k === 'r') {flip('ap_visor_carga', x, z, 3.4, true); luego2(300, () => {const p = o.raiz.position; rayoVisor(p.x + dx * 0.8, p.z + dz * 0.8, dx, dz, H.alc, H.ancho * 2.4, 1.0); temb(0.35);});}
@@ -1711,7 +1711,7 @@ function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
   }
   const t = v.tipo, rs = rot - Math.PI / 2, lejos = () => {const d0 = Math.min(H.alc || 0, Math.hypot(px - x, pz - z)); return [x + dx * d0, z + dz * d0];};
   if (o.estelaTiro) o.estelaTiro.fx = {gandalf: 'fuego', orco: 'impacto', gollum: 'humo'}[t];
-  {const sn = {gandalf: 'ap_llama', orco: 'ap_energia', enano: 'ap_luz', elfo: 'ap_fusil', hobbit: 'ap_golf', rohan: 'ap_arena'}[t]; if (sn) suena(sn, k === 'r' ? 0.8 : 0.55, x, z);}
+  {const sn = {gollum: 'ap_cadena', gandalf: 'ap_llama', orco: 'ap_energia', enano: 'ap_luz', elfo: 'ap_fusil', hobbit: 'ap_golf', rohan: 'ap_arena'}[t]; if (sn) suena(sn, k === 'r' ? 0.8 : 0.55, x, z);}
   if (t === 'hobbit') {
     if (k === 'q') {flip('ondaC', x + dx * 1.2, z + dz * 1.2, 2.4, true); temb(0.12);}  /* el drive: golpe seco y la bola sale disparada (tiro) */
     if (k === 'e') {rafaga({n: 11, x: x + dx * 0.6, z: z + dz * 0.6, ang: rot, abre: H.ang * 1.15, dist: H.alc, cada: 30, y: 1.0, salta: 1.4, kind: 'bola', vel: 13}); suena('arco', 0.6, x, z); luego2(140, () => suena('arco', 0.45, x, z));}
@@ -1880,7 +1880,7 @@ function golpeVisual(id, de, fuerte) {
     if (f) o.kb = {x: dx / l * f, z: dz / l * f, t: 0.17, d: 0.17}; const oa = VIS.get(de); if (oa && va.k === 'h' && !(HEROES[va.tipo] || {}).proy) oa.kb = {x: dx / l * 0.22, z: dz / l * 0.22, t: 0.12, d: 0.12};}}
   const yoPego = de === YO, meDan = id === YO;
   const ahora = performance.now(); /* como mucho una chispa cada 0,18 s por personaje: en una pelea grande eran decenas a la vez */
-  if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; {const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);} {const va2 = VISTA.get(de), deSold = va2 && va2.k === 's'; if (!deSold || meDan) suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ? 0.15 : yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}}
+  if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; {const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);} {const va2 = VISTA.get(de), deSold = va2 && va2.k === 's'; if (!deSold || meDan) suena(fuerte ? 'espada' : deSold ? 'simp' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ? 0.15 : yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}}
   if (meDan) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.35 : 0.18);
   else if (yoPego && (fuerte || v.k === 'h')) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.22 : 0.1);
   if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140); dirDolor(de);}
@@ -2085,8 +2085,8 @@ function vozDeTexto(txt, mio) {
    Mezcla: efectos, voz y música van a buses separados → compresor (que las peleas no saturen) → altavoz.
    Los efectos suenan según dónde pasan: más flojos lejos de la cámara y a izquierda/derecha según la pantalla.
    Se precargan al primer toque (antes el primer golpe de cada tipo no sonaba). Música con <audio> por WebAudio (en iPhone el volumen de <audio> no se puede tocar). */
-const SON_LISTA = {ap_llama: 'ap_llama', ap_energia: 'ap_energia', ap_luz: 'ap_luz', ap_fusil: 'ap_fusil', ap_golf: 'ap_golf', ap_arena: 'ap_arena', golpe: 'golpe_carne', golpeH: 'espada_armadura', espada: 'espada_corte', arco: 'disparo_arco', clavada: 'flecha_clavada', muerte: 'muerte_orco', nivel: 'subir_nivel', moneda: 'recoger_moneda', cuerno: 'cuerno_lejano', explosion: 'explosion_piedras', fuego: 'explosion_fuego', viento: 'rafaga_viento', magia: 'rayo_magico', derrumbe: 'derrumbe_muro', grito: 'grito_guerra_orco', aullido: 'aullido_huargo', madera: 'madera_rota', cofre: 'abrir_cofre', gema: 'recoger_gema'};
-const SON_N = {muerte: 6};
+const SON_LISTA = {ap_laser: 'ap_laser', ap_cadena: 'ap_cadena', teleport: 'teleport', sdisp: 'soldado_disparo', simp: 'soldado_impacto', ap_llama: 'ap_llama', ap_energia: 'ap_energia', ap_luz: 'ap_luz', ap_fusil: 'ap_fusil', ap_golf: 'ap_golf', ap_arena: 'ap_arena', golpe: 'golpe_carne', golpeH: 'espada_armadura', espada: 'espada_corte', arco: 'disparo_arco', clavada: 'flecha_clavada', muerte: 'muerte_orco', nivel: 'subir_nivel', moneda: 'recoger_moneda', cuerno: 'cuerno_lejano', explosion: 'explosion_piedras', fuego: 'explosion_fuego', viento: 'rafaga_viento', magia: 'rayo_magico', derrumbe: 'derrumbe_muro', grito: 'grito_guerra_orco', aullido: 'aullido_huargo', madera: 'madera_rota', cofre: 'abrir_cofre', gema: 'recoger_gema'};
+const SON_N = {muerte: 2, golpe: 1, golpeH: 1, espada: 1, gema: 1, ap_laser: 1, ap_cadena: 1, teleport: 1, sdisp: 1, simp: 1};
 const AUD = {fx: null, voz: null, mus: null, musOn: localStorage.getItem('auto.mus') !== '0', fxOn: localStorage.getItem('auto.fx') !== '0', pista: null, el: {}, vivos: 0};
 function audio() {
   if (AC) {if (AC.state === 'suspended') AC.resume(); return AC;}
@@ -2131,7 +2131,7 @@ function musica(k) {
   for (const n of Object.keys(PISTAS)) {
     const on = quiero.includes(n); if (!on && !AUD.el[n]) continue;
     const p = pistaEl(n); p.g.gain.cancelScheduledValues(t); p.g.gain.setValueAtTime(p.g.gain.value, t); p.g.gain.linearRampToValueAtTime(on ? PISTAS[n][1] : 0, t + (on ? 1.5 : 1.2));
-    if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; p.el.play().catch(() => {});}}
+    if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; else if ((n === 'menu' || n === 'batalla') && p.el.currentTime < 2.4) p.el.currentTime = 2.4; if ((n === 'menu' || n === 'batalla') && !p.el._bucle) {p.el._bucle = 1; p.el.addEventListener('timeupdate', () => {if (p.el.duration && p.el.currentTime > p.el.duration - 6) p.el.currentTime = 2.4;});} p.el.play().catch(() => {});}}
     else setTimeout(() => {if (AUD.pista && !(AUD.pista === 'batalla' ? ['batalla', 'amb'] : [AUD.pista]).includes(n)) p.el.pause();}, 1400);
   }
 }
@@ -2176,7 +2176,7 @@ function efectoLocal(e) {
       if (!HALO_T) {HALO_T = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({color: '#ff9a3a', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false}));}
       scene.remove(o); const sp = plasmaSprite(); sp.scale.setScalar(3); pr.o = new THREE.Group(); pr.o.add(sp); scene.add(pr.o); pr.sp = sp; const ob = VISTA.get(e[4]); pr.torre = 1; pr.y0 = e[7] || 5; pr.d0 = ob ? Math.hypot((ob.xi ?? ob.x) - e[2], (ob.zi ?? ob.z) - e[3]) : 10; pr.est = 0;
       flip('chispa', e[2], e[3], 2.4, false, undefined, pr.y0, 0.35); suena('ap_luz', 0.3, e[2], e[3]);
-    } else if ({bala: 1, bola: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]], {bala: 0.35, bola: 0.45}[e[1]]);
+    } else if ({bala: 1, bola: 1, rayo: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]]); else if (/flecha/.test(e[1])) suena('sdisp', 0.09, e[2], e[3]);
     FXP.push(pr);}
   if (t === 'tiro') {const o = PROY_AP[e[1]] ? proyAP(e[1], 2 * (e[7] || 0.5)) : modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); {const sh = {bala: 'ap_fusil', bola: 'ap_golf'}[e[1]]; if (sh) suena(sh, 0.5, e[2], e[3]);}}
   if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.userData.tira = 1; a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}
@@ -2767,6 +2767,7 @@ function hud() {
   for (const [k, cd] of [['d', v.cdD], ['f', v.cdF]]) {const c = $('b' + k.toUpperCase()).querySelector('.cd'); c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / HECHIZOS[k === 'f' && v.hf === 'c' ? 'c' : k].cd * 100) + '%' : '0%');}
   /* volver a la fuente: el botón se va llenando */
   $('bBase').style.setProperty('--p', volverBase > 0 ? (1 - volverBase / VOLVER_T) * 100 + '%' : '0%'); $('bBase').classList.toggle('cargando', volverBase > 0);
+  if (volverBase > 0 && !(window._tpB > 0)) suena('teleport', 0.55); window._tpB = volverBase;
   const cn = $('canal'); cn.classList.toggle('hidden', !(volverBase > 0)); if (volverBase > 0) pon_(cn, 'innerHTML', 'Volviendo a la base… <b>' + Math.ceil(volverBase) + '</b><i style="width:' + (1 - volverBase / VOLVER_T) * 100 + '%"></i>');
   if (!circVuelta) {circVuelta = fbObjeto('base', false); circVuelta.center.set(0.5, FB_ANCLA.base); circVuelta.renderOrder = 2; scene.add(circVuelta);}
   circVuelta.visible = volverBase > 0; if (circVuelta.visible) {const f = Math.floor(performance.now() / 70) % 16; circVuelta.material.map.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4); circVuelta.position.set(v.xi ?? v.x, 0, v.zi ?? v.z); circVuelta.scale.setScalar(4.2);}

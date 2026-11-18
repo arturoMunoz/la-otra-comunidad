@@ -1655,6 +1655,19 @@ js = sub(js, "    if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');"
 # Fuera el filo de luz por equipo (el equipo ya lo dicen el aro del suelo y la barra); a cambio, sus colores un 30 % más saturados y un pelín más vivos.
 js = sub(js, "gl_FragColor.rgb+=uRim*pow(fr,uRimF>2.?1.6:2.)*uRimF;", "fr=0.;{float l=dot(gl_FragColor.rgb,vec3(.299,.587,.114));gl_FragColor.rgb=max(mix(vec3(l),gl_FragColor.rgb,1.3)*1.04,0.);}")
 
+# ---------- SONIDOS DE HENAR (18/11, tools/autopista/hace_sonidos3.py): golpes, espadas, clic, muertes, láser del Visor, cadena de Fu, volver a la base y soldados casi mudos ----------
+js = sub(js, "const SON_N = {muerte: 6};", "const SON_N = {muerte: 2, golpe: 1, golpeH: 1, espada: 1, gema: 1, ap_laser: 1, ap_cadena: 1, teleport: 1, sdisp: 1, simp: 1};")
+js = sub(js, "const SON_LISTA = {", "const SON_LISTA = {ap_laser: 'ap_laser', ap_cadena: 'ap_cadena', teleport: 'teleport', sdisp: 'soldado_disparo', simp: 'soldado_impacto', ")
+js = sub(js, "suena('ap_energia', k === 'r' ? 0.8 : 0.5, x, z);", "suena('ap_laser', k === 'r' ? 0.8 : 0.5, x, z);")
+js = sub(js, "{const sn = {gandalf: 'ap_llama',", "{const sn = {gollum: 'ap_cadena', gandalf: 'ap_llama',")
+js = sub(js, "} else if ({bala: 1, bola: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]], {bala: 0.35, bola: 0.45}[e[1]]);",
+         "} else if ({bala: 1, bola: 1, rayo: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]]); else if (/flecha/.test(e[1])) suena('sdisp', 0.09, e[2], e[3]);")
+js = sub(js, "suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ?", "suena(fuerte ? 'espada' : deSold ? 'simp' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ?")
+js = sub(js, "  const cn = $('canal');", "  if (volverBase > 0 && !(window._tpB > 0)) suena('teleport', 0.55); window._tpB = volverBase;\n  const cn = $('canal');")
+# la música del menú y de la partida empieza ya con ritmo (la pista tiene 2,4 s de entrada casi muda) y vuelve ahí antes del final apagado
+js = sub(js, "if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; p.el.play().catch(() => {});}}",
+         "if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; else if ((n === 'menu' || n === 'batalla') && p.el.currentTime < 2.4) p.el.currentTime = 2.4; if ((n === 'menu' || n === 'batalla') && !p.el._bucle) {p.el._bucle = 1; p.el.addEventListener('timeupdate', () => {if (p.el.duration && p.el.currentTime > p.el.duration - 6) p.el.currentTime = 2.4;});} p.el.play().catch(() => {});}}")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
