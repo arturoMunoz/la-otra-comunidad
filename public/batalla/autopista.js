@@ -266,7 +266,7 @@ const PX = (e) => GIRO ? e.clientY : e.clientX, PY = (e) => GIRO ? innerWidth - 
 const topC = (el) => {const r = el.getBoundingClientRect(); return GIRO ? innerWidth - r.right : r.top;};
 
 /* ---------- motor ---------- */
-const renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'});
+const renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'}); THREE.Texture.DEFAULT_ANISOTROPY = Math.min(4, renderer.capabilities.getMaxAnisotropy()); const SOL_C = {x: NaN, z: NaN, forzar: true};
 /* resolución dinámica (como en el Abismo): si el móvil no llega a ~50 fps baja la nitidez un paso; si va sobrado, la sube */
 /* ajustes de gráficos como en el Wild Rift: calidad (baja/media/alta) y 30 o 60 fotogramas por segundo */
 const GRAF = {cal: localStorage.getItem('auto.cal') || (() => {const n = navigator.hardwareConcurrency || 4, m = navigator.deviceMemory || 4; return n >= 8 && m >= 6 ? 'alta' : n <= 4 || m <= 3 ? 'baja' : 'media';})(), fps: +(localStorage.getItem('auto.fps') || 60), ult: 0};
@@ -315,7 +315,7 @@ function pieza(archivo, nombre) {const o = M[archivo] && M[archivo].scene.getObj
 /* muchas copias del mismo objeto en pocas llamadas de dibujo: un InstancedMesh por cada malla del objeto */
 /* el decorado repetido (árboles, matas, rocas) con luz Lambert: se ve casi igual en estos modelos de colores planos y cuesta bastante menos por píxel */
 const LAMB = new Map();
-function lambert(m) {if (Array.isArray(m) || !m.isMeshStandardMaterial) return m; if (!LAMB.has(m)) LAMB.set(m, new THREE.MeshLambertMaterial({color: m.color, map: m.map, transparent: m.transparent, opacity: m.opacity, alphaTest: m.alphaTest, side: m.side, vertexColors: m.vertexColors, emissive: m.emissive, emissiveMap: m.emissiveMap})); return LAMB.get(m);}
+function lambert(m) {if (Array.isArray(m) || !m.isMeshStandardMaterial) return m; if (!LAMB.has(m)) LAMB.set(m, new THREE.MeshLambertMaterial({color: m.color, map: m.map, transparent: m.transparent, opacity: m.opacity, alphaTest: m.alphaTest, alphaToCoverage: m.alphaTest > 0, side: m.side, vertexColors: m.vertexColors, emissive: m.emissive, emissiveMap: m.emissiveMap})); return LAMB.get(m);}
 function instancias(archivo, nombre, lista, sombra = true) {
   const o = M[archivo] && M[archivo].scene.getObjectByName(nombre); if (!o || !lista.length) return;
   M[archivo].scene.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(o.matrixWorld).invert();
@@ -482,7 +482,7 @@ function construyeMapa() {
   if (SUELO_RT) SUELO_RT.dispose(); SUELO_RT = rt;
   const hornea = () => {const sc = new THREE.Scene(), q = new THREE.Mesh(gB, bakeM); sc.add(q); const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); const prev = renderer.getRenderTarget(); renderer.setRenderTarget(rt); renderer.render(sc, cam); renderer.setRenderTarget(prev); bakeM.dispose();};
   (function espera() {if (listoTex()) hornea(); else setTimeout(espera, 60);})();
-  const m = new THREE.MeshLambertMaterial({map: rt.texture, alphaTest: 0.5});
+  const m = new THREE.MeshLambertMaterial({map: rt.texture, alphaTest: 0.5, alphaToCoverage: true});
   /* detalle fino encima (la hierba de cerca se ve nítida aunque la textura horneada sea de ~5 cm por píxel) */
   m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH}; sh.uniforms.tNie = {value: NIEBLA_TEX};
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWD=(modelMatrix*vec4(transformed,1.)).xz;');
@@ -2090,7 +2090,7 @@ function camara(dt) {
   camM.x += (x + F.x * ade - camM.x) * Math.min(1, dt * 6); camM.z += (z + F.z * ade - camM.z) * Math.min(1, dt * 6);
   camGolpe = Math.max(0, camGolpe - dt * 1.5); const zg = 1 - 0.16 * Math.sin(Math.min(1, camGolpe) * Math.PI), z0 = ZOOMS[zoomI], zz = [z0[0] * zg, z0[1] * zg]; tiemblaCam = Math.max(0, tiemblaCam - dt * 1.6); const tb = tiemblaCam * tiemblaCam * 1.6, ox = (Math.random() - 0.5) * tb, oz = (Math.random() - 0.5) * tb;
   camera.position.set(camM.x - F.x * zz[1] + ox, zz[0], camM.z - F.z * zz[1] + oz); camera.lookAt(camM.x + ox, 0, camM.z + oz);
-  luces(); sol.position.set(camM.x + 10, 40, camM.z + 8); sol.target.position.set(camM.x, 0, camM.z);
+  luces(); {const p = Math.round(camM.x / 6) * 6, q = Math.round(camM.z / 6) * 6; if (p !== SOL_C.x || q !== SOL_C.z) {SOL_C.x = p; SOL_C.z = q; SOL_C.forzar = true; sol.position.set(p + 10, 40, q + 8); sol.target.position.set(p, 0, q);}}
 }
 
 /* ---------- mandos ---------- */
@@ -2633,7 +2633,7 @@ function bucle() {
       UT.value += dt; animaPalantir(); const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); else if (MIRA_AT) miraAtaque(); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
-  const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') {renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = (SOMBRA_F = (SOMBRA_F + 1) % 2) === 0; renderer.render(scene, camera);} /* 17/11: la sombra se repinta un fotograma sí y otro no (es otra pasada entera de la escena; a 60 fps no se nota) */ /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
+  const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') {renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = (SOMBRA_F = (SOMBRA_F + 1) % 2) === 0 || SOL_C.forzar; SOL_C.forzar = false; renderer.render(scene, camera);} /* 17/11: la sombra se repinta un fotograma sí y otro no (es otra pasada entera de la escena; a 60 fps no se nota) */ /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];

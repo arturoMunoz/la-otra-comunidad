@@ -1006,6 +1006,21 @@ _css += [
 ]
 html = sub(html, '</head>', '<style>\n/* A-6 · MANDOS EN ARCO */\n' + '\n'.join(_css) + '\n</style></head>', donde='html')
 
+# ---------- SIN SIERRA NI BORROSO AL MOVERSE (18/11, Henar) ----------
+# 1) la luz del sol seguía a la cámara en cada fotograma: los bordes de las sombras «reptaban» (sierra) al andar, y como la sombra se
+#    repinta un fotograma sí y otro no, daba saltitos. Ahora el sol se recoloca a saltos de 6 m (la caja de sombra mide 60 m) y ese
+#    fotograma la sombra se repinta sí o sí: entre salto y salto las sombras quietas no se mueven nada.
+js = sub(js, "luces(); sol.position.set(camM.x + 10, 40, camM.z + 8); sol.target.position.set(camM.x, 0, camM.z);",
+         "luces(); {const p = Math.round(camM.x / 6) * 6, q = Math.round(camM.z / 6) * 6; if (p !== SOL_C.x || q !== SOL_C.z) {SOL_C.x = p; SOL_C.z = q; SOL_C.forzar = true; sol.position.set(p + 10, 40, q + 8); sol.target.position.set(p, 0, q);}}")
+js = sub(js, "renderer.shadowMap.needsUpdate = (SOMBRA_F = (SOMBRA_F + 1) % 2) === 0;",
+         "renderer.shadowMap.needsUpdate = (SOMBRA_F = (SOMBRA_F + 1) % 2) === 0 || SOL_C.forzar; SOL_C.forzar = false;")
+# 2) bordes de hojas, hierba y del suelo recortado (alphaTest) sin dientes: alpha-to-coverage usa el antialias que ya hay (casi gratis)
+js = sub(js, "alphaTest: m.alphaTest, side: m.side", "alphaTest: m.alphaTest, alphaToCoverage: m.alphaTest > 0, side: m.side")
+js = sub(js, "const m = new THREE.MeshLambertMaterial({map: rt.texture, alphaTest: 0.5});", "const m = new THREE.MeshLambertMaterial({map: rt.texture, alphaTest: 0.5, alphaToCoverage: true});")
+# 3) texturas nítidas vistas de lado (asfalto, personajes, decorado): filtro anisótropo x4 por defecto
+js = sub(js, "new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'});",
+         "new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'}); THREE.Texture.DEFAULT_ANISOTROPY = Math.min(4, renderer.capabilities.getMaxAnisotropy()); const SOL_C = {x: NaN, z: NaN, forzar: true};")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
