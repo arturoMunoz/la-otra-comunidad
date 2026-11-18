@@ -276,7 +276,7 @@ function stats(h) {
   if (h.buf.huorn > 0) {st.regen += 4; st.rmana += 3 + st.mana * 0.01;} /* la Savia es la «azul» del LoL: también da maná */
   if (S && S.santuarios.some((z) => z.eq === h.eq && z.hasta > S.t && Math.hypot(h.x - z.x, h.z - z.z) < z.r)) ve += 0.3;
   if (h.buf.alfa > 0) {ve += 0.15; st.regen += 6;}
-  if (be.uruk > S.t) {st.dano *= 1.2; st.regen += 8;}
+  if (S && be.uruk > S.t) {st.dano *= 1.2; st.regen += 8;}
   if (h.buf.rafaga > 0) va += 0.6;
   if (h.buf.suerte > 0) {ve += 0.5; st.dano *= 1.35;}
   if (h.buf.invis > 0 && !(h.tipo === 'hobbit' && h.buf.escond > 0)) ve += 0.35;

@@ -691,7 +691,7 @@ function stats(h) {
   if (h.buf.huorn > 0) {st.regen += 4; st.rmana += 3 + st.mana * 0.01;} /* la Savia es la «azul» del LoL: también da maná */
   if (S && S.santuarios.some((z) => z.eq === h.eq && z.hasta > S.t && Math.hypot(h.x - z.x, h.z - z.z) < z.r)) ve += 0.3;
   if (h.buf.alfa > 0) {ve += 0.15; st.regen += 6;}
-  if (be.uruk > S.t) {st.dano *= 1.2; st.regen += 8;}
+  if (S && be.uruk > S.t) {st.dano *= 1.2; st.regen += 8;}
   if (h.buf.rafaga > 0) va += 0.6;
   if (h.buf.suerte > 0) {ve += 0.5; st.dano *= 1.35;}
   if (h.buf.invis > 0 && !(h.tipo === 'hobbit' && h.buf.escond > 0)) ve += 0.35;
@@ -2436,6 +2436,75 @@ let tCat = 'rec';
 const T_CATS = [['rec', 'Recomendado', 'obj_07'], ['atq', 'Ataque', 'obj_01'], ['def', 'Defensa', 'obj_03'], ['mov', 'Movilidad', 'obj_05'], ['enc', 'Encantamientos', null]];
 const CAT_OBJ = {atq: ['hoja', 'daga', 'herugrim', 'guthwine', 'hacha', 'tomo', 'baculo', 'narya'], def: ['cota', 'yelmo', 'manto', 'escudo', 'velo', 'mithril'], mov: ['botas', 'amuleto', 'capa']};
 const ST_TXT = {dano: (v) => '+' + v + ' daño', vatq: (v) => '+' + Math.round(v * 100) + ' % vel. ataque', vida: (v) => '+' + v + ' vida', reduc: (v) => '−' + Math.round(v * 100) + ' % daño recibido', arm: (v) => '+' + v + ' armadura', rm: (v) => '+' + v + ' resist. mágica', poder: (v) => '+' + v + ' poder mágico', mana: (v) => '+' + v + ' maná', vel: (v) => '+' + Math.round(v * 100) + ' % velocidad', regen: (v) => '+' + v + ' vida/s', crit: (v) => Math.round(v * 100) + ' % crítico', espinas: (v) => Math.round(v * 100) + ' % espinas', esquiva: (v) => Math.round(v * 100) + ' % esquiva', robo: (v) => Math.round(v * 100) + ' % robo de vida'};
+/* ---------- FICHA DE ESTADÍSTICAS (18/11, Henar: «que se entienda el daño físico y mágico, las defensas, cómo se mueve… y en la tienda cómo afecta cada cosa al héroe»)
+   statsDe() usa la MISMA stats() de la simulación con un héroe de mentira (sin efectos), así lo que se enseña es lo que vale de verdad */
+const f1 = (x) => (Math.round(x * 10) / 10).toLocaleString('es-ES');
+const pctDef = (d) => Math.round(100 - 10000 / (100 + Math.max(0, d)));
+function statsDe(tipo, nivel, inv) {return stats({tipo, nivel: nivel || 1, inv: inv || [], buf: {}, eq: typeof MI_EQ === 'number' ? MI_EQ : 0, hierba: -1, x: 0, z: 0});}
+function esMagico(tipo) {return Object.values(HEROES[tipo].hab).some((a) => a.mag);}
+const STAT_INFO = [
+  ['vida', 'Vida', (s) => Math.round(s.vida), 'Lo que aguantas. Si llega a 0 caes y esperas para volver.'],
+  ['dano', 'Daño de ataque', (s) => Math.round(s.dano), 'Lo que quita cada golpe básico (daño físico). El daño que ganas con objetos también sube tus habilidades físicas.'],
+  ['vatq', 'Velocidad de ataque', (s) => f1(s.vatq) + ' golpes/s', 'Cuántos golpes básicos das por segundo.'],
+  ['alcance', 'Alcance', (s) => f1(s.alcance) + ' m', 'Hasta dónde llega tu golpe básico. Menos de 3,5 m es cuerpo a cuerpo: hay que pegarse al rival.'],
+  ['vel', 'Velocidad', (s) => f1(s.vel) + ' m/s', 'Lo rápido que andas: para perseguir, huir y llegar antes a los sitios.'],
+  ['arm', 'Armadura', (s) => Math.round(s.arm) + ' <small>−' + pctDef(s.arm) + ' % físico</small>', 'Defensa contra el daño físico: golpes básicos, súbditos, torres y habilidades físicas.'],
+  ['rm', 'Resistencia mágica', (s) => Math.round(s.rm) + ' <small>−' + pctDef(s.rm) + ' % mágico</small>', 'Defensa contra el daño mágico: los hechizos de los magos.'],
+  ['mana', 'Maná', (s) => Math.round(s.mana) + ' <small>+' + f1(s.rmana) + '/s</small>', 'Cada habilidad gasta maná; sin maná no se lanzan. Se recarga solo, y muy rápido en tu fuente.'],
+];
+const GLOSARIO = '<div class="fGlo"><b>Cómo funciona el daño</b>' +
+  '<p><em class="fis">Físico</em>: los golpes básicos de todos, los súbditos, las torres y las habilidades de luchadores, tanques, tiradores y asesinos. Lo frena la <b>armadura</b>.</p>' +
+  '<p><em class="mag">Mágico</em>: los hechizos de los magos. Lo frena la <b>resistencia mágica</b>.</p>' +
+  '<p>Las dos defensas van igual: con 50 recibes un 33 % menos; con 100, la mitad; con 200, un tercio. Nunca te hacen inmune.</p>' +
+  '<p>Las habilidades físicas suben con el <b>daño</b> que compras; las mágicas, con el <b>poder mágico</b>. Subir de rango una habilidad (el +) y de nivel también las hace pegar más.</p></div>';
+function habNums(A) {
+  const t = [];
+  if (A.dano) t.push(A.dano + ' de daño'); if (A.dps) t.push(A.dps + ' de daño/s');
+  if (A.dano || A.dps) t.push(A.mag ? '<em class="mag">mágico</em>' : '<em class="fis">físico</em>');
+  if (A.tipo === 'escudo' && A.val) t.push('escudo de ' + A.val);
+  const alc = A.alc || A.dist; if (alc) t.push('alcance ' + f1(alc) + ' m'); else if (A.radio) t.push('radio ' + f1(A.radio) + ' m');
+  if (A.aturde) t.push('aturde ' + f1(A.aturde) + ' s'); if (A.lento) t.push('frena ' + Math.round(A.lento * 100) + ' %');
+  t.push('recarga ' + A.cd + ' s'); if (A.mn) t.push(A.mn + ' de maná');
+  return t.join(' · ');
+}
+/* hoja completa: estadísticas a nivel 1 → nivel máximo (o con tus objetos), barra comparada con los demás héroes, qué significa cada una, habilidades con números y el glosario */
+function fichaHeroeHtml(tipo, actual) {
+  const H = HEROES[tipo], s1 = statsDe(tipo, 1), s9 = statsDe(tipo, NIVEL_MAX), mag = esMagico(tipo);
+  const mx = {}; for (const k of Object.keys(HEROES)) {const q = statsDe(k, 1); for (const [c] of STAT_INFO) mx[c] = Math.max(mx[c] || 0, q[c]);}
+  const filas = STAT_INFO.map(([c, n, f, d]) => '<div class="fF"><div class="fN">' + n + '</div><div class="fV">' + (actual ? '<b>' + f(actual) + '</b>' : f(s1) + (s9[c] !== s1[c] ? ' <span>→ ' + f(s9) + '</span>' : '')) + '</div><i><u style="width:' + Math.round(Math.min(1, (actual || s1)[c] / mx[c]) * 100) + '%"></u></i><p>' + d + '</p></div>').join('');
+  const habs = ['q', 'w', 'e', 'r'].map((k) => {const A = H.hab[k]; return '<div class="fH"><img src="ui/h_' + tipo + '_' + k + '.webp" alt=""><div><b>' + A.n + ' <i>' + (k === 'r' ? 'definitiva' : k.toUpperCase()) + '</i></b><small>' + (A.d || '') + '</small><em>' + habNums(A) + '</em></div></div>';}).join('');
+  return '<div class="fCab"><img src="' + RET(tipo) + '" alt=""><div><b>' + H.nombre + '</b><span>' + ROL_H[tipo] + ' · ' + (H.alcance < 3.5 ? 'cuerpo a cuerpo' : 'a distancia') + '</span><span>Hace daño: ' + (mag ? '<em class="fis">físico</em> con los golpes y <em class="mag">mágico</em> con las habilidades' : '<em class="fis">físico</em> (golpes y habilidades)') + '</span></div><button class="fX" id="fX">✕</button></div>' +
+    '<div class="fTit">' + (actual ? 'Ahora, con tu nivel y tus objetos' : 'Nivel 1 <span>→ nivel ' + NIVEL_MAX + '</span> · la barra lo compara con los demás héroes') + '</div><div class="fRej">' + filas + '</div>' +
+    (PASIVA[tipo] ? '<div class="fTit">Pasiva</div><div class="fH"><img src="ui/p_' + tipo + '.webp" alt=""><div><b>' + PASIVA[tipo].n + '</b><small>' + PASIVA[tipo].d + '</small></div></div>' : '') +
+    '<div class="fTit">Habilidades</div>' + habs + GLOSARIO;
+}
+function abreFicha(tipo, actual) {
+  let f = $('fichaH'); if (!f) {f = document.createElement('div'); f.id = 'fichaH'; document.body.appendChild(f);}
+  f.innerHTML = '<div class="fIn">' + fichaHeroeHtml(tipo, actual) + '</div>'; f.classList.remove('hidden');
+  f.onclick = (e) => {if (e.target === f) f.classList.add('hidden');}; $('fX').onclick = () => f.classList.add('hidden');
+}
+/* lo que cambia en TU héroe si compras un objeto (se gastan los básicos de su receta que ya tengas) */
+function invTras(inv, id) {const q = [...inv]; for (const r of OBJ[id].rec || []) {const k = q.indexOf(r); if (k >= 0) q.splice(k, 1);} q.push(id); return q;}
+function efectoEnHeroe(v, id) {
+  const a = statsDe(v.tipo, v.nivel, v.inv), b = statsDe(v.tipo, v.nivel, invTras(v.inv, id)), mag = esMagico(v.tipo), out = [];
+  const fila = (n, x, y, nota) => out.push('<div class="tE"><span>' + n + '</span><b>' + x + ' <u>→</u> ' + y + '</b>' + (nota ? '<small>' + nota + '</small>' : '') + '</div>');
+  const dif = (k) => Math.abs(b[k] - a[k]) > 1e-6;
+  if (dif('dano')) fila('Daño de ataque', Math.round(a.dano), Math.round(b.dano), 'golpes básicos +' + Math.round((b.dano / a.dano - 1) * 100) + ' %' + (mag ? '; tus hechizos no suben con el daño' : '; habilidades +' + Math.round((b.dano - a.dano) / 1.5) + ' %'));
+  if (dif('poder')) {if (mag) fila('Poder mágico', Math.round(a.poder), Math.round(b.poder), 'hechizos +' + Math.round((b.poder - a.poder) / 1.6) + ' %'); else out.push('<div class="tE mal">⚠ Tu héroe no lanza hechizos: el poder mágico no le sirve</div>');}
+  if (dif('vatq')) fila('Velocidad de ataque', f1(a.vatq), f1(b.vatq) + ' golpes/s');
+  if (dif('crit')) fila('Crítico', Math.round(a.crit * 100) + ' %', Math.round(b.crit * 100) + ' %', 'golpes básicos al doble');
+  if (dif('vida')) fila('Vida', Math.round(a.vida), Math.round(b.vida));
+  if (dif('arm')) fila('Armadura', Math.round(a.arm), Math.round(b.arm), 'daño físico que recibes −' + pctDef(a.arm) + ' % → −' + pctDef(b.arm) + ' %');
+  if (dif('rm')) fila('Resistencia mágica', Math.round(a.rm), Math.round(b.rm), 'daño mágico que recibes −' + pctDef(a.rm) + ' % → −' + pctDef(b.rm) + ' %');
+  if (dif('reduc')) fila('Todo el daño', '−' + Math.round(a.reduc * 100) + ' %', '−' + Math.round(b.reduc * 100) + ' %', 'físico y mágico');
+  if (dif('esquiva')) fila('Esquiva', Math.round(a.esquiva * 100) + ' %', Math.round(b.esquiva * 100) + ' %', 'golpes que no te tocan');
+  if (dif('robo')) fila('Robo de vida', Math.round(a.robo * 100) + ' %', Math.round(b.robo * 100) + ' %', 'te curas con lo que quitas');
+  if (dif('espinas')) fila('Espinas', Math.round(a.espinas * 100) + ' %', Math.round(b.espinas * 100) + ' %', 'devuelves parte de los golpes');
+  if (dif('regen')) fila('Regeneración', f1(a.regen), f1(b.regen) + ' vida/s');
+  if (dif('vel')) fila('Velocidad', f1(a.vel), f1(b.vel) + ' m/s');
+  if (dif('mana')) fila('Maná', Math.round(a.mana), Math.round(b.mana));
+  return out.length ? '<div class="tEf"><small>En tu ' + HEROES[v.tipo].nombre.split(/[ ,]/)[0] + ' (nivel ' + (v.nivel || 1) + ')</small>' + out.join('') + '</div>' : '';
+}
 function abreTienda() {
   const v = VISTA.get(YO); if (!v) return;
   if (!(Math.hypot(v.x - BASES[MI_EQ].fuente.x, v.z - BASES[MI_EQ].fuente.z) < 9 || v.muerto >= 0)) {aviso('La armería está en tu fuente (botón ⌂ para volver)'); return;}
@@ -2467,17 +2536,18 @@ function pintaTienda() {
     const o = OBJ[tSel], pr = precio(v.inv, tSel), fl = falta({inv: v.inv}, tSel), puede = v.oro >= pr && v.inv.length - ((o.rec || []).length - fl.length) < 6;
     const usos = Object.keys(OBJ).filter((k) => (OBJ[k].rec || []).includes(tSel));
     det = '<div class="tDH"><img src="' + ICO(o.i) + '" alt=""><div><b>' + o.t + '</b><span class="tP">🪙 ' + pr + (pr !== o.c ? ' <s>' + (o.c + (o.rec || []).reduce((a, r) => a + OBJ[r].c, 0)) + '</s>' : '') + '</span></div></div>' +
-      '<div class="tSt">' + Object.entries(o.st).map(([k, x]) => '<span>' + (ST_TXT[k] ? ST_TXT[k](x) : k) + '</span>').join('') + '</div>' + (o.p ? '<p class="tPas">' + o.p + '</p>' : '') +
+      '<div class="tSt">' + Object.entries(o.st).map(([k, x]) => '<span>' + (ST_TXT[k] ? ST_TXT[k](x) : k) + '</span>').join('') + '</div>' + (o.p ? '<p class="tPas">' + o.p + '</p>' : '') + efectoEnHeroe(v, tSel) +
       (o.rec ? '<div class="tRec"><small>Se forja con</small><div>' + (() => {const q = [...v.inv]; return o.rec.map((r) => {const k = q.indexOf(r), ten = k >= 0; if (ten) q.splice(k, 1); return '<span class="' + (ten ? 'ten' : '') + '" data-id="' + r + '"><img src="' + ICO(OBJ[r].i) + '" alt="">' + (ten ? '<i>✓</i>' : '') + '</span>';}).join('<em>+</em>');})() + '</div></div>' : '') +
       (usos.length ? '<div class="tRec"><small>Sirve para</small><div>' + usos.map((u) => '<span data-id="' + u + '"><img src="' + ICO(OBJ[u].i) + '" alt=""></span>').join('') + '</div></div>' : '') +
       '<button class="tBuy" id="tComprar"' + (puede ? '' : ' disabled') + '>' + (v.oro < pr ? 'Faltan ' + (pr - v.oro) + ' de oro' : !puede ? 'No caben más' : 'Comprar') + '</button>';
   }
-  t.innerHTML = '<div class="tCab"><button class="tX" id="tX" aria-label="Volver">←</button><b>Armería</b><div class="tInv">' + Array.from({length: 6}, (_, i) => v.inv[i] ? '<span class="tHueco lleno" data-id="' + v.inv[i] + '"><img src="' + ICO(OBJ[v.inv[i]].i) + '" alt=""></span>' : '<span class="tHueco"></span>').join('') + '</div><span class="tOro">🪙 ' + v.oro + '</span></div>' +
+  t.innerHTML = '<div class="tCab"><button class="tX" id="tX" aria-label="Volver">←</button><b>Armería</b><div class="tInv">' + Array.from({length: 6}, (_, i) => v.inv[i] ? '<span class="tHueco lleno" data-id="' + v.inv[i] + '"><img src="' + ICO(OBJ[v.inv[i]].i) + '" alt=""></span>' : '<span class="tHueco"></span>').join('') + '</div><span class="tOro">🪙 ' + v.oro + '</span><button class="tAyuda" id="tAyuda" aria-label="Tu héroe y cómo funciona el daño">?</button></div>' +
     '<div class="tCuerpo"><nav class="tCats">' + T_CATS.map(([k, n]) => '<button data-cat="' + k + '" class="' + (k === tCat ? 'on' : '') + '"><img src="ui/tab_' + k + '.webp" alt=""><span>' + n + '</span></button>').join('') + '</nav>' +
     '<div class="tLista">' + centro + '</div><div class="tDet">' + det + '</div></div>';
   t.querySelectorAll('[data-id]').forEach((b) => b.onclick = () => {tSel = b.dataset.id; pintaTienda();});
   t.querySelectorAll('[data-cat]').forEach((b) => b.onclick = () => {tCat = b.dataset.cat; const l = tCat === 'rec' ? null : tCat === 'enc' ? Object.keys(ENC) : CAT_OBJ[tCat]; if (l && !l.includes(tSel)) tSel = l[0]; pintaTienda();});
   $('tX').onclick = () => t.classList.add('hidden');
+  $('tAyuda').onclick = () => abreFicha(v.tipo, statsDe(v.tipo, v.nivel, v.inv));
   $('tComprar').onclick = () => {compraMia(tSel); setTimeout(() => {const w = VISTA.get(YO); if (w && tCat === 'rec') {const sg = sugerencia(w); if (sg) tSel = sg;} pintaTienda();}, 150);};
 }
 
@@ -2504,11 +2574,11 @@ function eligeHeroe(titulo, listo) {
     const ico = (k) => k === 'p' ? 'ui/p_' + eligeSel + '.webp' : 'ui/h_' + eligeSel + '_' + k + '.webp';
     let det;
     if (habSel === 'p') det = '<b>' + PASIVA[eligeSel].n + ' <i class="eTag">pasiva</i></b><small>' + PASIVA[eligeSel].d + '</small>';
-    else {const A = H.hab[habSel]; det = '<b>' + A.n + ' <i class="eTag">' + (habSel === 'r' ? 'definitiva' : habSel.toUpperCase()) + '</i>' + (A.mn ? ' <i class="eMn">' + A.mn + ' de maná</i>' : '') + '</b><small>' + (A.d || '') + '</small>';}
+    else {const A = H.hab[habSel]; det = '<b>' + A.n + ' <i class="eTag">' + (habSel === 'r' ? 'definitiva' : habSel.toUpperCase()) + '</i></b><small>' + (A.d || '') + '</small><em class="eNums">' + habNums(A) + '</em>';}
     el.innerHTML = '<div class="eRet"><img src="ui/splash_' + eligeSel + '.webp" alt=""><div class="eNom"><b>' + H.nombre + '</b><em>' + ROL_H[eligeSel] + '</em></div></div>' +
       '<div class="eDer"><div class="eTit">' + titulo + '</div>' +
       '<div class="eLista">' + Object.keys(HEROES).map((k) => '<button class="eH' + (k === eligeSel ? ' on' : '') + '" data-h="' + k + '"><img src="ui/splash_' + k + '.webp" alt=""></button>').join('') + '</div>' +
-      '<div class="eBarras">' + barra('Vida', H.vida, max.vida) + barra('Daño', H.dano, max.dano) + barra('Alcance', H.alcance, max.alcance) + barra('Velocidad', H.vel, max.vel) + '</div>' +
+      '<div class="eBarras">' + barra('Vida', H.vida, max.vida) + barra('Daño', H.dano, max.dano) + barra('Alcance', H.alcance, max.alcance) + barra('Velocidad', H.vel, max.vel) + '<button class="eInfo" id="eInfo">ⓘ Estadísticas y daño</button></div>' +
       '<div class="eIcos">' + habs.map((k) => '<button data-k="' + k + '" class="' + (k === habSel ? 'on' : '') + (k === 'r' ? ' ult' : '') + '"><img src="' + ico(k) + '" alt=""><span>' + (k === 'p' ? 'P' : k.toUpperCase()) + '</span></button>').join('') + '</div>' +
       '<div class="eDet">' + det + '</div>' +
       '<div class="eHech"><span>Hechizos:</span><b><img src="ui/hz_destello.webp" alt="">Destello</b>' + ['f', 'c'].map((k) => '<button data-hz="' + k + '"' + (hechElegido === k ? ' class="on"' : '') + '><img src="' + HECHIZOS[k].icono + '" alt="">' + HECHIZOS[k].n + '</button>').join('') + '</div>' +
@@ -2517,6 +2587,7 @@ function eligeHeroe(titulo, listo) {
     el.querySelectorAll('[data-k]').forEach((b) => b.onclick = () => {habSel = b.dataset.k; pinta();});
     el.querySelectorAll('[data-hz]').forEach((b) => b.onclick = () => {hechElegido = b.dataset.hz; localStorage.setItem('vado.hech', hechElegido); pinta();});
     $('eVolver').onclick = () => el.classList.add('hidden');
+    $('eInfo').onclick = () => abreFicha(eligeSel);
     $('eOk').onclick = () => {heroeElegido = eligeSel; localStorage.setItem('vado.heroe', heroeElegido); el.classList.add('hidden'); pintaMenu(); listo();};
   };
   pinta();
