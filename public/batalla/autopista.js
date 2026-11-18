@@ -1851,7 +1851,7 @@ function golpeVisual(id, de, fuerte) {
     if (f) o.kb = {x: dx / l * f, z: dz / l * f, t: 0.17, d: 0.17}; const oa = VIS.get(de); if (oa && va.k === 'h' && !(HEROES[va.tipo] || {}).proy) oa.kb = {x: dx / l * 0.22, z: dz / l * 0.22, t: 0.12, d: 0.12};}}
   const yoPego = de === YO, meDan = id === YO;
   const ahora = performance.now(); /* como mucho una chispa cada 0,18 s por personaje: en una pelea grande eran decenas a la vez */
-  if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; {const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);} suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}
+  if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; {const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);} {const va2 = VISTA.get(de), deSold = va2 && va2.k === 's'; if (!deSold || meDan) suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ? 0.15 : yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}}
   if (meDan) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.35 : 0.18);
   else if (yoPego && (fuerte || v.k === 'h')) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.22 : 0.1);
   if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140); dirDolor(de);}
@@ -2145,11 +2145,11 @@ function efectoLocal(e) {
       if (!HALO_T) {HALO_T = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({color: '#ff9a3a', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false}));}
       scene.remove(o); const sp = plasmaSprite(); sp.scale.setScalar(3); pr.o = new THREE.Group(); pr.o.add(sp); scene.add(pr.o); pr.sp = sp; const ob = VISTA.get(e[4]); pr.torre = 1; pr.y0 = e[7] || 5; pr.d0 = ob ? Math.hypot((ob.xi ?? ob.x) - e[2], (ob.zi ?? ob.z) - e[3]) : 10; pr.est = 0;
       flip('chispa', e[2], e[3], 2.4, false, undefined, pr.y0, 0.35); suena('ap_luz', 0.3, e[2], e[3]);
-    } else suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', {bala: 0.35, bola: 0.45}[e[1]] || 0.25);
+    } else if ({bala: 1, bola: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]], {bala: 0.35, bola: 0.45}[e[1]]);
     FXP.push(pr);}
-  if (t === 'tiro') {const o = PROY_AP[e[1]] ? proyAP(e[1], 2 * (e[7] || 0.5)) : modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); {const sh = {bala: 'ap_fusil', bola: 'ap_golf'}[e[1]]; suena(sh || 'arco', sh ? 0.5 : 0.12, e[2], e[3]);}}
+  if (t === 'tiro') {const o = PROY_AP[e[1]] ? proyAP(e[1], 2 * (e[7] || 0.5)) : modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); {const sh = {bala: 'ap_fusil', bola: 'ap_golf'}[e[1]]; if (sh) suena(sh, 0.5, e[2], e[3]);}}
   if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.userData.tira = 1; a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}
-  if (t === 'muere') {const v = VISTA.get(e[1]); if (v) {if (v.k === 'j' && /warg|alfa/.test(v.tipo)) suena('aullido', 0.5, v.x, v.z); else if (v.k === 'h') {suena('golpeH', 0.7, v.x, v.z); suena('cuerno', v.id === YO ? 0.5 : 0.25);} else suena('muerte', v.k === 's' ? 0.14 : 0.35, v.x, v.z);} if (v && v.k === 's') flip('muerteS', v.xi ?? v.x, v.zi ?? v.z, 2.6, false, 0, 1.1);}
+  if (t === 'muere') {const v = VISTA.get(e[1]); if (v) {if (v.k === 'j' && /warg|alfa/.test(v.tipo)) suena('aullido', 0.5, v.x, v.z); else if (v.k === 'h') {suena('golpeH', 0.7, v.x, v.z);} else suena('muerte', v.k === 's' ? 0.07 : 0.35, v.x, v.z);} if (v && v.k === 's') flip('muerteS', v.xi ?? v.x, v.zi ?? v.z, 2.6, false, 0, 1.1);}
   if (t === 'alm') {if (e[1] === MI_EQ) {flip('ondaC', e[2], e[3], 2.2, true); suena('gema', 0.5, e[2], e[3]);}}
   if (t === 'vive') {const o = VIS.get(e[1]); if (o) {o.sqA = 0.3; o.sqT = o.sqD = 0.45;} const v = VISTA.get(e[1]); if (v) {const f = BASES[v.eq].fuente; flip('ondaC', f.x, f.z, 4, true);}}
   if (t === 'son') suena(e[1], 0.5, e[2], e[3]);
@@ -2185,7 +2185,7 @@ function anuncio(a, d, txt) {
   else el.innerHTML = '<div class="anF' + (mio(va) ? '' : ' malo') + '"><img class="' + (mio(va) ? 'az' : 'ro') + '" src="' + (va ? retratoDe(a) : '../abismo/iconos/torre.webp') + '" alt=""><b>⚔</b><img class="' + (mio(vd) ? 'az' : 'ro') + ' muerto" src="' + retratoDe(d) + '" alt=""></div>' + (txt ? '<div class="anT ' + (mio(va) ? 'bueno' : 'malo') + '">' + txt + '</div>' : '');
   el.classList.remove('hidden'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
   clearTimeout(anuncioT); anuncioT = setTimeout(() => el.classList.add('hidden'), 2600);
-  if (txt) {suena('cuerno', 0.3); vozDeTexto(txt, vd.k === 't' && mio(vd));}
+  if (txt) {vozDeTexto(txt, vd.k === 't' && mio(vd));}
 }
 /* panel de ajustes y votación */
 function votaMio(si) {if (S) rinde(S.u.find((q) => q.id === YO), si); else NET.manda({t: 'rinde', si});}

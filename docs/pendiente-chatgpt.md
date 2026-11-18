@@ -93,3 +93,7 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] ~~18/11 · Pack Autopista 44 ART — pantalla de derribado y reaparición~~ imagen 1 metida 18/11 (falta la 2: el reloj)
 - [x] ~~18/11 · Pack Autopista 45 ART — plataforma de salida vista desde arriba~~ (metido 18/11)
 - [x] ~~Pack Autopista 46 WORK~~ CANCELADO (18/11, Henar: «no vamos a meter más WORK, está sobrecargado»; hecho con modelos que ya teníamos). (18/11, Henar: «los items de vida y visión se ven como un png en medio del mapa, feos»): máquina expendedora (vida), radar (visión), boca de riego (salto) y botiquín del Duelo en 3D, con material «luz» y nodos «plato»/«tapa». Prompt en `docs/prompts-autopista.md`. Al llegar: sustituir los sprites `ap_pl_*` de `PLANTAS` y el atlas del botiquín por los modelos (latido de la luz, plato que gira, tapa que bota; apagados mientras están gastados).
+
+## ElevenLabs · Efectos de sonido de A-6 (18/11, Henar: «el sonido es horrible»)
+No es ChatGPT: en ElevenLabs → Sound Effects. Cada uno 3 veces (3 versiones), bajar en mp3 y llamarlos `nombre_1.mp3`, `nombre_2.mp3`, `nombre_3.mp3`; pasar todo en un zip. Al llegar se normalizan con ffmpeg y van a `public/batalla/sonidos_ap/fx/` (mismos nombres que `SON_LISTA`). Prompts en `docs/prompts-autopista.md` («Sonidos ElevenLabs»).
+- [ ] golpe_carne, espada_armadura, espada_corte, muerte_orco, explosion_piedras, explosion_fuego, derrumbe_muro, rayo_magico, subir_nivel, recoger_moneda, cuerno_lejano, rafaga_viento, ap_cadena, ap_plasma

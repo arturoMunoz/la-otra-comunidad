@@ -378,3 +378,22 @@ WORK · Pack Autopista 46 · Modelos 3D (.glb) de los objetos que se recogen en 
 
 Entrega los 4 .glb en un zip con una captura de cada uno y las licencias CC0 en un txt. Nada de animaciones (las haremos por código: girar el plato, botar la tapa, latir la luz).
 ```
+
+## Sonidos ElevenLabs (18/11) — ElevenLabs → Sound Effects, 3 versiones de cada uno
+Estilo común (añadir al final de cada prompt): `game sound effect, mobile MOBA, modern cyberpunk highway, punchy and clean, no music, no voice, dry, no long reverb`
+| archivo | duración | prompt |
+|---|---|---|
+| golpe_carne | 0,4 s | heavy punch impact on a body, short thud with a little crunch |
+| espada_armadura | 0,5 s | hard hit on a bulletproof vest, metallic clank with a short crack |
+| espada_corte | 0,6 s | energy blade slash, fast electric whoosh ending in a sharp impact |
+| muerte_orco | 0,8 s | small combat robot shutting down, electric fizz and a metal body falling on asphalt |
+| explosion_piedras | 1,5 s | medium explosion of concrete and metal debris, tight, no long tail |
+| explosion_fuego | 1,5 s | gasoline explosion with a roaring burst of flame |
+| derrumbe_muro | 3 s | tall metal tower collapsing, steel groaning and scrap crashing to the ground |
+| rayo_magico | 0,8 s | electric energy discharge, rising hum that snaps into a zap |
+| subir_nivel | 1 s | level up sound, bright rising synth chime, futuristic |
+| recoger_moneda | 0,4 s | a few metal coins clinking, short and satisfying |
+| cuerno_lejano | 1,5 s | distant truck air horn blast, dramatic, short |
+| rafaga_viento | 0,5 s | fast air whoosh, something swinging past quickly |
+| ap_cadena | 0,8 s | heavy metal chain thrown and snapping tight with a hook |
+| ap_plasma | 1 s | plasma cannon shot from a turret, deep thump with an electric crackle |

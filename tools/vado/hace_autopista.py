@@ -1564,6 +1564,18 @@ js = sub(js, "  camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM
 js = sub(js, "renderer.shadowMap.needsUpdate = (SOMBRA_F = (SOMBRA_F + 1) % 2) === 0 || SOL_C.forzar;", "renderer.shadowMap.needsUpdate = true;")
 
 
+# ---------- MEZCLA DE SONIDO (18/11, Henar: «el sonido es horrible, los disparos de los minions y en general») ----------
+# Como en el Wild Rift, los soldados casi no se oyen: sus disparos (el «pew» de láser de Kenney) y sus golpes, fuera;
+# solo suena un golpe flojo si te pegan a TI. La muerte de soldado, más baja. Fuera el «tirorí» sintético (cuerno) al caer un héroe.
+js = sub(js, "suena(sh || 'arco', sh ? 0.5 : 0.12, e[2], e[3]);", "if (sh) suena(sh, 0.5, e[2], e[3]);")
+js = sub(js, "} else suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', {bala: 0.35, bola: 0.45}[e[1]] || 0.25);", "} else if ({bala: 1, bola: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]], {bala: 0.35, bola: 0.45}[e[1]]);")
+js = sub(js, "suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}",
+         "{const va2 = VISTA.get(de), deSold = va2 && va2.k === 's'; if (!deSold || meDan) suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ? 0.15 : yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}}")
+js = sub(js, "suena('golpeH', 0.7, v.x, v.z); suena('cuerno', v.id === YO ? 0.5 : 0.25);} else suena('muerte', v.k === 's' ? 0.14 : 0.35, v.x, v.z);}",
+         "suena('golpeH', 0.7, v.x, v.z);} else suena('muerte', v.k === 's' ? 0.07 : 0.35, v.x, v.z);}")
+
+js = sub(js, "if (txt) {suena('cuerno', 0.3); vozDeTexto(", "if (txt) {vozDeTexto(")  # los carteles ya los dice el anunciador
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
