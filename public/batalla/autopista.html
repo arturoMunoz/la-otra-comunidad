@@ -769,6 +769,28 @@ body #mandos #retratos{right:250px !important;bottom:150px !important}
 #menu #bCrear img{position:absolute!important;left:-31px;top:-2px;width:28px!important;height:28px!important;margin:0!important;border-radius:50%}
 #menu #bCrear span{margin:0!important}
 @media (max-height:440px){#menu #bCrear{height:32px!important;min-height:32px!important;border-left-width:32px!important}#menu #bCrear img{left:-29px;width:26px!important;height:26px!important}}
+</style><style>
+#menu .mPanel{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)!important;grid-template-areas:"modo modo" "jugar jugar" "crear amigos"!important;width:min(42%,360px)!important;gap:8px 8px!important}
+#menu .modos{display:flex!important;justify-content:center;gap:22px!important;margin:0 0 2px!important}
+#menu .modos button{width:auto!important;height:auto!important;min-height:0!important;border:0!important;border-image:none!important;background:none!important;box-shadow:none!important;padding:2px 2px 6px!important;opacity:.55;position:relative;filter:none!important}
+#menu .modos button b{font:italic 900 17px 'Arial Black',system-ui,sans-serif!important;letter-spacing:.08em;text-transform:uppercase;color:#fff!important;text-shadow:0 0 6px #00c8ff,0 0 14px #00c8ff}
+#menu .modos button::after{content:''!important;display:block!important;position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px;background:#00e5ff;box-shadow:0 0 6px #00e5ff,0 0 14px #00e5ff;transform:scaleX(0);transition:transform .2s}
+#menu .modos button.on{opacity:1}
+#menu .modos button.on::after{transform:scaleX(1)}
+#menu .jugar{height:50px!important;border:0!important;border-image:none!important;border-radius:6px!important;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);background:linear-gradient(100deg,#ff0844 0%,#ff2a6d 55%,#ff5e3a 100%)!important;box-shadow:none!important;animation:apJug2 1.6s ease-in-out infinite!important}
+#menu .jugar b{font:italic 900 24px 'Arial Black',system-ui,sans-serif!important;letter-spacing:.14em;color:#fff!important;text-shadow:0 2px 0 #7a0020,0 0 12px #fff8}
+@keyframes apJug2{50%{filter:brightness(1.18) saturate(1.2)}}
+#menu .jugarHalo{display:none}
+#menu .mPanel::before{content:'';grid-area:jugar;align-self:stretch;margin:-6px;border-radius:12px;background:radial-gradient(closest-side,#ff1f5a88,transparent);filter:blur(6px);pointer-events:none;z-index:-1}
+#menu #bCrear,#menu .mAmigos{height:34px!important;min-height:34px!important;border-style:solid!important;border-width:2px!important;border-image:none!important;border-radius:6px!important;background:#05060cdd!important}
+#menu #bCrear{border-color:#00e5ff!important;box-shadow:0 0 8px #00e5ffaa,inset 0 0 8px #00e5ff44!important;padding:0 8px 0 4px!important;overflow:visible!important}
+#menu #bCrear img{position:static!important;width:24px!important;height:24px!important;margin:0 6px 0 0!important}
+#menu #bCrear b{font:800 12px system-ui,sans-serif!important;color:#e9fdff!important;letter-spacing:.04em}
+#menu .mAmigos{border-color:#ff2bd6!important;box-shadow:0 0 8px #ff2bd6aa,inset 0 0 8px #ff2bd644!important;padding:0 3px 0 0!important}
+#menu .mAmigos input{color:#ffe6fb!important;font:700 11px system-ui,sans-serif!important;letter-spacing:.1em!important}
+#menu .mAmigos input::placeholder{color:#ff9bea!important}
+#menu .mAmigos #bUnir,#menu #bUnir{height:24px!important;border:0!important;border-image:none!important;border-radius:4px!important;background:#ff2bd6!important;color:#fff!important;font:900 11px system-ui,sans-serif!important;padding:0 10px!important;box-shadow:0 0 10px #ff2bd6!important;margin:auto 0!important}
+@media (max-height:440px){#menu .jugar{height:46px!important}#menu #bCrear,#menu .mAmigos{height:32px!important;min-height:32px!important}}
 </style></head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>
