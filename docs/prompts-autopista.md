@@ -279,3 +279,17 @@ ART · Pack Autopista 37 · Kit de botones del menú principal de A-6 (juego mó
  F) Botón pequeño 2,5:1 («Unirse»): negro con filo de neón ROJO.
 Los interiores de todas las placas deben ser lisos (sin dibujos) para que el texto se lea, y los filos finos (que no se coman el botón al verse pequeño, a 40 px de alto).
 ```
+
+## 18/11 · Pack Autopista 38 ART — botones del menú CHILLONES (sustituye al 37, que no gustó)
+
+```
+ART · Pack Autopista 38 · Botones del menú principal de A-6 (juego móvil tipo Wild Rift ambientado en una autopista española de noche bajo la tormenta). Estilo: colores MUY CHILLONES y saturados, neón brillante y brillos de calidad de juego móvil de primera (Wild Rift, Brawl Stars), acabado pulido y con volumen (bisel, reflejo de luz arriba, sombra abajo), nada apagado ni oscuro ni oxidado. Sin texto, sin letras, sin iconos dentro (el texto lo pone el juego). Vista frontal plana, sin perspectiva. Fondo VERDE puro liso #00FF00 (no uses verde en ningún botón), cada pieza separada con mucho hueco. Una sola imagen 1536x1024:
+ A) JUGAR: placa alargada proporción 7:1, ROJO-ROSA vivo (degradado de #ff0844 a #ff5e3a), esquinas cortadas en diagonal arriba a la izquierda y abajo a la derecha, filo fino blanco brillante, un reflejo de luz diagonal y un halo rojo-rosa intenso alrededor.
+ B) La misma placa JUGAR pulsada: más brillante y con el halo más grande.
+ C) Subrayado de la pestaña elegida: una raya de neón CIAN (#00e5ff) de 512x40, gruesa en el centro y que se afina hacia las puntas, con resplandor.
+ D) Botón pequeño 5:1 CIAN: interior negro azulado brillante, filo de neón cian grueso y brillante, esquinas cortadas, y a la izquierda un hueco redondo del alto del botón con aro cian (ahí va un dibujo).
+ E) Caja de texto 5:1 FUCSIA: interior negro violáceo, filo de neón fucsia (#ff2bd6) grueso y brillante, esquinas cortadas, interior liso para escribir.
+ F) Botón 2,5:1 FUCSIA relleno: fucsia vivo con degradado, filo blanco fino y halo fucsia.
+ G) Dos aros redondos de 256x256 para botones de icono: uno con neón CIAN y otro con neón FUCSIA, aro grueso brillante y centro vacío negro.
+Los interiores lisos para que el texto se lea; los filos y halos deben verse bien aunque el botón salga pequeño (34-50 px de alto).
+```
