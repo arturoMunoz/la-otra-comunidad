@@ -1211,6 +1211,23 @@ html = sub(html, '</head>', """<style>
 @media (max-height:440px){#menu .jugar{height:40px!important}#menu .modos button,#menu #bCrear,#menu .mAmigos{height:31px!important;min-height:31px!important}}
 </style></head>""", donde='html')
 
+# ---------- PACK 37 ART (18/11): kit de botones del menú en neón (tools/autopista/procesa_pack37.py -> ui/ap_n_*.webp) ----------
+# placas con border-image (las esquinas en chaflán no se deforman); Crear sala a su proporción con el icono en el hueco redondo
+html = sub(html, '</head>', """<style>
+#menu .jugar{border-width:11px 14px!important;border-image:url(ui/ap_n_jugar.webp) 70 78 fill stretch!important;border-color:transparent!important;background:none!important;box-shadow:none!important;border-radius:0!important}
+#menu .jugar:active,#menu .jugar:hover{border-image-source:url(ui/ap_n_jugar_on.webp)!important}
+#menu .jugar{animation:apJug 2.4s ease-in-out infinite}
+@keyframes apJug{50%{border-image-source:url(ui/ap_n_jugar_on.webp)}}
+#menu .modos button{border-width:8px 10px!important;border-image:url(ui/ap_n_tab.webp) 55 62 fill stretch!important;background:none!important;box-shadow:none!important;border-radius:0!important;opacity:.85}
+#menu .modos button.on{border-image-source:url(ui/ap_n_tab_on.webp)!important;opacity:1;box-shadow:none!important}
+#menu .mAmigos{border-width:5px 9px!important;border-image:url(ui/ap_n_tab.webp) 40 62 fill stretch!important;background:none!important;box-shadow:none!important;border-radius:0!important;padding:0!important}
+#menu .mAmigos #bUnir,#menu #bUnir{border-width:4px 7px!important;border-image:url(ui/ap_n_unirse.webp) 40 56 fill stretch!important;background:none!important;box-shadow:none!important;border-radius:0!important;height:22px!important;line-height:1!important;font-size:11px!important;padding:0 6px!important;margin:auto 0!important}
+#menu #bCrear{position:relative;overflow:visible!important;height:34px!important;min-height:34px!important;aspect-ratio:auto!important;border-style:solid!important;border-width:5px 8px 5px 34px!important;border-image:url(ui/ap_n_crear.webp) 34 40 34 199 fill stretch!important;background:none!important;box-shadow:none!important;border-radius:0!important;padding:0 0 0 6px!important;display:flex!important;align-items:center}
+#menu #bCrear img{position:absolute!important;left:-31px;top:-2px;width:28px!important;height:28px!important;margin:0!important;border-radius:50%}
+#menu #bCrear span{margin:0!important}
+@media (max-height:440px){#menu #bCrear{height:32px!important;min-height:32px!important;border-left-width:32px!important}#menu #bCrear img{left:-29px;width:26px!important;height:26px!important}}
+</style></head>""", donde='html')
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

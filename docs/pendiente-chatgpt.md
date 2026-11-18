@@ -82,4 +82,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] ~~18/11 · Pack Autopista 34 WORK — fauna (perros, perro jefe, buitre, jabalí, rata)
 - [x] ~~18/11 · Pack Autopista 35 WORK — guaridas y piezas del mapa 2v2
 - [x] ~~18/11 · Pack Autopista 36 ART — iconos de la jungla
-- [ ] 18/11 · Pack Autopista 37 ART — kit de botones del menú en neón rojo/azul/negro (prompt en docs/prompts-autopista.md); mientras, el menú va con neón hecho con CSS
+- [x] ~~18/11 · Pack Autopista 37 ART — kit de botones del menú en neón rojo/azul/negro (prompt en docs/prompts-autopista.md); mientras, el menú va con neón hecho con CSS~~ metido 18/11
