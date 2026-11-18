@@ -721,6 +721,22 @@ body #mandos #retratos{right:250px !important;bottom:150px !important}
 #menu .modos{display:flex!important;flex-direction:column;gap:6px}
 #menu .modos button{min-height:0!important}
 #menu .modos button small{display:none!important}
+</style><style>
+#menu .mPanel{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)!important;grid-template-areas:"crear amigos" "modo modo" "jugar jugar"!important;width:min(48%,430px)!important;gap:7px 8px!important}
+#menu .modos{display:grid!important;grid-template-columns:1fr 1fr;gap:6px!important;flex-direction:unset}
+#menu .modos button{height:46px!important;min-height:0!important;aspect-ratio:auto!important;padding:4px 8px!important;background-size:cover!important;background-position:center 70%!important;border-radius:10px!important;border:2px solid #ffffff22!important;filter:saturate(.6) brightness(.65);display:flex!important;flex-direction:column;justify-content:center;align-items:flex-start;box-shadow:inset 0 0 0 999px #0a0e1499}
+#menu .modos button.on{filter:none;border-color:#ffd21f!important;box-shadow:inset 0 0 0 999px #0a0e1466,0 0 10px #ffd21f66}
+#menu .modos button b{font-size:15px!important;line-height:1.1;margin:0!important;color:#fff!important}
+#menu .modos button span{display:block!important;font-size:10px!important;opacity:.85;margin:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;color:#dfe8f2!important}
+#menu .modos button small,#menu .modos button .mc{display:none!important}
+#menu .jugar{height:58px!important;min-height:0!important;aspect-ratio:auto!important;background:none!important;border-style:solid!important;border-width:14px 26px!important;border-image:url(ui/ap_m_jugar.webp) 90 120 fill stretch!important;padding:0!important;display:flex!important;flex-direction:column;justify-content:center;align-items:center}
+#menu .jugar b{font-size:24px!important;line-height:1!important;margin:0!important}
+#menu .jugar small{font-size:10px!important;margin:0!important;line-height:1}
+#menu #bCrear,#menu .mAmigos{height:40px!important;min-height:40px!important}
+#menu #bCrear img{width:30px!important;height:30px!important}
+#menu #bCrear b{font-size:13px!important}#menu #bCrear small{font-size:9.5px!important}
+#menu .mAmigos input{min-width:0;font-size:12px!important;letter-spacing:.06em!important}
+@media (max-height:440px){#menu .modos button{height:40px!important}#menu .jugar{height:52px!important}#menu #bCrear,#menu .mAmigos{height:36px!important;min-height:36px!important}}
 </style></head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>
@@ -740,7 +756,7 @@ body #mandos #retratos{right:250px !important;bottom:150px !important}
       <button class="mB mT" id="bGuia"><img src="ui/ap_guia.webp" alt=""><span><b>Partida guiada</b><small>aprende en 5 minutos</small></span></button>
       <button class="mB mT" id="bCrear"><img src="ui/ap_crear.webp" alt="" class="mTi2"><span><b>Crear sala</b><small>juega con amigos</small></span></button>
     </div>
-    <div class="mAmigos"><input id="codigo" maxlength="6" placeholder="Código de sala" autocomplete="off"><button class="mB" id="bUnir">Unirse</button></div>
+    <div class="mAmigos"><input id="codigo" maxlength="6" placeholder="Código" autocomplete="off"><button class="mB" id="bUnir">Unirse</button></div>
     <div id="sala" class="hidden"></div>
     <div class="fila" id="heroes"></div>
     <div id="msg"></div>

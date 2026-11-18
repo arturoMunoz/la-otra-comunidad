@@ -1069,7 +1069,9 @@ for k, nom, mod, alto_ in [('warg', 'Perro asilvestrado', 'ap_perro', 1.2), ('or
                            ('crebain', 'Buitre', 'ap_buitre', 0.3), ('sapo', 'Jabalí', 'ap_jabali', 1.4), ('huorn', 'Coloso del desguace', 'ap_coloso', 3.5),
                            ('draco', 'Lagarto de la central', 'ap_lagarto', 2.1), ('nutria', 'Rata de alcantarilla', 'ap_rata', 0.6),
                            ('alfa', 'Perro jefe', 'ap_perro_jefe', 2.0), ('uruk', 'Nasor', 'ap_nasor', 4.5)]:
-    js, c = re.subn(r"(\n  " + k + r": \{nombre: ')[^']*('.*?modelo: ')[^']*(', alto: )[0-9.]+", lambda m: m.group(1) + nom + m.group(2) + mod + m.group(3) + str(alto_), js, count=1)
+    i0 = js.index('const NEUTRO = {'); i1 = js.index('\n};', i0)
+    trozo, c = re.subn(r"(\n  " + k + r": \{nombre: ')[^']*('[^\n]*?modelo: ')[^']*(', alto: )[0-9.]+", lambda m: m.group(1) + nom + m.group(2) + mod + m.group(3) + str(alto_), js[i0:i1], count=1)
+    js = js[:i0] + trozo + js[i1:]
     if c != 1: fallos.append('[2v2 bestia] ' + k)
 # el lagarto: su material «brillo» se enciende naranja (fuego) o cian (hielo); el buitre ya no se pinta de negro (eso era el crebain)
 js = sub(js, "if (NEUTRO[v.tipo].draco) tiñe(o.raiz, v.hk === 'h' ? '#8fd0ff' : '#ff5a24', 0.7);",
@@ -1163,6 +1165,28 @@ function decoradoOjo(pon2, al) {
   }
 }
 /* LA AUTOPISTA: quitamiedos a los dos lados, farolas,""")
+
+# ---------- MENÚ COMPACTO (18/11, Henar: «los botones son enormes, no tiene sentido») ----------
+html = sub(html, 'placeholder="Código de sala"', 'placeholder="Código"', donde='html')
+# panel abajo a la derecha más estrecho: [Crear sala | código + Unirse], debajo el modo como dos pestañas (Duelo | Batalla)
+# y abajo del todo JUGAR, ancho pero bajo (placa con border-image: no se deforma al cambiar de alto)
+html = sub(html, '</head>', """<style>
+#menu .mPanel{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)!important;grid-template-areas:"crear amigos" "modo modo" "jugar jugar"!important;width:min(48%,430px)!important;gap:7px 8px!important}
+#menu .modos{display:grid!important;grid-template-columns:1fr 1fr;gap:6px!important;flex-direction:unset}
+#menu .modos button{height:46px!important;min-height:0!important;aspect-ratio:auto!important;padding:4px 8px!important;background-size:cover!important;background-position:center 70%!important;border-radius:10px!important;border:2px solid #ffffff22!important;filter:saturate(.6) brightness(.65);display:flex!important;flex-direction:column;justify-content:center;align-items:flex-start;box-shadow:inset 0 0 0 999px #0a0e1499}
+#menu .modos button.on{filter:none;border-color:#ffd21f!important;box-shadow:inset 0 0 0 999px #0a0e1466,0 0 10px #ffd21f66}
+#menu .modos button b{font-size:15px!important;line-height:1.1;margin:0!important;color:#fff!important}
+#menu .modos button span{display:block!important;font-size:10px!important;opacity:.85;margin:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;color:#dfe8f2!important}
+#menu .modos button small,#menu .modos button .mc{display:none!important}
+#menu .jugar{height:58px!important;min-height:0!important;aspect-ratio:auto!important;background:none!important;border-style:solid!important;border-width:14px 26px!important;border-image:url(ui/ap_m_jugar.webp) 90 120 fill stretch!important;padding:0!important;display:flex!important;flex-direction:column;justify-content:center;align-items:center}
+#menu .jugar b{font-size:24px!important;line-height:1!important;margin:0!important}
+#menu .jugar small{font-size:10px!important;margin:0!important;line-height:1}
+#menu #bCrear,#menu .mAmigos{height:40px!important;min-height:40px!important}
+#menu #bCrear img{width:30px!important;height:30px!important}
+#menu #bCrear b{font-size:13px!important}#menu #bCrear small{font-size:9.5px!important}
+#menu .mAmigos input{min-width:0;font-size:12px!important;letter-spacing:.06em!important}
+@media (max-height:440px){#menu .modos button{height:40px!important}#menu .jugar{height:52px!important}#menu #bCrear,#menu .mAmigos{height:36px!important;min-height:36px!important}}
+</style></head>""", donde='html')
 
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
