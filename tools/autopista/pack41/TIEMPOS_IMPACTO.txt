@@ -1,0 +1,17 @@
+A-6 · Pack Autopista 41
+
+Tiempos en segundos desde el inicio de cada clip, a velocidad de reproducción 1.
+
+Héroe    Clip              Evento                          Segundo
+Ata      atacar            Disparo, retroceso corto        0,150
+Ata      atacar_2          Disparo, retroceso reforzado    0,150
+Ata      golpe_cargado     Disparo, retroceso máximo       0,150
+Birdie   atacar            Driver, contacto con la bola    0,320
+Birdie   atacar_2          Approach, contacto con la bola  0,320
+Birdie   golpe_cargado     Swing con salto, contacto       0,320
+
+Birdie lleva el palo atrás hasta 0,250 s y termina el recorrido al otro lado a 0,600 s. En el golpe cargado hay una recuperación adicional hasta 0,830 s. El lanzamiento de la bola va hacia +Z.
+
+La cadencia base es de 30 fps. Los dos tiempos de evento tienen una clave adicional entre fotogramas. Si el motor avanza por pasos, dispara el evento al cruzar el tiempo indicado (tiempo anterior < evento y tiempo actual >= evento), una vez por reproducción. Los GLB contienen la animación. El juego genera el proyectil o la bola.
+
+Los clips de reposo y desplazamiento carecen de evento de impacto. Las capturas de los tres disparos muestran el retroceso. Para Birdie, las capturas de atacar, atacar_2 y golpe_cargado muestran respectivamente el impacto, la subida del approach y el salto.

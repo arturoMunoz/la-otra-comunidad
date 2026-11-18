@@ -391,6 +391,38 @@ Clips (30 fps), los MISMOS nombres que `ap_ata.glb`: quieto, quieto_2, andar, co
 Técnico: 6.000-9.000 triángulos, una textura de 1024 (atlas) + material emisivo SOLO en la ranura de la visera y en las juntas de luz, en un material aparte llamado «luz» para encenderlo por código. Altura 2,0 m de pies a cabeza en «quieto», pies en y=0, mirando a +Z, sin arma. Entrega `ap_visor.glb`, una captura de frente y otra de lado junto a `ap_ata.glb` para comparar tamaños, y las licencias CC0 de lo que uses en un txt.
 ```
 
+## 18/11 · Pack Autopista 48 ART — todo el arte del Visor (adjuntar Pack48_referencia.zip; 4 imágenes, una por mensaje)
+
+```
+ART · Pack Autopista 48 · Imagen 1 de 4 · Retrato grande de un héroe nuevo de A-6 (juego móvil tipo Wild Rift ambientado en una autopista española). Te adjunto: `estilo_retrato_ata.png` (retrato de otro héroe: copia SOLO su estilo pictórico, encuadre, luz y acabado) y `visor_modelo_3d.png` (el modelo 3D del héroe nuevo: copia su ropa y su visera).
+Héroe: «El Visor», mago de luz que dispara RAYOS DE ENERGÍA POR LOS OJOS. Personaje ORIGINAL, sin parecido con ningún superhéroe existente, sin logos. Hombre de unos 30 años, delgado y atlético, pelo castaño corto despeinado, mandíbula marcada. VISERA-GAFA de metal grafito que le tapa los ojos de lado a lado con una ranura horizontal de cristal que brilla en CIAN-turquesa intenso. Chaqueta corta de motorista gris marengo con protecciones en hombros y codos y juntas de luz cian, pantalón cargo negro, botas de seguridad, guantes sin dedos. Pose: dos dedos en la sien de la visera, y de la ranura sale un RAYO CIAN ancho y brillante que cruza la imagen en diagonal, iluminando su cara y la niebla. Fondo: autopista de noche con lluvia, farolas, reflejos cian en el asfalto mojado.
+Formato: vertical 768x1024 (proporción 3:4), sin texto, sin marco, el héroe de cuerpo hasta las rodillas y la cara en el tercio de arriba.
+```
+
+```
+ART · Pack Autopista 48 · Imagen 2 de 4 · Hoja de iconos del Visor para A-6 (mismo héroe de la imagen 1: visera con ranura cian, chaqueta de motorista gris). Estilo igual que `estilo_icono.png` que te adjunté: pintado, mucho contraste, fondo oscuro dentro del círculo, colores vivos. Sin texto. Fondo de la hoja MAGENTA liso #FF00FF, imagen de 1536x1024, 8 piezas redondas de igual tamaño (~340 px), separadas y en 2 filas de 4:
+ 1) Retrato redondo: cara y hombros del Visor de frente, la ranura de la visera encendida.
+ 2) Pasiva «Sobrecarga» (cada 4.º golpe es un rayo): la visera con 4 rayitas de carga, la 4.ª llena y chispeando.
+ 3) Q «Impacto óptico» (rayo que empuja): rayo cian corto y grueso golpeando y echando hacia atrás una silueta.
+ 4) W «Rebote» (rayo que salta de un enemigo a otro): rayo cian en zigzag que rebota entre dos puntos.
+ 5) E «Ráfaga» (abanico que frena): abanico de rayos cian en cono saliendo de la visera.
+ 6) R «Mirada total» (rayo enorme que barre): rayo cian gigantesco barriendo en arco con estela, el más espectacular.
+ 7) Botón de ataque básico: la visera vista de frente, grande, con el destello cian saliendo de la ranura.
+ 8) Aro del botón de ataque: aro de metal grafito con juntas de luz CIAN y un rayo que lo recorre por fuera; el centro VACÍO (un círculo liso del 70 % del diámetro, ahí irá el botón 7) y el grosor del aro el 15 % del radio.
+```
+
+```
+ART · Pack Autopista 48 · Imagen 3 de 4 · Efectos de los rayos del Visor para un juego visto desde arriba (vista cenital plana, sin perspectiva). Color CIAN-turquesa con el centro casi blanco, sobre fondo NEGRO puro #000000 (se suman como luz). Sin texto, sin marco. Imagen de 1024x1024 partida en 2 mitades:
+ - Mitad de arriba (1024x512): el CUERPO de un rayo de energía visto desde arriba, horizontal de lado a lado, que se pueda REPETIR en horizontal sin que se note la costura (el borde izquierdo continúa el derecho): núcleo blanco de ~1/4 del alto, halo cian que se difumina hacia arriba y abajo, chispas y ondas eléctricas a lo largo.
+ - Mitad de abajo (1024x512): 2 dibujos de 512x512: a la izquierda el ARRANQUE del rayo (destello redondo que sale de la visera, abierto hacia la derecha); a la derecha el IMPACTO (estallido redondo de energía con salpicadura de chispas).
+```
+
+```
+ART · Pack Autopista 48 · Imagen 4 de 4 · Dos hojas de animación de efectos del Visor (vista cenital plana, juego visto desde arriba), cada una de 4x4 fotogramas de 256x256 que se reproducen de izquierda a derecha y de arriba abajo, sobre fondo NEGRO puro #000000, color CIAN con centro blanco. Sin texto. Imagen de 2048x1024: la hoja A a la izquierda (1024x1024) y la hoja B a la derecha (1024x1024).
+ - Hoja A «Ráfaga en abanico»: un abanico de 5 rayos finos que salen de abajo al centro de cada fotograma y se abren 60° hacia arriba; crecen, brillan y se deshacen en chispas.
+ - Hoja B «Sobrecarga»: anillo de energía alrededor de un personaje (centro del fotograma vacío) que se carga en 4 pasos, chispea y estalla en una onda.
+```
+
 ## Sonidos ElevenLabs (18/11) — ElevenLabs → Sound Effects, 3 versiones de cada uno
 Estilo común (añadir al final de cada prompt): `game sound effect, mobile MOBA, modern cyberpunk highway, punchy and clean, no music, no voice, dry, no long reverb`
 | archivo | duración | prompt |
