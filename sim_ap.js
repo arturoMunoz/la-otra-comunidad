@@ -44,6 +44,11 @@ const HEROES = {
       w: {n: 'Meditación', cd: 14, mn: 40, tipo: 'suerte', cura: 0.25, vel: 0.3, dur: 3, icono: 'h_gollum_w', d: 'Respira hondo: se cura un 25 %, corre más y pega más fuerte 3 s.'},
       e: {n: 'Kusarigama', cd: 10, mn: 35, tipo: 'linea', alc: 9, ancho: 0.8, dano: 70, aturde: 1.0, proy: 'cadena', icono: 'h_gollum_e', d: 'Lanza la hoz con cadena: atrapa 1 s al primero que toca.'},
       r: {n: 'Bomba de humo', cd: 50, mn: 80, tipo: 'invis', dur: 5, vel: 0.6, icono: 'h_gollum_r', d: 'Desaparece 5 s entre el humo y corre mucho más: nadie le ve llegar.'}}},
+  visor: {nombre: 'El Visor', modelo: 'ap_visor', ret: 'ui/ap_r_visor.webp', mana: 400, crecM: 38, vida: 565, dano: 52, vatq: 0.92, alcance: 6.8, vel: 5.2, crecV: 82, crecD: 4.6, mag: true, arm: 20, rm: 30, proy: 'rayo',
+    hab: {q: {n: 'Impacto óptico', cd: 7, mn: 45, tipo: 'linea', mag: true, alc: 10, ancho: 0.7, dano: 135, lento: 0.4, durL: 1.2, proy: 'rayo', icono: 'h_visor_q', d: 'Un rayo corto y potente: hiere y frena un 40 % al primero que toca.'},
+      w: {n: 'Rebote', cd: 11, mn: 55, tipo: 'linea', mag: true, alc: 12, ancho: 0.7, dano: 110, perfora: true, proy: 'rayo', icono: 'h_visor_w', d: 'Un rayo que atraviesa a todos los enemigos de su línea.'},
+      e: {n: 'Ráfaga', cd: 9, mn: 50, tipo: 'cono', mag: true, alc: 6, ang: 1.05, dano: 110, lento: 0.35, durL: 1.5, icono: 'h_visor_e', d: 'Un abanico de rayos delante de él: hiere y frena un 35 %.'},
+      r: {n: 'Mirada total', cd: 50, mn: 100, tipo: 'linea', mag: true, alc: 17, ancho: 1.6, dano: 300, perfora: true, proy: 'rayo', icono: 'h_visor_r', d: 'Abre la visera del todo: un rayo gigantesco que atraviesa todo lo que hay en su línea.'}}},
   rohan: {nombre: 'Moha, el Halcón del Atlas', modelo: 'ap_moha', ret: 'ui/ap_r_rohan.webp', mana: 300, crecM: 30, vida: 650, dano: 62, vatq: 0.9, alcance: 2.5, vel: 5.2, crecV: 85, crecD: 4.5, arm: 32, rm: 30,
     hab: {q: {n: 'Gumía', cd: 6, mn: 35, tipo: 'dash', dist: 5.5, dano: 95, icono: 'lanza', d: 'Se lanza hacia delante con su daga curva y hiere a todos los que atraviesa.'},
       w: {n: 'Velo de arena', cd: 12, mn: 45, tipo: 'escudo', val: 170, dur: 3, icono: 'escudo', d: 'Un remolino de arena que absorbe daño durante 3 s.'},
@@ -56,6 +61,7 @@ const PASIVA = {
   orco: {n: 'Disciplina', d: 'Sus golpes a héroes se acumulan (hasta 5); con 5, +40 % de daño durante 5 s.'},
   gollum: {n: 'Acecho', d: 'Desde la hierba alta, su golpe básico es un salto hasta la presa (hasta 6 m).'},
   rohan: {n: 'Ojo de halcón', d: 'El primer golpe a cada enemigo quita un 8 % de su vida actual; se repite cada 6 s por enemigo.'},
+  visor: {n: 'Sobrecarga', d: 'Cada 4.º golpe básico es un rayo cargado: daño mágico extra.'},
   elfo: {n: 'Balas de goma', d: 'Sus disparos frenan un 25 % durante 1,5 s.'},
   enano: {n: 'Armadura viva', d: 'Un escudo del 10 % de su vida máxima que vuelve si pasa 10 s sin recibir daño.'},
   hobbit: {n: 'Concentración', d: 'Si se queda quieto 1,5 s se vuelve invisible hasta que se mueve o ataca.'},
@@ -418,7 +424,7 @@ function golpea(o, d) {
     const st = stats(o), crit = st.crit && Math.random() < st.crit, n = st.dano * (crit ? 2 : 1), b = HEROES[o.tipo];
     o.ac++;
     pasivaGolpe(o, d);
-    if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');
+    if (b.proy) {const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}
     else luego(0.18, () => {if (d.vida > 0 && !o.muerto) {dana(o, d, n, crit ? 'crit' : 'at'); ev(['fx', 'impacto', d.x, d.z, 1.4]);}});
     return;
   }
@@ -433,6 +439,7 @@ function pasivaGolpe(o, d) {
   if (t === 'orco' && heroe) luego(0.2, () => {if (!vivo()) return; const s0 = d.sang && d.sang.hasta > S.t ? d.sang.n : 0; d.sang = {n: Math.min(5, s0 + 1), hasta: S.t + 5, o: o.id, tick: 0}; if (d.sang.n === 5 && !(o.buf.furiaO > 0)) {o.buf.furiaO = 5; ev(['num', o.x, o.z, '¡Disciplina!', 'r']);}});
   if (t === 'gandalf' && d.luz > S.t) {d.luz = 0; const extra = 20 + 10 * o.nivel + stats(o).poder * 0.35; luego(0.3, () => {if (vivo()) {dana(o, d, extra, 'mag'); ev(['fx', 'impacto', d.x, d.z, 2.2]); ev(['num', d.x, d.z, '✦', 'y']);}});}
   if (t === 'rohan' && d.k !== 't' && d.k !== 'n') {o.jarv = o.jarv || {}; if (!(o.jarv[d.id] > S.t)) {o.jarv[d.id] = S.t + 6; luego(0.2, () => {if (vivo()) dana(o, d, Math.min(d.k === 'h' ? 9999 : 260, d.vida * 0.08), 'pura');});}}
+  if (t === 'visor') {o.carga = (o.carga || 0) + 1; if (o.carga % 4 === 0) {const extra = 25 + 12 * o.nivel + stats(o).poder * 0.4; luego(0.3, () => {if (vivo()) {dana(o, d, extra, 'mag'); ev(['fx', 'impacto', d.x, d.z, 2]); ev(['num', d.x, d.z, '⚡', 'y']);}});}}
   if (t === 'elfo' && d.k !== 't' && d.k !== 'n') luego(0.25, () => {if (!vivo()) return; if (heroe) {d.buf.lento = 1.5; d.buf.lentoV = Math.max(d.buf.lentoV || 0, 0.25);} else d.lento = S.t + 1.5;});
 }
 function lanzaProy(o, d, modelo, n, tipo, esc = 1, y = 1.2) {
@@ -559,16 +566,18 @@ function paso(dt) {
     }
   }
   /* súbditos */
+  const EN_S = {};
   for (const u of S.u) {
     if (u.k !== 's' || u.muerto) continue;
     const sd = SUBD[u.tipo]; u.cd = Math.max(0, u.cd - dt);
     if (u.aturd > S.t) continue;
     /* como en el LoL: siguen con su objetivo; prefieren súbditos y torres; a un héroe solo si ataca a un héroe de su bando cerca o si no queda otra cosa */
-    const en = enemigosDe(u.eq).filter((e) => e.eq !== 2 && atacable(e)), rr = u.tipo === 'r' ? 7 : 6;
+    /* 18/11 (tirones en las peleas): la lista de enemigos atacables es la misma para todos los súbditos de un bando: se calcula una vez por paso (antes, una por súbdito: con 40 súbditos, 40 recorridos de todo el mapa) */
+    const en = EN_S[u.eq] || (EN_S[u.eq] = enemigosDe(u.eq).filter((e) => e.eq !== 2 && atacable(e))), rr = u.tipo === 'r' ? 7 : 6;
     /* prioridades del LoL / Wild Rift: 1 héroe que ataca a un héroe aliado, 2 súbdito que ataca a un héroe aliado, 3 súbdito que ataca a un súbdito aliado,
        4 torre que ataca a un súbdito aliado, 5 héroe que ataca a un súbdito aliado, 6 súbdito más cercano, 7 héroe más cercano. Las 1 y 2 interrumpen; el resto respeta el objetivo que ya tenía. */
     const victima = (e) => e.atacaT > S.t ? S.porId.get(e.atacaA) : null;
-    const cerca = en.filter((e) => dist(u, e) - radio(e) < rr + 1.5);
+    const cerca = en.filter((e) => e.vida > 0 && !e.muerto && Math.abs(u.x - e.x) < rr + 4 && Math.abs(u.z - e.z) < rr + 4 && dist(u, e) - radio(e) < rr + 1.5);
     const prio = (e) => {const v = victima(e); if (v && v.eq === u.eq) {if (v.k === 'h') return e.k === 'h' ? 1 : 2; if (v.k === 's') return e.k === 's' ? 3 : e.k === 't' ? 4 : 5;} return e.k === 'h' ? 7 : 6;};
     let obj = null, mejor = 9;
     for (const e of cerca) {const p = prio(e); if (p < mejor || (p === mejor && obj && dist(u, e) < dist(u, obj))) {mejor = p; obj = e;}}
@@ -620,13 +629,18 @@ function paso(dt) {
   }
   /* separación entre súbditos para que no se monten */
   const ss = S.u.filter((u) => (u.k === 's' || u.k === 'h') && !u.muerto);
-  for (let i = 0; i < ss.length; i++) for (let j = i + 1; j < ss.length; j++) {const a = ss[i], b = ss[j], hh = a.k === 'h' && b.k === 'h'; if (hh && (a.dash || b.dash)) continue; let dx = a.x - b.x, dz = a.z - b.z, d0 = Math.hypot(dx, dz); const m = hh ? CHOQUE_H : 0.9; if (d0 < m) {if (d0 < 0.001) {dx = a.id < b.id ? 1 : -1; dz = 0; d0 = 1;} const p = (m - d0) / 2; if (a.k === 's' || hh) {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's' || hh) {b.x -= dx / d0 * p; b.z -= dz / d0 * p;} if (hh) {choca(a); choca(b);}}}
+  /* 18/11 (tirones en las peleas): solo se comparan los que están en casillas vecinas de 1,2 m (antes, todos con todos: con 60 personajes, 1.770 parejas en cada paso) */
+  const CEL = new Map(), PARES = [];
+  ss.forEach((q, i) => {q._i = i; const k = (Math.floor(q.x / 1.2) + 512) * 1024 + Math.floor(q.z / 1.2) + 512; let c = CEL.get(k); if (!c) CEL.set(k, c = []); c.push(q);});
+  for (const q of ss) {const cx = Math.floor(q.x / 1.2) + 512, cz = Math.floor(q.z / 1.2) + 512; for (let ox = -1; ox <= 1; ox++) for (let oz = -1; oz <= 1; oz++) {const c = CEL.get((cx + ox) * 1024 + cz + oz); if (c) for (const r of c) if (r._i > q._i) PARES.push(q, r);}}
+  for (let pi = 0; pi < PARES.length; pi += 2) {const a = PARES[pi], b = PARES[pi + 1], hh = a.k === 'h' && b.k === 'h'; if (hh && (a.dash || b.dash)) continue; let dx = a.x - b.x, dz = a.z - b.z; if (dx > 1.2 || dx < -1.2 || dz > 1.2 || dz < -1.2) continue; let d0 = Math.hypot(dx, dz); const m = hh ? CHOQUE_H : 0.9; if (d0 < m) {if (d0 < 0.001) {dx = a.id < b.id ? 1 : -1; dz = 0; d0 = 1;} const p = (m - d0) / 2; if (a.k === 's' || hh) {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's' || hh) {b.x -= dx / d0 * p; b.z -= dz / d0 * p;} if (hh) {choca(a); choca(b);}}}
   /* 17/11 (Henar): los héroes chocan entre sí, como en el Wild Rift (antes se atravesaban); en las cargas y saltos no */
   /* torres */
+  const EN_T = {};
   for (const t of S.u) {
     if (t.k === 't' && t.vida <= 0 && t.respInh && S.t >= t.respInh && S.modo !== '1v1') {t.vida = t.max; t.inhib = true; t.respInh = 0; ev(['aviso', 0, 'La torre de la base de ' + (t.eq ? 'los rojos' : 'los azules') + ' se ha alzado de nuevo (sin disparar)']);}
     if (t.k !== 't' || t.vida <= 0 || t.inhib) continue; t.cd = Math.max(0, t.cd - dt);
-    const en = enemigosDe(t.eq).filter((e) => e.eq !== 2 && e.k !== 't' && e.k !== 'n' && dist(t, e) < 9.5);
+    const en = (EN_T[t.eq] || (EN_T[t.eq] = enemigosDe(t.eq))).filter((e) => e.eq !== 2 && e.k !== 't' && e.k !== 'n' && e.vida > 0 && !e.muerto && dist(t, e) < 9.5);
     /* como en el Wild Rift: la torre sigue con su objetivo hasta que muere o sale; si un héroe enemigo pega a un héroe aliado dentro del alcance, va a por él */
     let obj = en.find((e) => {if (e.k !== 'h' || !(e.atacaT > S.t)) return false; const v = S.porId.get(e.atacaA); return v && v.k === 'h' && v.eq === t.eq && dist(v, t) < 10.5;});
     if (!obj && t.obj) obj = en.find((e) => e.id === t.obj);

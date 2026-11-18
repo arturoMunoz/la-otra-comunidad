@@ -1605,13 +1605,216 @@ function flechaAP(tipo, x, z, wx, wz, alc, W) {""")
 
 js = sub(js, "const k = W / 82.5, kh = W / 155, ks = W / 100, finCuerpo", "const k = W / 82.5, kh = Math.min(W / 155, alc / 360), ks = W / 100, finCuerpo")  # flecha cortada (se para en el primero): la punta se encoge para no salir por detrás
 
+# ---------- EL VISOR (18/11, Packs Autopista 47 WORK y 48 ART): héroe mágico nuevo, rayos por los ojos (kit tipo Xerath / Vel'Koz) ----------
+# Solo existe en A-6 (clave 'visor'); usa tipos de habilidad que ya había: linea, cono y linea perforante, todo daño mágico.
+js = sub(js, "  rohan: {nombre: 'Moha", """  visor: {nombre: 'El Visor', modelo: 'ap_visor', ret: 'ui/ap_r_visor.webp', mana: 400, crecM: 38, vida: 565, dano: 52, vatq: 0.92, alcance: 6.8, vel: 5.2, crecV: 82, crecD: 4.6, mag: true, arm: 20, rm: 30, proy: 'rayo',
+    hab: {q: {n: 'Impacto óptico', cd: 7, mn: 45, tipo: 'linea', mag: true, alc: 10, ancho: 0.7, dano: 135, lento: 0.4, durL: 1.2, proy: 'rayo', icono: 'h_visor_q', d: 'Un rayo corto y potente: hiere y frena un 40 % al primero que toca.'},
+      w: {n: 'Rebote', cd: 11, mn: 55, tipo: 'linea', mag: true, alc: 12, ancho: 0.7, dano: 110, perfora: true, proy: 'rayo', icono: 'h_visor_w', d: 'Un rayo que atraviesa a todos los enemigos de su línea.'},
+      e: {n: 'Ráfaga', cd: 9, mn: 50, tipo: 'cono', mag: true, alc: 6, ang: 1.05, dano: 110, lento: 0.35, durL: 1.5, icono: 'h_visor_e', d: 'Un abanico de rayos delante de él: hiere y frena un 35 %.'},
+      r: {n: 'Mirada total', cd: 50, mn: 100, tipo: 'linea', mag: true, alc: 17, ancho: 1.6, dano: 300, perfora: true, proy: 'rayo', icono: 'h_visor_r', d: 'Abre la visera del todo: un rayo gigantesco que atraviesa todo lo que hay en su línea.'}}},
+  rohan: {nombre: 'Moha""")
+js = sub(js, "  elfo: {n: 'Balas de goma',", "  visor: {n: 'Sobrecarga', d: 'Cada 4.º golpe básico es un rayo cargado: daño mágico extra.'},\n  elfo: {n: 'Balas de goma',")
+js = sub(js, "  if (t === 'elfo' && d.k !== 't' && d.k !== 'n') luego(0.25,", "  if (t === 'visor') {o.carga = (o.carga || 0) + 1; if (o.carga % 4 === 0) {const extra = 25 + 12 * o.nivel + stats(o).poder * 0.4; luego(0.3, () => {if (vivo()) {dana(o, d, extra, 'mag'); ev(['fx', 'impacto', d.x, d.z, 2]); ev(['num', d.x, d.z, '⚡', 'y']);}});}}\n  if (t === 'elfo' && d.k !== 't' && d.k !== 'n') luego(0.25,")
+js = sub(js, "const ROL_H = {rohan: 'Asesino',", "const ROL_H = {visor: 'Mago', rohan: 'Asesino',")
+js = sub(js, "const BASICOS = {rohan:", "const BASICOS = {visor: ['atacar', 'atacar_2'], rohan:")
+js = sub(js, "gollum: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'esquivar'}};", "gollum: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'esquivar'}, visor: {q: 'atacar', w: 'atacar_2', e: 'atacar_2', r: 'canalizar'}};")
+js = sub(js, "const COLOR_FL = {", "const COLOR_FL = {visor: '#5ff4ff', ")
+js = sub(js, "'ap_birdie', 'ap_fu', 'ap_moha',", "'ap_birdie', 'ap_fu', 'ap_moha', 'ap_visor',")
+js = sub(js, "const PROY_AP = {bola: ['bola', 1.9],", "const PROY_AP = {rayo: ['rayo', 2], bola: ['bola', 1.9],")
+js = sub(js, "const PROY_CAB = {bola:", "const PROY_CAB = {rayo: [0.76, 0.41], bola:")
+js = sub(js, "const IMPACTO_AP = {bola:", "const IMPACTO_AP = {rayo: 'ap_visor_impacto', bola:")
+js = sub(js, "const fbTex = {};", "Object.assign(FB, {ap_visor_impacto: ['../batalla/fx/ap_visor_impacto.webp', 4, 4], ap_visor_abanico: ['../batalla/fx/ap_visor_abanico.webp', 4, 4], ap_visor_carga: ['../batalla/fx/ap_visor_carga.webp', 4, 4]});\nObject.assign(FB_DUR, {ap_visor_impacto: 0.4, ap_visor_abanico: 0.6, ap_visor_carga: 0.9});\nconst fbTex = {};")
+# el rayo: el cuerpo del Pack 48 (se repite y fluye) tumbado a la altura de los ojos, de x,z hacia dx,dz
+js = sub(js, "function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {", """const RAYO_V = {tex: null};
+function rayoVisor(x, z, dx, dz, L, W, dur, y = 1.9) {
+  if (!RAYO_V.tex) {RAYO_V.tex = cargaTex('../batalla/fx/ap_visor_rayo.webp'); RAYO_V.tex.wrapS = THREE.RepeatWrapping;}
+  const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setX(i, uv.getX(i) * L / 6);
+  const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: RAYO_V.tex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, color: '#bffaff'}));
+  m.scale.set(L, 1, W); m.rotation.y = Math.atan2(dx, dz) - Math.PI / 2; m.position.set(x + dx * L / 2, y, z + dz * L / 2); m.renderOrder = 7; scene.add(m);
+  const t0 = performance.now(), paso = () => {const t = (performance.now() - t0) / 1000 / dur; if (t >= 1) {scene.remove(m); g.dispose(); m.material.dispose(); return;}
+    m.material.opacity = t < 0.12 ? t / 0.12 : Math.min(1, (1 - t) / 0.35); m.scale.z = W * (0.85 + 0.25 * Math.abs(Math.sin(t * 37))); RAYO_V.tex.offset.x -= 0.04; requestAnimationFrame(paso);};
+  requestAnimationFrame(paso); flip('ap_visor_impacto', x + dx * L, z + dz * L, W * 1.6, false, undefined, y);
+}
+function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
+  if (v.tipo === 'visor') {
+    suena('ap_energia', k === 'r' ? 0.8 : 0.5, x, z);
+    if (k === 'q' || k === 'w') flip('ap_visor_impacto', x + dx * 1.1, z + dz * 1.1, k === 'q' ? 1.5 : 1.2, false, undefined, 1.9);
+    if (k === 'e') {flip('ap_visor_abanico', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, H.alc * 1.2, true, rot + Math.PI); temb(0.1);}
+    if (k === 'r') {flip('ap_visor_carga', x, z, 3.4, true); luego2(300, () => {const p = o.raiz.position; rayoVisor(p.x + dx * 0.8, p.z + dz * 0.8, dx, dz, H.alc, H.ancho * 2.4, 1.0); temb(0.35);});}
+    return;
+  }""")
+js = sub(js, "    else if (v.tipo === 'hobbit') {flip('tArco',", "    else if (v.tipo === 'visor') flip('ap_visor_impacto', p.x + dx * 0.9, p.z + dz * 0.9, 1, false, undefined, 1.9);\n    else if (v.tipo === 'hobbit') {flip('tArco',")
+html = sub(html, '</head>', """<style>body[data-heroe=visor]{--tinte:-22deg;--tsat:1.35;--tluz:1.05}
+body[data-heroe=visor] #bAt::after{background-image:url(ui/ap_aro_at_visor.webp)}</style></head>""", donde='html')
+
+# ---------- PACK 41 WORK (18/11): Ata con el rifle a dos manos y Birdie con swing de golf ----------
+# Su disparo sale cuando el arma llega al punto de impacto de la animación (TIEMPOS_IMPACTO.txt: Ata 0,15 s, Birdie 0,32 s; el clip va ×1,15)
+js = sub(js, "    if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');", "    if (b.proy) {const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}")
+
+# ---------- SIN PELÍCULA DE COLOR EN LOS HÉROES (18/11, Henar: «la película amarilla es horrible, parecen todos iguales; satura un poco sus colores») ----------
+# Fuera el filo de luz por equipo (el equipo ya lo dicen el aro del suelo y la barra); a cambio, sus colores un 30 % más saturados y un pelín más vivos.
+js = sub(js, "gl_FragColor.rgb+=uRim*pow(fr,uRimF>2.?1.6:2.)*uRimF;", "fr=0.;{float l=dot(gl_FragColor.rgb,vec3(.299,.587,.114));gl_FragColor.rgb=max(mix(vec3(l),gl_FragColor.rgb,1.3)*1.04,0.);}")
+
+# ---------- SONIDOS DE HENAR (18/11, tools/autopista/hace_sonidos3.py): golpes, espadas, clic, muertes, láser del Visor, cadena de Fu, volver a la base y soldados casi mudos ----------
+js = sub(js, "const SON_N = {muerte: 6};", "const SON_N = {muerte: 2, golpe: 1, golpeH: 1, espada: 1, gema: 1, ap_laser: 1, ap_cadena: 1, teleport: 1, sdisp: 1, simp: 1, moneda: 1, cuerno: 1, explosion: 1, derrumbe: 1, viento: 1, nivel: 1};")
+js = sub(js, "const SON_LISTA = {", "const SON_LISTA = {ap_laser: 'ap_laser', ap_cadena: 'ap_cadena', teleport: 'teleport', sdisp: 'soldado_disparo', simp: 'soldado_impacto', ")
+js = sub(js, "suena('ap_energia', k === 'r' ? 0.8 : 0.5, x, z);", "suena('ap_laser', k === 'r' ? 0.8 : 0.5, x, z);")
+js = sub(js, "{const sn = {gandalf: 'ap_llama',", "{const sn = {gollum: 'ap_cadena', gandalf: 'ap_llama',")
+js = sub(js, "} else if ({bala: 1, bola: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]], {bala: 0.35, bola: 0.45}[e[1]]);",
+         "} else if ({bala: 1, bola: 1, rayo: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]]); else if (/flecha/.test(e[1])) suena('sdisp', 0.09, e[2], e[3]);")
+js = sub(js, "suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ?", "suena(fuerte ? 'espada' : deSold ? 'simp' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ?")
+js = sub(js, "  const cn = $('canal');", "  if (volverBase > 0 && !(window._tpB > 0)) suena('teleport', 0.55); window._tpB = volverBase;\n  const cn = $('canal');")
+# la música del menú y de la partida empieza ya con ritmo (la pista tiene 2,4 s de entrada casi muda) y vuelve ahí antes del final apagado
+js = sub(js, "if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; p.el.play().catch(() => {});}}",
+         "if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; else if ((n === 'menu' || n === 'batalla') && p.el.currentTime < 2.4) p.el.currentTime = 2.4; if ((n === 'menu' || n === 'batalla') && !p.el._bucle) {p.el._bucle = 1; p.el.addEventListener('timeupdate', () => {if (p.el.duration && p.el.currentTime > p.el.duration - 6) p.el.currentTime = 2.4;});} p.el.play().catch(() => {});}}")
+
+# ---------- PACKS 31 y 50 WORK (18/11): Dalinar con cuerpo de humano y armadura del retrato; Ata con pelo, trenza y cara del retrato ----------
+# El Dalinar nuevo ya no tiene la caja de reposo inflada del enano: fuera la corrección AJ_ALTO.
+js = sub(js, "const AJ_ALTO = {ap_brask: 1.83};", "const AJ_ALTO = {};")
+
+# ---------- DALINAR EMANA LUZ (18/11, Henar): las juntas de luz (material «luz» del Pack 31) brillan siempre y laten despacio ----------
+# juntaPiezas ya no las mezcla con el resto (perdían el emisivo); brillaArmadura no las apaga; resto de la armadura con un leve tono azul
+js = sub(js, "+ '|' + !!m.transparent;", "+ '|' + !!m.transparent + (m.name === 'luz' ? '|luz' : '');")
+js = sub(js, "n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (n.emissive) o.matsPropios.push(n); return n;});",
+         "n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (mt.name === 'luz') {(o.luzMats = o.luzMats || []).push(n); n.userData.e0 = n.emissiveIntensity;} else if (n.emissive) o.matsPropios.push(n); return n;});")
+js = sub(js, "function animaRim() {\n", """function animaRim() {
+  const tl = performance.now() / 1000;
+  for (const [id, o] of VIS) {if (!o.luzMats) continue; const vv = VISTA.get(id), esD = vv && vv.tipo === 'enano'; const k = 1.9 + 0.7 * Math.sin(tl * 2.2) + 0.25 * Math.sin(tl * 5.3); for (const m of o.luzMats) {if (!m.userData.cLuz) {m.userData.cLuz = true; m.emissive.set('#7fd4ff');} m.emissiveIntensity = (m.userData.e0 || 1) * k;}
+    if (!esD) continue; if (!o.tonoLuz) {o.tonoLuz = true; for (const m of o.matsPropios || []) m.emissive.setRGB(0.004, 0.01, 0.024);}
+    for (const m of o.matsPropios || []) if (!m.userData.brillando && m.emissive.b < 0.05) m.emissive.setRGB(0.004, 0.01, 0.024);}
+""")
+
+# ---------- SONIDOS SOLO DE LO QUE VES, BÁSICO AL AIRE Y BRAZOS DEL VISOR (18/11, Henar) ----------
+# (1) un sonido con sitio solo suena si ese sitio está en pantalla (con un margen) y, si es de un héroe enemigo escondido por la niebla, no suena;
+#     los disparos de los básicos (fusil, golf, láser) llevaban sonido sin sitio: se oían en todo el mapa
+js = sub(js, "if (x !== undefined) {const d = Math.hypot(x - camM.x, z - camM.z);",
+         "if (x !== undefined) {_p.set(x, 0.5, z).project(camera); if (Math.abs(_p.x) > 1.12 || Math.abs(_p.y) > 1.15 || _p.z > 1) return; if (typeof SON_OCULTO === 'function' && SON_OCULTO(x, z)) return; const d = Math.hypot(x - camM.x, z - camM.z);")
+js = sub(js, "suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]]);",
+         "suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]], e[2], e[3]);")
+js = sub(js, "function suena(n, vol = 0.5, x, z) {", """function SON_OCULTO(x, z) {
+  /* un héroe enemigo que la niebla esconde: si el sonido sale de donde está él, no se oye */
+  for (const [id, v] of VISTA) {if (v.k !== 'h' || v.eq === MI_EQ) continue; const o = VIS.get(id); if (!o || !o.raiz || o.raiz.visible) continue; if (Math.hypot((v.xi ?? v.x) - x, (v.zi ?? v.z) - z) < 1.6) return true;}
+  return false;
+}
+function suena(n, vol = 0.5, x, z) {""")
+# (2) golpe básico al aire de los de lejos: si no hay nadie a tiro, el proyectil sale igual hacia donde mira, con su sonido
+js = sub(js, "function basicoFx(v, o, n, rot) {\n  if (!v || !o || v.k !== 'h') return; const H = HEROES[v.tipo]; if (!H) return;",
+         """function basicoFx(v, o, n, rot) {
+  if (!v || !o || v.k !== 'h') return; const H = HEROES[v.tipo]; if (!H) return;
+  if (H.proy && PROY_AP[H.proy]) {const x0 = v.xi ?? v.x, z0 = v.zi ?? v.z; let hay = false; for (const [, u] of VISTA) {if (u.eq === v.eq || u.k === 'p' || u.vida <= 0 || (u.k === 'h' && (u.muerto >= 0 || u.escondido))) continue; if (Math.hypot((u.xi ?? u.x) - x0, (u.zi ?? u.z) - z0) < H.alcance + 1.6) {hay = true; break;}}
+    if (!hay) {const r0 = rot ?? o.rv ?? 0; setTimeout(() => {const p = o.raiz.position; rafaga({n: 1, x: p.x + Math.sin(r0) * 0.6, z: p.z + Math.cos(r0) * 0.6, ang: r0, dist: H.alcance, varia: 0, kind: H.proy, vel: 26}); const sn = {bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser', brasa: 'ap_llama'}[H.proy]; if (sn) suena(sn, 0.35, p.x, p.z);}, {hobbit: 270, elfo: 120}[v.tipo] || 90);}}""")
+# (3) el Visor corre con la carrera de Ata (hecha para llevar el rifle): los brazos iban quietos y parecía que se deslizaba.
+#     Después de animar, se le balancean los brazos al ritmo de las piernas
+js = sub(js, "o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0;}",
+         "o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0; if (v.tipo === 'visor' && v.k === 'h') brazosVisor(o);}")
+js = sub(js, "function basicoFx(v, o, n, rot) {", """function brazosVisor(o) {
+  const a = o.clips && o.clips.correr; if (!a || !a.isRunning() || a.getEffectiveWeight() < 0.3) return;
+  if (!o.huesosB) {o.huesosB = {}; o.raiz.traverse((m) => {if (m.isBone && /^(upperarm|lowerarm)[lr]$/.test(m.name)) o.huesosB[m.name] = m;});}
+  const B = o.huesosB, f = (a.time / a.getClip().duration) * Math.PI * 2, w = a.getEffectiveWeight(), s = Math.sin(f) * 0.75 * w;
+  if (B.upperarml) B.upperarml.rotateX(s); if (B.upperarmr) B.upperarmr.rotateX(-s);
+  if (B.lowerarml) B.lowerarml.rotateX(-0.5 * w); if (B.lowerarmr) B.lowerarmr.rotateX(-0.5 * w);
+}
+function basicoFx(v, o, n, rot) {""")
+
+# ---------- TIRONES EN LAS PELEAS: TEXTURAS SUBIDAS ANTES (18/11, Henar: «en el 2v2 con minions y habilidades da tirones») ----------
+# Medido (tools/pruebas/t_lag.py): en la primera pelea los picos de 60-110 ms venían de subir a la gráfica en mitad de la pelea
+# texturas que nunca se habían dibujado: las de los modelos (1024 px con mipmaps) la primera vez que sale cada súbdito, bestia
+# o héroe, y la hoja de cada efecto la primera vez que se usa. El calentado del VS dibujaba los efectos 40 m bajo el suelo
+# (fuera de cámara: no se dibujaban) y renderer.compile solo compila sombreadores, no sube texturas.
+# Ahora en el VS se suben TODAS con renderer.initTexture (las que aún no han cargado, en cuanto cargan).
+js = sub(js, "function pantallaVS(jugadores, modo) {", """const PRE_TEX = new WeakSet();
+function subeTex(t) {
+  if (!t || PRE_TEX.has(t)) return; const im = t.image;
+  if (!im || !(im.width || im.videoWidth) || im.complete === false) return; /* aún no ha cargado: se reintenta luego */
+  PRE_TEX.add(t); try {renderer.initTexture(t);} catch (e) {}
+}
+function subeTexturas(raiz) {
+  raiz.traverse((o) => {if (!o.material) return; for (const m of [].concat(o.material)) for (const k of ['map', 'emissiveMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'alphaMap', 'aoMap']) subeTex(m[k]);});
+}
+function precargaGPU() {
+  try {
+    for (const n in M) if (M[n] && M[n].scene) subeTexturas(M[n].scene);
+    for (const n in FB) {const f = FB[n][0]; subeTex(fbTex[f] || (fbTex[f] = cargaTex(f)));}
+    subeTexturas(scene);
+  } catch (e) {}
+}
+function pantallaVS(jugadores, modo) {
+  precargaGPU(); for (const ms of [800, 2000, 4000, 8000]) setTimeout(precargaGPU, ms);""")
+
+# (y) los proyectiles cargaban SU imagen otra vez por cada tamaño distinto (una textura nueva, otra descarga y otra subida por
+#     habilidad); ahora una por imagen. Y se suben también las marcas del suelo y los proyectiles.
+js = sub(js, "new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false}));\n     m.scale.setScalar(S)",
+         "new THREE.MeshBasicMaterial({map: texProy(f), transparent: true, depthWrite: false, depthTest: false}));\n     m.scale.setScalar(S)")
+js = sub(js, "m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false})); m.scale.setScalar(tam);",
+         "m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: texProy(f), transparent: true, depthWrite: false, depthTest: false})); m.scale.setScalar(tam);")
+js = sub(js, "function proyAP(n, D = 0.7) {", "const PROY_TX = {};\nfunction texProy(f) {return PROY_TX[f] || (PROY_TX[f] = cargaTex('../batalla/ui/ap_pr_' + f + '.webp'));}\nfunction proyAP(n, D = 0.7) {")
+js = sub(js, "    subeTexturas(scene);\n  } catch (e) {}", """    subeTexturas(scene);
+    for (const n in PROY_AP) subeTex(texProy(PROY_AP[n][0]));
+    for (const n of ['ind_area', 'ind_alcance', 'ind_flecha', 'ind_cono', 'ap_objetivo']) subeTex(IND[n] || (IND[n] = cargaTex('../batalla/ui/' + (IND_AP[n] || n) + '.webp')));
+    for (const n in IND) subeTex(IND[n]);
+  } catch (e) {}""")
+
+# (z) las flechas de los soldados (modelos de proyectiles.glb) compilaban su sombreador en la primera pelea: se compilan en el VS
+js = sub(js, "tmp.push(q);}\n    renderer.compile(scene, camera);", "tmp.push(q);}\n    for (const n of ['flecha_orca', 'flecha_elfica', 'piedra', 'flecha_clavada']) {try {const q = modeloProy(n); if (q) {q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);}} catch (e) {}}\n    if (M.brasero) {const q = M.brasero.scene.clone(true); q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);} /* las balizas */\n    renderer.compile(scene, camera);")
+
+# (z2) los héroes se pintan con el sombreador de rimHeroe (otro programa): en el VS se compilaban sin él y cada héroe
+#      volvía a compilar al aparecer en la pelea
+js = sub(js, "for (const n of mods) if (M[n]) {const o = montar(n, 1); o.raiz.position.set(0, -60, 0); scene.add(o.raiz); tmp.push(o.raiz);}",
+         "const modH = new Set(Object.values(HEROES).map((h) => h.modelo)); for (const n of mods) if (M[n]) {const o = montar(n, 1); o.raiz.position.set(0, -60, 0); if (modH.has(n)) {try {rimHeroe(o, '#ffffff');} catch (e) {}} scene.add(o.raiz); tmp.push(o.raiz);}")
+
+# (z3) las 4 luces de fuego se creaban en el primer fotograma de la partida, DESPUÉS de compilar en el VS: todo lo compilado
+#      llevaba 0 luces y se volvía a compilar (lo que apareciera por primera vez en una pelea, en mitad de la pelea)
+js = sub(js, "  precargaGPU(); for (const ms of [800, 2000, 4000, 8000]) setTimeout(precargaGPU, ms);", "  try {luces();} catch (e) {}\n  precargaGPU(); for (const ms of [800, 2000, 4000, 8000]) setTimeout(precargaGPU, ms);")
+
+# (w) el decorado de la Batalla (chatarra, cubiles, orillas, pasarelas, farolas, quitamiedos) llega con la jungla, después de
+#     fusionar el mapa: cada pieza iba en su propia llamada de dibujo (y otra en la sombra). En una pelea con la cámara
+#     en la jungla eran ~120 de las ~220 llamadas. Ahora se fusiona todo junto al terminar.
+js = sub(js, "  const haciaCentro = (p) => Math.atan2(-p.x, -p.z);", "  const n0 = G.children.length;\n  const haciaCentro = (p) => Math.atan2(-p.x, -p.z);")
+js = sub(js, "    for (const sg of [1, -1]) pon2('ap_quitamiedos', p.x + nx * 4.95 * sg, p.z + nz * 4.95 * sg, Math.atan2(dx, dz) + Math.PI / 2, 1);\n  }\n}",
+         "    for (const sg of [1, -1]) pon2('ap_quitamiedos', p.x + nx * 4.95 * sg, p.z + nz * 4.95 * sg, Math.atan2(dx, dz) + Math.PI / 2, 1);\n  }\n  try {const D = new THREE.Group(); D.name = 'decoradoOjo'; for (const c of G.children.slice(n0)) D.add(c); G.add(D); fusiona(D);} catch (e) {console.error(e);}\n}")
+
+# (v) cada planta/roca del decorado venía en varias mallas pequeñas (hojas, briznas) y se hacía un InstancedMesh por malla:
+#     en el 2v2 eran 64 llamadas de dibujo solo de hierba (28 triángulos cada una). Ahora las mallas de un objeto con el
+#     mismo material se juntan antes de instanciar: una llamada por material.
+js = sub(js, """  o.traverse((malla) => {
+    if (!malla.isMesh) return;
+    const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, lambert(malla.material), lista.length);""",
+"""  const unidas = [], porMat = new Map();
+  o.traverse((malla) => {if (!malla.isMesh) return; if (Array.isArray(malla.material)) {unidas.push(malla); return;} const g = malla.geometry, k = malla.material.uuid + '|' + Object.keys(g.attributes).sort().join(',') + '|' + !!g.index; if (!porMat.has(k)) porMat.set(k, []); porMat.get(k).push(malla);});
+  for (const l of porMat.values()) {
+    if (l.length === 1) {unidas.push(l[0]); continue;}
+    try {const gs = l.map((mm) => {const g = flota(mm.geometry.clone()); g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, mm.matrixWorld)); return g;}); const mg = mergeGeometries(gs, false); gs.forEach((g) => g.dispose()); if (!mg) throw 0;
+      const f = new THREE.Mesh(mg, l[0].material); f.matrixWorld.copy(o.matrixWorld); unidas.push(f);} catch (e) {unidas.push(...l);}
+  }
+  unidas.forEach((malla) => {
+    const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, lambert(malla.material), lista.length);""")
+
+# (u) dos sombreadores que aún se compilaban en mitad de la pelea: el de los héroes medio transparentes (al meterse un aliado
+#     en la hierba, animaRim pone transparent = true y eso es otro programa) y la columna de luz de las plantas del 2v2.
+js = sub(js, "    renderer.compile(scene, camera);\n    setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400);",
+"""    try {for (const tp of ['baya', 'flor', 'seta']) {const q = plantaA6({tipo: tp, x: 0, z: 0}); if (q) {(q.isObject3D ? q : q.g || q.raiz) && ((q.isObject3D ? q : q.g || q.raiz).position.y = -60); const oq = q.isObject3D ? q : q.g || q.raiz; if (oq) {if (!oq.parent) scene.add(oq); tmp.push(oq); subeTexturas(oq);}}}} catch (e) {}
+    renderer.compile(scene, camera);
+    /* y la variante transparente de los héroes (dentro de la hierba) */
+    try {const vuelve = []; for (const o of tmp) o.traverse((q) => {if (q.isMesh && q.material && q.material.customProgramCacheKey && q.material.customProgramCacheKey() === 'rimA6' && !q.material.transparent) {q.material.transparent = true; vuelve.push(q.material);}}); if (vuelve.length) {renderer.compile(scene, camera); vuelve.forEach((m) => {m.transparent = false;});}} catch (e) {}
+    setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400);""")
+
+# ---------- JUNGLA MENOS RECARGADA (18/11, Henar: «quita mierda del mapa, está muy recargado, sobre todo la jungla») ----------
+# Solo decorado (la simulación no cambia: los árboles que chocan y la hierba de esconderse se quedan):
+# fuera la chatarra alrededor de los claros (palés, neumáticos, bidones, cascotes), fuera las rocas sueltas de la jungla,
+# juncos del río de 90 a 30 y farolas de las calzadas a la mitad.
+js = sub(js, "if (c.tipo === 'troll') {chatarra(c); continue;}", "if (c.tipo === 'troll') continue;")
+js = sub(js, "chatarra(PIT, 6.2); chatarra(PIT2, 6.2);", "")
+js = sub(js, "for (let f = 0.12; f < 0.9; f += 0.11)", "for (let f = 0.14; f < 0.9; f += 0.22)")
+js = sub(js, "if (TIPO_MAPA === 'ojo') for (let i = 0; i < 90; i++)", "if (TIPO_MAPA === 'ojo') for (let i = 0; i < 30; i++)")
+js = sub(js, "for (let i = 0; i < 40; i++) {const x = (al() - 0.5) * 60", "for (let i = 0; i < (TIPO_MAPA === 'ojo' ? 0 : 40); i++) {const x = (al() - 0.5) * 60")
 # ---------- FUERA LOS «PIU PIU» (18/11, Henar: «los básicos siguen sonando piu piu piu») ----------
 # Quedaban sonidos de láser de juego retro de Kenney: «arco» (laser_small: habilidades en línea y la ráfaga de Birdie), «ap_energia»
 # (laser_retro: Grub), «ap_luz» (phaserUp: Dalinar y CADA disparo de torre) y la moneda (pepSound: sonaba en cada remate, o sea,
 # con casi cada básico a un soldado). Ahora: línea y ráfagas → zumbido de aire; Grub y Dalinar → tajo de espada; torre → explosión
-# grave y baja; moneda y cuerno → los de verdad de La Brecha (copiados en sonidos_ap/fx con el mismo nombre).
+# grave y baja (moneda y cuerno ya son los de Henar).
 js = sub(js, "ap_energia: 'ap_energia', ap_luz: 'ap_luz',", "ap_energia: 'espada_corte', ap_luz: 'espada_corte',")
 js = sub(js, "arco: 'disparo_arco',", "arco: 'rafaga_viento',")
+js = sub(js, "const SON_N = {muerte: 2,", "const SON_N = {arco: 1, ap_energia: 1, ap_luz: 1, muerte: 2,")
 js = sub(js, "suena('ap_luz', 0.3, e[2], e[3]);", "suena('fuego', 0.16, e[2], e[3]);")
 
 

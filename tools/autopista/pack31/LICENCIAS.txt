@@ -1,0 +1,14 @@
+A-6 · Pack Autopista 31 · Dalinar, Caballero de Luz
+
+Cuerpo y extremidades adaptados de Knight, KayKit – Adventurers, de Kay Lousberg.
+Licencia de los modelos: Creative Commons Zero 1.0 Universal (CC0).
+https://kaylousberg.itch.io/kaykit-adventurers
+
+Geometría facial adaptada de Universal Base Characters, de Quaternius, edición Standard.
+Licencia del modelo base: Creative Commons Zero 1.0 Universal (CC0).
+https://quaternius.com/packs/universalbasecharacters.html
+
+Las piezas de armadura, el cabello, la capa, el espadón, el atlas y los ajustes de animación creados para este pack se ofrecen bajo CC0 1.0 en la medida en que existan derechos sobre estas aportaciones.
+Texto de CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+El rig y el movimiento de partida proceden de ap_brask.glb, facilitado por el proyecto A-6. El retrato oficial facilitado se empleó como referencia visual. Los materiales preexistentes del proyecto conservan sus condiciones de origen.

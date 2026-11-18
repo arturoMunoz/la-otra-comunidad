@@ -46,6 +46,11 @@ const HEROES = {
       w: {n: 'Meditación', cd: 14, mn: 40, tipo: 'suerte', cura: 0.25, vel: 0.3, dur: 3, icono: 'h_gollum_w', d: 'Respira hondo: se cura un 25 %, corre más y pega más fuerte 3 s.'},
       e: {n: 'Kusarigama', cd: 10, mn: 35, tipo: 'linea', alc: 9, ancho: 0.8, dano: 70, aturde: 1.0, proy: 'cadena', icono: 'h_gollum_e', d: 'Lanza la hoz con cadena: atrapa 1 s al primero que toca.'},
       r: {n: 'Bomba de humo', cd: 50, mn: 80, tipo: 'invis', dur: 5, vel: 0.6, icono: 'h_gollum_r', d: 'Desaparece 5 s entre el humo y corre mucho más: nadie le ve llegar.'}}},
+  visor: {nombre: 'El Visor', modelo: 'ap_visor', ret: 'ui/ap_r_visor.webp', mana: 400, crecM: 38, vida: 565, dano: 52, vatq: 0.92, alcance: 6.8, vel: 5.2, crecV: 82, crecD: 4.6, mag: true, arm: 20, rm: 30, proy: 'rayo',
+    hab: {q: {n: 'Impacto óptico', cd: 7, mn: 45, tipo: 'linea', mag: true, alc: 10, ancho: 0.7, dano: 135, lento: 0.4, durL: 1.2, proy: 'rayo', icono: 'h_visor_q', d: 'Un rayo corto y potente: hiere y frena un 40 % al primero que toca.'},
+      w: {n: 'Rebote', cd: 11, mn: 55, tipo: 'linea', mag: true, alc: 12, ancho: 0.7, dano: 110, perfora: true, proy: 'rayo', icono: 'h_visor_w', d: 'Un rayo que atraviesa a todos los enemigos de su línea.'},
+      e: {n: 'Ráfaga', cd: 9, mn: 50, tipo: 'cono', mag: true, alc: 6, ang: 1.05, dano: 110, lento: 0.35, durL: 1.5, icono: 'h_visor_e', d: 'Un abanico de rayos delante de él: hiere y frena un 35 %.'},
+      r: {n: 'Mirada total', cd: 50, mn: 100, tipo: 'linea', mag: true, alc: 17, ancho: 1.6, dano: 300, perfora: true, proy: 'rayo', icono: 'h_visor_r', d: 'Abre la visera del todo: un rayo gigantesco que atraviesa todo lo que hay en su línea.'}}},
   rohan: {nombre: 'Moha, el Halcón del Atlas', modelo: 'ap_moha', ret: 'ui/ap_r_rohan.webp', mana: 300, crecM: 30, vida: 650, dano: 62, vatq: 0.9, alcance: 2.5, vel: 5.2, crecV: 85, crecD: 4.5, arm: 32, rm: 30,
     hab: {q: {n: 'Gumía', cd: 6, mn: 35, tipo: 'dash', dist: 5.5, dano: 95, icono: 'lanza', d: 'Se lanza hacia delante con su daga curva y hiere a todos los que atraviesa.'},
       w: {n: 'Velo de arena', cd: 12, mn: 45, tipo: 'escudo', val: 170, dur: 3, icono: 'escudo', d: 'Un remolino de arena que absorbe daño durante 3 s.'},
@@ -58,6 +63,7 @@ const PASIVA = {
   orco: {n: 'Disciplina', d: 'Sus golpes a héroes se acumulan (hasta 5); con 5, +40 % de daño durante 5 s.'},
   gollum: {n: 'Acecho', d: 'Desde la hierba alta, su golpe básico es un salto hasta la presa (hasta 6 m).'},
   rohan: {n: 'Ojo de halcón', d: 'El primer golpe a cada enemigo quita un 8 % de su vida actual; se repite cada 6 s por enemigo.'},
+  visor: {n: 'Sobrecarga', d: 'Cada 4.º golpe básico es un rayo cargado: daño mágico extra.'},
   elfo: {n: 'Balas de goma', d: 'Sus disparos frenan un 25 % durante 1,5 s.'},
   enano: {n: 'Armadura viva', d: 'Un escudo del 10 % de su vida máxima que vuelve si pasa 10 s sin recibir daño.'},
   hobbit: {n: 'Concentración', d: 'Si se queda quieto 1,5 s se vuelve invisible hasta que se mueve o ataca.'},
@@ -298,7 +304,7 @@ const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30,
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'vado_arboles', 'vado_rocas', 'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
+const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'ap_visor', 'vado_arboles', 'vado_rocas', 'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
 /* modelos: los de la jungla solo hacen falta en la Batalla (2 contra 2) y se bajan después; los que no se usaban (capitán, estandartes, barriles…: casi 3 MB) ya no se bajan.
    Los del Abismo van adelgazados en modelos_l/ (sin los clips que aquí no se usan y con las texturas en WebP: tools/vado/adelgaza.py). */
 const JUNGLA = ['ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla'];
@@ -323,8 +329,14 @@ function instancias(archivo, nombre, lista, sombra = true) {
   const o = M[archivo] && M[archivo].scene.getObjectByName(nombre); if (!o || !lista.length) return;
   M[archivo].scene.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(o.matrixWorld).invert();
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
-  o.traverse((malla) => {
-    if (!malla.isMesh) return;
+  const unidas = [], porMat = new Map();
+  o.traverse((malla) => {if (!malla.isMesh) return; if (Array.isArray(malla.material)) {unidas.push(malla); return;} const g = malla.geometry, k = malla.material.uuid + '|' + Object.keys(g.attributes).sort().join(',') + '|' + !!g.index; if (!porMat.has(k)) porMat.set(k, []); porMat.get(k).push(malla);});
+  for (const l of porMat.values()) {
+    if (l.length === 1) {unidas.push(l[0]); continue;}
+    try {const gs = l.map((mm) => {const g = flota(mm.geometry.clone()); g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, mm.matrixWorld)); return g;}); const mg = mergeGeometries(gs, false); gs.forEach((g) => g.dispose()); if (!mg) throw 0;
+      const f = new THREE.Mesh(mg, l[0].material); f.matrixWorld.copy(o.matrixWorld); unidas.push(f);} catch (e) {unidas.push(...l);}
+  }
+  unidas.forEach((malla) => {
     const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, lambert(malla.material), lista.length);
     lista.forEach((c, i) => {q.setFromAxisAngle(up, c.ry || 0); p.set(c.x, c.y || 0, c.z); e.setScalar(c.s || 1); m4.compose(p, q, e).multiply(rel); im.setMatrixAt(i, m4);});
     im.castShadow = sombra; im.receiveShadow = true; im.computeBoundingSphere(); (MAPA_G || scene).add(im);
@@ -361,7 +373,7 @@ function cullBosque(cx, cz, forzar) {
   }
 }
 const ALTO = {};
-const AJ_ALTO = {ap_brask: 1.83};
+const AJ_ALTO = {};
 function alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene, /^ap_(nasor|lagarto|toro|coloso|perro|perro_jefe|buitre|jabali|rata)$/.test(n)); ALTO[n] = Math.max(0.5, b.max.y - b.min.y) / (AJ_ALTO[n] || 1);} return ALTO[n];}
 /* Pack Vado 17: equipo de cada héroe (piezas sueltas de ChatGPT hechas para un maniquí de 2 m) enganchado a los huesos de KayKit.
    Cabeza: al centro de la cabeza, del ancho de la cabeza; pecho: al hueso chest; armas: en el sitio del arma original (que se esconde). */
@@ -398,7 +410,7 @@ function vistePiezas(raiz, tipo) {
 function juntaPiezas(n) {
   const sc = M[n] && M[n].scene; if (!sc || sc.userData.juntado || !/^ap_/.test(n)) return; sc.userData.juntado = true;
   const grupos = new Map();
-  sc.traverse((o) => {if (!o.isSkinnedMesh || !o.parent) return; const m = o.material, k = o.parent.uuid + '|' + o.skeleton.uuid + '|' + (m.map ? m.map.uuid : '-') + '|' + (m.metalness > 0.3 ? 'met' : 'mate') + '|' + !!m.transparent; (grupos.get(k) || grupos.set(k, []).get(k)).push(o);});
+  sc.traverse((o) => {if (!o.isSkinnedMesh || !o.parent) return; const m = o.material, k = o.parent.uuid + '|' + o.skeleton.uuid + '|' + (m.map ? m.map.uuid : '-') + '|' + (m.metalness > 0.3 ? 'met' : 'mate') + '|' + !!m.transparent + (m.name === 'luz' ? '|luz' : ''); (grupos.get(k) || grupos.set(k, []).get(k)).push(o);});
   for (const lista of grupos.values()) {
     if (lista.length < 2) continue; const a = lista[0];
     let g = null; try {g = mergeGeometries(lista.map((o) => {const q = o.geometry.clone(); for (const k of Object.keys(q.attributes)) if (!a.geometry.attributes[k]) q.deleteAttribute(k); return q;}), false);} catch (e) {g = null;}
@@ -540,9 +552,9 @@ function construyeMapa() {
   /* hierba alta, juncos del río, piedras de vadear y rocas */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
   for (const b of HIERBAS) for (let i = 0; i < 9; i++) {const a = al() * 6.28, d = Math.sqrt(al()) * b.r * 0.85; mata('arbusto_0' + (1 + i % 4), b.x + Math.cos(a) * d, b.z + Math.sin(a) * d, 1.3 + al() * 0.5);}
-  if (TIPO_MAPA === 'ojo') for (let i = 0; i < 90; i++) {const t = (al() - 0.5) * 70, o = (al() < 0.5 ? -1 : 1) * (2.4 + al() * 1.8), x = -t * EJE.z + o * EJE.x, z = t * EJE.x + o * EJE.z; if (Math.hypot(x - PIT.x, z - PIT.z) < 8 || Math.hypot(x - PIT2.x, z - PIT2.z) < 8 || distCarril(x, z) < 3 || Math.abs(x) > 33 || Math.abs(z) > 57) continue; mata('juncos_0' + (1 + i % 3), x, z, 0.9 + al() * 0.6);}
+  if (TIPO_MAPA === 'ojo') for (let i = 0; i < 30; i++) {const t = (al() - 0.5) * 70, o = (al() < 0.5 ? -1 : 1) * (2.4 + al() * 1.8), x = -t * EJE.z + o * EJE.x, z = t * EJE.x + o * EJE.z; if (Math.hypot(x - PIT.x, z - PIT.z) < 8 || Math.hypot(x - PIT2.x, z - PIT2.z) < 8 || distCarril(x, z) < 3 || Math.abs(x) > 33 || Math.abs(z) > 57) continue; mata('juncos_0' + (1 + i % 3), x, z, 0.9 + al() * 0.6);}
   for (const l of []) {const L = CARRILES[l]; let mejor = 0; for (let f = 0; f <= 1; f += 0.01) {const p = puntoCarril(l, f); if (Math.abs(ladoDe(p)) < Math.abs(ladoDe(puntoCarril(l, mejor)))) mejor = f;} const c = puntoCarril(l, mejor); for (let i = 0; i < 8; i++) mata('piedra_vado_0' + (1 + i % 6), c.x + (al() - 0.5) * 5, c.z + (al() - 0.5) * 3, 0.5 + al() * 0.3);}
-  for (let i = 0; i < 40; i++) {const x = (al() - 0.5) * 60, z = (al() - 0.5) * 100; if (!dentroOjo(x, z) || (TIPO_MAPA === 'linea' && Math.abs(x) < 9) || distCarril(x, z) < 5 || CAMPOS.some((c) => Math.hypot(c.x - x, c.z - z) < 4) || sendas.some(([a, b]) => distSeg(x, z, a, b) < 2.4)) continue; mata('roca_0' + (1 + i % 6), x, z, 0.35 + al() * 0.5);}
+  for (let i = 0; i < (TIPO_MAPA === 'ojo' ? 0 : 40); i++) {const x = (al() - 0.5) * 60, z = (al() - 0.5) * 100; if (!dentroOjo(x, z) || (TIPO_MAPA === 'linea' && Math.abs(x) < 9) || distCarril(x, z) < 5 || CAMPOS.some((c) => Math.hypot(c.x - x, c.z - z) < 4) || sendas.some(([a, b]) => distSeg(x, z, a, b) < 2.4)) continue; mata('roca_0' + (1 + i % 6), x, z, 0.35 + al() * 0.5);}
   for (const n in matas) instancias('vado_rocas', n, matas[n], !n.startsWith('juncos'));
   /* cubiles de las bestias, braseros y fuentes */
   for (const c of []) {
@@ -600,15 +612,16 @@ function decoradoOjo(pon2, al) {
   const G = MAPA_G;
   if (!M.ap_jungla) {const t = setInterval(() => {if (MAPA_G !== G) clearInterval(t); else if (M.ap_jungla) {clearInterval(t); decoradoOjo(pon2, al);}}, 400); return;}
   const pz = (n, x, z, ry, e = 1) => {const o = pieza('ap_jungla', n); o.position.set(x, 0.05, z); o.traverse((q) => {if (q.isMesh) for (const m of [].concat(q.material)) {m.polygonOffset = true; m.polygonOffsetFactor = -2; m.polygonOffsetUnits = -2;}}); /* 18/11: el suelo de los fosos y cubiles estaba a la misma altura que el suelo del mapa y se veían rayas negras al moverse (z-fighting) */ o.rotation.y = ry; o.scale.setScalar(e); fusiona(o); G.add(o); return o;};
+  const n0 = G.children.length;
   const haciaCentro = (p) => Math.atan2(-p.x, -p.z);
   
   const sinSuelo = (o) => o.traverse((q) => {if (!q.isMesh) return; const g = q.geometry.index ? q.geometry.clone() : q.geometry.clone(); const P = g.attributes.position; let I = g.index ? g.index.array : null;
     if (!I) {I = new Uint32Array(P.count); for (let i = 0; i < P.count; i++) I[i] = i;} const k = []; for (let i = 0; i < I.length; i += 3) {const ya = P.getY(I[i]), yb = P.getY(I[i + 1]), yc = P.getY(I[i + 2]); if (Math.max(ya, yb, yc) < 0.8 && Math.max(ya, yb, yc) - Math.min(ya, yb, yc) < 0.04) continue; k.push(I[i], I[i + 1], I[i + 2]);} g.setIndex(k); q.geometry = g;});
   const chatarra = (c, esc = 1) => {const L = [['palé', 3.6, 0.2, 1.4], ['palé', 3.9, 0.55, 1.2], ['neumatico_1', 4.1, 1.5, 1.3], ['neumatico_2', 3.7, 2.2, 1.2], ['bidon_1', 4.3, 2.9, 1.1], ['bidon_2', 4.0, 3.15, 1.1], ['cascotes_2', 4.4, 3.9, 1.3], ['neumatico_1', 3.8, 4.6, 1.25], ['palé', 4.2, 5.3, 1.3], ['cascotes_1', 4.5, 5.9, 1.2]];
     const a0 = haciaCentro(c) + Math.PI; for (const [n, r, a, e] of L) {const o = pieza('ap_suelo_props', n), an = a0 + a; o.position.set(c.x + Math.sin(an) * r * esc / (esc > 1 ? 4 : 1), 0, c.z + Math.cos(an) * r * esc / (esc > 1 ? 4 : 1)); o.rotation.y = an * 3.1; o.scale.setScalar(e); fusiona(o); G.add(o);}};
-  for (const c of CAMPOS) {const nd = NEUTRO[c.tipo]; if (nd.jefe || nd.draco || nd.pasiva) continue; if (c.tipo === 'troll') {chatarra(c); continue;}
+  for (const c of CAMPOS) {const nd = NEUTRO[c.tipo]; if (nd.jefe || nd.draco || nd.pasiva) continue; if (c.tipo === 'troll') continue;
     const o = pieza('ap_jungla', c.tipo === 'huorn' ? 'cubil_coloso' : 'cubil'); sinSuelo(o); o.position.set(c.x, 0, c.z); o.rotation.y = haciaCentro(c); fusiona(o); G.add(o);}
-  chatarra(PIT, 6.2); chatarra(PIT2, 6.2);  /* Nasor y el lagarto: en un claro con chatarra, sin el foso de tierra con valla */
+    /* Nasor y el lagarto: en un claro con chatarra, sin el foso de tierra con valla */
   /* orillas del río: a los dos lados, siguiendo su curva, salvo donde pasan las calzadas y en los fosos */
   const pe = {x: -EJE.z, z: EJE.x};
   for (let a = -40; a <= 40; a += 10) for (const lado of [1, -1]) {
@@ -619,13 +632,14 @@ function decoradoOjo(pon2, al) {
   for (const p of ORILLA) pz('puente_vado', p.x, p.z, Math.atan2(EJE.x, EJE.z) + Math.PI / 2);
   /* las calzadas: farolas a un lado cada ~16 m y quitamiedos donde cruzan el río */
   for (const l of [0, 1]) {
-    for (let f = 0.12; f < 0.9; f += 0.11) {const p = puntoCarril(l, f), q = puntoCarril(l, f + 0.01), dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz) || 1, nx = dz / d, nz = -dx / d, sg = l ? -1 : 1;
+    for (let f = 0.14; f < 0.9; f += 0.22) {const p = puntoCarril(l, f), q = puntoCarril(l, f + 0.01), dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz) || 1, nx = dz / d, nz = -dx / d, sg = l ? -1 : 1;
       const x = p.x + nx * 5.6 * sg, z = p.z + nz * 5.6 * sg; if (Math.abs(ladoDe({x, z})) < 4 || BASES.some((b) => Math.hypot(b.torre.x - x, b.torre.z - z) < 6)) continue;
       const o = pon2('ap_farola', x, z, Math.atan2(-nx * sg, -nz * sg) + Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});}
     let mejor = 0; for (let f = 0; f <= 1; f += 0.005) if (Math.abs(ladoDe(puntoCarril(l, f))) < Math.abs(ladoDe(puntoCarril(l, mejor)))) mejor = f;
     const p = puntoCarril(l, mejor), q = puntoCarril(l, mejor + 0.01), dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz) || 1, nx = dz / d, nz = -dx / d;
     for (const sg of [1, -1]) pon2('ap_quitamiedos', p.x + nx * 4.95 * sg, p.z + nz * 4.95 * sg, Math.atan2(dx, dz) + Math.PI / 2, 1);
   }
+  try {const D = new THREE.Group(); D.name = 'decoradoOjo'; for (const c of G.children.slice(n0)) D.add(c); G.add(D); fusiona(D);} catch (e) {console.error(e);}
 }
 /* LA AUTOPISTA: quitamiedos a los dos lados, farolas, coches abandonados, conos y señales (piezas CC0 de Kenney, Pack Autopista 2) */
 function decoradoAutopista(pon2, al) {
@@ -1006,7 +1020,7 @@ function golpea(o, d) {
     const st = stats(o), crit = st.crit && Math.random() < st.crit, n = st.dano * (crit ? 2 : 1), b = HEROES[o.tipo];
     o.ac++;
     pasivaGolpe(o, d);
-    if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');
+    if (b.proy) {const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}
     else luego(0.18, () => {if (d.vida > 0 && !o.muerto) {dana(o, d, n, crit ? 'crit' : 'at'); ev(['fx', 'impacto', d.x, d.z, 1.4]);}});
     return;
   }
@@ -1021,6 +1035,7 @@ function pasivaGolpe(o, d) {
   if (t === 'orco' && heroe) luego(0.2, () => {if (!vivo()) return; const s0 = d.sang && d.sang.hasta > S.t ? d.sang.n : 0; d.sang = {n: Math.min(5, s0 + 1), hasta: S.t + 5, o: o.id, tick: 0}; if (d.sang.n === 5 && !(o.buf.furiaO > 0)) {o.buf.furiaO = 5; ev(['num', o.x, o.z, '¡Disciplina!', 'r']);}});
   if (t === 'gandalf' && d.luz > S.t) {d.luz = 0; const extra = 20 + 10 * o.nivel + stats(o).poder * 0.35; luego(0.3, () => {if (vivo()) {dana(o, d, extra, 'mag'); ev(['fx', 'impacto', d.x, d.z, 2.2]); ev(['num', d.x, d.z, '✦', 'y']);}});}
   if (t === 'rohan' && d.k !== 't' && d.k !== 'n') {o.jarv = o.jarv || {}; if (!(o.jarv[d.id] > S.t)) {o.jarv[d.id] = S.t + 6; luego(0.2, () => {if (vivo()) dana(o, d, Math.min(d.k === 'h' ? 9999 : 260, d.vida * 0.08), 'pura');});}}
+  if (t === 'visor') {o.carga = (o.carga || 0) + 1; if (o.carga % 4 === 0) {const extra = 25 + 12 * o.nivel + stats(o).poder * 0.4; luego(0.3, () => {if (vivo()) {dana(o, d, extra, 'mag'); ev(['fx', 'impacto', d.x, d.z, 2]); ev(['num', d.x, d.z, '⚡', 'y']);}});}}
   if (t === 'elfo' && d.k !== 't' && d.k !== 'n') luego(0.25, () => {if (!vivo()) return; if (heroe) {d.buf.lento = 1.5; d.buf.lentoV = Math.max(d.buf.lentoV || 0, 0.25);} else d.lento = S.t + 1.5;});
 }
 function lanzaProy(o, d, modelo, n, tipo, esc = 1, y = 1.2) {
@@ -1147,16 +1162,18 @@ function paso(dt) {
     }
   }
   /* súbditos */
+  const EN_S = {};
   for (const u of S.u) {
     if (u.k !== 's' || u.muerto) continue;
     const sd = SUBD[u.tipo]; u.cd = Math.max(0, u.cd - dt);
     if (u.aturd > S.t) continue;
     /* como en el LoL: siguen con su objetivo; prefieren súbditos y torres; a un héroe solo si ataca a un héroe de su bando cerca o si no queda otra cosa */
-    const en = enemigosDe(u.eq).filter((e) => e.eq !== 2 && atacable(e)), rr = u.tipo === 'r' ? 7 : 6;
+    /* 18/11 (tirones en las peleas): la lista de enemigos atacables es la misma para todos los súbditos de un bando: se calcula una vez por paso (antes, una por súbdito: con 40 súbditos, 40 recorridos de todo el mapa) */
+    const en = EN_S[u.eq] || (EN_S[u.eq] = enemigosDe(u.eq).filter((e) => e.eq !== 2 && atacable(e))), rr = u.tipo === 'r' ? 7 : 6;
     /* prioridades del LoL / Wild Rift: 1 héroe que ataca a un héroe aliado, 2 súbdito que ataca a un héroe aliado, 3 súbdito que ataca a un súbdito aliado,
        4 torre que ataca a un súbdito aliado, 5 héroe que ataca a un súbdito aliado, 6 súbdito más cercano, 7 héroe más cercano. Las 1 y 2 interrumpen; el resto respeta el objetivo que ya tenía. */
     const victima = (e) => e.atacaT > S.t ? S.porId.get(e.atacaA) : null;
-    const cerca = en.filter((e) => dist(u, e) - radio(e) < rr + 1.5);
+    const cerca = en.filter((e) => e.vida > 0 && !e.muerto && Math.abs(u.x - e.x) < rr + 4 && Math.abs(u.z - e.z) < rr + 4 && dist(u, e) - radio(e) < rr + 1.5);
     const prio = (e) => {const v = victima(e); if (v && v.eq === u.eq) {if (v.k === 'h') return e.k === 'h' ? 1 : 2; if (v.k === 's') return e.k === 's' ? 3 : e.k === 't' ? 4 : 5;} return e.k === 'h' ? 7 : 6;};
     let obj = null, mejor = 9;
     for (const e of cerca) {const p = prio(e); if (p < mejor || (p === mejor && obj && dist(u, e) < dist(u, obj))) {mejor = p; obj = e;}}
@@ -1208,13 +1225,18 @@ function paso(dt) {
   }
   /* separación entre súbditos para que no se monten */
   const ss = S.u.filter((u) => (u.k === 's' || u.k === 'h') && !u.muerto);
-  for (let i = 0; i < ss.length; i++) for (let j = i + 1; j < ss.length; j++) {const a = ss[i], b = ss[j], hh = a.k === 'h' && b.k === 'h'; if (hh && (a.dash || b.dash)) continue; let dx = a.x - b.x, dz = a.z - b.z, d0 = Math.hypot(dx, dz); const m = hh ? CHOQUE_H : 0.9; if (d0 < m) {if (d0 < 0.001) {dx = a.id < b.id ? 1 : -1; dz = 0; d0 = 1;} const p = (m - d0) / 2; if (a.k === 's' || hh) {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's' || hh) {b.x -= dx / d0 * p; b.z -= dz / d0 * p;} if (hh) {choca(a); choca(b);}}}
+  /* 18/11 (tirones en las peleas): solo se comparan los que están en casillas vecinas de 1,2 m (antes, todos con todos: con 60 personajes, 1.770 parejas en cada paso) */
+  const CEL = new Map(), PARES = [];
+  ss.forEach((q, i) => {q._i = i; const k = (Math.floor(q.x / 1.2) + 512) * 1024 + Math.floor(q.z / 1.2) + 512; let c = CEL.get(k); if (!c) CEL.set(k, c = []); c.push(q);});
+  for (const q of ss) {const cx = Math.floor(q.x / 1.2) + 512, cz = Math.floor(q.z / 1.2) + 512; for (let ox = -1; ox <= 1; ox++) for (let oz = -1; oz <= 1; oz++) {const c = CEL.get((cx + ox) * 1024 + cz + oz); if (c) for (const r of c) if (r._i > q._i) PARES.push(q, r);}}
+  for (let pi = 0; pi < PARES.length; pi += 2) {const a = PARES[pi], b = PARES[pi + 1], hh = a.k === 'h' && b.k === 'h'; if (hh && (a.dash || b.dash)) continue; let dx = a.x - b.x, dz = a.z - b.z; if (dx > 1.2 || dx < -1.2 || dz > 1.2 || dz < -1.2) continue; let d0 = Math.hypot(dx, dz); const m = hh ? CHOQUE_H : 0.9; if (d0 < m) {if (d0 < 0.001) {dx = a.id < b.id ? 1 : -1; dz = 0; d0 = 1;} const p = (m - d0) / 2; if (a.k === 's' || hh) {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's' || hh) {b.x -= dx / d0 * p; b.z -= dz / d0 * p;} if (hh) {choca(a); choca(b);}}}
   /* 17/11 (Henar): los héroes chocan entre sí, como en el Wild Rift (antes se atravesaban); en las cargas y saltos no */
   /* torres */
+  const EN_T = {};
   for (const t of S.u) {
     if (t.k === 't' && t.vida <= 0 && t.respInh && S.t >= t.respInh && S.modo !== '1v1') {t.vida = t.max; t.inhib = true; t.respInh = 0; ev(['aviso', 0, 'La torre de la base de ' + (t.eq ? 'los rojos' : 'los azules') + ' se ha alzado de nuevo (sin disparar)']);}
     if (t.k !== 't' || t.vida <= 0 || t.inhib) continue; t.cd = Math.max(0, t.cd - dt);
-    const en = enemigosDe(t.eq).filter((e) => e.eq !== 2 && e.k !== 't' && e.k !== 'n' && dist(t, e) < 9.5);
+    const en = (EN_T[t.eq] || (EN_T[t.eq] = enemigosDe(t.eq))).filter((e) => e.eq !== 2 && e.k !== 't' && e.k !== 'n' && e.vida > 0 && !e.muerto && dist(t, e) < 9.5);
     /* como en el Wild Rift: la torre sigue con su objetivo hasta que muere o sale; si un héroe enemigo pega a un héroe aliado dentro del alcance, va a por él */
     let obj = en.find((e) => {if (e.k !== 'h' || !(e.atacaT > S.t)) return false; const v = S.porId.get(e.atacaA); return v && v.k === 'h' && v.eq === t.eq && dist(v, t) < 10.5;});
     if (!obj && t.obj) obj = en.find((e) => e.id === t.obj);
@@ -1506,8 +1528,8 @@ const PROY_MODELOS = {};
 /* A-6 (Pack 24 ART, 17/11): proyectiles dibujados vistos desde arriba (ui/ap_pr_*.webp, apuntan a +X con la estela detrás).
    Un plano tumbado y girado para que el dibujo mire a +Z, que es hacia donde se orientan los proyectiles (rotation.y = atan2(dx, dz)).
    [archivo, tamaño en metros] */
-const PROY_AP = {bola: ['bola', 1.9], brasa: ['brasa', 2.4], energia: ['energia', 2.3], bala: ['bala', 2.2], cadena: ['hoz', 2.2]};  /* 17/11: más grandes y por encima de todo (antes los tapaban los personajes) */
-const PROY_CAB = {bola: [0.664, 0.492], brasa: [0.656, 0.5], energia: [0.631, 0.574], bala: [0.818, 0.363], hoz: [0.621, 0.594]};
+const PROY_AP = {rayo: ['rayo', 2], bola: ['bola', 1.9], brasa: ['brasa', 2.4], energia: ['energia', 2.3], bala: ['bala', 2.2], cadena: ['hoz', 2.2]};  /* 17/11: más grandes y por encima de todo (antes los tapaban los personajes) */
+const PROY_CAB = {rayo: [0.76, 0.41], bola: [0.664, 0.492], brasa: [0.656, 0.5], energia: [0.631, 0.574], bala: [0.818, 0.363], hoz: [0.621, 0.594]};
 const PROY_AP_G = {}, GEO_PROY = (() => {const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); g.rotateY(-Math.PI / 2); return g;})();
 let HALO_BOLA = null;
 function bolaGolf() {
@@ -1520,17 +1542,19 @@ function bolaGolf() {
   g.userData.tamFijo = 1;  /* su tamaño ya es el real: no se agranda como los dibujos */
   return g;
 }
+const PROY_TX = {};
+function texProy(f) {return PROY_TX[f] || (PROY_TX[f] = cargaTex('../batalla/ui/ap_pr_' + f + '.webp'));}
 function proyAP(n, D = 0.7) {
   const k = n + '|' + D.toFixed(2);
   if (n === 'bola') {if (!PROY_AP_G[k]) {PROY_AP_G[k] = bolaGolf(); const h = PROY_AP_G[k].children[1]; h.scale.setScalar(D); PROY_AP_G[k].children[0].scale.setScalar(Math.min(1, D / 1.2));} return PROY_AP_G[k].clone(true);}
   {const f = PROY_AP[n][0], cab = PROY_CAB[f];
-   if (cab) {if (!PROY_AP_G[k]) {const S = D / cab[1], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false}));
+   if (cab) {if (!PROY_AP_G[k]) {const S = D / cab[1], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: texProy(f), transparent: true, depthWrite: false, depthTest: false}));
      m.scale.setScalar(S); m.position.z = -(cab[0] - 0.5) * S; m.renderOrder = 6; g.add(m); g.userData.tamFijo = 1; PROY_AP_G[k] = g;} return PROY_AP_G[k].clone(true);}}
-  if (!PROY_AP_G[n]) {const [f, tam] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false})); m.scale.setScalar(tam); m.renderOrder = 6; g.add(m); PROY_AP_G[n] = g;}
+  if (!PROY_AP_G[n]) {const [f, tam] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: texProy(f), transparent: true, depthWrite: false, depthTest: false})); m.scale.setScalar(tam); m.renderOrder = 6; g.add(m); PROY_AP_G[n] = g;}
   return PROY_AP_G[n].clone(true);
 }
 /* golpe al llegar, propio de cada proyectil (Pack 25 ART) */
-const IMPACTO_AP = {bola: 'ap_hobbit_impacto', brasa: 'ap_gandalf_impacto', bala: 'ap_elfo_impacto', energia: 'ap_orco_tajo'};
+const IMPACTO_AP = {rayo: 'ap_visor_impacto', bola: 'ap_hobbit_impacto', brasa: 'ap_gandalf_impacto', bala: 'ap_elfo_impacto', energia: 'ap_orco_tajo'};
 /* ráfagas: varios proyectiles a la vez (cubo de bolas, balas de cobertura…), con bote opcional; solo dibujo, el daño lo pone la simulación */
 const RAFAGAS = []; window._rafagas = RAFAGAS;
 function rafaga({n = 1, x, z, ang, abre = 0, dist, varia = 0.25, cada = 0, y = 1.1, salta = 0, kind = 'bola', vel = 24, fin}) {
@@ -1548,11 +1572,15 @@ function rimHeroe(o, color) {
   o.raiz.traverse((m) => {if (!m.isMesh || !m.material) return; const mats = Array.isArray(m.material) ? m.material : [m.material];
     const nuevos = mats.map((mt) => {const n = mt.clone(); n.userData.rim = {value: c}; n.userData.rimF = {value: color === '#ff3048' ? 2.4 : 1.35}; n.userData.op = mt.opacity;
       n.onBeforeCompile = (sh) => {sh.uniforms.uRim = n.userData.rim; sh.uniforms.uRimF = n.userData.rimF;
-        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRim; uniform float uRimF;').replace('#include <dithering_fragment>', '#include <dithering_fragment>\n#ifdef USE_RIM_A6\n#endif\n{float fr=1.-abs(dot(normalize(normal),normalize(vViewPosition)));gl_FragColor.rgb+=uRim*pow(fr,uRimF>2.?1.6:2.)*uRimF;}');};
-      n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (n.emissive) o.matsPropios.push(n); return n;});
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRim; uniform float uRimF;').replace('#include <dithering_fragment>', '#include <dithering_fragment>\n#ifdef USE_RIM_A6\n#endif\n{float fr=1.-abs(dot(normalize(normal),normalize(vViewPosition)));fr=0.;{float l=dot(gl_FragColor.rgb,vec3(.299,.587,.114));gl_FragColor.rgb=max(mix(vec3(l),gl_FragColor.rgb,1.3)*1.04,0.);}}');};
+      n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (mt.name === 'luz') {(o.luzMats = o.luzMats || []).push(n); n.userData.e0 = n.emissiveIntensity;} else if (n.emissive) o.matsPropios.push(n); return n;});
     m.material = Array.isArray(m.material) ? nuevos : nuevos[0];});
 }
 function animaRim() {
+  const tl = performance.now() / 1000;
+  for (const [id, o] of VIS) {if (!o.luzMats) continue; const vv = VISTA.get(id), esD = vv && vv.tipo === 'enano'; const k = 1.9 + 0.7 * Math.sin(tl * 2.2) + 0.25 * Math.sin(tl * 5.3); for (const m of o.luzMats) {if (!m.userData.cLuz) {m.userData.cLuz = true; m.emissive.set('#7fd4ff');} m.emissiveIntensity = (m.userData.e0 || 1) * k;}
+    if (!esD) continue; if (!o.tonoLuz) {o.tonoLuz = true; for (const m of o.matsPropios || []) m.emissive.setRGB(0.004, 0.01, 0.024);}
+    for (const m of o.matsPropios || []) if (!m.userData.brillando && m.emissive.b < 0.05) m.emissive.setRGB(0.004, 0.01, 0.024);}
   for (const [id, o] of VIS) {if (!o.rimMats) continue; const v = VISTA.get(id); if (!v) continue;
     const esc = v.eq === MI_EQ && HIERBAS.length && enHierba({x: v.xi ?? v.x, z: v.zi ?? v.z}) >= 0, op = esc ? 0.5 : 1;
     if (o.rimOp !== op) {o.rimOp = op; for (const m of o.rimMats) {m.transparent = op < 1 || m.userData.op < 1; m.opacity = op < 1 ? op : m.userData.op; m.depthWrite = op >= 1;}}}
@@ -1619,10 +1647,10 @@ let tiemblaCam = 0;
 /* ---------- habilidades: cada una con su animación y su efecto (lo que en el LoL hace que «se note») ---------- */
 const HAB_ANIM = {rohan: {q: 'atacar_3', w: 'celebrar', e: 'giro', r: 'golpe_cargado'}, enano: {q: 'giro', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'},
   elfo: {q: 'atacar_2', w: 'celebrar', e: 'esquivar', r: 'golpe_cargado'}, hobbit: {q: 'atacar_2', w: 'esquivar', e: 'atacar_3', r: 'celebrar'},
-  gandalf: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'golpe_cargado'}, orco: {q: 'atacar_3', w: 'atacar_2', e: 'atacar', r: 'golpe_cargado'}, gollum: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'esquivar'}};
+  gandalf: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'golpe_cargado'}, orco: {q: 'atacar_3', w: 'atacar_2', e: 'atacar', r: 'golpe_cargado'}, gollum: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'esquivar'}, visor: {q: 'atacar', w: 'atacar_2', e: 'atacar_2', r: 'canalizar'}};
 const AURA_COL = {escudo: '#6fc8ff', reduce: '#c9b48a', rafaga: '#7dff6a', suerte: '#ffd24a'};
 /* golpe básico que alterna dos movimientos, como en el Wild Rift (el enano: tajo por arriba y tajo de lado; antes el suyo apenas se veía) */
-const BASICOS = {rohan: ['atacar', 'atacar_2'], enano: ['atacar_2', 'atacar_3'], elfo: ['atacar'], hobbit: ['atacar', 'atacar_2'], gandalf: ['atacar', 'atacar_2'], orco: ['atacar', 'atacar_2'], gollum: ['atacar', 'atacar_2']};
+const BASICOS = {visor: ['atacar', 'atacar_2'], rohan: ['atacar', 'atacar_2'], enano: ['atacar_2', 'atacar_3'], elfo: ['atacar'], hobbit: ['atacar', 'atacar_2'], gandalf: ['atacar', 'atacar_2'], orco: ['atacar', 'atacar_2'], gollum: ['atacar', 'atacar_2']};
 function animaClip(o, nombre, vel = 1) {
   const a = o.todos && o.todos[nombre]; if (!a) return 0;
   a.setLoop(THREE.LoopOnce, 1); a.clampWhenFinished = true; a.timeScale = vel; a.reset().play();
@@ -1701,10 +1729,27 @@ function habVisual(e) {
   fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2);
 }
 /* A-6: lo propio de cada héroe, encima de lo común de La Brecha */
+const RAYO_V = {tex: null};
+function rayoVisor(x, z, dx, dz, L, W, dur, y = 1.9) {
+  if (!RAYO_V.tex) {RAYO_V.tex = cargaTex('../batalla/fx/ap_visor_rayo.webp'); RAYO_V.tex.wrapS = THREE.RepeatWrapping;}
+  const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setX(i, uv.getX(i) * L / 6);
+  const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: RAYO_V.tex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, color: '#bffaff'}));
+  m.scale.set(L, 1, W); m.rotation.y = Math.atan2(dx, dz) - Math.PI / 2; m.position.set(x + dx * L / 2, y, z + dz * L / 2); m.renderOrder = 7; scene.add(m);
+  const t0 = performance.now(), paso = () => {const t = (performance.now() - t0) / 1000 / dur; if (t >= 1) {scene.remove(m); g.dispose(); m.material.dispose(); return;}
+    m.material.opacity = t < 0.12 ? t / 0.12 : Math.min(1, (1 - t) / 0.35); m.scale.z = W * (0.85 + 0.25 * Math.abs(Math.sin(t * 37))); RAYO_V.tex.offset.x -= 0.04; requestAnimationFrame(paso);};
+  requestAnimationFrame(paso); flip('ap_visor_impacto', x + dx * L, z + dz * L, W * 1.6, false, undefined, y);
+}
 function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
+  if (v.tipo === 'visor') {
+    suena('ap_laser', k === 'r' ? 0.8 : 0.5, x, z);
+    if (k === 'q' || k === 'w') flip('ap_visor_impacto', x + dx * 1.1, z + dz * 1.1, k === 'q' ? 1.5 : 1.2, false, undefined, 1.9);
+    if (k === 'e') {flip('ap_visor_abanico', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, H.alc * 1.2, true, rot + Math.PI); temb(0.1);}
+    if (k === 'r') {flip('ap_visor_carga', x, z, 3.4, true); luego2(300, () => {const p = o.raiz.position; rayoVisor(p.x + dx * 0.8, p.z + dz * 0.8, dx, dz, H.alc, H.ancho * 2.4, 1.0); temb(0.35);});}
+    return;
+  }
   const t = v.tipo, rs = rot - Math.PI / 2, lejos = () => {const d0 = Math.min(H.alc || 0, Math.hypot(px - x, pz - z)); return [x + dx * d0, z + dz * d0];};
   if (o.estelaTiro) o.estelaTiro.fx = {gandalf: 'fuego', orco: 'impacto', gollum: 'humo'}[t];
-  {const sn = {gandalf: 'ap_llama', orco: 'ap_energia', enano: 'ap_luz', elfo: 'ap_fusil', hobbit: 'ap_golf', rohan: 'ap_arena'}[t]; if (sn) suena(sn, k === 'r' ? 0.8 : 0.55, x, z);}
+  {const sn = {gollum: 'ap_cadena', gandalf: 'ap_llama', orco: 'ap_energia', enano: 'ap_luz', elfo: 'ap_fusil', hobbit: 'ap_golf', rohan: 'ap_arena'}[t]; if (sn) suena(sn, k === 'r' ? 0.8 : 0.55, x, z);}
   if (t === 'hobbit') {
     if (k === 'q') {flip('ondaC', x + dx * 1.2, z + dz * 1.2, 2.4, true); temb(0.12);}  /* el drive: golpe seco y la bola sale disparada (tiro) */
     if (k === 'e') {rafaga({n: 11, x: x + dx * 0.6, z: z + dz * 0.6, ang: rot, abre: H.ang * 1.15, dist: H.alc, cada: 30, y: 1.0, salta: 1.4, kind: 'bola', vel: 13}); suena('arco', 0.6, x, z); luego2(140, () => suena('arco', 0.45, x, z));}
@@ -1852,8 +1897,17 @@ function animaHabilidades(dt) {
   }
 }
 const TAJO_B = {enano: 'ap_enano_tajo', orco: 'ap_orco_tajo', gollum: 'ap_gollum_tajo', rohan: 'ap_rohan_tajo'};
+function brazosVisor(o) {
+  const a = o.clips && o.clips.correr; if (!a || !a.isRunning() || a.getEffectiveWeight() < 0.3) return;
+  if (!o.huesosB) {o.huesosB = {}; o.raiz.traverse((m) => {if (m.isBone && /^(upperarm|lowerarm)[lr]$/.test(m.name)) o.huesosB[m.name] = m;});}
+  const B = o.huesosB, f = (a.time / a.getClip().duration) * Math.PI * 2, w = a.getEffectiveWeight(), s = Math.sin(f) * 0.75 * w;
+  if (B.upperarml) B.upperarml.rotateX(s); if (B.upperarmr) B.upperarmr.rotateX(-s);
+  if (B.lowerarml) B.lowerarml.rotateX(-0.5 * w); if (B.lowerarmr) B.lowerarmr.rotateX(-0.5 * w);
+}
 function basicoFx(v, o, n, rot) {
   if (!v || !o || v.k !== 'h') return; const H = HEROES[v.tipo]; if (!H) return;
+  if (H.proy && PROY_AP[H.proy]) {const x0 = v.xi ?? v.x, z0 = v.zi ?? v.z; let hay = false; for (const [, u] of VISTA) {if (u.eq === v.eq || u.k === 'p' || u.vida <= 0 || (u.k === 'h' && (u.muerto >= 0 || u.escondido))) continue; if (Math.hypot((u.xi ?? u.x) - x0, (u.zi ?? u.z) - z0) < H.alcance + 1.6) {hay = true; break;}}
+    if (!hay) {const r0 = rot ?? o.rv ?? 0; setTimeout(() => {const p = o.raiz.position; rafaga({n: 1, x: p.x + Math.sin(r0) * 0.6, z: p.z + Math.cos(r0) * 0.6, ang: r0, dist: H.alcance, varia: 0, kind: H.proy, vel: 26}); const sn = {bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser', brasa: 'ap_llama'}[H.proy]; if (sn) suena(sn, 0.35, p.x, p.z);}, {hobbit: 270, elfo: 120}[v.tipo] || 90);}}
   const espera = Math.min(150, 120 / Math.max(0.6, H.vatq));
   setTimeout(() => {const p = o.raiz.position, r = rot ?? o.rv ?? 0, dx = Math.sin(r), dz = Math.cos(r), lado = n % 2 ? 1 : -1;
     /* 17/11 (Henar: «los básicos no se ven bien»): además del tajo en el suelo (que el propio héroe tapaba), otro de pie delante, a la altura del pecho, y más grandes */
@@ -1861,6 +1915,7 @@ function basicoFx(v, o, n, rot) {
     else if (TAJO_B[v.tipo]) {const d = Math.min(H.alcance, 2.4) * 0.8; flip(TAJO_B[v.tipo], p.x + dx * d * 0.6, p.z + dz * d * 0.6, 3.4 + H.alcance * 0.7, true, r - Math.PI / 2 + lado * 0.35); flip(TAJO_B[v.tipo], p.x + dx * (d + 0.3), p.z + dz * (d + 0.3), 2.4 + H.alcance * 0.4, false, undefined, 1.15);}
     else if (v.tipo === 'elfo') {flip('ap_elfo_fogonazo', p.x + dx * 1.2, p.z + dz * 1.2, 2.4, false, undefined, 1.25); o.kb = {x: -dx * 0.25, z: -dz * 0.25, t: 0.12, d: 0.12};}
     else if (v.tipo === 'gandalf') {flip('fuego', p.x + dx * 0.9, p.z + dz * 0.9, 1.9, false, undefined, 1.3, 0.35); flip('ap_gandalf_impacto', p.x + dx * 0.9, p.z + dz * 0.9, 1.3, false, undefined, 1.3);}
+    else if (v.tipo === 'visor') flip('ap_visor_impacto', p.x + dx * 0.9, p.z + dz * 0.9, 1, false, undefined, 1.9);
     else if (v.tipo === 'hobbit') {flip('tArco', p.x + dx * 0.8, p.z + dz * 0.8, 2.8, true, r - Math.PI / 4); flip('ap_hobbit_impacto', p.x + dx * 0.9, p.z + dz * 0.9, 1.2, false, undefined, 0.6);}
   }, espera);
 }
@@ -1872,7 +1927,7 @@ function golpeVisual(id, de, fuerte) {
     if (f) o.kb = {x: dx / l * f, z: dz / l * f, t: 0.17, d: 0.17}; const oa = VIS.get(de); if (oa && va.k === 'h' && !(HEROES[va.tipo] || {}).proy) oa.kb = {x: dx / l * 0.22, z: dz / l * 0.22, t: 0.12, d: 0.12};}}
   const yoPego = de === YO, meDan = id === YO;
   const ahora = performance.now(); /* como mucho una chispa cada 0,18 s por personaje: en una pelea grande eran decenas a la vez */
-  if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; {const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);} {const va2 = VISTA.get(de), deSold = va2 && va2.k === 's'; if (!deSold || meDan) suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ? 0.15 : yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}}
+  if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; {const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);} {const va2 = VISTA.get(de), deSold = va2 && va2.k === 's'; if (!deSold || meDan) suena(fuerte ? 'espada' : deSold ? 'simp' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ? 0.15 : yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}}
   if (meDan) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.35 : 0.18);
   else if (yoPego && (fuerte || v.k === 'h')) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.22 : 0.1);
   if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140); dirDolor(de);}
@@ -1942,7 +1997,7 @@ function dibuja(dt) {
         if (o.clips.correr) o.clips.correr.timeScale = Math.max(0.6, Math.min(1.7, o.vel / (v.k === 'h' ? 4.2 : v.k === 'j' ? 4 : 2.9)));
       }
       /* los que están lejos de la cámara se animan a saltos (ahorra en peleas grandes) */
-      o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0;}
+      o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0; if (v.tipo === 'visor' && v.k === 'h') brazosVisor(o);}
       /* destello blanco y pequeño bote al recibir un golpe */
       const dorado = v.k === "h" && (v.flagsE & 1);
       if (dorado) {for (const m of materiales(o)) {m.m.emissive.setRGB(1, 0.72, 0.15); m.m.emissiveIntensity = 0.75 + 0.2 * Math.sin(performance.now() / 90);} o.doradoOn = true;}
@@ -2024,6 +2079,8 @@ Object.assign(FB, {ap_enano_tajo: ['../batalla/fx/ap_enano_tajo.webp', 4, 4], ap
   ap_rohan_arena: ['../batalla/fx/ap_rohan_arena.webp', 4, 4, 'n'], ap_rohan_tajo: ['../batalla/fx/ap_rohan_tajo.webp', 4, 4]});
 Object.assign(FB_DUR, {ap_enano_tajo: 0.45, ap_enano_estallido: 0.8, ap_gandalf_impacto: 0.6, ap_gandalf_ceniza: 1.5, ap_orco_remolino: 0.7, ap_orco_tajo: 0.45, ap_elfo_fogonazo: 0.22, ap_elfo_impacto: 0.4,
   ap_hobbit_impacto: 0.45, ap_hobbit_hoyo: 1.1, ap_gollum_humo: 1.1, ap_gollum_tajo: 0.45, ap_rohan_arena: 1, ap_rohan_tajo: 0.45});
+Object.assign(FB, {ap_visor_impacto: ['../batalla/fx/ap_visor_impacto.webp', 4, 4], ap_visor_abanico: ['../batalla/fx/ap_visor_abanico.webp', 4, 4], ap_visor_carga: ['../batalla/fx/ap_visor_carga.webp', 4, 4]});
+Object.assign(FB_DUR, {ap_visor_impacto: 0.4, ap_visor_abanico: 0.6, ap_visor_carga: 0.9});
 const fbTex = {};
 for (const n in FB) if (!fbTex[FB[n][0]]) fbTex[FB[n][0]] = cargaTex(FB[n][0]); /* cargadas de antemano: que el primer efecto no salga en blanco */
 /* los efectos de hoja se reciclan: cada uno tiene su copia de la textura (para su fotograma) pero comparte la imagen en la tarjeta gráfica.
@@ -2082,8 +2139,8 @@ function vozDeTexto(txt, mio) {
    Mezcla: efectos, voz y música van a buses separados → compresor (que las peleas no saturen) → altavoz.
    Los efectos suenan según dónde pasan: más flojos lejos de la cámara y a izquierda/derecha según la pantalla.
    Se precargan al primer toque (antes el primer golpe de cada tipo no sonaba). Música con <audio> por WebAudio (en iPhone el volumen de <audio> no se puede tocar). */
-const SON_LISTA = {ap_llama: 'ap_llama', ap_energia: 'espada_corte', ap_luz: 'espada_corte', ap_fusil: 'ap_fusil', ap_golf: 'ap_golf', ap_arena: 'ap_arena', golpe: 'golpe_carne', golpeH: 'espada_armadura', espada: 'espada_corte', arco: 'rafaga_viento', clavada: 'flecha_clavada', muerte: 'muerte_orco', nivel: 'subir_nivel', moneda: 'recoger_moneda', cuerno: 'cuerno_lejano', explosion: 'explosion_piedras', fuego: 'explosion_fuego', viento: 'rafaga_viento', magia: 'rayo_magico', derrumbe: 'derrumbe_muro', grito: 'grito_guerra_orco', aullido: 'aullido_huargo', madera: 'madera_rota', cofre: 'abrir_cofre', gema: 'recoger_gema'};
-const SON_N = {muerte: 6};
+const SON_LISTA = {ap_laser: 'ap_laser', ap_cadena: 'ap_cadena', teleport: 'teleport', sdisp: 'soldado_disparo', simp: 'soldado_impacto', ap_llama: 'ap_llama', ap_energia: 'espada_corte', ap_luz: 'espada_corte', ap_fusil: 'ap_fusil', ap_golf: 'ap_golf', ap_arena: 'ap_arena', golpe: 'golpe_carne', golpeH: 'espada_armadura', espada: 'espada_corte', arco: 'rafaga_viento', clavada: 'flecha_clavada', muerte: 'muerte_orco', nivel: 'subir_nivel', moneda: 'recoger_moneda', cuerno: 'cuerno_lejano', explosion: 'explosion_piedras', fuego: 'explosion_fuego', viento: 'rafaga_viento', magia: 'rayo_magico', derrumbe: 'derrumbe_muro', grito: 'grito_guerra_orco', aullido: 'aullido_huargo', madera: 'madera_rota', cofre: 'abrir_cofre', gema: 'recoger_gema'};
+const SON_N = {arco: 1, ap_energia: 1, ap_luz: 1, muerte: 2, golpe: 1, golpeH: 1, espada: 1, gema: 1, ap_laser: 1, ap_cadena: 1, teleport: 1, sdisp: 1, simp: 1, moneda: 1, cuerno: 1, explosion: 1, derrumbe: 1, viento: 1, nivel: 1};
 const AUD = {fx: null, voz: null, mus: null, musOn: localStorage.getItem('auto.mus') !== '0', fxOn: localStorage.getItem('auto.fx') !== '0', pista: null, el: {}, vivos: 0};
 function audio() {
   if (AC) {if (AC.state === 'suspended') AC.resume(); return AC;}
@@ -2099,12 +2156,17 @@ function audio() {
 function cargaSon(f) {if (SON[f]) return; SON[f] = 'cargando'; fetch(f).then((r) => r.arrayBuffer()).then((b) => new Promise((ok, ko) => AC.decodeAudioData(b, ok, ko))).then((buf) => {SON[f] = buf;}).catch(() => {SON[f] = null;});}
 /* el primer toque de la pantalla desbloquea el sonido (los móviles no dejan sonar nada antes) */
 addEventListener('pointerdown', () => {audio(); if (!AUD.pista) musica(ESTADO === 'juego' ? 'batalla' : ESTADO === 'fin' ? AUD.pista : 'menu');}, {capture: true});
+function SON_OCULTO(x, z) {
+  /* un héroe enemigo que la niebla esconde: si el sonido sale de donde está él, no se oye */
+  for (const [id, v] of VISTA) {if (v.k !== 'h' || v.eq === MI_EQ) continue; const o = VIS.get(id); if (!o || !o.raiz || o.raiz.visible) continue; if (Math.hypot((v.xi ?? v.x) - x, (v.zi ?? v.z) - z) < 1.6) return true;}
+  return false;
+}
 function suena(n, vol = 0.5, x, z) {
   const lista = SON_LISTA[n]; if (!lista || !AUD.fxOn) return;
   const ahora = performance.now(); if (ahora - (SON_T[n] || 0) < 60) return; SON_T[n] = ahora;
   if (!audio()) return;
   let pan = 0;
-  if (x !== undefined) {const d = Math.hypot(x - camM.x, z - camM.z); vol *= d < 12 ? 1 : Math.max(0, 1 - (d - 12) / 26); if (vol < 0.03) return; _p.set(x, 0.5, z).project(camera); pan = Math.max(-0.8, Math.min(0.8, _p.x * 0.7));}
+  if (x !== undefined) {_p.set(x, 0.5, z).project(camera); if (Math.abs(_p.x) > 1.12 || Math.abs(_p.y) > 1.15 || _p.z > 1) return; if (typeof SON_OCULTO === 'function' && SON_OCULTO(x, z)) return; const d = Math.hypot(x - camM.x, z - camM.z); vol *= d < 12 ? 1 : Math.max(0, 1 - (d - 12) / 26); if (vol < 0.03) return; _p.set(x, 0.5, z).project(camera); pan = Math.max(-0.8, Math.min(0.8, _p.x * 0.7));}
   if (AUD.vivos > 14) return; /* tope de sonidos a la vez */
   const f = '../batalla/sonidos_ap/fx/' + lista + '_' + (1 + Math.floor(Math.random() * (SON_N[n] || 3))) + '.mp3';
   if (!(SON[f] instanceof AudioBuffer)) {cargaSon(f); return;}
@@ -2128,7 +2190,7 @@ function musica(k) {
   for (const n of Object.keys(PISTAS)) {
     const on = quiero.includes(n); if (!on && !AUD.el[n]) continue;
     const p = pistaEl(n); p.g.gain.cancelScheduledValues(t); p.g.gain.setValueAtTime(p.g.gain.value, t); p.g.gain.linearRampToValueAtTime(on ? PISTAS[n][1] : 0, t + (on ? 1.5 : 1.2));
-    if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; p.el.play().catch(() => {});}}
+    if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; else if ((n === 'menu' || n === 'batalla') && p.el.currentTime < 2.4) p.el.currentTime = 2.4; if ((n === 'menu' || n === 'batalla') && !p.el._bucle) {p.el._bucle = 1; p.el.addEventListener('timeupdate', () => {if (p.el.duration && p.el.currentTime > p.el.duration - 6) p.el.currentTime = 2.4;});} p.el.play().catch(() => {});}}
     else setTimeout(() => {if (AUD.pista && !(AUD.pista === 'batalla' ? ['batalla', 'amb'] : [AUD.pista]).includes(n)) p.el.pause();}, 1400);
   }
 }
@@ -2173,7 +2235,7 @@ function efectoLocal(e) {
       if (!HALO_T) {HALO_T = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({color: '#ff9a3a', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false}));}
       scene.remove(o); const sp = plasmaSprite(); sp.scale.setScalar(3); pr.o = new THREE.Group(); pr.o.add(sp); scene.add(pr.o); pr.sp = sp; const ob = VISTA.get(e[4]); pr.torre = 1; pr.y0 = e[7] || 5; pr.d0 = ob ? Math.hypot((ob.xi ?? ob.x) - e[2], (ob.zi ?? ob.z) - e[3]) : 10; pr.est = 0;
       flip('chispa', e[2], e[3], 2.4, false, undefined, pr.y0, 0.35); suena('fuego', 0.16, e[2], e[3]);
-    } else if ({bala: 1, bola: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]], {bala: 0.35, bola: 0.45}[e[1]]);
+    } else if ({bala: 1, bola: 1, rayo: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]], e[2], e[3]); else if (/flecha/.test(e[1])) suena('sdisp', 0.09, e[2], e[3]);
     FXP.push(pr);}
   if (t === 'tiro') {const o = PROY_AP[e[1]] ? proyAP(e[1], 2 * (e[7] || 0.5)) : modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); {const sh = {bala: 'ap_fusil', bola: 'ap_golf'}[e[1]]; if (sh) suena(sh, 0.5, e[2], e[3]);}}
   if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.userData.tira = 1; a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}
@@ -2407,7 +2469,7 @@ const APUNTABLE = {dash: 1, linea: 1, cono: 1, zona: 1, salto: 1, area: 1, ejecu
 const IND_HEROE = {rohan: 'q e r alcance basico', enano: 'q e r alcance basico', hobbit: 'q e alcance basico', gandalf: 'q e r alcance basico', gollum: 'q e alcance basico', orco: 'q w e r alcance basico', elfo: 'q e r alcance basico'};
 const MIRA_H = {};
 const IND_BANDA = {"ap_ind_elfo_basico": 0.5, "ap_ind_elfo_e": 0.39, "ap_ind_elfo_q": 0.203, "ap_ind_enano_basico": 0.534, "ap_ind_gandalf_basico": 0.431, "ap_ind_gandalf_q": 0.659, "ap_ind_gandalf_r": 0.757, "ap_ind_gollum_basico": 0.469, "ap_ind_gollum_e": 0.673, "ap_ind_hobbit_basico": 0.526, "ap_ind_hobbit_q": 0.777, "ap_ind_orco_basico": 0.526, "ap_ind_orco_e": 0.459, "ap_ind_rohan_basico": 0.435, "ap_ind_rohan_q": 0.828, "ap_ind_rohan_r": 0.652};
-const COLOR_FL = {enano: '#9bdcff', gandalf: '#ff8a3a', orco: '#7dff5a', elfo: '#ff5a4a', hobbit: '#c4ff6a', gollum: '#c88bff', rohan: '#ffcf7a'};
+const COLOR_FL = {visor: '#5ff4ff', enano: '#9bdcff', gandalf: '#ff8a3a', orco: '#7dff5a', elfo: '#ff5a4a', hobbit: '#c4ff6a', gollum: '#c88bff', rohan: '#ffcf7a'};
 const FL = {};
 const radioVis = (q) => q.k === 'h' ? 0.75 : q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.5 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
 function primeroEnLinea(x, z, wx, wz, alc, H, arrastra) {
@@ -2617,16 +2679,42 @@ function empieza(jugadores, modo, simulo) {
   $('pings').classList.toggle('hidden', !(NET.online && modo === '2v2'));
   aviso('¡Al vado! Derriba las torres y el estandarte enemigo'); suena('cuerno', 0.7);
 }
+const PRE_TEX = new WeakSet();
+function subeTex(t) {
+  if (!t || PRE_TEX.has(t)) return; const im = t.image;
+  if (!im || !(im.width || im.videoWidth) || im.complete === false) return; /* aún no ha cargado: se reintenta luego */
+  PRE_TEX.add(t); try {renderer.initTexture(t);} catch (e) {}
+}
+function subeTexturas(raiz) {
+  raiz.traverse((o) => {if (!o.material) return; for (const m of [].concat(o.material)) for (const k of ['map', 'emissiveMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'alphaMap', 'aoMap']) subeTex(m[k]);});
+}
+function precargaGPU() {
+  try {
+    for (const n in M) if (M[n] && M[n].scene) subeTexturas(M[n].scene);
+    for (const n in FB) {const f = FB[n][0]; subeTex(fbTex[f] || (fbTex[f] = cargaTex(f)));}
+    subeTexturas(scene);
+    for (const n in PROY_AP) subeTex(texProy(PROY_AP[n][0]));
+    for (const n of ['ind_area', 'ind_alcance', 'ind_flecha', 'ind_cono', 'ap_objetivo']) subeTex(IND[n] || (IND[n] = cargaTex('../batalla/ui/' + (IND_AP[n] || n) + '.webp')));
+    for (const n in IND) subeTex(IND[n]);
+  } catch (e) {}
+}
 function pantallaVS(jugadores, modo) {
+  try {luces();} catch (e) {}
+  precargaGPU(); for (const ms of [800, 2000, 4000, 8000]) setTimeout(precargaGPU, ms);
   /* calentar: durante el VS se dibuja una vez cada efecto bajo el suelo, así la textura sube y el sombreador se compila antes de la primera pelea */
   try {for (const n in FB) {flip(n, 0, 0, 0.01, false, 0, -40, 0.3); flip(n, 0, 0, 0.01, true, 0, -40, 0.3);}} catch (e) {}
   try {for (const n in PROY_AP) {const o = proyAP(n); o.position.set(0, -40, 0); scene.add(o); setTimeout(() => scene.remove(o), 1500);}} catch (e) {}
   /* y se compilan ya los sombreadores de todos los personajes, bestias y marcas del suelo (antes se compilaban en la primera pelea: tirón) */
   try {
     const tmp = [], mods = new Set([...Object.values(HEROES).map((h) => h.modelo), ...MODELO_SUBD.flatMap((q) => Object.values(q)), ...Object.values(NEUTRO).map((q) => q.modelo)]);
-    for (const n of mods) if (M[n]) {const o = montar(n, 1); o.raiz.position.set(0, -60, 0); scene.add(o.raiz); tmp.push(o.raiz);}
+    const modH = new Set(Object.values(HEROES).map((h) => h.modelo)); for (const n of mods) if (M[n]) {const o = montar(n, 1); o.raiz.position.set(0, -60, 0); if (modH.has(n)) {try {rimHeroe(o, '#ffffff');} catch (e) {}} scene.add(o.raiz); tmp.push(o.raiz);}
     for (const n of ['ind_area', 'ind_alcance', 'ind_flecha', 'ind_cono']) {const q = indicador(n, '#ffffff'); q.visible = true; q.position.y = -60; tmp.push(q);}
+    for (const n of ['flecha_orca', 'flecha_elfica', 'piedra', 'flecha_clavada']) {try {const q = modeloProy(n); if (q) {q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);}} catch (e) {}}
+    if (M.brasero) {const q = M.brasero.scene.clone(true); q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);} /* las balizas */
+    try {for (const tp of ['baya', 'flor', 'seta']) {const q = plantaA6({tipo: tp, x: 0, z: 0}); if (q) {(q.isObject3D ? q : q.g || q.raiz) && ((q.isObject3D ? q : q.g || q.raiz).position.y = -60); const oq = q.isObject3D ? q : q.g || q.raiz; if (oq) {if (!oq.parent) scene.add(oq); tmp.push(oq); subeTexturas(oq);}}}} catch (e) {}
     renderer.compile(scene, camera);
+    /* y la variante transparente de los héroes (dentro de la hierba) */
+    try {const vuelve = []; for (const o of tmp) o.traverse((q) => {if (q.isMesh && q.material && q.material.customProgramCacheKey && q.material.customProgramCacheKey() === 'rimA6' && !q.material.transparent) {q.material.transparent = true; vuelve.push(q.material);}}); if (vuelve.length) {renderer.compile(scene, camera); vuelve.forEach((m) => {m.transparent = false;});}} catch (e) {}
     setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400); /* sin dispose: si se tirara el material, el sombreador compilado se borraría y volvería el tirón */
   } catch (e) {}
   const plazas = modo === '2v2' ? 4 : 2, el = $('vs'), lado = (eq) => {let h = ''; for (let s = eq; s < plazas; s += 2) {const j = jugadores.find((q) => q.slot === s), tipo = j ? j.heroe : Object.keys(HEROES)[(s * 5 + 1) % 7]; h += '<div class="vsH"><img class="spl" src="ui/ap_splash_' + tipo + '.webp" alt=""><b>' + (j ? j.nombre : 'Máquina') + '</b><span>' + HEROES[tipo].nombre + '</span></div>';} return h;};
@@ -2764,6 +2852,7 @@ function hud() {
   for (const [k, cd] of [['d', v.cdD], ['f', v.cdF]]) {const c = $('b' + k.toUpperCase()).querySelector('.cd'); c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? Math.ceil(cd) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / HECHIZOS[k === 'f' && v.hf === 'c' ? 'c' : k].cd * 100) + '%' : '0%');}
   /* volver a la fuente: el botón se va llenando */
   $('bBase').style.setProperty('--p', volverBase > 0 ? (1 - volverBase / VOLVER_T) * 100 + '%' : '0%'); $('bBase').classList.toggle('cargando', volverBase > 0);
+  if (volverBase > 0 && !(window._tpB > 0)) suena('teleport', 0.55); window._tpB = volverBase;
   const cn = $('canal'); cn.classList.toggle('hidden', !(volverBase > 0)); if (volverBase > 0) pon_(cn, 'innerHTML', 'Volviendo a la base… <b>' + Math.ceil(volverBase) + '</b><i style="width:' + (1 - volverBase / VOLVER_T) * 100 + '%"></i>');
   if (!circVuelta) {circVuelta = fbObjeto('base', false); circVuelta.center.set(0.5, FB_ANCLA.base); circVuelta.renderOrder = 2; scene.add(circVuelta);}
   circVuelta.visible = volverBase > 0; if (circVuelta.visible) {const f = Math.floor(performance.now() / 70) % 16; circVuelta.material.map.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4); circVuelta.position.set(v.xi ?? v.x, 0, v.zi ?? v.z); circVuelta.scale.setScalar(4.2);}
@@ -3001,7 +3090,7 @@ function sueltaApaisado() {try {if (screen.orientation && screen.orientation.unl
 
 /* ---------- menú y sala ---------- */
 let hechElegido = localStorage.getItem('auto.hech') || 'f', heroeElegido = localStorage.getItem('auto.heroe') || 'rohan', modoElegido = localStorage.getItem('auto.modo') || '1v1';
-const ROL_H = {rohan: 'Asesino', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Tirador', gandalf: 'Mago', orco: 'Luchador', gollum: 'Asesino'};
+const ROL_H = {visor: 'Mago', rohan: 'Asesino', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Tirador', gandalf: 'Mago', orco: 'Luchador', gollum: 'Asesino'};
 let eligeSel = null, rivalElegido = localStorage.getItem('auto.rival') || '';
 function eligeHeroe(titulo, listo, conRival) {
   /* 17/11: una sola pantalla sin scroll: retrato a la izquierda; a la derecha héroes en fila, barras, iconos P/Q/W/E/R

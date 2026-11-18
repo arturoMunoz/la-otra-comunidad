@@ -195,6 +195,15 @@ Diseño (original, sin marcas): tanque enorme con armadura completa de placas gr
 Técnico: 6.000-9.000 triángulos, una textura de 1024 (atlas) + material emisivo SOLO en las juntas de luz (en un material aparte llamado «luz» para poder encenderlo por código), altura 2,0 m de pies a cabeza en «quieto» (sin la espada levantada por encima de la cabeza en ese clip), pies en y=0, mirando a +Z. Entrega `ap_dalinar.glb` y una captura de frente y de lado junto al modelo antiguo para comparar tamaños. Licencias CC0 en un txt.
 ```
 
+### Pack Autopista 31 WORK · versión 2 (18/11, con el retrato nuevo; adjuntar Pack31_dalinar.zip)
+
+```
+WORK · Pack Autopista 31 · Rehacer el modelo 3D del héroe «Dalinar, Caballero de Luz» de A-6 (juego móvil tipo Wild Rift visto desde arriba, en una autopista española; estilo serio con toque cyberpunk). Te adjunto `ap_brask.glb` (el modelo actual) y `dalinar_retrato.png` (su retrato oficial: el modelo tiene que parecerse a ESE retrato). Problemas del actual: está hecho sobre el cuerpo del ENANO de KayKit (cabeza enorme, piernas cortas, rechoncho), la armadura es un bloque liso y la espada sale de lado.
+Hazlo sobre un cuerpo de HUMANO ADULTO alto y fuerte (base KayKit Adventurers «Knight» o «Barbarian», CC0) con EXACTAMENTE el mismo esqueleto y los mismos nombres de hueso que `ap_brask.glb` y los MISMOS clips con los mismos nombres (30 fps): atacar, atacar_2, atacar_3, golpe_cargado, giro, quieto, quieto_2, celebrar, morir, morir_2, esquivar, recibir_golpe, aturdido, correr, andar.
+Diseño, como el retrato: hombre de unos 55 años, pelo gris muy corto, mandíbula cuadrada, cara curtida con cicatriz; ARMADURA COMPLETA de placas gruesas gris pizarra casi negra, con piezas separadas que se lean desde arriba: hombreras grandes en capas, peto con tres gemas romboidales azules, brazales, guanteletes, faldón de placas y grebas; por las juntas y grietas de la armadura sale luz AZUL-BLANCA; capa azul marino hasta las corvas. ESPADÓN de dos manos casi de su altura, hoja ancha y recta con un canal de luz azul y una gema en la guarda; en «quieto» lo sujeta delante apoyado en el suelo, en «correr» y «andar» cogido con las dos manos hacia delante (nunca cruzado de lado), y en los golpes barre por delante del cuerpo.
+Técnico: 7.000-10.000 triángulos, una textura de 1024 (atlas) + un material aparte llamado «luz» SOLO para las juntas, las gemas y el canal de la espada (para encenderlo por código), altura 2,0 m de pies a cabeza en «quieto», pies en y=0, mirando a +Z. Entrega `ap_dalinar.glb`, capturas de frente, de lado y desde arriba en diagonal (como se verá en el juego) junto al modelo antiguo, y las licencias CC0 en un txt.
+```
+
 ## 17/11 · Pack Autopista 32 ART — marcas de apuntar EN PIEZAS (blancas, se tiñen por código)
 
 ```
@@ -377,6 +386,75 @@ WORK · Pack Autopista 46 · Modelos 3D (.glb) de los objetos que se recogen en 
 4. `ap_botiquin.glb` — BOTIQUÍN grande de emergencias (el del puente del Duelo): maletín de 0,6 x 0,45 x 0,25 m sobre un pequeño pedestal de hormigón, cruz verde que brilla (material «luz»).
 
 Entrega los 4 .glb en un zip con una captura de cada uno y las licencias CC0 en un txt. Nada de animaciones (las haremos por código: girar el plato, botar la tapa, latir la luz).
+```
+
+## 18/11 · Pack Autopista 47 WORK — héroe mágico nuevo «el Visor» (rayos de los ojos; adjuntar Pack47_referencia.zip)
+
+```
+WORK · Pack Autopista 47 · Modelo 3D de un HÉROE NUEVO para A-6 (juego móvil tipo Wild Rift visto desde arriba, partidas en una autopista española; estilo de los héroes: cuerpo de humano adulto proporcionado, look actual y serio con toque cyberpunk, nada infantil). Te adjunto `ap_ata.glb`, otro héroe del juego: el nuevo tiene que usar EXACTAMENTE su mismo esqueleto (mismos huesos con los mismos nombres, mismo rig) para que el juego lo mueva igual.
+
+Personaje (ORIGINAL, sin marcas ni parecido con ningún superhéroe existente): «El Visor», un mago de luz que dispara RAYOS DE ENERGÍA POR LOS OJOS. Hombre de unos 30 años, delgado y atlético, pelo castaño corto despeinado. Lleva una VISERA-GAFA de metal grafito que le tapa los ojos de lado a lado, con una ranura horizontal de cristal que brilla en CIAN-turquesa (no rojo). Ropa de calle técnica: chaqueta corta de motorista gris marengo con costuras y protecciones en hombros y codos, pantalón cargo negro, botas de seguridad, guantes sin dedos. Detalles de luz cian en las juntas de la chaqueta y en la visera. Nada de mallas, capas ni logos en el pecho.
+
+Clips (30 fps), los MISMOS nombres que `ap_ata.glb`: quieto, quieto_2, andar, correr, atacar, atacar_2, golpe_cargado, esquivar, recibir_golpe, aturdido, celebrar, morir, morir_2. Pero animados para ESTE personaje: en atacar/atacar_2 se lleva dos dedos a la sien de la visera y echa la cabeza un poco hacia delante como disparando con la mirada (manos libres, sin arma); golpe_cargado = abre los brazos, se inclina hacia atrás y luego echa la cabeza hacia delante con fuerza (para la definitiva, un rayo largo de 1,5 s). Añade UN clip nuevo «canalizar»: de pie, una mano en la visera, la cabeza girando despacio de izquierda a derecha durante 2 s en bucle (para un rayo que barre).
+
+Técnico: 6.000-9.000 triángulos, una textura de 1024 (atlas) + material emisivo SOLO en la ranura de la visera y en las juntas de luz, en un material aparte llamado «luz» para encenderlo por código. Altura 2,0 m de pies a cabeza en «quieto», pies en y=0, mirando a +Z, sin arma. Entrega `ap_visor.glb`, una captura de frente y otra de lado junto a `ap_ata.glb` para comparar tamaños, y las licencias CC0 de lo que uses en un txt.
+```
+
+## 18/11 · Pack Autopista 48 ART — todo el arte del Visor (adjuntar Pack48_referencia.zip; 4 imágenes, una por mensaje)
+
+```
+ART · Pack Autopista 48 · Imagen 1 de 4 · Retrato grande de un héroe nuevo de A-6 (juego móvil tipo Wild Rift ambientado en una autopista española). Te adjunto: `estilo_retrato_ata.png` (retrato de otro héroe: copia SOLO su estilo pictórico, encuadre, luz y acabado) y `visor_modelo_3d.png` (el modelo 3D del héroe nuevo: copia su ropa y su visera).
+Héroe: «El Visor», mago de luz que dispara RAYOS DE ENERGÍA POR LOS OJOS. Personaje ORIGINAL, sin parecido con ningún superhéroe existente, sin logos. Hombre de unos 30 años, delgado y atlético, pelo castaño corto despeinado, mandíbula marcada. VISERA-GAFA de metal grafito que le tapa los ojos de lado a lado con una ranura horizontal de cristal que brilla en CIAN-turquesa intenso. Chaqueta corta de motorista gris marengo con protecciones en hombros y codos y juntas de luz cian, pantalón cargo negro, botas de seguridad, guantes sin dedos. Pose: dos dedos en la sien de la visera, y de la ranura sale un RAYO CIAN ancho y brillante que cruza la imagen en diagonal, iluminando su cara y la niebla. Fondo: autopista de noche con lluvia, farolas, reflejos cian en el asfalto mojado.
+Formato: vertical 768x1024 (proporción 3:4), sin texto, sin marco, el héroe de cuerpo hasta las rodillas y la cara en el tercio de arriba.
+```
+
+```
+ART · Pack Autopista 48 · Imagen 2 de 4 · Hoja de iconos del Visor para A-6 (mismo héroe de la imagen 1: visera con ranura cian, chaqueta de motorista gris). Estilo igual que `estilo_icono.png` que te adjunté: pintado, mucho contraste, fondo oscuro dentro del círculo, colores vivos. Sin texto. Fondo de la hoja MAGENTA liso #FF00FF, imagen de 1536x1024, 8 piezas redondas de igual tamaño (~340 px), separadas y en 2 filas de 4:
+ 1) Retrato redondo: cara y hombros del Visor de frente, la ranura de la visera encendida.
+ 2) Pasiva «Sobrecarga» (cada 4.º golpe es un rayo): la visera con 4 rayitas de carga, la 4.ª llena y chispeando.
+ 3) Q «Impacto óptico» (rayo que empuja): rayo cian corto y grueso golpeando y echando hacia atrás una silueta.
+ 4) W «Rebote» (rayo que salta de un enemigo a otro): rayo cian en zigzag que rebota entre dos puntos.
+ 5) E «Ráfaga» (abanico que frena): abanico de rayos cian en cono saliendo de la visera.
+ 6) R «Mirada total» (rayo enorme que barre): rayo cian gigantesco barriendo en arco con estela, el más espectacular.
+ 7) Botón de ataque básico: la visera vista de frente, grande, con el destello cian saliendo de la ranura.
+ 8) Aro del botón de ataque: aro de metal grafito con juntas de luz CIAN y un rayo que lo recorre por fuera; el centro VACÍO (un círculo liso del 70 % del diámetro, ahí irá el botón 7) y el grosor del aro el 15 % del radio.
+```
+
+```
+ART · Pack Autopista 48 · Imagen 3 de 4 · Efectos de los rayos del Visor para un juego visto desde arriba (vista cenital plana, sin perspectiva). Color CIAN-turquesa con el centro casi blanco, sobre fondo NEGRO puro #000000 (se suman como luz). Sin texto, sin marco. Imagen de 1024x1024 partida en 2 mitades:
+ - Mitad de arriba (1024x512): el CUERPO de un rayo de energía visto desde arriba, horizontal de lado a lado, que se pueda REPETIR en horizontal sin que se note la costura (el borde izquierdo continúa el derecho): núcleo blanco de ~1/4 del alto, halo cian que se difumina hacia arriba y abajo, chispas y ondas eléctricas a lo largo.
+ - Mitad de abajo (1024x512): 2 dibujos de 512x512: a la izquierda el ARRANQUE del rayo (destello redondo que sale de la visera, abierto hacia la derecha); a la derecha el IMPACTO (estallido redondo de energía con salpicadura de chispas).
+```
+
+```
+ART · Pack Autopista 48 · Imagen 4 de 4 · Dos hojas de animación de efectos del Visor (vista cenital plana, juego visto desde arriba), cada una de 4x4 fotogramas de 256x256 que se reproducen de izquierda a derecha y de arriba abajo, sobre fondo NEGRO puro #000000, color CIAN con centro blanco. Sin texto. Imagen de 2048x1024: la hoja A a la izquierda (1024x1024) y la hoja B a la derecha (1024x1024).
+ - Hoja A «Ráfaga en abanico»: un abanico de 5 rayos finos que salen de abajo al centro de cada fotograma y se abren 60° hacia arriba; crecen, brillan y se deshacen en chispas.
+ - Hoja B «Sobrecarga»: anillo de energía alrededor de un personaje (centro del fotograma vacío) que se carga en 4 pasos, chispea y estalla en una onda.
+```
+
+## 18/11 · Pack Autopista 49 ART — fondo propio en el retrato de cada héroe (adjuntar Pack49_retratos.zip; 7 imágenes, una por mensaje, cada una con SU retrato adjunto)
+
+Plantilla (cambiar NOMBRE, ARCHIVO y FONDO en cada mensaje):
+
+```
+ART · Pack Autopista 49 · Retrato de NOMBRE (A-6, juego móvil tipo Wild Rift en una autopista española). Te adjunto su retrato actual ARCHIVO. Quiero EL MISMO personaje, idéntico: misma cara, misma pose, misma ropa, mismo arma, mismo encuadre y mismo estilo pictórico. Cambia SOLO el FONDO y la luz que el fondo echa sobre él, para que cada héroe tenga su propio escenario con su color. Fondo: FONDO. Formato vertical 768x1024, sin texto, sin marco, sin logos.
+```
+
+1. Dalinar · `1_dalinar.png` · un puerto de montaña con la autopista nevada al amanecer, ventisca suave, quitanieves con luces giratorias a lo lejos, todo en BLANCO y AZUL HIELO, la luz de su armadura reflejada en la nieve.
+2. Vael · `2_vael.png` · la autopista en llamas de noche: coches ardiendo, un incendio en las colinas, pavesas y humo, cielo NARANJA y ROJO fuego.
+3. Grub · `3_grub.png` · la boca de un túnel de autopista abandonado, niebla VERDE tóxica saliendo del túnel, luces de emergencia verdes, charcos que reflejan su espada.
+4. Ata · `4_ata.png` · un paso elevado de noche sobre un atasco: cientos de luces de freno ROJAS abajo, lluvia fina, la ciudad al fondo, luz roja de láser en el humo.
+5. Birdie · `5_birdie.png` · un campo de golf pegado a la autopista en un día de sol: césped VERDE brillante, una bandera de hoyo, la autopista y una valla al fondo, cielo azul con nubes.
+6. Fu · `6_fu.png` · una gasolinera abandonada de noche junto a la autopista, letreros de neón MORADO parpadeando, niebla morada a ras de suelo.
+7. Moha · `7_moha.png` · la autopista cruzando el desierto de Tabernas (Almería) en plena tormenta de arena DORADA, sol bajo, dunas y un cartel de salida medio enterrado.
+
+## 18/11 · Pack Autopista 50 WORK — Ata más fiel a su retrato (adjuntar Pack50_ata.zip)
+
+```
+WORK · Pack Autopista 50 · Mejorar el modelo 3D de «Ata, la Francotiradora» de A-6 (juego móvil tipo Wild Rift visto desde arriba, autopista española, estilo serio con toque cyberpunk). Te adjunto `ap_ata.glb` (el modelo actual, con las animaciones del rifle a dos manos que hiciste en el Pack 41) y `ata_retrato.png` (su retrato oficial: el modelo tiene que parecerse a ESE retrato). Problema: dentro del juego, vista desde arriba, parece un hombre medio calvo: la trenza se pierde y la cara no se lee como de mujer.
+NO toques el esqueleto ni las animaciones: mismos huesos con los mismos nombres y los MISMOS clips con sus mismos tiempos (andar, atacar, atacar_2, aturdido, celebrar, correr, esquivar, golpe_cargado, morir, morir_2, quieto, quieto_2, recibir_golpe; el disparo sigue a 0,15 s). Solo rehaz la malla y la textura del personaje, bien pesada al mismo esqueleto.
+Como el retrato: mujer de unos 30 años, cara femenina clara (pómulos, labios, cejas finas), PELO OSCURO ABUNDANTE con volumen arriba de la cabeza (que desde arriba se vea pelo, no cráneo) y una TRENZA LARGA y gruesa que le cae por delante del hombro; monóculo-visor naranja en un ojo; chaqueta táctica gris oscura con franjas NARANJA y cuello alto, cinturón con balas y bolsillos, pantalón cargo negro con franjas naranja, guantes sin dedos. Mantén el rifle de francotirador tal cual. Colores con contraste para que se distinga desde arriba (el naranja bien visible en hombros y espalda).
+Técnico: 6.000-9.000 triángulos, una textura de 1024 (atlas), altura 2,0 m en «quieto», pies en y=0, mirando a +Z. Entrega `ap_ata.glb`, capturas de frente, de lado y desde arriba en diagonal (como se verá en el juego) junto al modelo antiguo, y las licencias CC0 en un txt.
 ```
 
 ## Sonidos ElevenLabs (18/11) — ElevenLabs → Sound Effects, 3 versiones de cada uno

@@ -1,0 +1,9 @@
+A-6 · Pack Autopista 50 · Ata, la Francotiradora
+
+La anatomía del personaje se adaptó del modelo femenino de Universal Base Characters, edición Standard, de Quaternius. La malla de origen se distribuye bajo Creative Commons Zero 1.0 Universal (CC0).
+Fuente: https://quaternius.com/packs/universalbasecharacters.html
+Licencia: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+La nueva geometría del cabello, la trenza, la ropa, el equipo personal y las zonas nuevas del atlas se ofrecen bajo CC0 1.0 Universal en la medida en que existan derechos sobre estas aportaciones.
+
+El rifle, su porción del atlas, el esqueleto, los clips y el modelo antiguo mostrado en las comparativas proceden del GLB suministrado por el proyecto A-6. El retrato suministrado se utilizó como referencia visual. Estos materiales conservan sus condiciones de origen.
