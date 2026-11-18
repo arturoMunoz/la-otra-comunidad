@@ -1326,6 +1326,22 @@ function animaPlasma(p, dt) {
 }
 function modeloProy(n) {""")
 
+# ---------- PACK 42 ART (18/11): aro propio del botón de ataque básico para cada héroe (tools/autopista/procesa_pack42.py) ----------
+# cada aro sale recortado con su hueco centrado y midiendo el 50 % del ancho; el dibujo del arma (ap_at_*) ocupa el 90 % del botón
+# de 92 px → aro de 160 px centrado, por encima del botón y sin recibir toques
+html = sub(html, '</head>', """<style>
+#bAt{overflow:visible!important}
+#bAt::after{content:'';position:absolute;left:50%;top:50%;width:160px;height:160px;margin:-80px 0 0 -80px;background:center/100% 100% no-repeat;pointer-events:none;z-index:2;filter:drop-shadow(0 2px 4px #000a)}
+body[data-heroe=enano] #bAt::after{background-image:url(ui/ap_aro_at_enano.webp)}
+body[data-heroe=gandalf] #bAt::after{background-image:url(ui/ap_aro_at_gandalf.webp)}
+body[data-heroe=orco] #bAt::after{background-image:url(ui/ap_aro_at_orco.webp)}
+body[data-heroe=elfo] #bAt::after{background-image:url(ui/ap_aro_at_elfo.webp)}
+body[data-heroe=hobbit] #bAt::after{background-image:url(ui/ap_aro_at_hobbit.webp)}
+body[data-heroe=gollum] #bAt::after{background-image:url(ui/ap_aro_at_gollum.webp)}
+body[data-heroe=rohan] #bAt::after{background-image:url(ui/ap_aro_at_rohan.webp)}
+#bAtT,#bAtS{z-index:3!important}
+</style></head>""", donde='html')
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

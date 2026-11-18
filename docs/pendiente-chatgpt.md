@@ -87,5 +87,5 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [ ] 18/11 · Pack Autopista 39 WORK — matorrales para esconderse (adelfas y carrizo; adjunto Pack39_referencia.zip)
 - [ ] 18/11 · Pack Autopista 40 ART — disparo de plasma de las torres + impacto
 - [ ] 18/11 · Pack Autopista 41 WORK — rifle de Ata a dos manos y swing de golf de Birdie (adjunto Pack41_modelos.zip)
-- [ ] 18/11 · Pack Autopista 42 ART — aro del botón de ataque básico, uno por héroe
+- [x] ~~18/11 · Pack Autopista 42 ART — aro del botón de ataque básico, uno por héroe~~ metido 18/11
 - [ ] 18/11 · Pack Autopista 40 ART imagen 2 — impacto del plasma (la 1 ya está metida)

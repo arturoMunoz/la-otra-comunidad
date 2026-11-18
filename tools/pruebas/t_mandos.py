@@ -18,7 +18,7 @@ async def main():
             await pg.evaluate("() => {const V = window._vado; for (let i = 0; i < 20; i++) V.paso(1/30);}")
         await pg.wait_for_timeout(2500)
         await pg.evaluate("() => {for (const k of ['bQ','bW','bR']) {const b = document.getElementById(k); b.classList.add('pronta'); b.classList.remove('sinAprender','bloq');}}")
-        await pg.screenshot(path='/home/claude/pruebas/mandos.png', clip={'x': 450, 'y': 60, 'width': 330, 'height': 300})
+        await pg.screenshot(path='/home/claude/pruebas/mandos_'+sys.argv[1]+'.png')
         print(await pg.evaluate("() => ['bQ','bW','bE','bR'].map(k => {const r = document.getElementById(k).getBoundingClientRect(); return k + ' ' + Math.round(r.left) + ',' + Math.round(r.top) + ' ' + Math.round(r.width)}).join(' | ')"))
         await b.close()
 asyncio.run(main())
