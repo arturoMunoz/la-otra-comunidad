@@ -966,7 +966,11 @@ function paso(dt) {
       if (f) obj = aTiro(f) ? f : null;
       else if (h.modoAt === 't') obj = masCercano(h, en.filter((e) => e.k === 't' || e.k === 'n'), r);
       else if (h.modoAt === 's') obj = en.filter((e) => (e.k === 's' || e.k === 'j') && aTiro(e)).sort((a, b) => a.vida - b.vida)[0] || null;
-      else obj = hh.length && (h.prioHeroe !== false) ? hh.sort((a, b) => a.vida - b.vida)[0] : masCercano(h, en.filter((e) => e.k !== 'j' || e.agro === h.id || !h.bot || h.ataca), r);
+      /* 18/11 (Henar: «el orden de prioridad del básico es raro»), como el Wild Rift: 1) héroe enemigo a tiro (el más cercano; los bots,
+         el de menos vida), 2) soldado o bestia a tiro, el más cercano, 3) y solo si no hay nada más, torre o núcleo. Antes una torre cercana
+         podía ganar a los soldados que tenías delante. */
+      else if (hh.length && h.prioHeroe !== false) obj = h.bot ? hh.sort((a, b) => a.vida - b.vida)[0] : hh.sort((a, b) => dist(h, a) - dist(h, b))[0];
+      else obj = masCercano(h, en.filter((e) => e.k === 's' || (e.k === 'j' && (e.agro === h.id || !h.bot || h.ataca))), r) || masCercano(h, en.filter((e) => e.k === 't' || e.k === 'n'), r);
       if (obj) {h.cd.a = 1 / st.vatq; h.rot = Math.atan2(obj.x - h.x, obj.z - h.z); if (h.buf.invis) h.buf.invis = 0; h.revela = S.t + 1.2; golpea(h, obj); h.tap = 0;}
       /* pedido de Arturo: cada toque del ataque da un golpe SIEMPRE, aunque te muevas y no haya nadie (golpe al aire) */
       else if (!h.bot && (h.tap > S.t || !h.mueve)) {h.cd.a = 1 / st.vatq; h.ac++; h.tap = 0;}
@@ -2109,7 +2113,7 @@ function acercaAtaque(px, pz) {
     if (q.k === 'h' ? q.muerto >= 0 || q.escondido : q.k === 's' || q.k === 'j' ? q.muerto === 0 : false) continue;
     const r = q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.5 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
     const d = Math.hypot(q.x - px, q.z - pz) - r; if (d <= alc) {enAlcance = true; break;}
-    const peso = d + (!modo && (q.k === 't' || q.k === 'n') ? 3 : 0); if (d < alc + (modo ? 9 : 5) && peso < md) {md = peso; mejor = q;}
+    const peso = d + (!modo && (q.k === 't' || q.k === 'n') ? 3 : 0) - (!modo && q.k === 'h' ? 2 : 0); /* sin nadie a tiro, va antes a por el héroe */ if (d < alc + (modo ? 9 : 5) && peso < md) {md = peso; mejor = q;}
   }
   if (enAlcance || !mejor) return null;
   return {x: mejor.x - px, z: mejor.z - pz};

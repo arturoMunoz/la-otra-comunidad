@@ -1001,21 +1001,25 @@ html = sub(html, '</head>', """<style>
 # baliza en fila a la izquierda de la Q. Medidas = centro de cada botón contado desde la esquina de #mandos (que no recibe toques;
 # solo sus botones). Los aros visibles salen un 11 % por fuera del botón: los centros están separados para que no se toquen.
 MANDO_POS = {  # id: (centro desde la derecha, centro desde abajo, tamaño)
-    'bAt': (66, 62, 92), 'bQ': (179, 78, 62), 'bW': (142, 147, 62), 'bE': (70, 176, 62), 'bR': (186, 230, 66),
-    'mq': (204, 103, 30), 'mw': (167, 172, 30), 'me': (95, 201, 30), 'mr': (213, 257, 30),
-    'bAtT': (26, 131, 36), 'bAtS': (137, 29, 36),
-    'bF': (252, 34, 46), 'bD': (306, 34, 46), 'bAlm': (262, 100, 44), 'bEnc': (316, 100, 44),
+    # 18/11 (Henar: «como en los juegos oficiales; el básico cuesta apuntarlo hacia el sureste porque se acaba la pantalla»):
+    # como el Wild Rift, el ataque ya no va en la esquina: su centro a 104/92 px del borde, con 62 px libres a la derecha y 50 abajo
+    # para arrastrar hacia cualquier lado. Habilidades de 60 px en arco a ~100 px del centro del ataque (Q a la izquierda, W a 135°,
+    # E encima) y la R más afuera (a 112° y 160 px). Torre arriba a la derecha del ataque y soldados abajo a la izquierda.
+    'bAt': (104, 92, 84), 'bQ': (206, 74, 60), 'bW': (175, 163, 60), 'bE': (104, 196, 60), 'bR': (174, 240, 64),
+    'mq': (231, 99, 30), 'mw': (200, 188, 30), 'me': (129, 221, 30), 'mr': (201, 265, 30),
+    'bAtT': (52, 152, 34), 'bAtS': (160, 30, 32),
+    'bF': (276, 34, 46), 'bD': (330, 34, 46), 'bAlm': (288, 104, 44), 'bEnc': (342, 104, 44),
 }
-_css = ['#mandos{right:calc(8px + var(--sar)) !important;bottom:calc(6px + var(--sab)) !important;width:340px !important;height:300px !important;pointer-events:none}',
+_css = ['#mandos{right:calc(8px + var(--sar)) !important;bottom:calc(6px + var(--sab)) !important;width:380px !important;height:320px !important;pointer-events:none}',
         '#mandos > *{pointer-events:auto}']
 for k, (cx, cy, t) in MANDO_POS.items():
     _css.append(f'body #mandos #{k}{{position:absolute !important;left:auto !important;top:auto !important;right:{cx - t / 2:g}px !important;bottom:{cy - t / 2:g}px !important;width:{t}px !important;height:{t}px !important;margin:0 !important;transform:none !important}}')
 _css += [
     'body #mandos .mas{background-size:100% 100% !important;z-index:4}',
     # BASE a la izquierda de los hechizos, con su letrero encima (abajo no cabe)
-    'body #bBase{right:calc(8px + 337px + var(--sar)) !important;bottom:calc(6px + 11px + var(--sab)) !important;width:46px !important;height:46px !important}',
+    'body #bBase{right:calc(8px + 361px + var(--sar)) !important;bottom:calc(6px + 11px + var(--sab)) !important;width:46px !important;height:46px !important}',
     'body #bBase span{bottom:auto !important;top:-13px !important}',
-    'body #mandos #retratos{right:250px !important;bottom:150px !important}',
+    'body #mandos #retratos{right:262px !important;bottom:160px !important}',
 ]
 html = sub(html, '</head>', '<style>\n/* A-6 · MANDOS EN ARCO */\n' + '\n'.join(_css) + '\n</style></head>', donde='html')
 
@@ -1343,7 +1347,7 @@ function modeloProy(n) {""")
 # de 92 px → aro de 160 px centrado, por encima del botón y sin recibir toques
 html = sub(html, '</head>', """<style>
 #bAt{overflow:visible!important}
-#bAt::after{content:'';position:absolute;left:50%;top:50%;width:160px;height:160px;margin:-80px 0 0 -80px;background:center/100% 100% no-repeat;pointer-events:none;z-index:2;filter:drop-shadow(0 2px 4px #000a)}
+#bAt::after{content:'';position:absolute;left:50%;top:50%;width:146px;height:146px;margin:-73px 0 0 -73px;background:center/100% 100% no-repeat;pointer-events:none;z-index:2;filter:drop-shadow(0 2px 4px #000a)}
 body[data-heroe=enano] #bAt::after{background-image:url(ui/ap_aro_at_enano.webp)}
 body[data-heroe=gandalf] #bAt::after{background-image:url(ui/ap_aro_at_gandalf.webp)}
 body[data-heroe=orco] #bAt::after{background-image:url(ui/ap_aro_at_orco.webp)}
@@ -1575,6 +1579,31 @@ js = sub(js, "suena('golpeH', 0.7, v.x, v.z); suena('cuerno', v.id === YO ? 0.5 
          "suena('golpeH', 0.7, v.x, v.z);} else suena('muerte', v.k === 's' ? 0.07 : 0.35, v.x, v.z);}")
 
 js = sub(js, "if (txt) {suena('cuerno', 0.3); vozDeTexto(", "if (txt) {vozDeTexto(")  # los carteles ya los dice el anunciador
+
+# ---------- HABILIDADES QUE SE PARAN EN EL PRIMERO: MÁS INTUITIVAS (18/11, Henar) ----------
+# Las de línea sin «perfora» (Drive de Birdie, la bola de Vael, la energía de Grub, la cadena de Fu) se paran en lo primero que tocan,
+# pero la flecha llegaba hasta el final aunque hubiera un soldado delante. Ahora, al apuntar:
+# (1) la flecha se corta en lo primero que vas a tocar y ese enemigo sale marcado con un aro rojo: sabes a quién le vas a dar;
+# (2) un poco de imán: si al arrastrar pasas a menos de 0,9 m (más su ancho) de un héroe enemigo, la flecha se clava en él.
+js = sub(js, "  else {if (propia) propia.visible = false; flechaAP(t, x, z, wx, wz, alc, H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2);}",
+         """  else {if (propia) propia.visible = false; let lar = alc;
+    if (H.tipo === 'linea') {const pr = primeroEnLinea(x, z, wx, wz, alc, H, dx !== null); if (pr.iman) {wx = pr.wx; wz = pr.wz;} if (pr.q && !H.perfora) lar = Math.max(1.2, pr.t + 0.4); marcaBloqueo(H.perfora ? null : pr.q);}
+    flechaAP(t, x, z, wx, wz, lar, H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2);}""")
+js = sub(js, "function flechaAP(tipo, x, z, wx, wz, alc, W) {", """const radioVis = (q) => q.k === 'h' ? 0.75 : q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.5 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
+function primeroEnLinea(x, z, wx, wz, alc, H, arrastra) {
+  const r = {iman: false, wx, wz, q: null, t: 0}, vivos = [...VISTA.values()].filter((q) => q.eq !== MI_EQ && q.vida > 0 && q.k !== 'n' && q.k !== 't' && !(q.k === 'h' && (q.muerto >= 0 || q.escondido)) && !((q.k === 's' || q.k === 'j') && q.muerto === 0));
+  if (arrastra) {let mejor = null, ma = 0.2; for (const q of vivos) {if (q.k !== 'h') continue; const qx = (q.xi ?? q.x) - x, qz = (q.zi ?? q.z) - z, d = Math.hypot(qx, qz); if (d < 0.5 || d > alc + 0.5) continue; const t0 = qx * wx + qz * wz, per = Math.abs(qx * wz - qz * wx); if (t0 <= 0 || per > H.ancho + radioVis(q) + 0.9) continue; const a = Math.acos(Math.min(1, t0 / d)); if (a < ma) {ma = a; mejor = {qx, qz, d};}}
+    if (mejor) {r.iman = true; r.wx = wx = mejor.qx / mejor.d; r.wz = wz = mejor.qz / mejor.d;}}
+  for (const q of vivos) {const qx = (q.xi ?? q.x) - x, qz = (q.zi ?? q.z) - z, t0 = qx * wx + qz * wz; if (t0 < -0.5 || t0 > alc + radioVis(q)) continue; if (Math.abs(qx * wz - qz * wx) < H.ancho + radioVis(q) && (!r.q || t0 < r.t)) {r.q = q; r.t = Math.max(0, t0);}}
+  return r;
+}
+function marcaBloqueo(q) {
+  if (!MIRA_H.bloqueo) {const a = aro('#ff3a3a', 1); a.material.opacity = 0.9; a.renderOrder = 7; scene.add(a); MIRA_H.bloqueo = a;}
+  const a = MIRA_H.bloqueo; a.visible = !!q; if (q) {a.position.set(q.xi ?? q.x, 0.14, q.zi ?? q.z); a.scale.setScalar(radioVis(q) * 1.5 * (1 + 0.08 * Math.sin(performance.now() / 90)));}
+}
+function flechaAP(tipo, x, z, wx, wz, alc, W) {""")
+
+js = sub(js, "const k = W / 82.5, kh = W / 155, ks = W / 100, finCuerpo", "const k = W / 82.5, kh = Math.min(W / 155, alc / 360), ks = W / 100, finCuerpo")  # flecha cortada (se para en el primero): la punta se encoge para no salir por detrás
 
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')

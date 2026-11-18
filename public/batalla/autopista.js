@@ -1119,7 +1119,11 @@ function paso(dt) {
       if (f) obj = aTiro(f) ? f : null;
       else if (h.modoAt === 't') obj = masCercano(h, en.filter((e) => e.k === 't' || e.k === 'n'), r);
       else if (h.modoAt === 's') obj = en.filter((e) => (e.k === 's' || e.k === 'j') && aTiro(e)).sort((a, b) => a.vida - b.vida)[0] || null;
-      else obj = hh.length && (h.prioHeroe !== false) ? hh.sort((a, b) => a.vida - b.vida)[0] : masCercano(h, en.filter((e) => e.k !== 'j' || e.agro === h.id || !h.bot || h.ataca), r);
+      /* 18/11 (Henar: «el orden de prioridad del básico es raro»), como el Wild Rift: 1) héroe enemigo a tiro (el más cercano; los bots,
+         el de menos vida), 2) soldado o bestia a tiro, el más cercano, 3) y solo si no hay nada más, torre o núcleo. Antes una torre cercana
+         podía ganar a los soldados que tenías delante. */
+      else if (hh.length && h.prioHeroe !== false) obj = h.bot ? hh.sort((a, b) => a.vida - b.vida)[0] : hh.sort((a, b) => dist(h, a) - dist(h, b))[0];
+      else obj = masCercano(h, en.filter((e) => e.k === 's' || (e.k === 'j' && (e.agro === h.id || !h.bot || h.ataca))), r) || masCercano(h, en.filter((e) => e.k === 't' || e.k === 'n'), r);
       if (obj) {h.cd.a = 1 / st.vatq; h.rot = Math.atan2(obj.x - h.x, obj.z - h.z); if (h.buf.invis) h.buf.invis = 0; h.revela = S.t + 1.2; golpea(h, obj); h.tap = 0; h.paraT = S.t + Math.min(0.3, 0.3 / st.vatq); h.mueve = false;}
       /* pedido de Arturo: cada toque del ataque da un golpe SIEMPRE, aunque te muevas y no haya nadie (golpe al aire) */
       else if (!h.bot && (h.tap > S.t || !h.mueve)) {h.cd.a = 1 / st.vatq; h.ac++; h.tap = 0;}
@@ -2381,6 +2385,18 @@ const MIRA_H = {};
 const IND_BANDA = {"ap_ind_elfo_basico": 0.5, "ap_ind_elfo_e": 0.39, "ap_ind_elfo_q": 0.203, "ap_ind_enano_basico": 0.534, "ap_ind_gandalf_basico": 0.431, "ap_ind_gandalf_q": 0.659, "ap_ind_gandalf_r": 0.757, "ap_ind_gollum_basico": 0.469, "ap_ind_gollum_e": 0.673, "ap_ind_hobbit_basico": 0.526, "ap_ind_hobbit_q": 0.777, "ap_ind_orco_basico": 0.526, "ap_ind_orco_e": 0.459, "ap_ind_rohan_basico": 0.435, "ap_ind_rohan_q": 0.828, "ap_ind_rohan_r": 0.652};
 const COLOR_FL = {enano: '#9bdcff', gandalf: '#ff8a3a', orco: '#7dff5a', elfo: '#ff5a4a', hobbit: '#c4ff6a', gollum: '#c88bff', rohan: '#ffcf7a'};
 const FL = {};
+const radioVis = (q) => q.k === 'h' ? 0.75 : q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.5 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
+function primeroEnLinea(x, z, wx, wz, alc, H, arrastra) {
+  const r = {iman: false, wx, wz, q: null, t: 0}, vivos = [...VISTA.values()].filter((q) => q.eq !== MI_EQ && q.vida > 0 && q.k !== 'n' && q.k !== 't' && !(q.k === 'h' && (q.muerto >= 0 || q.escondido)) && !((q.k === 's' || q.k === 'j') && q.muerto === 0));
+  if (arrastra) {let mejor = null, ma = 0.2; for (const q of vivos) {if (q.k !== 'h') continue; const qx = (q.xi ?? q.x) - x, qz = (q.zi ?? q.z) - z, d = Math.hypot(qx, qz); if (d < 0.5 || d > alc + 0.5) continue; const t0 = qx * wx + qz * wz, per = Math.abs(qx * wz - qz * wx); if (t0 <= 0 || per > H.ancho + radioVis(q) + 0.9) continue; const a = Math.acos(Math.min(1, t0 / d)); if (a < ma) {ma = a; mejor = {qx, qz, d};}}
+    if (mejor) {r.iman = true; r.wx = wx = mejor.qx / mejor.d; r.wz = wz = mejor.qz / mejor.d;}}
+  for (const q of vivos) {const qx = (q.xi ?? q.x) - x, qz = (q.zi ?? q.z) - z, t0 = qx * wx + qz * wz; if (t0 < -0.5 || t0 > alc + radioVis(q)) continue; if (Math.abs(qx * wz - qz * wx) < H.ancho + radioVis(q) && (!r.q || t0 < r.t)) {r.q = q; r.t = Math.max(0, t0);}}
+  return r;
+}
+function marcaBloqueo(q) {
+  if (!MIRA_H.bloqueo) {const a = aro('#ff3a3a', 1); a.material.opacity = 0.9; a.renderOrder = 7; scene.add(a); MIRA_H.bloqueo = a;}
+  const a = MIRA_H.bloqueo; a.visible = !!q; if (q) {a.position.set(q.xi ?? q.x, 0.14, q.zi ?? q.z); a.scale.setScalar(radioVis(q) * 1.5 * (1 + 0.08 * Math.sin(performance.now() / 90)));}
+}
 function flechaAP(tipo, x, z, wx, wz, alc, W) {
   if (!FL.g) {
     FL.g = new THREE.Group(); FL.g.renderOrder = 5;
@@ -2388,7 +2404,7 @@ function flechaAP(tipo, x, z, wx, wz, alc, W) {
     FL.cuerpo = pieza('ap_fl_cuerpo', true); FL.punta = pieza('ap_fl_punta'); FL.inicio = pieza('ap_fl_inicio'); scene.add(FL.g);
   }
   const c = COLOR_FL[tipo] || '#ffffff'; for (const m of [FL.cuerpo, FL.punta, FL.inicio]) m.material.color.set(c).multiplyScalar(2.2);
-  const k = W / 82.5, kh = W / 155, ks = W / 100, finCuerpo = Math.max(0.05, alc - 306 * kh + 2 * kh);
+  const k = W / 82.5, kh = Math.min(W / 155, alc / 360), ks = W / 100, finCuerpo = Math.max(0.05, alc - 306 * kh + 2 * kh);
   FL.punta.scale.set(318 * kh, 1, 320 * kh); FL.punta.position.set(alc - (312 - 159) * kh, 0, 0);
   FL.cuerpo.scale.set(finCuerpo, 1, 103 * k); FL.cuerpo.position.set(finCuerpo / 2, 0, 0); FL.cuerpo.material.map.repeat.x = finCuerpo / (1056 * k); FL.cuerpo.material.map.offset.x = -(performance.now() / 1000) * 0.6 % 1;
   FL.inicio.scale.set(192 * ks, 1, 200 * ks); FL.inicio.position.set((96 - 187) * ks, 0, 0);
@@ -2423,7 +2439,9 @@ function muestraMira(k, dx, dy) {
   {const ra = H.tipo === 'area' ? H.radio : alc, a = marcaH(t, 'alcance', 'area'); if (a) {a.visible = true; a.position.set(x, 0.09, z); a.scale.setScalar(2 * ra);} else {mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * ra * 256 / 235);}}
   if (forma === 'area') {const a = propia || mira.area, r = H.tipo === 'ejecuta' ? H.alc : H.radio, lejos = H.tipo === 'zona' || H.tipo === 'salto'; a.visible = true; a.scale.setScalar(2 * r * (propia ? 1 : 256 / 231)); a.position.set(lejos ? x + wx * alc * k2 : x, 0.11, lejos ? z + wz * alc * k2 : z);}
   else if (forma === 'cono') {if (propia) {const d = H.alc * 1.05; propia.visible = true; propia.scale.set(d * Math.min(1.25, H.ang / (Math.PI / 2) + 0.2), 1, d); propia.position.set(x, 0.11, z); propia.rotation.y = Math.atan2(-wx, -wz);} else {const c = mira.cono, tam = H.alc * 512 / 325; c.visible = true; c.scale.set(tam * Math.min(1.2, H.ang / (Math.PI / 2)), 1, tam); c.position.set(x, 0.11, z); c.rotation.y = Math.atan2(-wx, -wz);}}
-  else {if (propia) propia.visible = false; flechaAP(t, x, z, wx, wz, alc, H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2);}
+  else {if (propia) propia.visible = false; let lar = alc;
+    if (H.tipo === 'linea') {const pr = primeroEnLinea(x, z, wx, wz, alc, H, dx !== null); if (pr.iman) {wx = pr.wx; wz = pr.wz;} if (pr.q && !H.perfora) lar = Math.max(1.2, pr.t + 0.4); marcaBloqueo(H.perfora ? null : pr.q);}
+    flechaAP(t, x, z, wx, wz, lar, H.ancho ? 2 * (H.ancho + 0.75) : H.tipo === 'dash' ? (H.dano ? 3.2 : 0.9) : 1.2);}
   mira.dir = {wx, wz, px: x + wx * alc * k2, pz: z + wz * alc * k2};
 }
 /* 17/11: apuntar el golpe básico como en el LoL: al arrastrar el ataque se ve tu alcance y una flecha hacia donde apuntas (el objetivo sale con el aro blanco) */
@@ -2490,7 +2508,7 @@ function acercaAtaque(px, pz) {
     if (q.k === 'h' ? q.muerto >= 0 || q.escondido : q.k === 's' || q.k === 'j' ? q.muerto === 0 : false) continue;
     const r = q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.5 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
     const d = Math.hypot(q.x - px, q.z - pz) - r; if (d <= alc) {enAlcance = true; break;}
-    const peso = d + (!modo && (q.k === 't' || q.k === 'n') ? 3 : 0); if (d < alc + (modo ? 9 : 5) && peso < md) {md = peso; mejor = q;}
+    const peso = d + (!modo && (q.k === 't' || q.k === 'n') ? 3 : 0) - (!modo && q.k === 'h' ? 2 : 0); /* sin nadie a tiro, va antes a por el héroe */ if (d < alc + (modo ? 9 : 5) && peso < md) {md = peso; mejor = q;}
   }
   if (enAlcance || !mejor) return null;
   return {x: mejor.x - px, z: mejor.z - pz};
