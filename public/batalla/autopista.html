@@ -974,5 +974,10 @@ body[data-heroe=visor] #bAt::after{background-image:url(ui/ap_aro_at_visor.webp)
 .bv.m.e0{opacity:.6}
 .bv.t i{width:66px !important;height:6px !important;border:0 !important;box-shadow:0 0 0 1px #000b !important}
 </style>
+<style>
+/* placas de las torres de camino: la barra partida en 5 con separaciones doradas */
+.bv.t.placas i::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,#0000 0 calc(20% - 2px),#ffd24a calc(20% - 2px) 20%);pointer-events:none}
+.bv.t.placas i{box-shadow:0 0 0 1px #ffd24a99 !important}
+</style>
 </body>
 </html>

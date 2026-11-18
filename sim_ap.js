@@ -194,7 +194,9 @@ const NEUTRO = {
   /* el «Barón» del Vado: un uruk enorme y azulado en el centro; da la Furia del Uruk a todo el equipo */
   uruk: {nombre: 'Nasor', vida: 6500, dano: 130, alcance: 3.2, vatq: 0.5, vel: 3.4, oro: 250, xp: 400, modelo: 'ap_nasor', alto: 4.5, buff: 'uruk', grande: true, jefe: true},
 };
-const BUFF_TXT = {troll: 'Brasa del toro: tus golpes queman y frenan durante 90 s', huorn: 'Turbo del coloso: habilidades un 20 % más rápidas y más regeneración durante 90 s', alfa: 'Aullido del alfa: corres más y te curas deprisa durante 90 s', uruk: 'Furia de Nasor: todo el equipo pega más, se cura más y sus soldados salen más fuertes durante 150 s'};
+for (const k in NEUTRO) {const n = NEUTRO[k]; if (n.jefe || n.draco) {n.oro = Math.round(n.oro * 1.3); continue;} if (n.pasiva) {n.oro = Math.round(n.oro * 1.4); n.xp = Math.round(n.xp * 1.3); continue;}
+  n.vida = Math.round(n.vida * 0.7); n.dano = Math.round(n.dano * 0.65); n.oro = Math.round(n.oro * 1.4); n.xp = Math.round(n.xp * 1.3);}
+const BUFF_TXT = {troll: 'Brasa del toro: tus golpes queman y frenan durante 2 min', huorn: 'Turbo del coloso: habilidades un 20 % más rápidas y más regeneración durante 2 min', alfa: 'Aullido del alfa: corres más y te curas deprisa durante 2 min', uruk: 'Furia de Nasor: todo el equipo pega más, se cura más y sus soldados salen más fuertes durante 3 min'};
 /* red de caminos para los bots: puntos de los dos caminos, cubiles y fuentes; los árboles nunca se ponen encima de estas sendas */
 function haceNav() {
   const nodos = [], aristas = [], idx = new Map(), add = (p, extra) => {nodos.push({x: p.x, z: p.z, ...extra}); return nodos.length - 1;};
@@ -282,7 +284,7 @@ function stats(h) {
   if (h.buf.huorn > 0) {st.regen += 4; st.rmana += 3 + st.mana * 0.01;} /* la Savia es la «azul» del LoL: también da maná */
   if (S && S.santuarios.some((z) => z.eq === h.eq && z.hasta > S.t && Math.hypot(h.x - z.x, h.z - z.z) < z.r)) ve += 0.3;
   if (h.buf.alfa > 0) {ve += 0.15; st.regen += 6;}
-  if (S && be.uruk > S.t) {st.dano *= 1.2; st.regen += 8;}
+  if (S && be.uruk > S.t) {st.dano *= 1.3; if (st.poder) st.poder *= 1.3; st.regen += 12; st.vel *= 1.08;}
   if (h.buf.rafaga > 0) va += 0.6;
   if (h.buf.suerte > 0) {ve += 0.5; st.dano *= 1.35;}
   if (h.buf.invis > 0 && !(h.tipo === 'hobbit' && h.buf.escond > 0)) ve += 0.35;
@@ -320,6 +322,13 @@ function protegida(d) {
   if (S.u.some((s) => s.k === 's' && !s.muerto && s.eq !== d.eq && dist(s, d) < 10)) d.subdT = S.t;
   return S.t - (d.subdT ?? -9) > 3;
 }
+const PLACAS_FIN = 420, PLACA_ORO = 120;
+function placaRota(t) {
+  const cerca = heroes().filter((h) => h.eq !== t.eq && !h.muerto && dist(h, t) < 12);
+  ev(['fx', 'explosion', t.x, t.z, 2.4]);
+  if (!cerca.length) return; const g = Math.round(PLACA_ORO / cerca.length);
+  for (const h of cerca) {h.oro += g; ev(['num', t.x, t.z, '+' + g, 'o', h.id]); ev(['aviso', h.id, 'Placa de torre: +' + g + ' de oro']);}
+}
 function dana(o, d, n, tipo) {
   if (!d || d.vida <= 0 || d.muerto) return;
   if (S.facil && o && o.k === 'h' && o.bot && d.k === 'h') n *= 0.45; /* partida guiada: el héroe de la máquina pega menos de la mitad */
@@ -347,6 +356,7 @@ function dana(o, d, n, tipo) {
   if (d.k === 'j' && o && o.k === 'h') {d.agro = o.id; d.agroT = S.t + 6;}
   if (o) {o.atacaA = d.id; o.atacaT = S.t + 2;}
   d.vida -= n; ev(['num', d.x, d.z, Math.round(n), tipo === 'crit' ? 'c' : '', o ? o.id : 0, d.id]);
+  if (d.k === 't' && d.n === 1 && S.t < PLACAS_FIN) {if (d.placas === undefined) d.placas = 5; while (d.placas > 0 && d.vida > 0 && d.vida <= d.max * (d.placas - 1) / 5) {d.placas--; placaRota(d);}}
   if (d.k === 'h' || (o && o.k === 'h') || (o && o.k === 't')) ev(['g', d.id, o ? o.id : 0, tipo === 'crit' || tipo === 'hab' || tipo === 'mag' || n > 150 ? 1 : 0]);
   if (o && o.k === 'h' && o.vida > 0) {const r = stats(o).robo; if (r) o.vida = Math.min(stats(o).vida, o.vida + n * r);}
   if (d.vida <= 0) muere(d, o);
@@ -361,11 +371,11 @@ function muere(d, o) {
   }
   if (d.k === 'j') {
     d.muerto = true; d.quitar = S.t + 2; ev(['muere', d.id]);
-    const nd = NEUTRO[d.tipo], c = S.campos[d.campo]; c.vivos--; if (c.vivos <= 0) c.resp = S.t + (nd.jefe ? 240 : nd.draco ? 240 : nd.pasiva ? 150 : nd.grande ? 100 : 55);
+    const nd = NEUTRO[d.tipo], c = S.campos[d.campo]; c.vivos--; if (c.vivos <= 0) c.resp = S.t + (nd.jefe ? 240 : nd.draco ? 240 : nd.pasiva ? 150 : nd.grande ? 90 : 45);
     const eq = o && o.k === 'h' ? o.eq : null;
-    if (o && o.k === 'h') {o.oro += nd.oro; o.cs++; ev(['num', d.x, d.z, '+' + nd.oro, 'o', o.id]);}
+    if (o && o.k === 'h') {const stJ = stats(o); o.vida = Math.min(stJ.vida, o.vida + stJ.vida * (nd.grande ? 0.1 : 0.04)); o.mana = Math.min(stJ.mana, o.mana + stJ.mana * 0.05); o.oro += nd.oro; o.cs++; ev(['num', d.x, d.z, '+' + nd.oro, 'o', o.id]);}
     if (eq !== null) for (const h of heroes()) if (h.eq === eq && !h.muerto && (h === o || dist(h, d) < 14)) ganaXp(h, nd.xp);
-    if (nd.buff === 'uruk' && eq !== null) {S.bufEq[eq].uruk = S.t + 150; for (const h of heroes()) if (h.eq === eq) h.oro += 150; ev(['fx', 'onda', d.x, d.z, 9]); ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' derriba a Nasor']); ev(['aviso', 0, BUFF_TXT.uruk]);}
+    if (nd.buff === 'uruk' && eq !== null) {S.bufEq[eq].uruk = S.t + 180; for (const h of heroes()) if (h.eq === eq) h.oro += 150; ev(['fx', 'onda', d.x, d.z, 9]); ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' derriba a Nasor']); ev(['aviso', 0, BUFF_TXT.uruk]);}
     else if (nd.draco && eq !== null) {
       const be = S.bufEq[eq]; be.drF = be.drF || 0; be.drH = be.drH || 0; if (d.elem === 'f') be.drF++; else be.drH++;
       S.dracoSig = S.dracoSig === 'f' ? 'h' : 'f'; ev(['fx', 'onda', d.x, d.z, 9]);
@@ -374,7 +384,7 @@ function muere(d, o) {
       else ev(['aviso', 0, d.elem === 'f' ? 'Aliento de fuego: el equipo pega un 6 % más' : 'Aliento helado: el equipo tiene un 6 % más de vida']);
     }
     else if (nd.pasiva && eq !== null) {S.santuarios.push({x: d.x, z: d.z, r: 7, eq, hasta: S.t + 90}); ev(['aviso', 0, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' caza a la rata: santuario de velocidad y vista en el río']); ev(['fx', 'onda', d.x, d.z, 7]);}
-    else if (nd.buff && o && o.k === 'h') {o.buf[nd.buff] = 90; ev(['fx', 'onda', d.x, d.z, 5]); ev(['aviso', o.id, BUFF_TXT[nd.buff]]);}
+    else if (nd.buff && o && o.k === 'h') {o.buf[nd.buff] = 120; ev(['fx', 'onda', d.x, d.z, 5]); ev(['aviso', o.id, BUFF_TXT[nd.buff]]);}
   }
   if (d.k === 'h') {
     d.muerto = true; d.resp = S.t + Math.min(45, 6 + d.nivel * 2 + Math.floor(S.t / 60) * 0.8); /* como en el LoL: cuanto más avanzada la partida, más cuesta morir */ d.buf = {}; ev(['muere', d.id]); S.muertes[1 - d.eq]++;
@@ -882,7 +892,7 @@ function aplicaMando(h, o) {
 function foto() {
   const u = S.u.map((q) => q.k === 'h'
     ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0) | (q.buf.lento > 0 ? 4 : 0) | (q.quema && q.quema.hasta > S.t ? 8 : 0) | (q.sang && q.sang.hasta > S.t ? 16 : 0) | (q.buf.azogue > 0 || q.buf.alfa > 0 ? 32 : 0) | (q.buf.furiaO > 0 ? 64 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT), Math.round(q.mana), Math.round(stats(q).mana), q.bot ? 0 : (q.tcIn || 0)]
-    : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') : q.k === 'j' ? q.elem || '' : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
+    : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') + (q.k === 't' && q.n === 1 && S.t < PLACAS_FIN && (q.placas ?? 5) > 0 ? 'L' : '') : q.k === 'j' ? q.elem || '' : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
   const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t))), dr = S.bufEq.map((b) => [b.drF || 0, b.drH || 0, b.alma || 0]);
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
   return {t: +S.t.toFixed(2), u, m: S.muertes, be, cp, an: S.modo === '1v1' ? +radioAnillo(S.t).toFixed(1) : 0, rl: S.reliq.map((r) => S.t >= r.listo ? 1 : 0), dr, pl: S.plantas.map((q) => S.t >= q.listo ? 1 : 0), sa: S.santuarios.filter((z) => z.hasta > S.t).map((z) => [+z.x.toFixed(1), +z.z.toFixed(1), z.eq]), al: S.visiones.filter((z) => z.alm && z.hasta > S.t).map((z) => [+z.x.toFixed(1), +z.z.toFixed(1), z.eq, Math.ceil(z.hasta - S.t)]), ev: S.ev.splice(0)};

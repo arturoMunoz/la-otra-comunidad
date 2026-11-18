@@ -1890,6 +1890,56 @@ html = sub(html, '</body>', """<style>
 </style>
 </body>""", donde='html')
 
+# ---------- JUNGLA QUE MERECE LA PENA, PLACAS DE TORRE Y BUFO DE NASOR (18/11, Henar: «rehaz la jungla para que tenga sentido
+# entrar; las torres tienen que tener placas como en el LoL; tiene que darte un bufo el Nasor») — todo dentro de la simulación (sims regenerados) ----------
+# (1) JUNGLA: medido, un campamento daba lo mismo por punto de vida que un soldado pero pegaba fuerte y tardaba ~30-50 s a nivel 1
+#     (sapo 1300, toro 2200 de vida): no compensaba. Ahora, como el LoL con su objeto de jungla: bestias normales con un 30 % menos
+#     de vida y un 35 % menos de daño, +40 % de oro y +30 % de experiencia; cada bestia que matas te cura (4 %, grandes 10 %) y te
+#     devuelve un 5 % de energía; los bufos personales duran 2 min (antes 90 s); los campamentos pequeños vuelven a los 45 s.
+js = sub(js, "\nconst BUFF_TXT = {", """
+for (const k in NEUTRO) {const n = NEUTRO[k]; if (n.jefe || n.draco) {n.oro = Math.round(n.oro * 1.3); continue;} if (n.pasiva) {n.oro = Math.round(n.oro * 1.4); n.xp = Math.round(n.xp * 1.3); continue;}
+  n.vida = Math.round(n.vida * 0.7); n.dano = Math.round(n.dano * 0.65); n.oro = Math.round(n.oro * 1.4); n.xp = Math.round(n.xp * 1.3);}
+const BUFF_TXT = {""")
+js = js.replace("durante 90 s', huorn:", "durante 2 min', huorn:").replace("más regeneración durante 90 s', alfa:", "más regeneración durante 2 min', alfa:").replace("te curas deprisa durante 90 s', uruk:", "te curas deprisa durante 2 min', uruk:")
+js = sub(js, "o.buf[nd.buff] = 90;", "o.buf[nd.buff] = 120;")
+js = sub(js, "if (o && o.k === 'h') {o.oro += nd.oro; o.cs++;", "if (o && o.k === 'h') {const stJ = stats(o); o.vida = Math.min(stJ.vida, o.vida + stJ.vida * (nd.grande ? 0.1 : 0.04)); o.mana = Math.min(stJ.mana, o.mana + stJ.mana * 0.05); o.oro += nd.oro; o.cs++;")
+js = sub(js, "nd.pasiva ? 150 : nd.grande ? 100 : 55);", "nd.pasiva ? 150 : nd.grande ? 90 : 45);")
+# (2) BUFO DE NASOR más fuerte y que se note: 3 min (antes 150 s), +30 % de daño y de poder mágico (antes +20 % solo daño), +12 de
+#     regeneración y +8 % de velocidad; la vuelta a la base se notaba igual. Los soldados siguen saliendo un 50 % más fuertes.
+js = sub(js, "if (S && be.uruk > S.t) {st.dano *= 1.2; st.regen += 8;}", "if (S && be.uruk > S.t) {st.dano *= 1.3; if (st.poder) st.poder *= 1.3; st.regen += 12; st.vel *= 1.08;}")
+js = sub(js, "S.bufEq[eq].uruk = S.t + 150;", "S.bufEq[eq].uruk = S.t + 180;")
+js = js.replace("sus soldados salen más fuertes durante 150 s'", "sus soldados salen más fuertes durante 3 min'")
+# (3) PLACAS (como el LoL): las torres de camino tienen 5 placas = 5 trozos del 20 % de su vida. Cada placa que cae da 120 de oro
+#     repartido entre los héroes enemigos que estén a menos de 12 m (si no hay ninguno, nadie lo cobra). A los 7:00 caen las que queden
+#     (en el LoL a los 14:00 de partidas el doble de largas). La barra de esas torres sale partida en 5.
+js = sub(js, "function dana(o, d, n, tipo) {", """const PLACAS_FIN = 420, PLACA_ORO = 120;
+function placaRota(t) {
+  const cerca = heroes().filter((h) => h.eq !== t.eq && !h.muerto && dist(h, t) < 12);
+  ev(['fx', 'explosion', t.x, t.z, 2.4]);
+  if (!cerca.length) return; const g = Math.round(PLACA_ORO / cerca.length);
+  for (const h of cerca) {h.oro += g; ev(['num', t.x, t.z, '+' + g, 'o', h.id]); ev(['aviso', h.id, 'Placa de torre: +' + g + ' de oro']);}
+}
+function dana(o, d, n, tipo) {""")
+js = sub(js, "  d.vida -= n; ev(['num', d.x, d.z, Math.round(n), tipo === 'crit' ? 'c' : '', o ? o.id : 0, d.id]);",
+"""  d.vida -= n; ev(['num', d.x, d.z, Math.round(n), tipo === 'crit' ? 'c' : '', o ? o.id : 0, d.id]);
+  if (d.k === 't' && d.n === 1 && S.t < PLACAS_FIN) {if (d.placas === undefined) d.placas = 5; while (d.placas > 0 && d.vida > 0 && d.vida <= d.max * (d.placas - 1) / 5) {d.placas--; placaRota(d);}}""")
+js = sub(js, "(q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '')", "(q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') + (q.k === 't' && q.n === 1 && S.t < PLACAS_FIN && (q.placas ?? 5) > 0 ? 'L' : '')")
+js = sub(js, "b.classList.toggle('inh', hk.includes('I'));}}", "b.classList.toggle('inh', hk.includes('I')); b.classList.toggle('placas', hk.includes('L'));}}")
+html = sub(html, '</body>', """<style>
+/* placas de las torres de camino: la barra partida en 5 con separaciones doradas */
+.bv.t.placas i::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,#0000 0 calc(20% - 2px),#ffd24a calc(20% - 2px) 20%);pointer-events:none}
+.bv.t.placas i{box-shadow:0 0 0 1px #ffd24a99 !important}
+</style>
+</body>""", donde='html')
+
+# (4) el bufo de Nasor se VE: el aro bajo los héroes del equipo que lo tiene se vuelve morado, late y crece (como el Barón del LoL)
+js = sub(js, "function animaRim() {\n", """function animaRim() {
+  try {const tN = performance.now() / 1000; for (const [id, o] of VIS) {const v = VISTA.get(id); if (!v || v.k !== 'h' || !o.aro) continue; const m = o.aro.material, on = EXTRA.be && EXTRA.be[v.eq] > 0 && !(v.muerto >= 0);
+    if (!m.userData.c0) m.userData.c0 = m.color.clone(); if (o.aro.userData.s0 === undefined) o.aro.userData.s0 = o.aro.scale.x;
+    if (on) {const k = 0.5 + 0.5 * Math.sin(tN * 4); m.color.set('#b45cff').lerp(m.userData.c0, 0.25 * k); o.aro.scale.setScalar(o.aro.userData.s0 * (1.15 + 0.1 * k)); o.nasor = true;}
+    else if (o.nasor) {m.color.copy(m.userData.c0); o.aro.scale.setScalar(o.aro.userData.s0); o.nasor = false;}}} catch (e) {}
+""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
