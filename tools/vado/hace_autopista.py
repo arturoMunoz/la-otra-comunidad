@@ -1656,7 +1656,7 @@ js = sub(js, "    if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');"
 js = sub(js, "gl_FragColor.rgb+=uRim*pow(fr,uRimF>2.?1.6:2.)*uRimF;", "fr=0.;{float l=dot(gl_FragColor.rgb,vec3(.299,.587,.114));gl_FragColor.rgb=max(mix(vec3(l),gl_FragColor.rgb,1.3)*1.04,0.);}")
 
 # ---------- SONIDOS DE HENAR (18/11, tools/autopista/hace_sonidos3.py): golpes, espadas, clic, muertes, láser del Visor, cadena de Fu, volver a la base y soldados casi mudos ----------
-js = sub(js, "const SON_N = {muerte: 6};", "const SON_N = {muerte: 2, golpe: 1, golpeH: 1, espada: 1, gema: 1, ap_laser: 1, ap_cadena: 1, teleport: 1, sdisp: 1, simp: 1};")
+js = sub(js, "const SON_N = {muerte: 6};", "const SON_N = {muerte: 2, golpe: 1, golpeH: 1, espada: 1, gema: 1, ap_laser: 1, ap_cadena: 1, teleport: 1, sdisp: 1, simp: 1, moneda: 1, cuerno: 1, explosion: 1, derrumbe: 1, viento: 1, nivel: 1};")
 js = sub(js, "const SON_LISTA = {", "const SON_LISTA = {ap_laser: 'ap_laser', ap_cadena: 'ap_cadena', teleport: 'teleport', sdisp: 'soldado_disparo', simp: 'soldado_impacto', ")
 js = sub(js, "suena('ap_energia', k === 'r' ? 0.8 : 0.5, x, z);", "suena('ap_laser', k === 'r' ? 0.8 : 0.5, x, z);")
 js = sub(js, "{const sn = {gandalf: 'ap_llama',", "{const sn = {gollum: 'ap_cadena', gandalf: 'ap_llama',")
