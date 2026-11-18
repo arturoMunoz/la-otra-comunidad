@@ -1863,8 +1863,17 @@ function animaHabilidades(dt) {
   }
 }
 const TAJO_B = {enano: 'ap_enano_tajo', orco: 'ap_orco_tajo', gollum: 'ap_gollum_tajo', rohan: 'ap_rohan_tajo'};
+function brazosVisor(o) {
+  const a = o.clips && o.clips.correr; if (!a || !a.isRunning() || a.getEffectiveWeight() < 0.3) return;
+  if (!o.huesosB) {o.huesosB = {}; o.raiz.traverse((m) => {if (m.isBone && /^(upperarm|lowerarm)[lr]$/.test(m.name)) o.huesosB[m.name] = m;});}
+  const B = o.huesosB, f = (a.time / a.getClip().duration) * Math.PI * 2, w = a.getEffectiveWeight(), s = Math.sin(f) * 0.75 * w;
+  if (B.upperarml) B.upperarml.rotateX(s); if (B.upperarmr) B.upperarmr.rotateX(-s);
+  if (B.lowerarml) B.lowerarml.rotateX(-0.5 * w); if (B.lowerarmr) B.lowerarmr.rotateX(-0.5 * w);
+}
 function basicoFx(v, o, n, rot) {
   if (!v || !o || v.k !== 'h') return; const H = HEROES[v.tipo]; if (!H) return;
+  if (H.proy && PROY_AP[H.proy]) {const x0 = v.xi ?? v.x, z0 = v.zi ?? v.z; let hay = false; for (const [, u] of VISTA) {if (u.eq === v.eq || u.k === 'p' || u.vida <= 0 || (u.k === 'h' && (u.muerto >= 0 || u.escondido))) continue; if (Math.hypot((u.xi ?? u.x) - x0, (u.zi ?? u.z) - z0) < H.alcance + 1.6) {hay = true; break;}}
+    if (!hay) {const r0 = rot ?? o.rv ?? 0; setTimeout(() => {const p = o.raiz.position; rafaga({n: 1, x: p.x + Math.sin(r0) * 0.6, z: p.z + Math.cos(r0) * 0.6, ang: r0, dist: H.alcance, varia: 0, kind: H.proy, vel: 26}); const sn = {bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser', brasa: 'ap_llama'}[H.proy]; if (sn) suena(sn, 0.35, p.x, p.z);}, {hobbit: 270, elfo: 120}[v.tipo] || 90);}}
   const espera = Math.min(150, 120 / Math.max(0.6, H.vatq));
   setTimeout(() => {const p = o.raiz.position, r = rot ?? o.rv ?? 0, dx = Math.sin(r), dz = Math.cos(r), lado = n % 2 ? 1 : -1;
     /* 17/11 (Henar: «los básicos no se ven bien»): además del tajo en el suelo (que el propio héroe tapaba), otro de pie delante, a la altura del pecho, y más grandes */
@@ -1947,7 +1956,7 @@ function dibuja(dt) {
         if (o.clips.correr) o.clips.correr.timeScale = Math.max(0.6, Math.min(1.7, o.vel / (v.k === 'h' ? 4.2 : v.k === 'j' ? 4 : 2.9)));
       }
       /* los que están lejos de la cámara se animan a saltos (ahorra en peleas grandes) */
-      o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0;}
+      o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0; if (v.tipo === 'visor' && v.k === 'h') brazosVisor(o);}
       /* destello blanco y pequeño bote al recibir un golpe */
       const dorado = v.k === "h" && (v.flagsE & 1);
       if (dorado) {for (const m of materiales(o)) {m.m.emissive.setRGB(1, 0.72, 0.15); m.m.emissiveIntensity = 0.75 + 0.2 * Math.sin(performance.now() / 90);} o.doradoOn = true;}
@@ -2106,12 +2115,17 @@ function audio() {
 function cargaSon(f) {if (SON[f]) return; SON[f] = 'cargando'; fetch(f).then((r) => r.arrayBuffer()).then((b) => new Promise((ok, ko) => AC.decodeAudioData(b, ok, ko))).then((buf) => {SON[f] = buf;}).catch(() => {SON[f] = null;});}
 /* el primer toque de la pantalla desbloquea el sonido (los móviles no dejan sonar nada antes) */
 addEventListener('pointerdown', () => {audio(); if (!AUD.pista) musica(ESTADO === 'juego' ? 'batalla' : ESTADO === 'fin' ? AUD.pista : 'menu');}, {capture: true});
+function SON_OCULTO(x, z) {
+  /* un héroe enemigo que la niebla esconde: si el sonido sale de donde está él, no se oye */
+  for (const [id, v] of VISTA) {if (v.k !== 'h' || v.eq === MI_EQ) continue; const o = VIS.get(id); if (!o || !o.raiz || o.raiz.visible) continue; if (Math.hypot((v.xi ?? v.x) - x, (v.zi ?? v.z) - z) < 1.6) return true;}
+  return false;
+}
 function suena(n, vol = 0.5, x, z) {
   const lista = SON_LISTA[n]; if (!lista || !AUD.fxOn) return;
   const ahora = performance.now(); if (ahora - (SON_T[n] || 0) < 60) return; SON_T[n] = ahora;
   if (!audio()) return;
   let pan = 0;
-  if (x !== undefined) {const d = Math.hypot(x - camM.x, z - camM.z); vol *= d < 12 ? 1 : Math.max(0, 1 - (d - 12) / 26); if (vol < 0.03) return; _p.set(x, 0.5, z).project(camera); pan = Math.max(-0.8, Math.min(0.8, _p.x * 0.7));}
+  if (x !== undefined) {_p.set(x, 0.5, z).project(camera); if (Math.abs(_p.x) > 1.12 || Math.abs(_p.y) > 1.15 || _p.z > 1) return; if (typeof SON_OCULTO === 'function' && SON_OCULTO(x, z)) return; const d = Math.hypot(x - camM.x, z - camM.z); vol *= d < 12 ? 1 : Math.max(0, 1 - (d - 12) / 26); if (vol < 0.03) return; _p.set(x, 0.5, z).project(camera); pan = Math.max(-0.8, Math.min(0.8, _p.x * 0.7));}
   if (AUD.vivos > 14) return; /* tope de sonidos a la vez */
   const f = '../batalla/sonidos_ap/fx/' + lista + '_' + (1 + Math.floor(Math.random() * (SON_N[n] || 3))) + '.mp3';
   if (!(SON[f] instanceof AudioBuffer)) {cargaSon(f); return;}
@@ -2180,7 +2194,7 @@ function efectoLocal(e) {
       if (!HALO_T) {HALO_T = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({color: '#ff9a3a', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false}));}
       scene.remove(o); const sp = plasmaSprite(); sp.scale.setScalar(3); pr.o = new THREE.Group(); pr.o.add(sp); scene.add(pr.o); pr.sp = sp; const ob = VISTA.get(e[4]); pr.torre = 1; pr.y0 = e[7] || 5; pr.d0 = ob ? Math.hypot((ob.xi ?? ob.x) - e[2], (ob.zi ?? ob.z) - e[3]) : 10; pr.est = 0;
       flip('chispa', e[2], e[3], 2.4, false, undefined, pr.y0, 0.35); suena('ap_luz', 0.3, e[2], e[3]);
-    } else if ({bala: 1, bola: 1, rayo: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]]); else if (/flecha/.test(e[1])) suena('sdisp', 0.09, e[2], e[3]);
+    } else if ({bala: 1, bola: 1, rayo: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]], e[2], e[3]); else if (/flecha/.test(e[1])) suena('sdisp', 0.09, e[2], e[3]);
     FXP.push(pr);}
   if (t === 'tiro') {const o = PROY_AP[e[1]] ? proyAP(e[1], 2 * (e[7] || 0.5)) : modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); {const sh = {bala: 'ap_fusil', bola: 'ap_golf'}[e[1]]; if (sh) suena(sh, 0.5, e[2], e[3]);}}
   if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.userData.tira = 1; a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}

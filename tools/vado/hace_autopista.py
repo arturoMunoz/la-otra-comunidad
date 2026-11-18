@@ -1684,6 +1684,38 @@ js = sub(js, "function animaRim() {\n", """function animaRim() {
     for (const m of o.matsPropios || []) if (!m.userData.brillando && m.emissive.b < 0.05) m.emissive.setRGB(0.004, 0.01, 0.024);}
 """)
 
+# ---------- SONIDOS SOLO DE LO QUE VES, BÁSICO AL AIRE Y BRAZOS DEL VISOR (18/11, Henar) ----------
+# (1) un sonido con sitio solo suena si ese sitio está en pantalla (con un margen) y, si es de un héroe enemigo escondido por la niebla, no suena;
+#     los disparos de los básicos (fusil, golf, láser) llevaban sonido sin sitio: se oían en todo el mapa
+js = sub(js, "if (x !== undefined) {const d = Math.hypot(x - camM.x, z - camM.z);",
+         "if (x !== undefined) {_p.set(x, 0.5, z).project(camera); if (Math.abs(_p.x) > 1.12 || Math.abs(_p.y) > 1.15 || _p.z > 1) return; if (typeof SON_OCULTO === 'function' && SON_OCULTO(x, z)) return; const d = Math.hypot(x - camM.x, z - camM.z);")
+js = sub(js, "suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]]);",
+         "suena({bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser'}[e[1]], {bala: 0.35, bola: 0.45, rayo: 0.3}[e[1]], e[2], e[3]);")
+js = sub(js, "function suena(n, vol = 0.5, x, z) {", """function SON_OCULTO(x, z) {
+  /* un héroe enemigo que la niebla esconde: si el sonido sale de donde está él, no se oye */
+  for (const [id, v] of VISTA) {if (v.k !== 'h' || v.eq === MI_EQ) continue; const o = VIS.get(id); if (!o || !o.raiz || o.raiz.visible) continue; if (Math.hypot((v.xi ?? v.x) - x, (v.zi ?? v.z) - z) < 1.6) return true;}
+  return false;
+}
+function suena(n, vol = 0.5, x, z) {""")
+# (2) golpe básico al aire de los de lejos: si no hay nadie a tiro, el proyectil sale igual hacia donde mira, con su sonido
+js = sub(js, "function basicoFx(v, o, n, rot) {\n  if (!v || !o || v.k !== 'h') return; const H = HEROES[v.tipo]; if (!H) return;",
+         """function basicoFx(v, o, n, rot) {
+  if (!v || !o || v.k !== 'h') return; const H = HEROES[v.tipo]; if (!H) return;
+  if (H.proy && PROY_AP[H.proy]) {const x0 = v.xi ?? v.x, z0 = v.zi ?? v.z; let hay = false; for (const [, u] of VISTA) {if (u.eq === v.eq || u.k === 'p' || u.vida <= 0 || (u.k === 'h' && (u.muerto >= 0 || u.escondido))) continue; if (Math.hypot((u.xi ?? u.x) - x0, (u.zi ?? u.z) - z0) < H.alcance + 1.6) {hay = true; break;}}
+    if (!hay) {const r0 = rot ?? o.rv ?? 0; setTimeout(() => {const p = o.raiz.position; rafaga({n: 1, x: p.x + Math.sin(r0) * 0.6, z: p.z + Math.cos(r0) * 0.6, ang: r0, dist: H.alcance, varia: 0, kind: H.proy, vel: 26}); const sn = {bala: 'ap_fusil', bola: 'ap_golf', rayo: 'ap_laser', brasa: 'ap_llama'}[H.proy]; if (sn) suena(sn, 0.35, p.x, p.z);}, {hobbit: 270, elfo: 120}[v.tipo] || 90);}}""")
+# (3) el Visor corre con la carrera de Ata (hecha para llevar el rifle): los brazos iban quietos y parecía que se deslizaba.
+#     Después de animar, se le balancean los brazos al ritmo de las piernas
+js = sub(js, "o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0;}",
+         "o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0; if (v.tipo === 'visor' && v.k === 'h') brazosVisor(o);}")
+js = sub(js, "function basicoFx(v, o, n, rot) {", """function brazosVisor(o) {
+  const a = o.clips && o.clips.correr; if (!a || !a.isRunning() || a.getEffectiveWeight() < 0.3) return;
+  if (!o.huesosB) {o.huesosB = {}; o.raiz.traverse((m) => {if (m.isBone && /^(upperarm|lowerarm)[lr]$/.test(m.name)) o.huesosB[m.name] = m;});}
+  const B = o.huesosB, f = (a.time / a.getClip().duration) * Math.PI * 2, w = a.getEffectiveWeight(), s = Math.sin(f) * 0.75 * w;
+  if (B.upperarml) B.upperarml.rotateX(s); if (B.upperarmr) B.upperarmr.rotateX(-s);
+  if (B.lowerarml) B.lowerarml.rotateX(-0.5 * w); if (B.lowerarmr) B.lowerarmr.rotateX(-0.5 * w);
+}
+function basicoFx(v, o, n, rot) {""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
