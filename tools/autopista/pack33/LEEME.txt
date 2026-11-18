@@ -1,0 +1,61 @@
+A-6 · PACK AUTOPISTA 33
+Cuatro jefes originales animados. glTF 2.0 binario autocontenido.
+
+FORMATO
+Unidad: metro. +Y arriba, frente +Z. Base en Y=0 en reposo.
+Un atlas PNG de 1024x1024 integrado por GLB. Sin archivos de textura externos.
+Dos materiales: atlas_superficie y energia (brillo en el lagarto).
+Extensión KHR_materials_emissive_strength. Sin cámaras ni luces en los GLB.
+Esqueletos nuevos adaptados a cada anatomía; las referencias se usaron para
+formato, nombres y escala, no para copiar su rig o sus animaciones.
+
+MEDIDAS DE REPOSO (sin el efecto de aliento)
+ap_nasor.glb: 5900 triángulos; 10 huesos.
+  Caja ancho X / altura Y / largo Z: 3.050 / 4.503 / 4.193 m.
+  Clips: quieto, andar, atacar, pisoton, recibir_golpe, morir, correr.
+ap_lagarto.glb: 6756 triángulos; 15 huesos.
+  Caja ancho X / altura Y / largo Z: 1.700 / 2.100 / 4.985 m.
+  Clips: quieto, andar, atacar, recibir_golpe, morir.
+ap_toro.glb: 4368 triángulos; 14 huesos.
+  Caja ancho X / altura Y / largo Z: 2.255 / 2.862 / 3.981 m.
+  Clips: quieto, andar, atacar, recibir_golpe, morir.
+ap_coloso.glb: 4580 triángulos; 11 huesos.
+  Caja ancho X / altura Y / largo Z: 2.980 / 3.500 / 1.077 m.
+  Clips: quieto, andar, atacar, recibir_golpe, morir.
+
+Toro: cruz aproximadamente 2,60 m; las puntas de los cuernos alcanzan 2,862 m.
+Nasor: la geometría subterránea durante morir es intencionada; el colector queda.
+Las capturas conservan uruk_azul sin reescalarlo: mide 4,40 m en reposo.
+El uruk solo aparece en las imágenes; no se redistribuye su GLB.
+
+ANIMACIÓN / INTEGRACIÓN
+Claves muestreadas a 30 fps; tiempos en segundos como exige glTF.
+quieto, andar y correr (este último solo en Nasor) cierran en bucle.
+En Three.js configura LoopRepeat para esos clips y LoopOnce + clampWhenFinished
+para morir. El formato glTF no impone automáticamente el modo de reproducción.
+Las marchas son in-place: el juego controla la posición del jefe.
+Nasor andar/correr balancean el cuerpo sin desplazamiento horizontal de la raíz.
+pisoton dura 1,50 s. Contacto de la cabeza con el suelo a 0,75 s, con una clave
+adicional exacta entre los fotogramas 22 y 23 y evento informativo en extras.
+El juego debe lanzar el daño/efecto en t=0,75; extras no ejecuta lógica por sí solo.
+El colector permanece rígido al hundirse Nasor.
+El Coloso separa sus grupos de piezas en morir; es una animación, no física.
+El aliento del lagarto es geometría animada que aparece durante atacar.
+
+TINTADO DEL LAGARTO
+El atlas es estrictamente gris: los tres canales RGB coinciden.
+Material separado llamado brillo, compartido por ojos, garganta, lomo y aliento.
+Cambiar material.emissive a naranja o cian y ajustar emissiveIntensity.
+Clonar el material si conviven dos lagartos con colores distintos.
+Ejemplo Three.js: material.emissive.set('#ff7000'); material.emissiveIntensity=2.5;
+Para hielo: material.emissive.set('#00ddff').
+Los emisivos no iluminan otras mallas por sí solos: bloom/iluminación dependen del juego.
+
+COMPROBACIONES
+22 clips; 979 fotogramas evaluados numéricamente.
+Carga de los cuatro GLB en Blender; evaluación de todos los clips a 30 fps;
+comprobación de valores finitos, pesos, índices de huesos, atlas integrados,
+recuentos, cierres de bucle y revisión de capturas de poses.
+COMPROBACION.json y COMPROBACION_BLENDER.json incluyen resultados por clip.
+Las láminas de clips muestran una pose por acción; no son secuencias completas.
+Validado en Blender, no probado dentro de A-6 ni en un dispositivo móvil.

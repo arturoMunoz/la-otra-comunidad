@@ -1,0 +1,16 @@
+PROCEDENCIA · PACK AUTOPISTA 33
+
+Los cuatro modelos, mallas, atlas y animaciones se han creado para este encargo
+mediante modelado procedural. No se han descargado ni incorporado modelos,
+texturas, animaciones o bases de terceros (Quaternius, KayKit, Kenney, etc.).
+No hay atribuciones de recursos externos que deban trasladarse al juego.
+
+Referencias aportadas por el usuario:
+- uruk_azul.glb: formato, nombres de clips y escala; visible en las comparativas.
+- draco.glb: formato de criatura y lista de clips.
+- huorn.glb: formato, escala y lista de clips.
+- ap_super_rojo.glb: referencia visual de estilo.
+Los derechos y licencias de estas referencias siguen siendo los de sus fuentes.
+No se afirma que sean CC0 y no se incluyen sus archivos originales en el ZIP.
+
+No se han utilizado marcas, logotipos ni personajes preexistentes en los nuevos GLB.

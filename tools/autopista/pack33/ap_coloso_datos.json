@@ -1,0 +1,24 @@
+{
+  "name": "ap_coloso",
+  "triangles": 4580,
+  "bones": 11,
+  "bounds": [
+    [
+      -1.49,
+      0.0,
+      -0.4922519540362261
+    ],
+    [
+      1.49,
+      3.5,
+      0.585
+    ]
+  ],
+  "clips": [
+    "quieto",
+    "andar",
+    "atacar",
+    "recibir_golpe",
+    "morir"
+  ]
+}

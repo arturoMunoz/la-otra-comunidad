@@ -24,7 +24,7 @@ const HEROES = {
       w: {n: 'Escudo de brasas', cd: 13, mn: 55, tipo: 'escudo', mag: true, val: 140, dur: 3, aliados: 7, icono: 'h_gandalf_w', d: 'Un escudo de brasas para ti y los aliados a 7 m durante 3 s.'},
       e: {n: 'Círculo de ceniza', cd: 9, mn: 60, tipo: 'zona', mag: true, alc: 10, radio: 3.2, dur: 1.5, dps: 100, lento: 0.45, icono: 'h_gandalf_e', d: 'Ceniza ardiente en el suelo que hiere y frena un 45 % a los que la pisan.'},
       r: {n: 'Llamarada', cd: 45, mn: 100, tipo: 'linea', mag: true, alc: 16, ancho: 1.5, dano: 250, perfora: true, proy: 'brasa', icono: 'h_gandalf_r', d: 'Un gran chorro de fuego que hiere a todos en una línea muy larga.'}}},
-  orco: {nombre: 'Grub, el Maestro', modelo: 'ap_grub', alto: 1.25, ret: 'ui/ap_r_orco.webp', mana: 280, crecM: 28, vida: 730, dano: 63, vatq: 0.84, alcance: 2.7, vel: 5.0, crecV: 88, crecD: 4.4, arm: 34, rm: 30,
+  orco: {nombre: 'Perro asilvestrado', modelo: 'ap_perro', alto: 1.2, ret: 'ui/ap_r_orco.webp', mana: 280, crecM: 28, vida: 730, dano: 63, vatq: 0.84, alcance: 2.7, vel: 5.0, crecV: 88, crecD: 4.4, arm: 34, rm: 30,
     hab: {q: {n: 'Remolino de energía', cd: 8, mn: 30, tipo: 'area', radio: 3.5, dano: 100, curaH: 0.1, icono: 'h_orco_q', d: 'Gira la espada de energía: hiere a los de alrededor y se cura un 10 % de la vida que le falta por cada héroe que toca.'},
       w: {n: 'Tajo pesado', cd: 7, mn: 30, tipo: 'cono', alc: 3.4, ang: 1.2, dano: 90, lento: 0.5, durL: 1.2, icono: 'h_orco_w', d: 'Un tajo delante que frena un 50 % 1,2 s.'},
       e: {n: 'Atracción', cd: 14, mn: 45, tipo: 'linea', alc: 6.5, ancho: 0.9, dano: 60, tira: true, lento: 0.4, durL: 1, proy: 'energia', icono: 'h_orco_e', d: 'Con la fuerza de su mente arrastra hasta él al primero que toca.'},
@@ -110,8 +110,9 @@ function dentroOjo(x, z) {if (!OJO) return Math.abs(x) < MAPA.ancho && Math.abs(
 const ladoDe = (p) => p.x * EJE.x + p.z * EJE.z;        /* < 0 lado de Rohan, > 0 lado de Isengard */
 const TORRE_F = 0.27;                                   /* las torres de camino, al 27 % desde su base */
 const enHierba = (u) => HIERBAS.findIndex((b) => Math.hypot(u.x - b.x, u.z - b.z) < b.r);
+function ponHechC(tipo) {Object.assign(HECHIZOS.c, tipo === 'ojo' ? {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'} : {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_ignicion.webp'});}
 function ponMapa(modo) {
-  const tipo = modo === '2v2' ? 'ojo' : 'linea'; if (tipo === TIPO_MAPA) return false; TIPO_MAPA = tipo;
+  const tipo = modo === '2v2' ? 'ojo' : 'linea'; ponHechC(tipo); if (tipo === TIPO_MAPA) return false; TIPO_MAPA = tipo;
   if (tipo === 'ojo') {
     MAPA = {ancho: 33, largo: 58}; SIM = gira; EJE = {x: 0.423, z: -0.906}; PIT = {x: 0, z: 0};
     const A = [{x: -21, z: 45}, {x: -27, z: 28}, {x: -27, z: 8}, {x: -21, z: -14}, {x: -9, z: -33}, {x: 6, z: -44}, {x: 21, z: -45}];
@@ -174,20 +175,20 @@ function plantaBosque(al, planta, enBase) {
 }
 function lineaLibre(a, b) {const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
 const NEUTRO = {
-  warg: {nombre: 'Huargo', vida: 560, dano: 26, alcance: 1.9, vatq: 0.9, vel: 5, oro: 45, xp: 55, modelo: 'warg', alto: 1.5},
+  warg: {nombre: 'Perro asilvestrado', vida: 560, dano: 26, alcance: 1.9, vatq: 0.9, vel: 5, oro: 45, xp: 55, modelo: 'ap_perro', alto: 1.2},
   orco: {nombre: 'Saqueador orco', vida: 430, dano: 22, alcance: 1.8, vatq: 1, vel: 4.4, oro: 35, xp: 40, modelo: 'orco', alto: 1.75},
-  troll: {nombre: 'Troll de piedra', vida: 2200, dano: 60, alcance: 2.8, vatq: 0.55, vel: 3.6, oro: 120, xp: 200, modelo: 'troll', alto: 3.6, buff: 'troll', grande: true},
+  troll: {nombre: 'Toro negro', vida: 2200, dano: 60, alcance: 2.8, vatq: 0.55, vel: 3.6, oro: 120, xp: 200, modelo: 'ap_toro', alto: 2.86, buff: 'troll', grande: true},
   /* la jungla del LoL a la manera de la Tierra Media (Pack Vado 9): rapaces → crebain, Gromp → sapo, azul → Huorn, dragón → draco, cangrejo → nutria */
-  crebain: {nombre: 'Crebain', vida: 300, dano: 16, alcance: 1.6, vatq: 1.1, vel: 5, oro: 22, xp: 28, modelo: 'crebain', alto: 0.75},
-  sapo: {nombre: 'Sapo de las Ciénagas', vida: 1300, dano: 38, alcance: 2.2, vatq: 0.7, vel: 3.4, oro: 80, xp: 110, modelo: 'sapo', alto: 1.1},
-  huorn: {nombre: 'Huorn', vida: 1900, dano: 46, alcance: 2.8, vatq: 0.6, vel: 3.2, oro: 110, xp: 180, modelo: 'huorn', alto: 3.5, buff: 'huorn', grande: true},
-  draco: {nombre: 'Draco', vida: 4200, dano: 85, alcance: 3.2, vatq: 0.6, vel: 3.6, oro: 150, xp: 260, modelo: 'draco', alto: 2.1, grande: true, draco: true},
-  nutria: {nombre: 'Nutria del Isen', vida: 900, dano: 0, alcance: 0, vatq: 1, vel: 3.2, oro: 70, xp: 90, modelo: 'nutria', alto: 0.55, pasiva: true},
-  alfa: {nombre: 'Huargo alfa', vida: 1800, dano: 50, alcance: 2.2, vatq: 0.8, vel: 5, oro: 110, xp: 180, modelo: 'huargo_alfa', alto: 2.2, buff: 'alfa', grande: true},
+  crebain: {nombre: 'Buitre', vida: 300, dano: 16, alcance: 1.6, vatq: 1.1, vel: 5, oro: 22, xp: 28, modelo: 'ap_buitre', alto: 0.3},
+  sapo: {nombre: 'Jabalí', vida: 1300, dano: 38, alcance: 2.2, vatq: 0.7, vel: 3.4, oro: 80, xp: 110, modelo: 'ap_jabali', alto: 1.4},
+  huorn: {nombre: 'Coloso del desguace', vida: 1900, dano: 46, alcance: 2.8, vatq: 0.6, vel: 3.2, oro: 110, xp: 180, modelo: 'ap_coloso', alto: 3.5, buff: 'huorn', grande: true},
+  draco: {nombre: 'Lagarto de la central', vida: 4200, dano: 85, alcance: 3.2, vatq: 0.6, vel: 3.6, oro: 150, xp: 260, modelo: 'ap_lagarto', alto: 2.1, grande: true, draco: true},
+  nutria: {nombre: 'Rata de alcantarilla', vida: 900, dano: 0, alcance: 0, vatq: 1, vel: 3.2, oro: 70, xp: 90, modelo: 'ap_rata', alto: 0.6, pasiva: true},
+  alfa: {nombre: 'Perro jefe', vida: 1800, dano: 50, alcance: 2.2, vatq: 0.8, vel: 5, oro: 110, xp: 180, modelo: 'ap_perro_jefe', alto: 2.0, buff: 'alfa', grande: true},
   /* el «Barón» del Vado: un uruk enorme y azulado en el centro; da la Furia del Uruk a todo el equipo */
-  uruk: {nombre: 'Uruk Azul', vida: 6500, dano: 130, alcance: 3.2, vatq: 0.5, vel: 3.4, oro: 250, xp: 400, modelo: 'uruk_azul', alto: 4.4, buff: 'uruk', grande: true, jefe: true},
+  uruk: {nombre: 'Nasor', vida: 6500, dano: 130, alcance: 3.2, vatq: 0.5, vel: 3.4, oro: 250, xp: 400, modelo: 'ap_nasor', alto: 4.5, buff: 'uruk', grande: true, jefe: true},
 };
-const BUFF_TXT = {troll: 'Brasa del troll: tus golpes queman y frenan durante 90 s', huorn: 'Savia del Huorn: habilidades un 20 % más rápidas y más regeneración durante 90 s', alfa: 'Aullido del alfa: corres más y te curas deprisa durante 90 s', uruk: 'Furia del Uruk: todo el equipo pega más, se cura más y sus hordas salen más fuertes durante 150 s'};
+const BUFF_TXT = {troll: 'Brasa del toro: tus golpes queman y frenan durante 90 s', huorn: 'Turbo del coloso: habilidades un 20 % más rápidas y más regeneración durante 90 s', alfa: 'Aullido del alfa: corres más y te curas deprisa durante 90 s', uruk: 'Furia de Nasor: todo el equipo pega más, se cura más y sus soldados salen más fuertes durante 150 s'};
 /* red de caminos para los bots: puntos de los dos caminos, cubiles y fuentes; los árboles nunca se ponen encima de estas sendas */
 function haceNav() {
   const nodos = [], aristas = [], idx = new Map(), add = (p, extra) => {nodos.push({x: p.x, z: p.z, ...extra}); return nodos.length - 1;};
@@ -357,15 +358,15 @@ function muere(d, o) {
     const eq = o && o.k === 'h' ? o.eq : null;
     if (o && o.k === 'h') {o.oro += nd.oro; o.cs++; ev(['num', d.x, d.z, '+' + nd.oro, 'o', o.id]);}
     if (eq !== null) for (const h of heroes()) if (h.eq === eq && !h.muerto && (h === o || dist(h, d) < 14)) ganaXp(h, nd.xp);
-    if (nd.buff === 'uruk' && eq !== null) {S.bufEq[eq].uruk = S.t + 150; for (const h of heroes()) if (h.eq === eq) h.oro += 150; ev(['fx', 'onda', d.x, d.z, 9]); ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' derriba al Uruk Azul']); ev(['aviso', 0, BUFF_TXT.uruk]);}
+    if (nd.buff === 'uruk' && eq !== null) {S.bufEq[eq].uruk = S.t + 150; for (const h of heroes()) if (h.eq === eq) h.oro += 150; ev(['fx', 'onda', d.x, d.z, 9]); ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' derriba a Nasor']); ev(['aviso', 0, BUFF_TXT.uruk]);}
     else if (nd.draco && eq !== null) {
       const be = S.bufEq[eq]; be.drF = be.drF || 0; be.drH = be.drH || 0; if (d.elem === 'f') be.drF++; else be.drH++;
       S.dracoSig = S.dracoSig === 'f' ? 'h' : 'f'; ev(['fx', 'onda', d.x, d.z, 9]);
-      ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + (d.elem === 'f' ? ' caza al draco de fuego' : ' caza al draco frío')]);
-      if (be.drF + be.drH >= 3 && !be.alma) {be.alma = 1; ev(['aviso', 0, '🐉 ' + (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' consigue el ALMA DEL DRACO']); for (const q of S.campos) if (NEUTRO[q.tipo].draco) q.resp = 1e9;}
+      ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + (d.elem === 'f' ? ' caza al lagarto de fuego' : ' caza al lagarto de hielo')]);
+      if (be.drF + be.drH >= 3 && !be.alma) {be.alma = 1; ev(['aviso', 0, '🐉 ' + (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' consigue el ALMA DEL LAGARTO']); for (const q of S.campos) if (NEUTRO[q.tipo].draco) q.resp = 1e9;}
       else ev(['aviso', 0, d.elem === 'f' ? 'Aliento de fuego: el equipo pega un 6 % más' : 'Aliento helado: el equipo tiene un 6 % más de vida']);
     }
-    else if (nd.pasiva && eq !== null) {S.santuarios.push({x: d.x, z: d.z, r: 7, eq, hasta: S.t + 90}); ev(['aviso', 0, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' caza a la nutria: santuario de velocidad y vista en el río']); ev(['fx', 'onda', d.x, d.z, 7]);}
+    else if (nd.pasiva && eq !== null) {S.santuarios.push({x: d.x, z: d.z, r: 7, eq, hasta: S.t + 90}); ev(['aviso', 0, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' caza a la rata: santuario de velocidad y vista en el río']); ev(['fx', 'onda', d.x, d.z, 7]);}
     else if (nd.buff && o && o.k === 'h') {o.buf[nd.buff] = 90; ev(['fx', 'onda', d.x, d.z, 5]); ev(['aviso', o.id, BUFF_TXT[nd.buff]]);}
   }
   if (d.k === 'h') {
@@ -587,9 +588,9 @@ function paso(dt) {
   S.campos.forEach((c, ci) => {
     if (c.vivos > 0 || S.t < c.resp) return;
     const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;
-    if (nd.draco) {c.elem = S.dracoSig; ev(['aviso', 0, c.elem === 'f' ? '🔥 Un draco de fuego ha despertado junto al río' : '❄ Un draco frío ha bajado de las Montañas Grises']);}
+    if (nd.draco) {c.elem = S.dracoSig; ev(['aviso', 0, c.elem === 'f' ? '🔥 Ha salido un lagarto de fuego en la central' : '❄ Ha salido un lagarto de hielo en la central']);}
     for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, elem: c.elem, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.jefe ? 1.5 : nd.grande ? 1.1 : 0.6});
-    if (nd.jefe) {ev(['aviso', 0, '¡El Uruk Azul ha despertado en su foso junto al río!']); ev(['voz', 'uruk_despierta']);}
+    if (nd.jefe) {ev(['aviso', 0, '¡Nasor ha salido del colector junto al río!']); ev(['voz', 'uruk_despierta']);}
   });
   for (const u of S.u) {
     if (u.k !== 'j' || u.muerto) continue;
@@ -715,6 +716,8 @@ function usaEnc(h) {
 function usaHechizo(h, k, dx, dz) {
   if (!h || h.muerto || h.cd[k] > 0 || h.aturd > S.t) return false;
   if (k === 'f' && h.hf === 'c') {/* Castigo: golpe seco a la bestia o súbdito más cercano (como el Smite del LoL) */
+    if (TIPO_MAPA === 'ojo') {const t = masCercano(h, S.u.filter((u) => (u.k === 'j' || u.k === 's') && u.eq !== h.eq && !u.muerto && u.vida > 0), 5.5); if (!t) return false;
+      h.cd.f = HECHIZOS.c.cd; dana(h, t, 380 + 45 * h.nivel, 'hab'); ev(['castigo', t.x, t.z]); return true;}
     const t = masCercano(h, S.u.filter((u) => u.k === 'h' && u.eq !== h.eq && !u.muerto && u.vida > 0), 7); if (!t) return false;
     h.cd.f = HECHIZOS.c.cd; t.quema = {dps: (80 + 45 * h.nivel) / 5, hasta: S.t + 5, o: h.id, tick: 0}; ev(['castigo', t.x, t.z]); ev(['num', t.x, t.z, '🔥', 'r']); return true;
   }

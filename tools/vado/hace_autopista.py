@@ -765,7 +765,9 @@ js = sub(js, "else suena('muerte', 0.35, v.x, v.z);}", "else suena('muerte', v.k
 js = sub(js, "c: {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'}", "c: {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_ignicion.webp'}")  # icono del Pack 29 ART (tools/autopista/procesa_pack29.py)
 js = sub(js, """    const t = masCercano(h, S.u.filter((u) => (u.k === 'j' || u.k === 's') && u.eq !== h.eq && !u.muerto && u.vida > 0), 5.5); if (!t) return false;
     h.cd.f = HECHIZOS.c.cd; dana(h, t, 380 + 45 * h.nivel, 'hab'); ev(['castigo', t.x, t.z]); return true;""",
-"""    const t = masCercano(h, S.u.filter((u) => u.k === 'h' && u.eq !== h.eq && !u.muerto && u.vida > 0), 7); if (!t) return false;
+"""    if (TIPO_MAPA === 'ojo') {const t = masCercano(h, S.u.filter((u) => (u.k === 'j' || u.k === 's') && u.eq !== h.eq && !u.muerto && u.vida > 0), 5.5); if (!t) return false;
+      h.cd.f = HECHIZOS.c.cd; dana(h, t, 380 + 45 * h.nivel, 'hab'); ev(['castigo', t.x, t.z]); return true;}
+    const t = masCercano(h, S.u.filter((u) => u.k === 'h' && u.eq !== h.eq && !u.muerto && u.vida > 0), 7); if (!t) return false;
     h.cd.f = HECHIZOS.c.cd; t.quema = {dps: (80 + 45 * h.nivel) / 5, hasta: S.t + 5, o: h.id, tick: 0}; ev(['castigo', t.x, t.z]); ev(['num', t.x, t.z, '🔥', 'r']); return true;""")
 # un solo botiquín, en mitad del puente (salía uno delante y otro detrás de cada torre: cuatro)
 js = sub(js, "if (tipo === 'linea') {const t = puntoCarril(0, TORRE_F).z; for (const [z, t0] of [[t - 7, 105], [t + 8, 150]]) for (const sg of [1, -1]) RELIQ.push({x: -6.8, z: z * sg, t0});}",
@@ -813,7 +815,6 @@ html = sub(html, '</head>', """<style>
 }
 </style></head>""", donde='html')
 html = sub(html, '<span>1 contra 1 · el Abismo</span>', '<span>1 contra 1 · la autopista</span>', donde='html')
-html = re.sub(r'\s*<button data-m="2v2">.*?</button>', '', html, count=1)  # la Batalla 2v2 (mapa del Vado, bestias de Tolkien) aún no
 html = html.replace("'vado.heroe'", "'auto.heroe'")
 html = sub(html, 'La Brecha se juega en horizontal.', 'A-6 se juega en horizontal.', donde='html')
 html = sub(html, '<p>Preparando el campo de batalla</p>', '<p>Preparando la autopista</p>', donde='html')
@@ -1041,6 +1042,127 @@ function avanzaTiroH(p, dt) {/* true = se acaba */
 }
 function mueveTirosH(dt) {if (S.tirosH) for (let i = S.tirosH.length - 1; i >= 0; i--) if (avanzaTiroH(S.tirosH[i], dt)) S.tirosH.splice(i, 1);}
 function usaHab(h, k, dx, dz, px, pz) {""")
+
+# ---------- BATALLA 2 CONTRA 2 EN A-6 (18/11, Henar: «un mapa como el de La Brecha para dos jugadores, con su Nashor») ----------
+# El mapa en «ojo» de La Brecha, igual en reglas (la simulación es la misma), pasado a autopista: dos calzadas curvas con sus líneas,
+# jungla de tierra seca y pinar, río con la calzada pasando por encima. Jungla del LoL con bichos propios (Packs Autopista 33-36):
+# Barón = NASOR (gusano del colector), dragón = LAGARTO DE LA CENTRAL (fuego/hielo), roja = TORO NEGRO, azul = COLOSO DEL DESGUACE,
+# lobos = PERROS, rapaces = BUITRES, Gromp = JABALÍ, cangrejo = RATA. Plantas: boca de riego, máquina expendedora y radar de tráfico.
+html = sub(html, '<span>2 contra 2 · el Ojo del Vado</span><small>Espesura, bestias y Uruk</small>',
+           '<span>2 contra 2 · el nudo de la A-6</span><small>Jungla, bestias y Nasor</small>', donde='html')
+html = sub(html, 'url(ui/carta_batalla.webp)', 'url(ui/ap_carta_duelo.webp)', 2, donde='html')
+html = sub(html, 'content="Duelos 1 contra 1 en la autopista. ¡Entra y juega!"', 'content="Duelos 1 contra 1 y batallas 2 contra 2 en la autopista. ¡Entra y juega!"', donde='html')
+html = sub(html, '</head>', """<style>
+/* dos modos: Duelo y Batalla uno encima del otro, más bajitos */
+#menu .modos{display:flex!important;flex-direction:column;gap:6px}
+#menu .modos button{min-height:0!important}
+#menu .modos button small{display:none!important}
+</style></head>""", donde='html')
+# los modelos de la jungla (se bajan solo para la Batalla y las salas)
+js = sub(js, " 'huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'palantir',",
+         " 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla', 'palantir',")
+js = sub(js, "const JUNGLA = ['huorn', 'crebain', 'draco', 'nutria', 'sapo', 'uruk_azul', 'warg', 'huargo_alfa', 'troll', 'orco'];",
+         "const JUNGLA = ['ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla'];")
+js = sub(js, "['draco', 'huorn', 'crebain', 'nutria', 'sapo', 'uruk_azul'].includes(n)", "/^ap_(nasor|lagarto|toro|coloso|perro|perro_jefe|buitre|jabali|rata)$/.test(n)")
+# las bestias (mismos números; alto = lo que miden los modelos, para que salgan a escala 1)
+for k, nom, mod, alto_ in [('warg', 'Perro asilvestrado', 'ap_perro', 1.2), ('orco', 'Perro asilvestrado', 'ap_perro', 1.2), ('troll', 'Toro negro', 'ap_toro', 2.86),
+                           ('crebain', 'Buitre', 'ap_buitre', 0.3), ('sapo', 'Jabalí', 'ap_jabali', 1.4), ('huorn', 'Coloso del desguace', 'ap_coloso', 3.5),
+                           ('draco', 'Lagarto de la central', 'ap_lagarto', 2.1), ('nutria', 'Rata de alcantarilla', 'ap_rata', 0.6),
+                           ('alfa', 'Perro jefe', 'ap_perro_jefe', 2.0), ('uruk', 'Nasor', 'ap_nasor', 4.5)]:
+    js, c = re.subn(r"(\n  " + k + r": \{nombre: ')[^']*('.*?modelo: ')[^']*(', alto: )[0-9.]+", lambda m: m.group(1) + nom + m.group(2) + mod + m.group(3) + str(alto_), js, count=1)
+    if c != 1: fallos.append('[2v2 bestia] ' + k)
+# el lagarto: su material «brillo» se enciende naranja (fuego) o cian (hielo); el buitre ya no se pinta de negro (eso era el crebain)
+js = sub(js, "if (NEUTRO[v.tipo].draco) tiñe(o.raiz, v.hk === 'h' ? '#8fd0ff' : '#ff5a24', 0.7);",
+         "if (NEUTRO[v.tipo].draco) o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.name === 'brillo') {q.material = q.material.clone(); q.material.emissive.set(v.hk === 'h' ? '#00ddff' : '#ff7000'); q.material.emissiveIntensity = 2.5;}});")
+js = sub(js, " if (v.tipo === 'crebain') o.raiz.traverse((q) => {if (q.isMesh) q.material.color.set('#2a2a30');});", "")
+# textos
+for v, n in [("Brasa del troll: tus golpes queman y frenan durante 90 s", "Brasa del toro: tus golpes queman y frenan durante 90 s"),
+             ("Savia del Huorn: habilidades un 20 % más rápidas y más regeneración durante 90 s", "Turbo del coloso: habilidades un 20 % más rápidas y más regeneración durante 90 s"),
+             ("Furia del Uruk: todo el equipo pega más, se cura más y sus hordas salen más fuertes durante 150 s", "Furia de Nasor: todo el equipo pega más, se cura más y sus soldados salen más fuertes durante 150 s"),
+             ("' derriba al Uruk Azul'", "' derriba a Nasor'"), ("' caza al draco de fuego' : ' caza al draco frío'", "' caza al lagarto de fuego' : ' caza al lagarto de hielo'"),
+             ("' consigue el ALMA DEL DRACO'", "' consigue el ALMA DEL LAGARTO'"), ("' caza a la nutria: santuario de velocidad y vista en el río'", "' caza a la rata: santuario de velocidad y vista en el río'"),
+             ("'🔥 Un draco de fuego ha despertado junto al río' : '❄ Un draco frío ha bajado de las Montañas Grises'", "'🔥 Ha salido un lagarto de fuego en la central' : '❄ Ha salido un lagarto de hielo en la central'"),
+             ("'¡El Uruk Azul ha despertado en su foso junto al río!'", "'¡Nasor ha salido del colector junto al río!'"), ("/Uruk Azul/.test(txt)", "/Nasor/.test(txt)"),
+             ("['Foso del Uruk', 'el capitán de la Mano Blanca']", "['El colector', 'donde duerme Nasor']"), ("['Guarida del draco', 'bajó de las Montañas Grises']", "['La central eléctrica', 'la guarida del lagarto']"),
+             ("['El Vado del Isen', 'los islotes del río']", "['El río', 'bajo la autopista']"), ("['Camino de los Rohirrim', ''] : ['Calzada de Isengard', '']", "['Calzada azul', ''] : ['Calzada roja', '']"),
+             ("['Linde del Bosque de Fangorn', 'los árboles escuchan'] : ['Tierras Brunas', 'las colinas de los dunlendinos']", "['El pinar', 'lado azul'] : ['El descampado', 'lado rojo']"),
+             ("'En la espesura (a los lados, cruzando los huecos de la empalizada) hay huargos: dan oro y experiencia'", "'En la jungla, entre las dos calzadas, hay perros, buitres y un jabalí: dan oro y experiencia'"),
+             ("'El troll (oeste) y el huargo alfa (este) dan una bendición a todo tu equipo durante 90 s'", "'El toro negro y el coloso del desguace dan una bendición durante 90 s; Nasor y el lagarto, a todo tu equipo'")]:
+    js = sub(js, v, n)
+# iconos propios (Pack 36 ART: tools/autopista/procesa_pack36.py)
+js = sub(js, "im = MM_IMG[n] = new Image(); im.src = 'ui/' + n + '.webp';", "im = MM_IMG[n] = new Image(); im.src = 'ui/ap_' + n + '.webp';")
+js = sub(js, "sapo: 'huargo', orco: 'huargo', alfa: 'huargo'};", "sapo: 'jabali', orco: 'huargo', alfa: 'huargo'};")
+js = sub(js, 'ui/bend_', 'ui/ap_bend_', 6)
+js = sub(js, "cargaTex('../batalla/ui/pl_' + q.tipo + '.webp')", "cargaTex('../batalla/ui/ap_pl_' + q.tipo + '.webp')")
+js = sub(js, "'ui/buff_troll.webp'", "'ui/ap_mm_troll.webp'")
+js = sub(js, "g.strokeStyle = '#365a7a'; g.lineWidth = 6;", "g.strokeStyle = '#5d6674'; g.lineWidth = 6;")
+# Castigo (Batalla, hay bestias) o Ignición (Duelo): el mismo botón cambia según el mapa
+js = sub(js, "function ponMapa(modo) {\n  const tipo = modo === '2v2' ? 'ojo' : 'linea'; if (tipo === TIPO_MAPA) return false; TIPO_MAPA = tipo;",
+         "function ponHechC(tipo) {Object.assign(HECHIZOS.c, tipo === 'ojo' ? {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'} : {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_ignicion.webp'});}\n"
+         "function ponMapa(modo) {\n  const tipo = modo === '2v2' ? 'ojo' : 'linea'; ponHechC(tipo); if (tipo === TIPO_MAPA) return false; TIPO_MAPA = tipo;")
+js = sub(js, "  const el = $('elige'); eligeSel = heroeElegido;", "  ponHechC(modoElegido === '2v2' ? 'ojo' : 'linea');\n  const el = $('elige'); eligeSel = heroeElegido;")
+# SUELO DEL OJO: calzadas de asfalto que siguen los caminos (borde blanco y doble línea amarilla), arcén, tierra seca, plaza de hormigón
+i0 = js.index('      /* LA AUTOPISTA: arcén de tierra seca, calzada de asfalto')
+js = js[:i0] + """      ${TIPO_MAPA === 'ojo' ? `
+      vec3 seca=mix(texture2D(tH,w*.085).rgb,texture2D(tH,rw*.043+.31).rgb,smoothstep(.35,.65,fbm(w*.07+4.)))*vec3(.82,.95,.72);
+      vec3 hierba=hi*mix(vec3(1.15,1.45,.75),vec3(1.4,1.5,.7),smoothstep(.35,.7,fbm(w*.09+9.)));
+      vec3 col=mix(seca,hierba,smoothstep(.45,.75,fbm(w*.06+2.7))*.75);
+      col=mix(col,ba*vec3(1.05,.98,.88),smoothstep(.62,.85,fbm(w*.05+1.3))*.55);
+      vec3 asf=mix(texture2D(tB,w*.075).rgb,texture2D(tB,rw*.037+.5).rgb,.4)*1.12;
+      float roadO=1.-smoothstep(4.55,4.85,dc), arcO=1.-smoothstep(5.,6.2,dc+fbm(w*.4)*.7);
+      col=mix(col,ba*vec3(.85,.82,.78),arcO*.75); col=mix(col,asf,roadO);
+      float gast=.55+.45*smoothstep(.25,.6,fbm(w*1.3));
+      col=mix(col,vec3(.86,.85,.8),(1.-smoothstep(.07,.13,abs(dc-4.1)))*roadO*gast);
+      col=mix(col,vec3(.9,.68,.16),(1.-smoothstep(.05,.09,abs(dc-.16)))*roadO*gast);
+      col=mix(col,texture2D(tC,w*.13).rgb*.72,base);
+      float hueco=1.;` : `float roadO=0.;`}
+""" + js[i0:]
+js = sub(js, "      float hueco=1.-(1.-tablero)*(1.-step(38.,abs(w.y)));  /* sobre el barranco: fuera del tablero no hay suelo */",
+         "      float hueco=1.-(1.-tablero)*(1.-step(38.,abs(w.y)));  /* sobre el barranco: fuera del tablero no hay suelo */\n      `}")
+js = sub(js, "      /* LA AUTOPISTA: arcén de tierra seca, calzada de asfalto", "      ${TIPO_MAPA === 'ojo' ? '' : `\n      /* LA AUTOPISTA: arcén de tierra seca, calzada de asfalto")
+js = sub(js, "col=mix(col,agua,rio*.9*", "col=mix(col,agua,rio*.9*(1.-roadO)*")
+# el agua animada tampoco pasa por encima de las calzadas (el río corre por debajo)
+js = sub(js, "varying vec2 vW; uniform float uT; uniform vec2 uEje,uPit,uPit2; ${GLSL_RUIDO}",
+         "varying vec2 vW; uniform float uT; uniform vec2 uEje,uPit,uPit2; uniform vec2 uA[7]; uniform vec2 uB[7]; ${GLSL_RUIDO}\n      float dSeg(vec2 p,vec2 a,vec2 b){vec2 v=b-a;float t=clamp(dot(p-a,v)/dot(v,v),0.,1.);return length(p-a-v*t);}\n      float dCar(vec2 p){float d=1e3;for(int i=0;i<6;i++){d=min(d,dSeg(p,uA[i],uA[i+1]));d=min(d,dSeg(p,uB[i],uB[i+1]));}return d;}")
+js = sub(js, "*smoothstep(5.,7.5,length(w-uPit2));\n        if(rio<.02)discard;", "*smoothstep(5.,7.5,length(w-uPit2))*smoothstep(4.6,5.2,dCar(w));\n        if(rio<.02)discard;")
+js = sub(js, "uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)}, ...THREE.UniformsLib.fog},",
+         "uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)}, uA: {value: CARRILES[0].map((p) => new THREE.Vector2(p.x, p.z))}, uB: {value: CARRILES[1].map((p) => new THREE.Vector2(p.x, p.z))}, ...THREE.UniformsLib.fog},")
+# árboles: en la Batalla se quedan TODOS (la simulación choca con ellos: sin dibujo serían paredes invisibles)
+js = sub(js, "  for (const n in arboles) if (n.startsWith('pino')) instancias('vado_arboles', n, arboles[n].filter(",
+         "  if (TIPO_MAPA === 'ojo') for (const n in arboles) instancias('vado_arboles', n, arboles[n]); else for (const n in arboles) if (n.startsWith('pino')) instancias('vado_arboles', n, arboles[n].filter(")
+js = sub(js, "  if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al);", "  if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al); else decoradoOjo(pon2, al);")
+# fuera los cubiles, braseros y piedras de vadear de La Brecha: sus sitios los ocupan las piezas del Pack 35
+js = sub(js, "  for (const c of CAMPOS) {\n    if (NEUTRO[c.tipo].pasiva || c.tipo === 'huorn' || c.tipo === 'draco') continue;", "  for (const c of []) {\n    if (NEUTRO[c.tipo].pasiva || c.tipo === 'huorn' || c.tipo === 'draco') continue;")
+js = sub(js, "  if (CAMPOS.some((c) => NEUTRO[c.tipo].jefe)) for (const P of [PIT, PIT2])", "  if (0) for (const P of [PIT, PIT2])")
+js = sub(js, "for (const l of TIPO_MAPA === 'ojo' ? [0, 1] : []) {const L = CARRILES[l]; let mejor = 0;", "for (const l of []) {const L = CARRILES[l]; let mejor = 0;")
+js = sub(js, "/* LA AUTOPISTA: quitamiedos a los dos lados, farolas,", """/* LA BATALLA (Pack Autopista 35): foso de Nasor, central del lagarto, cubiles, orillas del río, pasarelas; farolas y quitamiedos en las calzadas.
+   ap_jungla llega con la jungla (después del mapa): si aún no está, se pone en cuanto llegue */
+function decoradoOjo(pon2, al) {
+  const G = MAPA_G;
+  if (!M.ap_jungla) {const t = setInterval(() => {if (MAPA_G !== G) clearInterval(t); else if (M.ap_jungla) {clearInterval(t); decoradoOjo(pon2, al);}}, 400); return;}
+  const pz = (n, x, z, ry, e = 1) => {const o = pieza('ap_jungla', n); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.setScalar(e); fusiona(o); G.add(o); return o;};
+  const haciaCentro = (p) => Math.atan2(-p.x, -p.z);
+  pz('foso_nasor', PIT.x, PIT.z, haciaCentro(PIT)); pz('guarida_lagarto', PIT2.x, PIT2.z, haciaCentro(PIT2));
+  for (const c of CAMPOS) {const nd = NEUTRO[c.tipo]; if (nd.jefe || nd.draco || nd.pasiva) continue; pz(c.tipo === 'troll' ? 'cubil_toro' : c.tipo === 'huorn' ? 'cubil_coloso' : 'cubil', c.x, c.z, haciaCentro(c));}
+  /* orillas del río: a los dos lados, siguiendo su curva, salvo donde pasan las calzadas y en los fosos */
+  const pe = {x: -EJE.z, z: EJE.x};
+  for (let a = -40; a <= 40; a += 10) for (const lado of [1, -1]) {
+    let x = pe.x * a, z = pe.z * a; const ond = Math.sin(a * 0.22) * 0.9; x -= EJE.x * ond; z -= EJE.z * ond; x += EJE.x * 3.6 * lado; z += EJE.z * 3.6 * lado;
+    if (!dentroOjo(x, z) || distCarril(x, z) < 7.5 || Math.hypot(x - PIT.x, z - PIT.z) < 9 || Math.hypot(x - PIT2.x, z - PIT2.z) < 9) continue;
+    pz('rio_orilla', x, z, Math.atan2(pe.x, pe.z) + Math.PI / 2 + (lado > 0 ? Math.PI : 0));
+  }
+  for (const p of ORILLA) pz('puente_vado', p.x, p.z, Math.atan2(EJE.x, EJE.z) + Math.PI / 2);
+  /* las calzadas: farolas a un lado cada ~16 m y quitamiedos donde cruzan el río */
+  for (const l of [0, 1]) {
+    for (let f = 0.12; f < 0.9; f += 0.11) {const p = puntoCarril(l, f), q = puntoCarril(l, f + 0.01), dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz) || 1, nx = dz / d, nz = -dx / d, sg = l ? -1 : 1;
+      const x = p.x + nx * 5.6 * sg, z = p.z + nz * 5.6 * sg; if (Math.abs(ladoDe({x, z})) < 4 || BASES.some((b) => Math.hypot(b.torre.x - x, b.torre.z - z) < 6)) continue;
+      const o = pon2('ap_farola', x, z, Math.atan2(-nx * sg, -nz * sg) + Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});}
+    let mejor = 0; for (let f = 0; f <= 1; f += 0.005) if (Math.abs(ladoDe(puntoCarril(l, f))) < Math.abs(ladoDe(puntoCarril(l, mejor)))) mejor = f;
+    const p = puntoCarril(l, mejor), q = puntoCarril(l, mejor + 0.01), dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz) || 1, nx = dz / d, nz = -dx / d;
+    for (const sg of [1, -1]) pon2('ap_quitamiedos', p.x + nx * 4.95 * sg, p.z + nz * 4.95 * sg, Math.atan2(dx, dz) + Math.PI / 2, 1);
+  }
+}
+/* LA AUTOPISTA: quitamiedos a los dos lados, farolas,""")
 
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')

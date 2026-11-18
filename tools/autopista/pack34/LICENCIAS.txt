@@ -1,0 +1,5 @@
+Pack Autopista 34 — A-6
+
+Las mallas, esqueletos, animaciones y texturas de los cinco animales se crearon para este encargo. No se incorporaron modelos ni texturas de terceros.
+
+Referencias del usuario: crebain.glb, sapo.glb y nutria.glb. El sapo aparece únicamente en la captura comparativa, a su escala original. Las referencias conservan sus condiciones originales.

@@ -1,0 +1,112 @@
+[
+  {
+    "model": "ap_coloso",
+    "action": "andar_esqueleto",
+    "frames": 37
+  },
+  {
+    "model": "ap_coloso",
+    "action": "atacar_esqueleto",
+    "frames": 37
+  },
+  {
+    "model": "ap_coloso",
+    "action": "morir_esqueleto",
+    "frames": 61
+  },
+  {
+    "model": "ap_coloso",
+    "action": "quieto_esqueleto",
+    "frames": 73
+  },
+  {
+    "model": "ap_coloso",
+    "action": "recibir_golpe_esqueleto",
+    "frames": 19
+  },
+  {
+    "model": "ap_lagarto",
+    "action": "andar_esqueleto.001",
+    "frames": 37
+  },
+  {
+    "model": "ap_lagarto",
+    "action": "atacar_esqueleto.001",
+    "frames": 37
+  },
+  {
+    "model": "ap_lagarto",
+    "action": "morir_esqueleto.001",
+    "frames": 61
+  },
+  {
+    "model": "ap_lagarto",
+    "action": "quieto_esqueleto.001",
+    "frames": 73
+  },
+  {
+    "model": "ap_lagarto",
+    "action": "recibir_golpe_esqueleto.001",
+    "frames": 19
+  },
+  {
+    "model": "ap_toro",
+    "action": "andar_esqueleto.003",
+    "frames": 37
+  },
+  {
+    "model": "ap_toro",
+    "action": "atacar_esqueleto.003",
+    "frames": 37
+  },
+  {
+    "model": "ap_toro",
+    "action": "morir_esqueleto.003",
+    "frames": 61
+  },
+  {
+    "model": "ap_toro",
+    "action": "quieto_esqueleto.003",
+    "frames": 73
+  },
+  {
+    "model": "ap_toro",
+    "action": "recibir_golpe_esqueleto.003",
+    "frames": 19
+  },
+  {
+    "model": "ap_nasor",
+    "action": "andar_esqueleto",
+    "frames": 37
+  },
+  {
+    "model": "ap_nasor",
+    "action": "atacar_esqueleto",
+    "frames": 37
+  },
+  {
+    "model": "ap_nasor",
+    "action": "correr_esqueleto",
+    "frames": 25
+  },
+  {
+    "model": "ap_nasor",
+    "action": "morir_esqueleto",
+    "frames": 61
+  },
+  {
+    "model": "ap_nasor",
+    "action": "pisoton_esqueleto",
+    "frames": 46
+  },
+  {
+    "model": "ap_nasor",
+    "action": "quieto_esqueleto",
+    "frames": 73
+  },
+  {
+    "model": "ap_nasor",
+    "action": "recibir_golpe_esqueleto",
+    "frames": 19
+  }
+]

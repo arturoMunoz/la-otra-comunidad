@@ -1,0 +1,26 @@
+{
+  "name": "ap_nasor",
+  "triangles": 5900,
+  "bones": 10,
+  "bounds": [
+    [
+      -1.5250000000000001,
+      0.0,
+      -1.75
+    ],
+    [
+      1.5250000000000001,
+      4.503192626496568,
+      2.4432730063032286
+    ]
+  ],
+  "clips": [
+    "quieto",
+    "andar",
+    "atacar",
+    "pisoton",
+    "recibir_golpe",
+    "morir",
+    "correr"
+  ]
+}
