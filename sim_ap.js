@@ -489,7 +489,7 @@ function paso(dt) {
   /* historial de posiciones de los héroes (0,6 s) para compensar el retraso de los que juegan a distancia */
   for (const u of S.u) if (u.k === 'h') {const hs = u.hist || (u.hist = []); hs.push(S.t, u.x, u.z); while (hs.length > 3 && hs[0] < S.t - 0.6) hs.splice(0, 3);}
   for (let i = S.dif.length - 1; i >= 0; i--) if (S.dif[i].t <= S.t) {const f = S.dif[i].fn; S.dif.splice(i, 1); f();} if (S.ola <= 0) {S.ola = S.carriles.length > 1 ? 28 : 24; oleada();}
-  /* quemadura de la brasa del troll */
+  mueveTirosH(dt); /* quemadura de la brasa del troll */
   for (const u of S.u) if (u.quema) {if (S.t > u.quema.hasta || u.vida <= 0 || u.muerto) {u.quema = null; continue;} u.quema.tick -= dt; if (u.quema.tick <= 0) {u.quema.tick = 0.5; dana(S.porId.get(u.quema.o) || null, u, u.quema.dps * 0.5, 'hab');}}
   /* plantas de la espesura (como las del LoL): seta de humo lanza por los aires, baya cura, flor de elanor da vista */
   for (const q of S.plantas) if (S.t >= q.listo) for (const h of heroes()) if (!h.muerto && dist(h, q) < 1.4) {
@@ -647,6 +647,17 @@ function paso(dt) {
 
 /* habilidades: las resuelve quien simula. dx,dz: dirección; px,pz: punto */
 function frena(e, v, d) {if (e.k === 't' || e.k === 'n') return; if (e.buf) {e.buf.lento = d; e.buf.lentoV = v;} else e.lento = S.t + d;}
+function golpeLinea(h, e, H, n, T) {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}
+function avanzaTiroH(p, dt) {/* true = se acaba */
+  const h = S.porId.get(p.o), H = p.H, d = Math.min(26 * dt, p.alc - p.rec); if (!h || d <= 0) return true;
+  for (const e of enemigosDe(p.eq)) {
+    if (e.k === 'n' || (e.k === 't' && !atacable(e)) || e.vida <= 0 || e.muerto || p.toc.includes(e.id)) continue;
+    const t = Math.max(0, Math.min(d, (e.x - p.x) * p.dx + (e.z - p.z) * p.dz));
+    if (Math.hypot(p.x + p.dx * t - e.x, p.z + p.dz * t - e.z) < H.ancho + radio(e)) {p.toc.push(e.id); golpeLinea(h, e, H, p.n, p.T); if (!H.perfora) return true;}
+  }
+  p.x += p.dx * d; p.z += p.dz * d; p.rec += d; return p.rec >= p.alc - 1e-3;
+}
+function mueveTirosH(dt) {if (S.tirosH) for (let i = S.tirosH.length - 1; i >= 0; i--) if (avanzaTiroH(S.tirosH[i], dt)) S.tirosH.splice(i, 1);}
 function usaHab(h, k, dx, dz, px, pz) {
   if (!h || h.muerto || h.aturd > S.t || h.cd[k] > 0 || !(h.rk[k] > 0)) return false;
   const H = HEROES[h.tipo].hab[k], cm = costeMn(h.tipo, k, h.rk[k]); if (h.mana < cm) return false; /* sin maná no se lanza */
@@ -664,10 +675,8 @@ function usaHab(h, k, dx, dz, px, pz) {
   if (H.tipo === 'area') {for (const e of en()) if (dist(e, h) < H.radio + radio(e)) {dana(h, e, n, T); if (H.curaH && e.k === 'h') {const mx = st.vida, c = (mx - h.vida) * H.curaH + 15; h.vida = Math.min(mx, h.vida + c); ev(['num', h.x, h.z, '+' + Math.round(c), 'v']);} if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) {if (e.buf) {e.buf.lento = H.durL; e.buf.lentoV = H.lento;} else e.lento = S.t + H.durL;}} ev(['fx', 'onda', h.x, h.z, H.radio * 1.8]); ev(['fx', 'explosion', h.x, h.z, H.radio * 0.6]);}
   if (H.tipo === 'cono') {for (const e of en()) {const ex = e.x - h.x, ez = e.z - h.z, d0 = Math.hypot(ex, ez); if (d0 < H.alc + radio(e) && (ex * dx + ez * dz) / (d0 || 1) > Math.cos(H.ang / 2)) {dana(h, e, n, T); if (H.lento) frena(e, H.lento, H.durL);}} ev(['fx', 'tajo', h.x + dx * 1.8, h.z + dz * 1.8, H.alc]);}
   if (H.tipo === 'linea') {
-    const ex0 = h.x, ez0 = h.z; let golpeados = 0;
-    const lista = en().map((e) => ({e, t: (e.x - ex0) * dx + (e.z - ez0) * dz})).filter((o) => o.t > 0 && o.t < H.alc).sort((a, b) => a.t - b.t);
-    for (const o of lista) {const px0 = ex0 + dx * o.t, pz0 = ez0 + dz * o.t; if (Math.hypot(o.e.x - px0, o.e.z - pz0) < H.ancho + radio(o.e)) {const e = o.e; luego(o.t / 26, () => {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}); golpeados++; if (!H.perfora) break;}}
-    ev(['tiro', H.proy, ex0, ez0, ex0 + dx * H.alc, ez0 + dz * H.alc, 26]);
+{const p = {o: h.id, eq: h.eq, x: h.x - dx * 0.5, z: h.z - dz * 0.5, dx, dz, rec: -0.5, alc: H.alc, n, T, H, toc: []}; if (!(h.lat > 0 && avanzaTiroH(p, h.lat))) (S.tirosH = S.tirosH || []).push(p);} if (0) {const e = null; (() => {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}})}
+    ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26]);
   }
   if (H.tipo === 'ejecuta') {/* la Guillotina de Darius: daño más el que le falta; si derriba, se recarga */
     const t = masCercano(h, en().filter((e) => e.k === 'h'), H.alc + 0.6); if (!t) {h.cd[k] = 0; h.hc--; h.mana += cm; return false;}

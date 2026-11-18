@@ -1021,6 +1021,27 @@ js = sub(js, "const m = new THREE.MeshLambertMaterial({map: rt.texture, alphaTes
 js = sub(js, "new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'});",
          "new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-performance'}); THREE.Texture.DEFAULT_ANISOTROPY = Math.min(4, renderer.capabilities.getMaxAnisotropy()); const SOL_C = {x: NaN, z: NaN, forzar: true};")
 
+# ---------- HABILIDADES EN LÍNEA QUE VIAJAN DE VERDAD (18/11, Henar: «mejorar las hitboxes»; dentro de la simulación: sim_ap.js) ----------
+# antes se decidía a quién daba EN EL MOMENTO de lanzar (con las posiciones de ese instante) y el daño llegaba después: si el rival se
+# apartaba, le daba igual; si se metía en medio, no le daba. Ahora el disparo avanza 26 m/s cada paso y golpea a lo que toca por el
+# camino (segmento contra círculo, ancho de la habilidad + radio del que recibe), como un skillshot del Wild Rift; también a los que
+# estaban pegados al que lanza (antes solo valía lo que tenía delante del centro).
+js = sub(js, '    const ex0 = h.x, ez0 = h.z; let golpeados = 0;\n    const lista = en().map((e) => ({e, t: (e.x - ex0) * dx + (e.z - ez0) * dz})).filter((o) => o.t > 0 && o.t < H.alc).sort((a, b) => a.t - b.t);\n    for (const o of lista) {const px0 = ex0 + dx * o.t, pz0 = ez0 + dz * o.t; if (Math.hypot(o.e.x - px0, o.e.z - pz0) < H.ancho + radio(o.e)) {const e = o.e; luego(o.t / 26, () => {' + "dana(h, e, n, T);", "{const p = {o: h.id, eq: h.eq, x: h.x - dx * 0.5, z: h.z - dz * 0.5, dx, dz, rec: -0.5, alc: H.alc, n, T, H, toc: []}; if (!(h.lat > 0 && avanzaTiroH(p, h.lat))) (S.tirosH = S.tirosH || []).push(p);} if (0) {const e = null; (() => {dana(h, e, n, T);")
+js = sub(js, "}); golpeados++; if (!H.perfora) break;}}\n    ev(['tiro', H.proy, ex0, ez0, ex0 + dx * H.alc, ez0 + dz * H.alc, 26]);", "})}\n    ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26]);")
+js = sub(js, "/* quemadura de la brasa del troll */", """mueveTirosH(dt); /* quemadura de la brasa del troll */""")
+js = sub(js, "function usaHab(h, k, dx, dz, px, pz) {", """function golpeLinea(h, e, H, n, T) {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}
+function avanzaTiroH(p, dt) {/* true = se acaba */
+  const h = S.porId.get(p.o), H = p.H, d = Math.min(26 * dt, p.alc - p.rec); if (!h || d <= 0) return true;
+  for (const e of enemigosDe(p.eq)) {
+    if (e.k === 'n' || (e.k === 't' && !atacable(e)) || e.vida <= 0 || e.muerto || p.toc.includes(e.id)) continue;
+    const t = Math.max(0, Math.min(d, (e.x - p.x) * p.dx + (e.z - p.z) * p.dz));
+    if (Math.hypot(p.x + p.dx * t - e.x, p.z + p.dz * t - e.z) < H.ancho + radio(e)) {p.toc.push(e.id); golpeLinea(h, e, H, p.n, p.T); if (!H.perfora) return true;}
+  }
+  p.x += p.dx * d; p.z += p.dz * d; p.rec += d; return p.rec >= p.alc - 1e-3;
+}
+function mueveTirosH(dt) {if (S.tirosH) for (let i = S.tirosH.length - 1; i >= 0; i--) if (avanzaTiroH(S.tirosH[i], dt)) S.tirosH.splice(i, 1);}
+function usaHab(h, k, dx, dz, px, pz) {""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
