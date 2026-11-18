@@ -584,8 +584,14 @@ function decoradoOjo(pon2, al) {
   if (!M.ap_jungla) {const t = setInterval(() => {if (MAPA_G !== G) clearInterval(t); else if (M.ap_jungla) {clearInterval(t); decoradoOjo(pon2, al);}}, 400); return;}
   const pz = (n, x, z, ry, e = 1) => {const o = pieza('ap_jungla', n); o.position.set(x, 0.05, z); o.traverse((q) => {if (q.isMesh) for (const m of [].concat(q.material)) {m.polygonOffset = true; m.polygonOffsetFactor = -2; m.polygonOffsetUnits = -2;}}); /* 18/11: el suelo de los fosos y cubiles estaba a la misma altura que el suelo del mapa y se veían rayas negras al moverse (z-fighting) */ o.rotation.y = ry; o.scale.setScalar(e); fusiona(o); G.add(o); return o;};
   const haciaCentro = (p) => Math.atan2(-p.x, -p.z);
-  pz('foso_nasor', PIT.x, PIT.z, haciaCentro(PIT)); pz('guarida_lagarto', PIT2.x, PIT2.z, haciaCentro(PIT2));
-  for (const c of CAMPOS) {const nd = NEUTRO[c.tipo]; if (nd.jefe || nd.draco || nd.pasiva) continue; pz(c.tipo === 'troll' ? 'cubil_toro' : c.tipo === 'huorn' ? 'cubil_coloso' : 'cubil', c.x, c.z, haciaCentro(c));}
+  
+  const sinSuelo = (o) => o.traverse((q) => {if (!q.isMesh) return; const g = q.geometry.index ? q.geometry.clone() : q.geometry.clone(); const P = g.attributes.position; let I = g.index ? g.index.array : null;
+    if (!I) {I = new Uint32Array(P.count); for (let i = 0; i < P.count; i++) I[i] = i;} const k = []; for (let i = 0; i < I.length; i += 3) {const ya = P.getY(I[i]), yb = P.getY(I[i + 1]), yc = P.getY(I[i + 2]); if (Math.max(ya, yb, yc) < 0.8 && Math.max(ya, yb, yc) - Math.min(ya, yb, yc) < 0.04) continue; k.push(I[i], I[i + 1], I[i + 2]);} g.setIndex(k); q.geometry = g;});
+  const chatarra = (c, esc = 1) => {const L = [['palé', 3.6, 0.2, 1.4], ['palé', 3.9, 0.55, 1.2], ['neumatico_1', 4.1, 1.5, 1.3], ['neumatico_2', 3.7, 2.2, 1.2], ['bidon_1', 4.3, 2.9, 1.1], ['bidon_2', 4.0, 3.15, 1.1], ['cascotes_2', 4.4, 3.9, 1.3], ['neumatico_1', 3.8, 4.6, 1.25], ['palé', 4.2, 5.3, 1.3], ['cascotes_1', 4.5, 5.9, 1.2]];
+    const a0 = haciaCentro(c) + Math.PI; for (const [n, r, a, e] of L) {const o = pieza('ap_suelo_props', n), an = a0 + a; o.position.set(c.x + Math.sin(an) * r * esc / (esc > 1 ? 4 : 1), 0, c.z + Math.cos(an) * r * esc / (esc > 1 ? 4 : 1)); o.rotation.y = an * 3.1; o.scale.setScalar(e); fusiona(o); G.add(o);}};
+  for (const c of CAMPOS) {const nd = NEUTRO[c.tipo]; if (nd.jefe || nd.draco || nd.pasiva) continue; if (c.tipo === 'troll') {chatarra(c); continue;}
+    const o = pieza('ap_jungla', c.tipo === 'huorn' ? 'cubil_coloso' : 'cubil'); sinSuelo(o); o.position.set(c.x, 0, c.z); o.rotation.y = haciaCentro(c); fusiona(o); G.add(o);}
+  chatarra(PIT, 6.2); chatarra(PIT2, 6.2);  /* Nasor y el lagarto: en un claro con chatarra, sin el foso de tierra con valla */
   /* orillas del río: a los dos lados, siguiendo su curva, salvo donde pasan las calzadas y en los fosos */
   const pe = {x: -EJE.z, z: EJE.x};
   for (let a = -40; a <= 40; a += 10) for (const lado of [1, -1]) {
@@ -1709,6 +1715,28 @@ function pintaReliquias() {
   RELIQ_V.forEach((o, i) => {const on = !!(EXTRA.rl && EXTRA.rl[i]); o.sp.visible = o.aro.visible = on; if (on) {const f = Math.floor(t * 60) % 64; o.tx.offset.set((f % 8) / 8, 1 - (Math.floor(f / 8) + 1) / 8); o.sp.position.set(o.r.x, 1.5, o.r.z); o.aro.position.set(o.r.x, 0.06, o.r.z); o.aro.rotation.y = t * 0.4;}});
 }
 const PLANTA_V = []; const PL_TAM = {seta: 3.4, baya: 2.8, flor: 2.4};
+const PL_A6 = {baya: '#3dff74', flor: '#46d8ff', seta: '#ff8a2a'};
+let PL_HAZ = null;
+function plantaA6(q) {
+  const g = new THREE.Group(), c = new THREE.Color(PL_A6[q.tipo]), cuerpo = new THREE.Group();
+  const pon = (o, x, y, z, e, ry = 0) => {o.position.set(x, y, z); o.scale.setScalar(e); o.rotation.y = ry; cuerpo.add(o); return o;};
+  if (q.tipo === 'baya') {pon(pieza('ap_suelo_props', 'bidon_2'), -0.32, 0, 0, 1.35, 0.4); pon(pieza('ap_suelo_props', 'bidon_1'), 0.36, 0, 0.12, 1.2, 1.9); pon(pieza('ap_suelo_props', 'bidon_2'), 0.02, 0, -0.42, 1.05, 2.8);}
+  else if (q.tipo === 'flor') {if (M.ap_cono) pon(M.ap_cono.scene.clone(true), 0, 0, 0, 2.7); pon(pieza('ap_suelo_props', 'palé'), 0, 0, 0, 1.3, 0.3).position.y = -0.02;}
+  else for (let k = 0; k < 3; k++) pon(pieza('ap_suelo_props', k % 2 ? 'neumatico_2' : 'neumatico_1'), (k - 1) * 0.04, k * 0.44, 0, 1.25, k);
+  cuerpo.traverse((m) => {if (!m.isMesh) return; m.castShadow = true; m.material = [].concat(m.material).map((x) => {const y = x.clone(); if (y.color) y.color.lerp(c, q.tipo === 'flor' ? 0.6 : 0.22); if (y.emissive) {y.emissive.copy(c); y.emissiveIntensity = 0.16;} return y;}); if (m.material.length === 1) m.material = m.material[0];});
+  g.add(cuerpo); g.userData.cuerpo = cuerpo;
+  const a = aro(PL_A6[q.tipo], 1.3); a.material.opacity = 0.55; a.position.y = 0.05; g.add(a); g.userData.aro = a;
+  if (!PL_HAZ) {const cv = document.createElement('canvas'); cv.width = 4; cv.height = 64; const x = cv.getContext('2d'), gr = x.createLinearGradient(0, 0, 0, 64); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(255,255,255,1)'); x.fillStyle = gr; x.fillRect(0, 0, 4, 64); PL_HAZ = new THREE.CanvasTexture(cv);}
+  const h = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 1.05, 3.2, 24, 1, true), new THREE.MeshBasicMaterial({color: c, map: PL_HAZ, transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending}));
+  h.position.y = 1.6; g.add(h); g.userData.haz = h;
+  return g;
+}
+function animaPlantaA6(g, q) {
+  if (!g.visible) return; const t = performance.now() / 1000, u = g.userData, f = 0.5 + 0.5 * Math.sin(t * 3 + q.x);
+  u.aro.material.opacity = 0.35 + 0.35 * f; u.aro.scale.setScalar(1 + 0.08 * f); u.haz.material.opacity = 0.2 + 0.16 * f;
+  if (q.tipo === 'seta') u.cuerpo.scale.y = 1 + 0.06 * Math.sin(t * 7);  /* los neumáticos botan: aquí se sale disparado */
+  if (q.tipo === 'flor') u.cuerpo.rotation.y = t * 0.6;
+}
 const SANT_V = [], ALM_V = [];
 /* las almenaras de tu equipo: un brasero pequeño con su zona de vista (las del enemigo no se ven, como en el LoL) */
 function pintaAlmenaras() {
@@ -1718,8 +1746,8 @@ function pintaAlmenaras() {
 }
 function pintaJungla() {
   if (PLANTA_V.length !== PLANTAS.length || (PLANTA_V[0] && PLANTA_V[0].q !== PLANTAS[0])) {for (const o of PLANTA_V) scene.remove(o.sp); PLANTA_V.length = 0;
-    for (const q of PLANTAS) {const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: cargaTex('../batalla/ui/ap_pl_' + q.tipo + '.webp'), transparent: true, depthWrite: false})); const t = PL_TAM[q.tipo]; sp.scale.setScalar(t); sp.center.set(0.5, 0.12); sp.position.set(q.x, 0, q.z); scene.add(sp); PLANTA_V.push({sp, q});}}
-  PLANTA_V.forEach((o, i) => {o.sp.visible = !!(EXTRA.pl && EXTRA.pl[i]); if (o.q.tipo === 'seta') o.sp.scale.setScalar(PL_TAM.seta * (1 + 0.04 * Math.sin(performance.now() / 200)));});
+    for (const q of PLANTAS) {const sp = plantaA6(q); sp.position.set(q.x, 0, q.z); scene.add(sp); PLANTA_V.push({sp, q});}}
+  PLANTA_V.forEach((o, i) => {o.sp.visible = !!(EXTRA.pl && EXTRA.pl[i]); animaPlantaA6(o.sp, o.q);});
   const sa = EXTRA.sa || []; while (SANT_V.length < sa.length) {const a = aro('#5ae0ff', 7); a.material.opacity = 0.35; scene.add(a); SANT_V.push(a);}
   pintaAlmenaras();
   SANT_V.forEach((a, i) => {a.visible = i < sa.length; if (a.visible) {a.position.set(sa[i][0], 0.08, sa[i][1]); a.material.color.set(sa[i][2] === MI_EQ ? '#5ae0ff' : '#ff6a5a'); a.rotation.y += 0.004;}});
