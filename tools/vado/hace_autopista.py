@@ -1605,6 +1605,47 @@ function flechaAP(tipo, x, z, wx, wz, alc, W) {""")
 
 js = sub(js, "const k = W / 82.5, kh = W / 155, ks = W / 100, finCuerpo", "const k = W / 82.5, kh = Math.min(W / 155, alc / 360), ks = W / 100, finCuerpo")  # flecha cortada (se para en el primero): la punta se encoge para no salir por detrás
 
+# ---------- FUERA LOS «PIU PIU» (18/11, Henar: «los básicos siguen sonando piu piu piu») ----------
+# Quedaban sonidos de láser de juego retro de Kenney: «arco» (laser_small: habilidades en línea y la ráfaga de Birdie), «ap_energia»
+# (laser_retro: Grub), «ap_luz» (phaserUp: Dalinar y CADA disparo de torre) y la moneda (pepSound: sonaba en cada remate, o sea,
+# con casi cada básico a un soldado). Ahora: línea y ráfagas → zumbido de aire; Grub y Dalinar → tajo de espada; torre → explosión
+# grave y baja; moneda y cuerno → los de verdad de La Brecha (copiados en sonidos_ap/fx con el mismo nombre).
+js = sub(js, "ap_energia: 'ap_energia', ap_luz: 'ap_luz',", "ap_energia: 'espada_corte', ap_luz: 'espada_corte',")
+js = sub(js, "arco: 'disparo_arco',", "arco: 'rafaga_viento',")
+js = sub(js, "suena('ap_luz', 0.3, e[2], e[3]);", "suena('fuego', 0.16, e[2], e[3]);")
+
+
+# ---------- JUNGLA DESPEJADA (18/11, Henar: «los árboles de la jungla se comen la cámara… hazlo como en el LoL»; «te atoras») ----------
+# (1) Dentro del ojo los árboles eran pinos y robles de 7-12 m plantados cada 2,6 m: tapaban la línea y entre dos troncos quedaban huecos
+#     más estrechos que el héroe (se quedaba trabado). Ahora dentro del ojo solo robles bajos (2-4 m, ×0,5), un 45 % menos y con el
+#     choque a su tamaño (0,75 × escala, en la simulación también: sims regenerados); en el borde jugable fuera del ojo, ×0,75.
+# (2) Como el Wild Rift: lo que se pone entre la cámara y TU héroe se deshace en un círculo alrededor de él (tramado, sin transparencias).
+js = sub(js, "if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.3) continue;",
+             "if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.45) continue;")
+js = sub(js, "planta(n, px, pz, (n.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35, juego);",
+             "const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 0.5 : jO ? 0.75 : 1), juego);")
+js = sub(js, "  if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al); else decoradoOjo(pon2, al);",
+             "  tapaArboles();\n  if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al); else decoradoOjo(pon2, al);")
+js = sub(js, "const BOSQUE = []; let bosqueEn = null;", r"""const BOSQUE = []; let bosqueEn = null;
+/* árboles que se deshacen delante de tu héroe: uTapa = posición de tu héroe en la pantalla (px), profundidad y radio */
+const TAPA = {value: new THREE.Vector4(-9999, -9999, 0, 0)};
+function tapaArboles() {
+  for (const im of BOSQUE) {const ms = Array.isArray(im.material) ? im.material : [im.material]; for (const m of ms) {
+    if (m.userData.tapa) continue; m.userData.tapa = true;
+    m.onBeforeCompile = (sh) => {sh.uniforms.uTapa = TAPA;
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vVZ;').replace('#include <project_vertex>', '#include <project_vertex>\nvVZ=-mvPosition.z;');
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vVZ; uniform vec4 uTapa;').replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{float dT=length(gl_FragCoord.xy-uTapa.xy); if(vVZ<uTapa.z-1.2&&dT<uTapa.w){float k=smoothstep(uTapa.w,uTapa.w*.55,dT)*.82; if(fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)<k) discard;}}');};
+    m.customProgramCacheKey = () => 'tapa'; m.needsUpdate = true;
+  }}
+}
+const _tapaV = new THREE.Vector3(), _tapaB = new THREE.Vector2();
+function ponTapa(x, z) {
+  camera.updateMatrixWorld(); _tapaV.set(x, 1.4, z); const vz = -_tapaV.clone().applyMatrix4(camera.matrixWorldInverse).z; _tapaV.project(camera);
+  renderer.getDrawingBufferSize(_tapaB); TAPA.value.set((_tapaV.x * 0.5 + 0.5) * _tapaB.x, (_tapaV.y * 0.5 + 0.5) * _tapaB.y, vz, _tapaB.y * 0.17);
+}""")
+js = sub(js, "camera.lookAt(camM.x + ox, 0, camM.z + oz);\n", "camera.lookAt(camM.x + ox, 0, camM.z + oz); ponTapa(x, z);\n")
+
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

@@ -168,11 +168,11 @@ function plantaBosque(al, planta, enBase) {
     if (dc < 4.7 || enBase(px, pz)) continue;
     if (juego) {
       if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
-      if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.3) continue;
+      if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.45) continue;
     }
     const isen = ladoDe({x: px, z: pz}) > 0, r = al();
     const n = isen ? (r < 0.3 ? 'arbol_muerto_0' + (1 + (r < 0.12 ? 1 : 0)) : 'pino_0' + (1 + Math.floor(al() * 4))) : (r < 0.45 ? 'roble_0' + (1 + Math.floor(al() * 3)) : 'pino_0' + (1 + Math.floor(al() * 4)));
-    planta(n, px, pz, (n.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35, juego);
+    const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 0.5 : jO ? 0.75 : 1), juego);
   }
 }
 function lineaLibre(a, b) {const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
@@ -335,6 +335,22 @@ function instancias(archivo, nombre, lista, sombra = true) {
   });
 }
 const BOSQUE = []; let bosqueEn = null;
+/* árboles que se deshacen delante de tu héroe: uTapa = posición de tu héroe en la pantalla (px), profundidad y radio */
+const TAPA = {value: new THREE.Vector4(-9999, -9999, 0, 0)};
+function tapaArboles() {
+  for (const im of BOSQUE) {const ms = Array.isArray(im.material) ? im.material : [im.material]; for (const m of ms) {
+    if (m.userData.tapa) continue; m.userData.tapa = true;
+    m.onBeforeCompile = (sh) => {sh.uniforms.uTapa = TAPA;
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vVZ;').replace('#include <project_vertex>', '#include <project_vertex>\nvVZ=-mvPosition.z;');
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vVZ; uniform vec4 uTapa;').replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{float dT=length(gl_FragCoord.xy-uTapa.xy); if(vVZ<uTapa.z-1.2&&dT<uTapa.w){float k=smoothstep(uTapa.w,uTapa.w*.55,dT)*.82; if(fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)<k) discard;}}');};
+    m.customProgramCacheKey = () => 'tapa'; m.needsUpdate = true;
+  }}
+}
+const _tapaV = new THREE.Vector3(), _tapaB = new THREE.Vector2();
+function ponTapa(x, z) {
+  camera.updateMatrixWorld(); _tapaV.set(x, 1.4, z); const vz = -_tapaV.clone().applyMatrix4(camera.matrixWorldInverse).z; _tapaV.project(camera);
+  renderer.getDrawingBufferSize(_tapaB); TAPA.value.set((_tapaV.x * 0.5 + 0.5) * _tapaB.x, (_tapaV.y * 0.5 + 0.5) * _tapaB.y, vz, _tapaB.y * 0.17);
+}
 function cullBosque(cx, cz, forzar) {
   if (!forzar && bosqueEn && Math.hypot(cx - bosqueEn.x, cz - bosqueEn.z) < 3) return; bosqueEn = {x: cx, z: cz};
   const R2 = 36 * 36;
@@ -519,6 +535,7 @@ function construyeMapa() {
   const planta = (n, x, z, s, choque) => {(arboles[n] = arboles[n] || []).push({x, z, ry: al() * 6.28, s}); if (choque) ponArbolChoque(x, z, 0.75 * s);};
   plantaBosque(al, planta, enBase);
   if (TIPO_MAPA === 'ojo') for (const n in arboles) instancias('vado_arboles', n, arboles[n]); else for (const n in arboles) if (n.startsWith('pino')) instancias('vado_arboles', n, arboles[n].filter((q, i) => i % 3 === 0 && Math.abs(q.x) > 16 && Math.abs(q.z) > 41));
+  tapaArboles();
   if (TIPO_MAPA === 'linea') decoradoAutopista(pon2, al); else decoradoOjo(pon2, al);
   /* hierba alta, juncos del río, piedras de vadear y rocas */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
@@ -2065,7 +2082,7 @@ function vozDeTexto(txt, mio) {
    Mezcla: efectos, voz y música van a buses separados → compresor (que las peleas no saturen) → altavoz.
    Los efectos suenan según dónde pasan: más flojos lejos de la cámara y a izquierda/derecha según la pantalla.
    Se precargan al primer toque (antes el primer golpe de cada tipo no sonaba). Música con <audio> por WebAudio (en iPhone el volumen de <audio> no se puede tocar). */
-const SON_LISTA = {ap_llama: 'ap_llama', ap_energia: 'ap_energia', ap_luz: 'ap_luz', ap_fusil: 'ap_fusil', ap_golf: 'ap_golf', ap_arena: 'ap_arena', golpe: 'golpe_carne', golpeH: 'espada_armadura', espada: 'espada_corte', arco: 'disparo_arco', clavada: 'flecha_clavada', muerte: 'muerte_orco', nivel: 'subir_nivel', moneda: 'recoger_moneda', cuerno: 'cuerno_lejano', explosion: 'explosion_piedras', fuego: 'explosion_fuego', viento: 'rafaga_viento', magia: 'rayo_magico', derrumbe: 'derrumbe_muro', grito: 'grito_guerra_orco', aullido: 'aullido_huargo', madera: 'madera_rota', cofre: 'abrir_cofre', gema: 'recoger_gema'};
+const SON_LISTA = {ap_llama: 'ap_llama', ap_energia: 'espada_corte', ap_luz: 'espada_corte', ap_fusil: 'ap_fusil', ap_golf: 'ap_golf', ap_arena: 'ap_arena', golpe: 'golpe_carne', golpeH: 'espada_armadura', espada: 'espada_corte', arco: 'rafaga_viento', clavada: 'flecha_clavada', muerte: 'muerte_orco', nivel: 'subir_nivel', moneda: 'recoger_moneda', cuerno: 'cuerno_lejano', explosion: 'explosion_piedras', fuego: 'explosion_fuego', viento: 'rafaga_viento', magia: 'rayo_magico', derrumbe: 'derrumbe_muro', grito: 'grito_guerra_orco', aullido: 'aullido_huargo', madera: 'madera_rota', cofre: 'abrir_cofre', gema: 'recoger_gema'};
 const SON_N = {muerte: 6};
 const AUD = {fx: null, voz: null, mus: null, musOn: localStorage.getItem('auto.mus') !== '0', fxOn: localStorage.getItem('auto.fx') !== '0', pista: null, el: {}, vivos: 0};
 function audio() {
@@ -2155,7 +2172,7 @@ function efectoLocal(e) {
     if (e[1] === 'piedra' && (e[6] || 1) > 2) {/* 17/11 (solo las torres: la honda del hobbit no lleva fuego) («los cañonazos de las torres son cutres»): pedrusco ardiendo con halo, estela de fuego, parábola y estallido al caer */
       if (!HALO_T) {HALO_T = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({color: '#ff9a3a', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false}));}
       scene.remove(o); const sp = plasmaSprite(); sp.scale.setScalar(3); pr.o = new THREE.Group(); pr.o.add(sp); scene.add(pr.o); pr.sp = sp; const ob = VISTA.get(e[4]); pr.torre = 1; pr.y0 = e[7] || 5; pr.d0 = ob ? Math.hypot((ob.xi ?? ob.x) - e[2], (ob.zi ?? ob.z) - e[3]) : 10; pr.est = 0;
-      flip('chispa', e[2], e[3], 2.4, false, undefined, pr.y0, 0.35); suena('ap_luz', 0.3, e[2], e[3]);
+      flip('chispa', e[2], e[3], 2.4, false, undefined, pr.y0, 0.35); suena('fuego', 0.16, e[2], e[3]);
     } else if ({bala: 1, bola: 1}[e[1]]) suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]], {bala: 0.35, bola: 0.45}[e[1]]);
     FXP.push(pr);}
   if (t === 'tiro') {const o = PROY_AP[e[1]] ? proyAP(e[1], 2 * (e[7] || 0.5)) : modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); {const sh = {bala: 'ap_fusil', bola: 'ap_golf'}[e[1]]; if (sh) suena(sh, 0.5, e[2], e[3]);}}
@@ -2276,7 +2293,7 @@ function camara(dt) {
    L.ox = (L.ox || 0) + (ox - (L.ox || 0)) * Math.min(1, dt * 2.5); L.oz = (L.oz || 0) + (oz - (L.oz || 0)) * Math.min(1, dt * 2.5);}
   if (CAM_FIN) {camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);} else {camM.x = x + CAM_LEAD.ox; camM.z = z + CAM_LEAD.oz;}
   camGolpe = Math.max(0, camGolpe - dt * 1.5); const zg = 1 - 0.16 * Math.sin(Math.min(1, camGolpe) * Math.PI), z0 = ZOOMS[zoomI], zz = [z0[0] * zg, z0[1] * zg]; tiemblaCam = Math.max(0, tiemblaCam - dt * 1.6); const tb = tiemblaCam * tiemblaCam * 1.6, ox = (Math.random() - 0.5) * tb, oz = (Math.random() - 0.5) * tb;
-  camera.position.set(camM.x - F.x * zz[1] + ox, zz[0], camM.z - F.z * zz[1] + oz); camera.lookAt(camM.x + ox, 0, camM.z + oz);
+  camera.position.set(camM.x - F.x * zz[1] + ox, zz[0], camM.z - F.z * zz[1] + oz); camera.lookAt(camM.x + ox, 0, camM.z + oz); ponTapa(x, z);
   luces(); {const p = Math.round(camM.x / 6) * 6, q = Math.round(camM.z / 6) * 6; if (p !== SOL_C.x || q !== SOL_C.z) {SOL_C.x = p; SOL_C.z = q; SOL_C.forzar = true; sol.position.set(p + 10, 40, q + 8); sol.target.position.set(p, 0, q);}}
 }
 
