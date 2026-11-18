@@ -1300,6 +1300,32 @@ function brillaArmadura(o, color, fuerza, dur) {""")
 js = sub(js, "function camara(dt) {", "function camara(dt) {\n  try {animaRim();} catch (e) {}")
 js = sub(js, "for (let i = 0; i < 9; i++) mete(P, 'mancha_aceite',", "for (let i = 0; i < 0; i++) mete(P, 'mancha_aceite',")
 
+# ---------- PACK 40 ART (18/11): las torres disparan una bola de plasma, no un pedrusco en llamas (tools/autopista/procesa_pack40.py) ----------
+# sprite animado (16 fotogramas en bucle, se suma como luz) que gira para que la cola quede detrás según va en pantalla;
+# chispas eléctricas por el camino y al caer. El impacto propio (imagen 2) se usa en cuanto exista fx/ap_plasma_imp.webp
+js = sub(js, "const h = HALO_T.clone(); h.scale.setScalar(0.45); o.add(h);",
+         "scene.remove(o); const sp = plasmaSprite(); sp.scale.setScalar(3); pr.o = new THREE.Group(); pr.o.add(sp); scene.add(pr.o); pr.sp = sp;")
+js = sub(js, "flip('explosion', e[2], e[3], 2, false, undefined, pr.y0, 0.35); suena('explosion', 0.35, e[2], e[3]);",
+         "flip('chispa', e[2], e[3], 2.4, false, undefined, pr.y0, 0.35); suena('ap_luz', 0.3, e[2], e[3]);")
+js = sub(js, "p.o.rotation.x += dt * 9; p.est -= dt; if (p.est <= 0) {p.est = 0.035; flip('fuego', p.x, p.z, 1.3, false, undefined, p.y, 0.35);}",
+         "if (p.sp) animaPlasma(p, dt); p.est -= dt; if (p.est <= 0) {p.est = 0.08; flip('chispa', p.x, p.z, 0.9, false, undefined, p.y, 0.35);}")
+js = sub(js, "if (p.torre) {flip('explosion', p.x, p.z, 2.6, false, undefined, 1, 0.5);",
+         "if (p.torre) {flip(PLASMA.imp ? 'ap_plasma_imp' : 'chispa', p.x, p.z, PLASMA.imp ? 4.2 : 3, !!PLASMA.imp, undefined, PLASMA.imp ? undefined : 1, 0.5);")
+js = sub(js, "function modeloProy(n) {", """const PLASMA = {tex: null, imp: false};
+fetch('../batalla/fx/ap_plasma_imp.webp', {method: 'HEAD'}).then((r) => {if (r.ok && typeof FB === 'object') {PLASMA.imp = true; FB.ap_plasma_imp = ['../batalla/fx/ap_plasma_imp.webp', 4, 4]; FB_DUR.ap_plasma_imp = 0.6;}}).catch(() => {});
+PLASMA.tex = cargaTex('../batalla/fx/ap_plasma.webp'); PLASMA.tex.repeat.set(0.25, 0.25); /* una sola textura para todas las bolas (clonarla la subiría otra vez a la gráfica): van al mismo fotograma */
+function plasmaSprite() {
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: PLASMA.tex, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, depthTest: false}));
+  sp.renderOrder = 6; return sp;
+}
+const _pA = new THREE.Vector3(), _pB = new THREE.Vector3();
+function animaPlasma(p, dt) {
+  const f = Math.floor(performance.now() / 45) % 16; PLASMA.tex.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4);
+  _pA.set(p.x, p.y, p.z).project(camera); _pB.set(p.tx ?? p.x, 1, p.tz ?? p.z).project(camera);
+  p.sp.material.rotation = Math.atan2((_pB.y - _pA.y) * VH, (_pB.x - _pA.x) * VW);
+}
+function modeloProy(n) {""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

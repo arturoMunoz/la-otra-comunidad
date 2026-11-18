@@ -1517,6 +1517,19 @@ function animaRafagas(dt) {
     r.o.position.set(r.x + (r.tx - r.x) * k, r.y * (1 - k) + 0.25 * k + Math.sin(k * Math.PI) * r.salta, r.z + (r.tz - r.z) * k); r.o.rotation.y = Math.atan2(r.tx - r.x, r.tz - r.z);
     if (k >= 1) {scene.remove(r.o); RAFAGAS.splice(i, 1); if (r.fin) flip(r.fin, r.tx, r.tz, r.kind === 'bala' ? 0.9 : 1.3);}}
 }
+const PLASMA = {tex: null, imp: false};
+fetch('../batalla/fx/ap_plasma_imp.webp', {method: 'HEAD'}).then((r) => {if (r.ok && typeof FB === 'object') {PLASMA.imp = true; FB.ap_plasma_imp = ['../batalla/fx/ap_plasma_imp.webp', 4, 4]; FB_DUR.ap_plasma_imp = 0.6;}}).catch(() => {});
+PLASMA.tex = cargaTex('../batalla/fx/ap_plasma.webp'); PLASMA.tex.repeat.set(0.25, 0.25); /* una sola textura para todas las bolas (clonarla la subiría otra vez a la gráfica): van al mismo fotograma */
+function plasmaSprite() {
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map: PLASMA.tex, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, depthTest: false}));
+  sp.renderOrder = 6; return sp;
+}
+const _pA = new THREE.Vector3(), _pB = new THREE.Vector3();
+function animaPlasma(p, dt) {
+  const f = Math.floor(performance.now() / 45) % 16; PLASMA.tex.offset.set((f % 4) / 4, 1 - (Math.floor(f / 4) + 1) / 4);
+  _pA.set(p.x, p.y, p.z).project(camera); _pB.set(p.tx ?? p.x, 1, p.tz ?? p.z).project(camera);
+  p.sp.material.rotation = Math.atan2((_pB.y - _pA.y) * VH, (_pB.x - _pA.x) * VW);
+}
 function modeloProy(n) {if (PROY_AP[n]) return proyAP(n);if (n === 'luz' && !PROY_MODELOS.luz) {const g = new THREE.Group(), m = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), new THREE.MeshBasicMaterial({color: '#fffbe8'})), h = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 8), new THREE.MeshBasicMaterial({color: '#ffe9a8', transparent: true, opacity: 0.35, depthWrite: false})); g.add(m, h); PROY_MODELOS.luz = g;} if (!PROY_MODELOS[n]) {const o = M.proyectiles.scene.getObjectByName(n); PROY_MODELOS[n] = o ? o.clone(true) : new THREE.Object3D(); PROY_MODELOS[n].position.set(0, 0, 0); /* 17/11: en proyectiles.glb cada pieza está desplazada (la piedra 1,2 m a un lado): se centra para que salga del centro del héroe */ PROY_MODELOS[n].traverse((q) => {if (q.isMesh) {q.geometry = q.geometry.clone(); q.geometry.computeBoundingBox(); const c = q.geometry.boundingBox.getCenter(new THREE.Vector3()); q.geometry.translate(-c.x, -c.y, -c.z); q.geometry.computeBoundingSphere();}});} return PROY_MODELOS[n].clone(true);}
 const texAro = cargaTex('../batalla/ui/ap_aro_heroe.webp');
 function aro(color, r) {const g = new THREE.PlaneGeometry(r * 2, r * 2); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: texAro, color, transparent: true, depthWrite: false, opacity: 0.85})); m.renderOrder = 2; return m;}
@@ -1874,8 +1887,8 @@ function dibuja(dt) {
   /* proyectiles y efectos */
   for (let i = FXP.length - 1; i >= 0; i--) {
     const p = FXP[i]; p.t += dt;
-    if (p.tipo === 'proy') {const d = VISTA.get(p.d); const tx = d ? (d.xi ?? d.x) : p.tx, tz = d ? (d.zi ?? d.z) : p.tz; p.tx = tx; p.tz = tz; const dx = tx - p.x, dz = tz - p.z, l = Math.hypot(dx, dz); if (l < 0.5 || p.t > 2) {if (p.torre) {flip('explosion', p.x, p.z, 2.6, false, undefined, 1, 0.5); flip('ondaC', p.x, p.z, 4.6, true); flip('polvoA', p.x, p.z, 3.4, true); suena('explosion', 0.45, p.x, p.z);} if (IMPACTO_AP[p.k]) flip(IMPACTO_AP[p.k], p.x, p.z, 1.1, false, undefined, p.y); scene.remove(p.o); FXP.splice(i, 1); continue;} p.x += dx / l * Math.min(l, p.v * dt); p.z += dz / l * Math.min(l, p.v * dt);
-      if (p.torre) {const f = Math.max(0, Math.min(1, 1 - l / (p.d0 || 1))); p.y = p.y0 * (1 - f) + 1 * f + Math.sin(f * Math.PI) * 2.6; p.o.rotation.x += dt * 9; p.est -= dt; if (p.est <= 0) {p.est = 0.035; flip('fuego', p.x, p.z, 1.3, false, undefined, p.y, 0.35);}}
+    if (p.tipo === 'proy') {const d = VISTA.get(p.d); const tx = d ? (d.xi ?? d.x) : p.tx, tz = d ? (d.zi ?? d.z) : p.tz; p.tx = tx; p.tz = tz; const dx = tx - p.x, dz = tz - p.z, l = Math.hypot(dx, dz); if (l < 0.5 || p.t > 2) {if (p.torre) {flip(PLASMA.imp ? 'ap_plasma_imp' : 'chispa', p.x, p.z, PLASMA.imp ? 4.2 : 3, !!PLASMA.imp, undefined, PLASMA.imp ? undefined : 1, 0.5); flip('ondaC', p.x, p.z, 4.6, true); flip('polvoA', p.x, p.z, 3.4, true); suena('explosion', 0.45, p.x, p.z);} if (IMPACTO_AP[p.k]) flip(IMPACTO_AP[p.k], p.x, p.z, 1.1, false, undefined, p.y); scene.remove(p.o); FXP.splice(i, 1); continue;} p.x += dx / l * Math.min(l, p.v * dt); p.z += dz / l * Math.min(l, p.v * dt);
+      if (p.torre) {const f = Math.max(0, Math.min(1, 1 - l / (p.d0 || 1))); p.y = p.y0 * (1 - f) + 1 * f + Math.sin(f * Math.PI) * 2.6; if (p.sp) animaPlasma(p, dt); p.est -= dt; if (p.est <= 0) {p.est = 0.08; flip('chispa', p.x, p.z, 0.9, false, undefined, p.y, 0.35);}}
       p.o.position.set(p.x, p.y, p.z); p.o.rotation.y = Math.atan2(dx, dz);}
     else if (p.tipo === 'cae') {p.y -= dt * 26; p.o.position.set(p.x, p.y, p.z); if (p.y <= 0.2) {scene.remove(p.o); FXP.splice(i, 1); flip('impacto', p.x, p.z, 0.9);}}
     else if (p.tipo === 'tiro') {const k = Math.min(1, p.t / p.dur); p.o.position.set(p.x + (p.tx - p.x) * k, 1.2, p.z + (p.tz - p.z) * k); if (k >= 1) {if (IMPACTO_AP[p.k]) flip(IMPACTO_AP[p.k], p.tx, p.tz, 1.5); scene.remove(p.o); FXP.splice(i, 1);}}
@@ -2047,8 +2060,8 @@ function efectoLocal(e) {
   if (t === 'proy') {const o = modeloProy(e[1]); o.scale.multiplyScalar(e[6] || 1); scene.add(o); const pr = {tipo: 'proy', k: e[1], o, x: e[2], z: e[3], y: e[7] || 1.2, d: e[4], v: e[5], t: 0};
     if (e[1] === 'piedra' && (e[6] || 1) > 2) {/* 17/11 (solo las torres: la honda del hobbit no lleva fuego) («los cañonazos de las torres son cutres»): pedrusco ardiendo con halo, estela de fuego, parábola y estallido al caer */
       if (!HALO_T) {HALO_T = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), new THREE.MeshBasicMaterial({color: '#ff9a3a', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false}));}
-      const h = HALO_T.clone(); h.scale.setScalar(0.45); o.add(h); const ob = VISTA.get(e[4]); pr.torre = 1; pr.y0 = e[7] || 5; pr.d0 = ob ? Math.hypot((ob.xi ?? ob.x) - e[2], (ob.zi ?? ob.z) - e[3]) : 10; pr.est = 0;
-      flip('explosion', e[2], e[3], 2, false, undefined, pr.y0, 0.35); suena('explosion', 0.35, e[2], e[3]);
+      scene.remove(o); const sp = plasmaSprite(); sp.scale.setScalar(3); pr.o = new THREE.Group(); pr.o.add(sp); scene.add(pr.o); pr.sp = sp; const ob = VISTA.get(e[4]); pr.torre = 1; pr.y0 = e[7] || 5; pr.d0 = ob ? Math.hypot((ob.xi ?? ob.x) - e[2], (ob.zi ?? ob.z) - e[3]) : 10; pr.est = 0;
+      flip('chispa', e[2], e[3], 2.4, false, undefined, pr.y0, 0.35); suena('ap_luz', 0.3, e[2], e[3]);
     } else suena({bala: 'ap_fusil', bola: 'ap_golf'}[e[1]] || 'arco', {bala: 0.35, bola: 0.45}[e[1]] || 0.25);
     FXP.push(pr);}
   if (t === 'tiro') {const o = modeloProy(e[1]); o.scale.multiplyScalar(1.6); o.rotation.y = Math.atan2(e[4] - e[2], e[5] - e[3]); scene.add(o); FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0}); {const sh = {bala: 'ap_fusil', bola: 'ap_golf'}[e[1]]; suena(sh || 'arco', sh ? 0.5 : 0.12, e[2], e[3]);}}

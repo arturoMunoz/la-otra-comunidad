@@ -311,3 +311,29 @@ ART · Pack Autopista 40 · Disparo de las torres de A-6 (juego móvil tipo Wild
 IMAGEN 1 — el proyectil en vuelo: una bola de plasma eléctrico BLANCO-AZULADO con rayitos que chisporrotean alrededor y una cola corta, centrada en cada fotograma, ~40 % del fotograma, que palpita y cambia de forma en los 16 fotogramas (en bucle: el 16 enlaza con el 1).
 IMAGEN 2 — el impacto en el suelo visto desde arriba: destello blanco, onda eléctrica azul que se abre en círculo hasta casi el borde, rayos que salen hacia fuera y chispas que se apagan; los últimos 3 fotogramas casi vacíos.
 ```
+
+## 18/11 · Pack Autopista 41 WORK — rifle de Ata y palo de golf de Birdie (adjuntar Pack41_modelos.zip)
+
+```
+WORK · Pack Autopista 41 · Arreglar dos héroes de A-6 (juego móvil tipo Wild Rift visto desde arriba). Te adjunto `ap_ata.glb`, `ap_birdie.glb` y dos capturas de cómo se ven ahora en el juego (`ata_ingame.png`, `birdie_ingame.png`). Hay que CONSERVAR el mismo esqueleto (41 huesos, mismos nombres) y TODOS los clips con los mismos nombres; solo se cambian el arma y los clips que digo. 30 fps, altura y orientación iguales (pies en y=0, mirando a +Z).
+
+1) ATA (francotiradora): ahora el rifle cuelga de UNA mano apuntando al suelo en diagonal, como si fuera una espada, y queda muy raro. Quiero el rifle cogido con LAS DOS MANOS: mano derecha en la empuñadura con el dedo en el gatillo y la izquierda bajo el guardamanos, culata contra el hombro derecho. En `quieto`, `quieto_2`, `andar` y `correr`: rifle cruzado delante del pecho, cañón apuntando adelante y un poco abajo (posición de patrulla), sin atravesar el cuerpo. En `atacar` (es el golpe básico, un disparo): encara el rifle, apunta recto hacia +Z a la altura del hombro, retroceso corto del arma y del hombro hacia atrás a los 0,15 s y vuelve. `atacar_2` y `golpe_cargado`: lo mismo con un disparo más fuerte (más retroceso). El rifle más fino y largo (francotirador futurista, cañón largo con mira telescópica), ~1,3 m, que se lea bien desde arriba.
+
+2) BIRDIE (golfista): el golpe básico tiene que ser UN GOLPE DE GOLF con el palo. Ahora el palo es pequeño y lo lleva cruzado. Quiero: palo de golf (driver) más grande, ~1,2 m, cabeza metálica brillante; en `quieto`/`andar`/`correr` lo lleva al hombro o en la mano relajado. `atacar` y `atacar_2` = swing completo de golf: se coloca de lado, sube el palo por detrás (0-0,25 s), baja con fuerza y golpea a la altura del suelo delante de sus pies a los 0,32 s (ese es el momento en que el juego lanza la bola hacia +Z) y termina con el palo arriba por el otro lado (0,6 s). `atacar_2` un poco distinto (más corto, tipo approach). `golpe_cargado` = swing enorme con salto. Indica en un txt en qué segundo exacto toca la bola cada clip.
+
+Entrega `ap_ata.glb` y `ap_birdie.glb` (menos de 3 MB cada uno, una textura de 1024), capturas de los clips nuevos (una pose por clip, vista de lado) y el txt con los tiempos de impacto.
+```
+
+## 18/11 · Pack Autopista 42 ART — aro del botón de ataque básico, uno por héroe (sin adjuntos)
+
+```
+ART · Pack Autopista 42 · Aro del botón de ATAQUE BÁSICO de A-6 (juego móvil tipo Wild Rift, HUD cyberpunk serio: metal oscuro con neón, colores vivos). Es el botón grande de abajo a la derecha: dentro va el dibujo del arma de cada héroe (eso ya lo tengo), y quiero que el ARO que lo rodea sea distinto para cada uno, con su arma y su color. 7 aros redondos de 512x512, centro VACÍO y transparente (un círculo liso del 70 % del diámetro, ahí va el arma), sin texto, sobre fondo magenta liso #FF00FF, en una imagen de 1536x1024 (4 arriba, 3 abajo, separados):
+ 1) Dalinar, caballero de luz: aro de acero pulido con runas/juntas de luz BLANCO-AZULADA y una gran espada cruzando el aro por detrás.
+ 2) Vael, mago de fuego: aro de metal ennegrecido con grietas de lava NARANJA y llamas lamiendo el borde.
+ 3) Grub, maestro de la espada de energía: aro de piedra y metal viejo con filo de energía VERDE ácido y una hoja de energía curvada abrazando el aro.
+ 4) Ata, francotiradora: aro táctico de carbono negro con marcas de mira telescópica (retícula, números de distancia) en ROJO láser.
+ 5) Birdie, golfista: aro con textura de bola de golf y césped, filo VERDE CÉSPED brillante y un palo de golf cruzando por detrás.
+ 6) Fu, el de la cadena: aro de eslabones de cadena oscura con brillo MORADO y una hoz colgando.
+ 7) Moha, guerrero del desierto: aro de bronce arenoso con arena dorada girando alrededor y filo ARENA/dorado.
+Todos con el mismo grosor de aro (15 % del radio) y la misma forma exterior para que se puedan cambiar sin mover nada.
+```
