@@ -195,6 +195,15 @@ Diseño (original, sin marcas): tanque enorme con armadura completa de placas gr
 Técnico: 6.000-9.000 triángulos, una textura de 1024 (atlas) + material emisivo SOLO en las juntas de luz (en un material aparte llamado «luz» para poder encenderlo por código), altura 2,0 m de pies a cabeza en «quieto» (sin la espada levantada por encima de la cabeza en ese clip), pies en y=0, mirando a +Z. Entrega `ap_dalinar.glb` y una captura de frente y de lado junto al modelo antiguo para comparar tamaños. Licencias CC0 en un txt.
 ```
 
+### Pack Autopista 31 WORK · versión 2 (18/11, con el retrato nuevo; adjuntar Pack31_dalinar.zip)
+
+```
+WORK · Pack Autopista 31 · Rehacer el modelo 3D del héroe «Dalinar, Caballero de Luz» de A-6 (juego móvil tipo Wild Rift visto desde arriba, en una autopista española; estilo serio con toque cyberpunk). Te adjunto `ap_brask.glb` (el modelo actual) y `dalinar_retrato.png` (su retrato oficial: el modelo tiene que parecerse a ESE retrato). Problemas del actual: está hecho sobre el cuerpo del ENANO de KayKit (cabeza enorme, piernas cortas, rechoncho), la armadura es un bloque liso y la espada sale de lado.
+Hazlo sobre un cuerpo de HUMANO ADULTO alto y fuerte (base KayKit Adventurers «Knight» o «Barbarian», CC0) con EXACTAMENTE el mismo esqueleto y los mismos nombres de hueso que `ap_brask.glb` y los MISMOS clips con los mismos nombres (30 fps): atacar, atacar_2, atacar_3, golpe_cargado, giro, quieto, quieto_2, celebrar, morir, morir_2, esquivar, recibir_golpe, aturdido, correr, andar.
+Diseño, como el retrato: hombre de unos 55 años, pelo gris muy corto, mandíbula cuadrada, cara curtida con cicatriz; ARMADURA COMPLETA de placas gruesas gris pizarra casi negra, con piezas separadas que se lean desde arriba: hombreras grandes en capas, peto con tres gemas romboidales azules, brazales, guanteletes, faldón de placas y grebas; por las juntas y grietas de la armadura sale luz AZUL-BLANCA; capa azul marino hasta las corvas. ESPADÓN de dos manos casi de su altura, hoja ancha y recta con un canal de luz azul y una gema en la guarda; en «quieto» lo sujeta delante apoyado en el suelo, en «correr» y «andar» cogido con las dos manos hacia delante (nunca cruzado de lado), y en los golpes barre por delante del cuerpo.
+Técnico: 7.000-10.000 triángulos, una textura de 1024 (atlas) + un material aparte llamado «luz» SOLO para las juntas, las gemas y el canal de la espada (para encenderlo por código), altura 2,0 m de pies a cabeza en «quieto», pies en y=0, mirando a +Z. Entrega `ap_dalinar.glb`, capturas de frente, de lado y desde arriba en diagonal (como se verá en el juego) junto al modelo antiguo, y las licencias CC0 en un txt.
+```
+
 ## 17/11 · Pack Autopista 32 ART — marcas de apuntar EN PIEZAS (blancas, se tiñen por código)
 
 ```
