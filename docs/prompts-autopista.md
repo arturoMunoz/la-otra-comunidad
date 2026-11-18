@@ -293,3 +293,21 @@ ART · Pack Autopista 38 · Botones del menú principal de A-6 (juego móvil tip
  G) Dos aros redondos de 256x256 para botones de icono: uno con neón CIAN y otro con neón FUCSIA, aro grueso brillante y centro vacío negro.
 Los interiores lisos para que el texto se lea; los filos y halos deben verse bien aunque el botón salga pequeño (34-50 px de alto).
 ```
+
+## 18/11 · Pack Autopista 39 WORK — matorrales para esconderse (adjuntar Pack39_referencia.zip)
+
+```
+WORK · Pack Autopista 39 · Matorrales para esconderse en A-6 (juego móvil tipo Wild Rift visto desde arriba a ~20 m, autopista española de noche, estilo cyberpunk serio pero con colores vivos). Son las «hierbas altas» del LoL: zonas donde el jugador se esconde, así que tienen que leerse CLARAMENTE desde arriba como una mata densa y continua. Ahora mismo uso los arbustos de `vado_rocas.glb` (te lo adjunto: nodos `arbusto_01..04`) y desde arriba parecen trozos de cartulina verde. Te adjunto también `ap_vegetacion.glb` como referencia de estilo y escala (matas secas, adelfas, pinos).
+Haz en UN solo `ap_matorral.glb`, en metros, base en y=0 y centrado en el origen, 6 nodos:
+ - `adelfa_alta_1..3`: mata de adelfa de mediana de autopista, 1,4-1,8 m de alto y ~2 m de ancho, hojas verdes alargadas con algunas flores rosas y blancas, follaje denso y redondeado (que no se vean huecos desde arriba), con un poco de polvo gris en las hojas de abajo.
+ - `carrizo_1..3`: mata de carrizo/caña alta seca de cuneta, 1,6-2 m, tallos verde-amarillos con penachos, densa.
+Técnico: 800-2.000 triángulos cada uno, UNA textura de 512 con transparencia para las hojas (alpha recortado, sin semitransparencias) compartida por los 6, normales hacia arriba en las hojas para que no salgan negras vistas desde arriba, sin luces ni cámaras. Zip con el glb, una captura CENITAL de las 6 juntas y una de un grupo de 8 matas formando un círculo de 4 m (así se usan en el juego) y licencias en un txt (CC0 si usas bases de Quaternius/Kenney).
+```
+
+## 18/11 · Pack Autopista 40 ART — disparo de las torres (sin adjuntos)
+
+```
+ART · Pack Autopista 40 · Disparo de las torres de A-6 (juego móvil tipo Wild Rift visto desde arriba, autopista española de noche, cyberpunk con colores vivos). Ahora las torres de peaje lanzan un pedrusco en llamas (era de un juego medieval) y no pega. Quiero una descarga eléctrica de plasma. Fondo NEGRO puro #000000 (se suma como luz), sin texto, sin marco. Hazlo en 2 imágenes, una por mensaje, cada una 1024x1024 en rejilla de 4x4 fotogramas (256x256 cada uno), en orden de izquierda a derecha y de arriba abajo:
+IMAGEN 1 — el proyectil en vuelo: una bola de plasma eléctrico BLANCO-AZULADO con rayitos que chisporrotean alrededor y una cola corta, centrada en cada fotograma, ~40 % del fotograma, que palpita y cambia de forma en los 16 fotogramas (en bucle: el 16 enlaza con el 1).
+IMAGEN 2 — el impacto en el suelo visto desde arriba: destello blanco, onda eléctrica azul que se abre en círculo hasta casi el borde, rayos que salen hacia fuera y chispas que se apagan; los últimos 3 fotogramas casi vacíos.
+```

@@ -626,7 +626,7 @@ function decoradoPack10(al) {
   const cosas = ['neumatico_1', 'neumatico_2', 'bidon_1', 'bidon_2', 'palé', 'cascotes_1', 'cascotes_2', 'cascotes_3', 'señal_caida_1', 'señal_caida_2', 'cono_tumbado'];
   for (let i = 0; i < 30; i++) mete(P, uno(cosas), sg() * (8.4 + al() * 1.9), (al() - 0.5) * 74);
   for (let i = 0; i < 26; i++) mete(P, uno(cosas), sg() * (11.5 + al() * 22), sg() * (42 + al() * 30));
-  for (let i = 0; i < 9; i++) mete(P, 'mancha_aceite', (al() - 0.5) * 11, (al() - 0.5) * 100, 0.8 + al() * 0.8, al() * 6.283, 0.02);
+  for (let i = 0; i < 0; i++) mete(P, 'mancha_aceite', (al() - 0.5) * 11, (al() - 0.5) * 100, 0.8 + al() * 0.8, al() * 6.283, 0.02);
   for (const n in P) instancias('ap_suelo_props', n, P[n], false);
   for (const s of [1, -1]) for (let x = 14; x < 78; x += 7.4) for (const sx of [1, -1]) mete(B, uno(['talud_roca_1', 'talud_roca_2', 'talud_roca_3']), sx * x, s * 41.3, 1, s > 0 ? 0 : Math.PI);
   for (const n in B) instancias('ap_borde', n, B[n], false);
@@ -1483,6 +1483,21 @@ function rafaga({n = 1, x, z, ang, abre = 0, dist, varia = 0.25, cada = 0, y = 1
 function abanico(nombre, x, z, r, largo, y) {const s = largo / 1.2, se = s * (FB_DUR[nombre] ? 1.3 : 1); return flip(nombre, x + Math.sin(r) * se * 0.62, z + Math.cos(r) * se * 0.62, s, true, r - 3 * Math.PI / 4, y);}
 /* armadura que brilla (W de Dalinar) y que echa luz (R): emisivo en los materiales del héroe (copiados la primera vez, para no encender a otro igual) */
 const BRILLOS = [];
+function rimHeroe(o, color) {
+  o.rimMats = []; o.matsPropios = [];
+  const c = new THREE.Color(color);
+  o.raiz.traverse((m) => {if (!m.isMesh || !m.material) return; const mats = Array.isArray(m.material) ? m.material : [m.material];
+    const nuevos = mats.map((mt) => {const n = mt.clone(); n.userData.rim = {value: c}; n.userData.op = mt.opacity;
+      n.onBeforeCompile = (sh) => {sh.uniforms.uRim = n.userData.rim;
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRim;').replace('#include <dithering_fragment>', '#include <dithering_fragment>\n#ifdef USE_RIM_A6\n#endif\n{float fr=1.-abs(dot(normalize(normal),normalize(vViewPosition)));gl_FragColor.rgb+=uRim*pow(fr,2.)*1.35;}');};
+      n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (n.emissive) o.matsPropios.push(n); return n;});
+    m.material = Array.isArray(m.material) ? nuevos : nuevos[0];});
+}
+function animaRim() {
+  for (const [id, o] of VIS) {if (!o.rimMats) continue; const v = VISTA.get(id); if (!v) continue;
+    const esc = v.eq === MI_EQ && HIERBAS.length && enHierba({x: v.xi ?? v.x, z: v.zi ?? v.z}) >= 0, op = esc ? 0.5 : 1;
+    if (o.rimOp !== op) {o.rimOp = op; for (const m of o.rimMats) {m.transparent = op < 1 || m.userData.op < 1; m.opacity = op < 1 ? op : m.userData.op; m.depthWrite = op >= 1;}}}
+}
 function brillaArmadura(o, color, fuerza, dur) {
   if (!o || !o.raiz) return;
   if (!o.matsPropios) {o.matsPropios = []; o.raiz.traverse((m) => {if (m.isMesh && m.material && m.material.emissive) {m.material = m.material.clone(); o.matsPropios.push(m.material);}});}
@@ -1507,7 +1522,7 @@ const texAro = cargaTex('../batalla/ui/ap_aro_heroe.webp');
 function aro(color, r) {const g = new THREE.PlaneGeometry(r * 2, r * 2); g.rotateX(-Math.PI / 2); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: texAro, color, transparent: true, depthWrite: false, opacity: 0.85})); m.renderOrder = 2; return m;}
 function creaVis(v) {
   let o = {};
-  if (v.k === 'h') {o = montar(HEROES[v.tipo].modelo, (HEROES[v.tipo].alto || 2.05) * ESC_H); o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95 * ESC_H); if (v.id === YO) o.aro.material.color.set('#ffd24a'); scene.add(o.aro);}
+  if (v.k === 'h') {o = montar(HEROES[v.tipo].modelo, (HEROES[v.tipo].alto || 2.05) * ESC_H); o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95 * ESC_H); if (v.id === YO) o.aro.material.color.set('#ffd24a'); scene.add(o.aro); rimHeroe(o, v.id === YO ? '#ffc23a' : v.eq === MI_EQ ? '#38c8ff' : '#ff3048');}
   else if (v.k === 's') {
     o = montar(MODELO_SUBD[v.eq === MI_EQ ? 0 : 1][v.tipo], ALTO_SUBD[v.tipo]); const col = v.eq === MI_EQ ? '#3d8bff' : '#ff3b30';
     tiñe(o.raiz, col, v.hk === 'F' ? 1 : 0.12);
@@ -2141,6 +2156,7 @@ const RELOJ_F = {offs: [], tarde: [], ip: 100, paso: 1000 / 15}; let FOTO_TS = 0
 function ipVisto() {let m = INTERP_MS; for (const v of VISTA.values()) if (v.reloj && v.k === 'h' && v.eq !== MI_EQ) m = Math.max(m, v.reloj.ip); return m;} /* 17/11: el retraso de pintado se adapta a la red (fotos a trompicones → más colchón; red buena → menos retraso) */
 let CAM_FIN = null; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
 function camara(dt) {
+  try {animaRim();} catch (e) {}
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
   const {F} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, ade = CAM_FIN ? 0 : APAI ? 5 : 3;
   camM.x += (x + F.x * ade - camM.x) * Math.min(1, dt * 6); camM.z += (z + F.z * ade - camM.z) * Math.min(1, dt * 6);

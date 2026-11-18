@@ -1274,6 +1274,32 @@ html = sub(html, '</head>', """<style>
 @media (max-height:440px){#menu #bCrear{border-left-width:32px!important}#menu #bCrear img{left:-29px;top:0;width:24px!important;height:24px!important}}
 </style></head>""", donde='html')
 
+# ---------- EN PARTIDA (18/11, Henar: «mejora el juego ingame»): que los héroes se lean y que la hierba se note ----------
+# (1) filo de luz alrededor de cada héroe con el color de su equipo (tú dorado, aliados cian, enemigos rojo), como el contorno del
+#     Wild Rift: en el puente oscuro los héroes de armadura negra (Dalinar) se perdían. Cada héroe lleva sus materiales propios.
+# (2) si tu héroe (o un aliado) está en la hierba se vuelve medio transparente: así sabes que estás escondido.
+# (3) fuera las manchas de aceite del Pack 10: desde arriba parecían agujeros negros en la calzada.
+js = sub(js, "if (v.id === YO) o.aro.material.color.set('#ffd24a'); scene.add(o.aro);}",
+         "if (v.id === YO) o.aro.material.color.set('#ffd24a'); scene.add(o.aro); rimHeroe(o, v.id === YO ? '#ffc23a' : v.eq === MI_EQ ? '#38c8ff' : '#ff3048');}")
+js = sub(js, "function brillaArmadura(o, color, fuerza, dur) {", """function rimHeroe(o, color) {
+  o.rimMats = []; o.matsPropios = [];
+  const c = new THREE.Color(color);
+  o.raiz.traverse((m) => {if (!m.isMesh || !m.material) return; const mats = Array.isArray(m.material) ? m.material : [m.material];
+    const nuevos = mats.map((mt) => {const n = mt.clone(); n.userData.rim = {value: c}; n.userData.op = mt.opacity;
+      n.onBeforeCompile = (sh) => {sh.uniforms.uRim = n.userData.rim;
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\\nuniform vec3 uRim;').replace('#include <dithering_fragment>', '#include <dithering_fragment>\\n#ifdef USE_RIM_A6\\n#endif\\n{float fr=1.-abs(dot(normalize(normal),normalize(vViewPosition)));gl_FragColor.rgb+=uRim*pow(fr,2.)*1.35;}');};
+      n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (n.emissive) o.matsPropios.push(n); return n;});
+    m.material = Array.isArray(m.material) ? nuevos : nuevos[0];});
+}
+function animaRim() {
+  for (const [id, o] of VIS) {if (!o.rimMats) continue; const v = VISTA.get(id); if (!v) continue;
+    const esc = v.eq === MI_EQ && HIERBAS.length && enHierba({x: v.xi ?? v.x, z: v.zi ?? v.z}) >= 0, op = esc ? 0.5 : 1;
+    if (o.rimOp !== op) {o.rimOp = op; for (const m of o.rimMats) {m.transparent = op < 1 || m.userData.op < 1; m.opacity = op < 1 ? op : m.userData.op; m.depthWrite = op >= 1;}}}
+}
+function brillaArmadura(o, color, fuerza, dur) {""")
+js = sub(js, "function camara(dt) {", "function camara(dt) {\n  try {animaRim();} catch (e) {}")
+js = sub(js, "for (let i = 0; i < 9; i++) mete(P, 'mancha_aceite',", "for (let i = 0; i < 0; i++) mete(P, 'mancha_aceite',")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
