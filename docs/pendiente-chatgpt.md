@@ -97,3 +97,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 ## ElevenLabs · Efectos de sonido de A-6 (18/11, Henar: «el sonido es horrible») — EN ESPERA: sin tokens de ElevenLabs (18/11)
 No es ChatGPT: en ElevenLabs → Sound Effects. Cada uno 3 veces (3 versiones), bajar en mp3 y llamarlos `nombre_1.mp3`, `nombre_2.mp3`, `nombre_3.mp3`; pasar todo en un zip. Al llegar se normalizan con ffmpeg y van a `public/batalla/sonidos_ap/fx/` (mismos nombres que `SON_LISTA`). Prompts en `docs/prompts-autopista.md` («Sonidos ElevenLabs»).
 - [ ] golpe_carne, espada_armadura, espada_corte, muerte_orco, explosion_piedras, explosion_fuego, derrumbe_muro, rayo_magico, subir_nivel, recoger_moneda, cuerno_lejano, rafaga_viento, ap_cadena, ap_plasma
+- [ ] 18/11 · Pack Autopista 47 WORK — modelo del héroe mágico nuevo «el Visor» (adjuntar Pack47_referencia.zip; prompt en `docs/prompts-autopista.md`)

@@ -379,6 +379,18 @@ WORK · Pack Autopista 46 · Modelos 3D (.glb) de los objetos que se recogen en 
 Entrega los 4 .glb en un zip con una captura de cada uno y las licencias CC0 en un txt. Nada de animaciones (las haremos por código: girar el plato, botar la tapa, latir la luz).
 ```
 
+## 18/11 · Pack Autopista 47 WORK — héroe mágico nuevo «el Visor» (rayos de los ojos; adjuntar Pack47_referencia.zip)
+
+```
+WORK · Pack Autopista 47 · Modelo 3D de un HÉROE NUEVO para A-6 (juego móvil tipo Wild Rift visto desde arriba, partidas en una autopista española; estilo de los héroes: cuerpo de humano adulto proporcionado, look actual y serio con toque cyberpunk, nada infantil). Te adjunto `ap_ata.glb`, otro héroe del juego: el nuevo tiene que usar EXACTAMENTE su mismo esqueleto (mismos huesos con los mismos nombres, mismo rig) para que el juego lo mueva igual.
+
+Personaje (ORIGINAL, sin marcas ni parecido con ningún superhéroe existente): «El Visor», un mago de luz que dispara RAYOS DE ENERGÍA POR LOS OJOS. Hombre de unos 30 años, delgado y atlético, pelo castaño corto despeinado. Lleva una VISERA-GAFA de metal grafito que le tapa los ojos de lado a lado, con una ranura horizontal de cristal que brilla en CIAN-turquesa (no rojo). Ropa de calle técnica: chaqueta corta de motorista gris marengo con costuras y protecciones en hombros y codos, pantalón cargo negro, botas de seguridad, guantes sin dedos. Detalles de luz cian en las juntas de la chaqueta y en la visera. Nada de mallas, capas ni logos en el pecho.
+
+Clips (30 fps), los MISMOS nombres que `ap_ata.glb`: quieto, quieto_2, andar, correr, atacar, atacar_2, golpe_cargado, esquivar, recibir_golpe, aturdido, celebrar, morir, morir_2. Pero animados para ESTE personaje: en atacar/atacar_2 se lleva dos dedos a la sien de la visera y echa la cabeza un poco hacia delante como disparando con la mirada (manos libres, sin arma); golpe_cargado = abre los brazos, se inclina hacia atrás y luego echa la cabeza hacia delante con fuerza (para la definitiva, un rayo largo de 1,5 s). Añade UN clip nuevo «canalizar»: de pie, una mano en la visera, la cabeza girando despacio de izquierda a derecha durante 2 s en bucle (para un rayo que barre).
+
+Técnico: 6.000-9.000 triángulos, una textura de 1024 (atlas) + material emisivo SOLO en la ranura de la visera y en las juntas de luz, en un material aparte llamado «luz» para encenderlo por código. Altura 2,0 m de pies a cabeza en «quieto», pies en y=0, mirando a +Z, sin arma. Entrega `ap_visor.glb`, una captura de frente y otra de lado junto a `ap_ata.glb` para comparar tamaños, y las licencias CC0 de lo que uses en un txt.
+```
+
 ## Sonidos ElevenLabs (18/11) — ElevenLabs → Sound Effects, 3 versiones de cada uno
 Estilo común (añadir al final de cada prompt): `game sound effect, mobile MOBA, modern cyberpunk highway, punchy and clean, no music, no voice, dry, no long reverb`
 | archivo | duración | prompt |
