@@ -829,6 +829,15 @@ body[data-heroe=rohan] #bAt::after{background-image:url(ui/ap_aro_at_rohan.webp)
 .monVuela{position:fixed;width:26px;height:26px;margin:-13px 0 0 -13px;background:url(ui/ap_obj_oro.webp) center/contain no-repeat;pointer-events:none;z-index:9;filter:drop-shadow(0 0 6px #ffd24a);transition:left .55s cubic-bezier(.5,-.3,.7,1),top .55s cubic-bezier(.3,.1,.7,1),transform .55s;transform:scale(1.1)}
 #oro.cobra{animation:apCobra .3s}
 @keyframes apCobra{40%{transform:scale(1.35);color:#fff36a}}
+</style><style>
+.bv.h{position:relative}
+.bv .est{position:absolute;left:50%;bottom:calc(100% + 16px);transform:translateX(-50%);display:flex;gap:2px;pointer-events:none}
+.bv .est img{width:22px;height:22px;filter:drop-shadow(0 1px 2px #000)}
+.bv.yo .est img{width:26px;height:26px}
+.bv .est img:first-child{animation:apEst .9s ease-out}
+@keyframes apEst{0%{transform:scale(1.8);opacity:0}100%{transform:scale(1);opacity:1}}
+/* 44: velo de derribado (cristal roto y neón rojo en los bordes) */
+#muerto{background:url(ui/ap_velo_muerte.webp) center/100% 100% no-repeat,#05060c70!important}
 </style></head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>

@@ -660,8 +660,18 @@ const UT = {value: 0}, FUENTE_AROS = []; let LUCES_AIRE = null;
 /* el aro de tu fuente, azul; el del enemigo, rojo (se llama al saber de qué bando eres) */
 function colorFuentes() {for (const a of FUENTE_AROS) a.material.color.set(a.userData.eq === MI_EQ ? '#4fb6ff' : '#ff5a4a'); ponFuentesA6();}
 const FUENTES_A6 = [];
+let TEX_HOR_PL = null;
+function plataformaSalida(eq) {
+  const f = BASES[eq].fuente, col = eq === MI_EQ ? '#2f9cff' : '#ff2a3a', g = new THREE.Group();
+  if (!TEX_HOR_PL) {TEX_HOR_PL = cargaTex('../batalla/texturas/ap_hormigon.webp', true); TEX_HOR_PL.repeat.set(3, 3);}
+  const losa = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.6, 0.36, 6), new THREE.MeshLambertMaterial({map: TEX_HOR_PL, color: '#8a909a'})); losa.position.y = 0.18; losa.receiveShadow = true; g.add(losa);
+  const filo = new THREE.Mesh(new THREE.CylinderGeometry(5.72, 5.72, 0.12, 6, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.9, side: THREE.DoubleSide})); filo.position.y = 0.3; g.add(filo);
+  const halo = new THREE.Mesh(new THREE.CylinderGeometry(5.75, 6.4, 0.02, 6, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide})); halo.position.y = 0.05; g.add(halo);
+  g.position.set(f.x, 0, f.z); g.rotation.y = Math.PI / 6; g.userData.salida = 1; (MAPA_G || scene).add(g); FUENTES_A6.push(g);
+}
 function ponFuentesA6() {
   for (const o of FUENTES_A6) o.parent && o.parent.remove(o); FUENTES_A6.length = 0;
+  for (const eq of [0, 1]) plataformaSalida(eq);
   for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja'); fusiona(o); o.position.set(f.x, 0, f.z); o.rotation.y = eq ? 0 : Math.PI; (MAPA_G || scene).add(o); FUENTES_A6.push(o);}
 }
 const GLSL_RUIDO = `float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
@@ -1413,7 +1423,7 @@ function aplicaMando(h, o) {
   }
 function foto() {
   const u = S.u.map((q) => q.k === 'h'
-    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT), Math.round(q.mana), Math.round(stats(q).mana), q.bot ? 0 : (q.tcIn || 0)]
+    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0) | (q.buf.lento > 0 ? 4 : 0) | (q.quema && q.quema.hasta > S.t ? 8 : 0) | (q.sang && q.sang.hasta > S.t ? 16 : 0) | (q.buf.azogue > 0 || q.buf.alfa > 0 ? 32 : 0) | (q.buf.furiaO > 0 ? 64 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT), Math.round(q.mana), Math.round(stats(q).mana), q.bot ? 0 : (q.tcIn || 0)]
     : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') : q.k === 'j' ? q.elem || '' : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
   const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t))), dr = S.bufEq.map((b) => [b.drF || 0, b.drH || 0, b.alma || 0]);
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
@@ -1548,7 +1558,7 @@ function creaVis(v) {
     const mats = []; g.traverse((q) => {if (q.isMesh) {q.material = q.material.clone(); q.material.transparent = true; mats.push(q.material);}});
     o = {raiz: g, est, mats}; luzFuego(1.6, v.z);
   } else if (v.k === 'n') {
-    const g = new THREE.Group(), b = pieza('ap_estructuras', v.eq === MI_EQ ? 'nexo_azul' : 'nexo_rojo'); fusiona(b); b.scale.setScalar(1); g.add(b); g.rotation.y = v.eq ? 0 : Math.PI;
+    const g = new THREE.Group(), b = pieza('ap_estructuras', v.eq === MI_EQ ? 'nexo_azul' : 'nexo_rojo'); fusiona(b); b.scale.setScalar(0.6); {const c = new THREE.Color(v.eq === MI_EQ ? '#2f8cff' : '#ff2a3a'); b.traverse((q) => {if (q.isMesh && q.material) {q.material = q.material.clone(); q.material.color.lerp(c, 0.3); if (q.material.emissive) {q.material.emissive.copy(c); q.material.emissiveIntensity = 0.22;}}});} g.add(b); g.rotation.y = v.eq ? 0 : Math.PI;
     o = {raiz: g}; luzFuego(0, v.z);
   }
   o.raiz.position.set(v.x, 0, v.z); scene.add(o.raiz); o.ac = v.ac; o.hc = v.hc;
@@ -1804,6 +1814,14 @@ function dirDolor(de) {
   el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 60);
 }
 function tiñe(raiz, color, k) {const c = new THREE.Color(color); raiz.traverse((q) => {if (q.isMesh && q.material) {q.material.color.lerp(c, k * 0.6); if (q.material.emissive) {q.material.emissive.copy(c); q.material.emissiveIntensity = 0.25 * k;}}});}
+function estadosBarra(b, v) {
+  const f = v.flags || 0, e = v.flagsE || 0, l = [];
+  if (f & 2) l.push('aturdido'); if (e & 4) l.push('lento'); if (e & 8) l.push('quema'); if (e & 16) l.push('sangra'); if (f & 4 || e & 2) l.push('escudo');
+  if (f & 1 || (f & 8 && v.eq === MI_EQ)) l.push('invisible'); if (e & 32) l.push('velocidad'); if (e & 64) l.push('furia');
+  const k = l.join(); if (b._est === k) return; b._est = k;
+  let d = b._estD; if (!d) {d = b._estD = document.createElement('div'); d.className = 'est'; b.appendChild(d);}
+  d.innerHTML = l.map((n) => '<img src="ui/ap_est_' + n + '.webp" alt="">').join('');
+}
 function quitaVis(id) {const o = VIS.get(id); if (!o) return; scene.remove(o.raiz); o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.dispose) q.material.dispose();}); if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} VIS.delete(id); const b = BARRAS.get(id); if (b) {b.remove(); BARRAS.delete(id);}}
 const BARRAS = new Map();
 let MD_F = -1, MD_V = 0;
@@ -1874,11 +1892,12 @@ function dibuja(dt) {
     /* barra de vida */
     let b = BARRAS.get(v.id);
     if (!b) {b = document.createElement('div'); b.className = 'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].grande ? 't' : 'm'}[v.k] + ' e' + (v.eq === 2 ? 2 : v.eq === MI_EQ ? 0 : 1) + (v.id === YO ? ' yo' : ''); b.innerHTML = (v.k === 'h' ? '<b></b>' : '') + '<i><s></s><u></u></i>' + (v.k === 'h' ? '<span class="mn"><u></u></span>' : ''); $('barras').appendChild(b); BARRAS.set(v.id, b);}
-    const altoB = v.k === 'h' ? (HEROES[v.tipo].alto || 2.05) * ESC_H + 0.55 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 : v.k === 't' ? 8 : 8.4;
+    const altoB = v.k === 'h' ? (HEROES[v.tipo].alto || 2.05) * ESC_H + 0.55 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 : v.k === 't' ? 8 : 6;
     _p.set(x, altoB, z).project(camera);
     const vis = o.raiz.visible && !muerto && v.vida > 0 && _p.z < 1 && Math.abs(_p.x) < 1.2 && Math.abs(_p.y) < 1.2 && (v.k !== 'j' || v.vida < v.max || NEUTRO[v.tipo].grande);
     /* barras: solo se toca el DOM cuando algo cambia, y se mueven con transform (no recalcula la página entera en cada fotograma) */
     if (!b._u) {b._s = b.querySelector('s'); b._u = b.querySelector('u'); b._i = b.querySelector('i'); b._b = b.querySelector('b');}
+    if (v.k === 'h') estadosBarra(b, v);
     if (b._vis !== vis) {b._vis = vis; b.style.display = vis ? 'flex' : 'none';}
     if (v.k === 't' || v.k === 'n') {const hk = String(v.hk); if (b._hk !== hk) {b._hk = hk; b.classList.toggle('prot', hk.includes('P')); b.classList.toggle('inh', hk.includes('I'));}}
     if (vis) {

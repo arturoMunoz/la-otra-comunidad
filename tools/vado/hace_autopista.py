@@ -1396,6 +1396,53 @@ js = sub(js, "  const {F} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, ade = CAM_
   camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);""")
 js = sub(js, "let CAM_FIN = null;", "let CAM_FIN = null; const CAM_LEAD = {};")
 
+# ---------- PACKS 40 (imagen 2), 43 y 44 ART (18/11) ----------
+# 40.2: impacto del plasma (fx/ap_plasma_imp.webp; el código ya lo usa si existe). 43: iconos de estado encima de la barra de vida
+# de cada héroe (tools/autopista/procesa_pack43_44.py). La simulación manda en flagsE (campo 33) los estados que antes no viajaban:
+# 4 frenado, 8 quemando, 16 sangrando, 32 más velocidad, 64 furia (dentro de la simulación: volver a sacar sim_ap.js).
+js = sub(js, "(q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0)",
+         "(q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0) | (q.buf.lento > 0 ? 4 : 0) | (q.quema && q.quema.hasta > S.t ? 8 : 0) | (q.sang && q.sang.hasta > S.t ? 16 : 0) | (q.buf.azogue > 0 || q.buf.alfa > 0 ? 32 : 0) | (q.buf.furiaO > 0 ? 64 : 0)")
+js = sub(js, "    if (!b._u) {b._s = b.querySelector('s'); b._u = b.querySelector('u'); b._i = b.querySelector('i'); b._b = b.querySelector('b');}",
+         "    if (!b._u) {b._s = b.querySelector('s'); b._u = b.querySelector('u'); b._i = b.querySelector('i'); b._b = b.querySelector('b');}\n    if (v.k === 'h') estadosBarra(b, v);")
+js = sub(js, "function quitaVis(id) {", """function estadosBarra(b, v) {
+  const f = v.flags || 0, e = v.flagsE || 0, l = [];
+  if (f & 2) l.push('aturdido'); if (e & 4) l.push('lento'); if (e & 8) l.push('quema'); if (e & 16) l.push('sangra'); if (f & 4 || e & 2) l.push('escudo');
+  if (f & 1 || (f & 8 && v.eq === MI_EQ)) l.push('invisible'); if (e & 32) l.push('velocidad'); if (e & 64) l.push('furia');
+  const k = l.join(); if (b._est === k) return; b._est = k;
+  let d = b._estD; if (!d) {d = b._estD = document.createElement('div'); d.className = 'est'; b.appendChild(d);}
+  d.innerHTML = l.map((n) => '<img src="ui/ap_est_' + n + '.webp" alt="">').join('');
+}
+function quitaVis(id) {""")
+html = sub(html, '</head>', """<style>
+.bv.h{position:relative}
+.bv .est{position:absolute;left:50%;bottom:calc(100% + 16px);transform:translateX(-50%);display:flex;gap:2px;pointer-events:none}
+.bv .est img{width:22px;height:22px;filter:drop-shadow(0 1px 2px #000)}
+.bv.yo .est img{width:26px;height:26px}
+.bv .est img:first-child{animation:apEst .9s ease-out}
+@keyframes apEst{0%{transform:scale(1.8);opacity:0}100%{transform:scale(1);opacity:1}}
+/* 44: velo de derribado (cristal roto y neón rojo en los bordes) */
+#muerto{background:url(ui/ap_velo_muerte.webp) center/100% 100% no-repeat,#05060c70!important}
+</style></head>""", donde='html')
+
+# ---------- NÚCLEOS Y PLATAFORMA DE SALIDA (18/11, Henar: «los núcleos más pequeños y rojo/azul; tu zona de spawn marcada con una plataforma») ----------
+# nexo al 60 % y teñido del color de su equipo (azul el tuyo); en cada fuente una plataforma hexagonal de hormigón con filo de luz
+# de su color, hecha con piezas sencillas y la textura de hormigón del Pack 11 (PROVISIONAL hasta el Pack Autopista 45 ART)
+js = sub(js, "b = pieza('ap_estructuras', v.eq === MI_EQ ? 'nexo_azul' : 'nexo_rojo'); fusiona(b); b.scale.setScalar(1);",
+         "b = pieza('ap_estructuras', v.eq === MI_EQ ? 'nexo_azul' : 'nexo_rojo'); fusiona(b); b.scale.setScalar(0.6); {const c = new THREE.Color(v.eq === MI_EQ ? '#2f8cff' : '#ff2a3a'); b.traverse((q) => {if (q.isMesh && q.material) {q.material = q.material.clone(); q.material.color.lerp(c, 0.3); if (q.material.emissive) {q.material.emissive.copy(c); q.material.emissiveIntensity = 0.22;}}});}")
+js = sub(js, "v.k === 't' ? 8 : 8.4;", "v.k === 't' ? 8 : 6;")
+js = sub(js, "  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja');",
+         "  for (const eq of [0, 1]) plataformaSalida(eq);\n  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja');")
+js = sub(js, "const FUENTES_A6 = [];", """const FUENTES_A6 = [];
+let TEX_HOR_PL = null;
+function plataformaSalida(eq) {
+  const f = BASES[eq].fuente, col = eq === MI_EQ ? '#2f9cff' : '#ff2a3a', g = new THREE.Group();
+  if (!TEX_HOR_PL) {TEX_HOR_PL = cargaTex('../batalla/texturas/ap_hormigon.webp', true); TEX_HOR_PL.repeat.set(3, 3);}
+  const losa = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.6, 0.36, 6), new THREE.MeshLambertMaterial({map: TEX_HOR_PL, color: '#8a909a'})); losa.position.y = 0.18; losa.receiveShadow = true; g.add(losa);
+  const filo = new THREE.Mesh(new THREE.CylinderGeometry(5.72, 5.72, 0.12, 6, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.9, side: THREE.DoubleSide})); filo.position.y = 0.3; g.add(filo);
+  const halo = new THREE.Mesh(new THREE.CylinderGeometry(5.75, 6.4, 0.02, 6, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide})); halo.position.y = 0.05; g.add(halo);
+  g.position.set(f.x, 0, f.z); g.rotation.y = Math.PI / 6; g.userData.salida = 1; (MAPA_G || scene).add(g); FUENTES_A6.push(g);
+}""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

@@ -359,3 +359,9 @@ ART · Pack Autopista 44 · Pantalla de «te han derribado» de A-6 (juego móvi
 IMAGEN 1 (1920x1080) — VELO de la pantalla: bordes oscurecidos con grietas de cristal roto y un tono rojo apagado que se va a transparente hacia el centro (el centro de la imagen TRANSPARENTE de verdad, en PNG con transparencia; si no puedes, fondo negro puro #000000 en el centro); algo de lluvia y reflejos de neón rojo en los bordes.
 IMAGEN 2 (1024x1024) — RELOJ DE REAPARICIÓN: un aro grande de neón rojo-rosa, roto en segmentos como un cronómetro digital, con un hueco redondo grande en el centro vacío (ahí va el número de segundos), y abajo un pequeño hueco alargado para el nombre de quien te derribó; sobre fondo magenta liso #FF00FF.
 ```
+
+## 18/11 · Pack Autopista 45 ART — plataforma de salida (sin adjuntos)
+
+```
+ART · Pack Autopista 45 · Plataforma de SALIDA (donde reaparecen los héroes) de A-6, vista desde ARRIBA en planta, juego móvil tipo Wild Rift, autopista española de noche, cyberpunk con colores vivos. Una sola imagen 1024x1024, sin texto, fondo magenta liso #FF00FF: una plataforma HEXAGONAL de hormigón pulido y placas de acero que ocupa casi todo el cuadro (vértices tocando el borde izquierdo y derecho), con juntas de neón BLANCO (el juego lo tiñe de azul o rojo) que forman un dibujo de pista de aterrizaje: un círculo central, rayas como un helipuerto y flechas en los 6 lados; marcas de pintura gastada, tornillos y una ligera rejilla de ventilación. Vista perfectamente cenital, sin perspectiva ni sombras proyectadas fuera de la plataforma.
+```
