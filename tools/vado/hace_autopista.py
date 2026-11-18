@@ -1528,6 +1528,27 @@ function proyAP(n) {
 js = sub(js, "if (t === 'proy') {const o = modeloProy(e[1]); o.scale.multiplyScalar(e[6] || 1);", "if (t === 'proy') {const o = modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(e[6] || 1);")
 js = sub(js, "if (t === 'tiro') {const o = modeloProy(e[1]); o.scale.multiplyScalar(1.6);", "if (t === 'tiro') {const o = modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(1.6);")
 
+# ---------- TODOS LOS PROYECTILES DEL TAMAÑO DE LO QUE GOLPEAN (18/11, Henar: «revísalo para todos los que lancen proyectiles») ----------
+# Mismo fallo que la bola de Birdie en Vael (brasa), Grub (energía), Ata (bala) y Fu (hoz): el dibujo era un plano de 2,2-2,4 m
+# (×1,6 en las habilidades) con la «cabeza» 0,3-0,8 m por DELANTE del punto real. Ahora cada dibujo se coloca con el centro de su cabeza
+# (medido en la imagen: PROY_CAB = [centro, diámetro] en fracción del ancho) justo en el punto real y a la escala en que esa cabeza
+# mide lo que golpea: 2 × ancho en las habilidades en línea (el ancho viaja en el evento 'tiro') y 0,7 m en los golpes básicos
+# (que siempre dan: van a por su objetivo). La estela queda detrás. La bala de Ata: ancho 0,55 (antes 0,9; si no, la bala medía 1,8 m).
+js = sub(js, "ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26]);", "ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26, H.ancho || 0.5]);")
+js = sub(js, "q: {n: 'Bala perforante', cd: 6, mn: 45, tipo: 'linea', alc: 13, ancho: 0.9,", "q: {n: 'Bala perforante', cd: 6, mn: 45, tipo: 'linea', alc: 13, ancho: 0.55,")
+js = sub(js, "const PROY_AP_G = {}, GEO_PROY", "const PROY_CAB = {bola: [0.664, 0.492], brasa: [0.656, 0.5], energia: [0.631, 0.574], bala: [0.818, 0.363], hoz: [0.621, 0.594]};\nconst PROY_AP_G = {}, GEO_PROY")
+js = sub(js, "function proyAP(n) {\n  if (n === 'bola') {if (!PROY_AP_G.bola) PROY_AP_G.bola = bolaGolf(); return PROY_AP_G.bola.clone(true);}\n  if (!PROY_AP_G[n]) {",
+         """function proyAP(n, D = 0.7) {
+  const k = n + '|' + D.toFixed(2);
+  if (n === 'bola') {if (!PROY_AP_G[k]) {PROY_AP_G[k] = bolaGolf(); const h = PROY_AP_G[k].children[1]; h.scale.setScalar(D); PROY_AP_G[k].children[0].scale.setScalar(Math.min(1, D / 1.2));} return PROY_AP_G[k].clone(true);}
+  {const f = PROY_AP[n][0], cab = PROY_CAB[f];
+   if (cab) {if (!PROY_AP_G[k]) {const S = D / cab[1], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false}));
+     m.scale.setScalar(S); m.position.z = -(cab[0] - 0.5) * S; m.renderOrder = 6; g.add(m); g.userData.tamFijo = 1; PROY_AP_G[k] = g;} return PROY_AP_G[k].clone(true);}}
+  if (!PROY_AP_G[n]) {""")
+js = sub(js, "if (t === 'tiro') {const o = modeloProy(e[1]); if (!o.userData.tamFijo)", "if (t === 'tiro') {const o = PROY_AP[e[1]] ? proyAP(e[1], 2 * (e[7] || 0.5)) : modeloProy(e[1]); if (!o.userData.tamFijo)")
+js = sub(js, "if (t === 'proy') {const o = modeloProy(e[1]); if (!o.userData.tamFijo)", "if (t === 'proy') {const o = PROY_AP[e[1]] ? proyAP(e[1], 0.7) : modeloProy(e[1]); if (!o.userData.tamFijo)")
+
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
