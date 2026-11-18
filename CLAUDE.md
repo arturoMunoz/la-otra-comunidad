@@ -308,3 +308,4 @@ Juego web privado para 9 amigos (Arturo, Porru, Adrián, Carlos, Fer, Edo, Rodri
 - PACK 41 WORK (18/11, `tools/autopista/pack41`): Ata con el rifle a dos manos y Birdie con swing de golf (pasados por `adelgaza.py`); su básico sale en el punto de impacto de la animación (Birdie 0,27 s, Ata 0,12 s; `luego` en `golpea`, `sim_ap.js` regenerado).
 
 - PACK 49 ART (18/11, originales en `tools/autopista/pack49/<clave>.png`): retrato grande de cada héroe con fondo propio de su color (lluvia de noche en la autopista), en `ui/ap_splash_<clave>.webp` (768x1024).
+- SIN PELÍCULA DE COLOR (18/11, Henar: «la película amarilla es horrible, parecen todos iguales»; bloque del generador): fuera el filo de luz por equipo de `rimHeroe` (el equipo lo dicen el aro y la barra); en su lugar los colores de cada héroe un 30 % más saturados y un 4 % más vivos en el mismo sombreador. Prueba: `tools/pruebas/t_par.py HEROE RIVAL`.

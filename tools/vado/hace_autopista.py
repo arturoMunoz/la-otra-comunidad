@@ -1651,6 +1651,10 @@ body[data-heroe=visor] #bAt::after{background-image:url(ui/ap_aro_at_visor.webp)
 # Su disparo sale cuando el arma llega al punto de impacto de la animación (TIEMPOS_IMPACTO.txt: Ata 0,15 s, Birdie 0,32 s; el clip va ×1,15)
 js = sub(js, "    if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');", "    if (b.proy) {const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}")
 
+# ---------- SIN PELÍCULA DE COLOR EN LOS HÉROES (18/11, Henar: «la película amarilla es horrible, parecen todos iguales; satura un poco sus colores») ----------
+# Fuera el filo de luz por equipo (el equipo ya lo dicen el aro del suelo y la barra); a cambio, sus colores un 30 % más saturados y un pelín más vivos.
+js = sub(js, "gl_FragColor.rgb+=uRim*pow(fr,uRimF>2.?1.6:2.)*uRimF;", "fr=0.;{float l=dot(gl_FragColor.rgb,vec3(.299,.587,.114));gl_FragColor.rgb=max(mix(vec3(l),gl_FragColor.rgb,1.3)*1.04,0.);}")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

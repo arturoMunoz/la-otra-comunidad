@@ -1538,7 +1538,7 @@ function rimHeroe(o, color) {
   o.raiz.traverse((m) => {if (!m.isMesh || !m.material) return; const mats = Array.isArray(m.material) ? m.material : [m.material];
     const nuevos = mats.map((mt) => {const n = mt.clone(); n.userData.rim = {value: c}; n.userData.rimF = {value: color === '#ff3048' ? 2.4 : 1.35}; n.userData.op = mt.opacity;
       n.onBeforeCompile = (sh) => {sh.uniforms.uRim = n.userData.rim; sh.uniforms.uRimF = n.userData.rimF;
-        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRim; uniform float uRimF;').replace('#include <dithering_fragment>', '#include <dithering_fragment>\n#ifdef USE_RIM_A6\n#endif\n{float fr=1.-abs(dot(normalize(normal),normalize(vViewPosition)));gl_FragColor.rgb+=uRim*pow(fr,uRimF>2.?1.6:2.)*uRimF;}');};
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRim; uniform float uRimF;').replace('#include <dithering_fragment>', '#include <dithering_fragment>\n#ifdef USE_RIM_A6\n#endif\n{float fr=1.-abs(dot(normalize(normal),normalize(vViewPosition)));fr=0.;{float l=dot(gl_FragColor.rgb,vec3(.299,.587,.114));gl_FragColor.rgb=max(mix(vec3(l),gl_FragColor.rgb,1.3)*1.04,0.);}}');};
       n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (n.emissive) o.matsPropios.push(n); return n;});
     m.material = Array.isArray(m.material) ? nuevos : nuevos[0];});
 }
