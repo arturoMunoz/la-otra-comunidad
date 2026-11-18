@@ -817,6 +817,18 @@ body[data-heroe=hobbit] #bAt::after{background-image:url(ui/ap_aro_at_hobbit.web
 body[data-heroe=gollum] #bAt::after{background-image:url(ui/ap_aro_at_gollum.webp)}
 body[data-heroe=rohan] #bAt::after{background-image:url(ui/ap_aro_at_rohan.webp)}
 #bAtT,#bAtS{z-index:3!important}
+</style><style>
+#dirDolor{position:fixed;inset:0;pointer-events:none;z-index:6}
+#dirDolor i{position:absolute;opacity:0;transition:opacity .45s ease-out}
+#dirDolor i.on{opacity:1;transition:none}
+#dirDolor .dI{left:0;top:0;bottom:0;width:18%;background:linear-gradient(90deg,#ff1e3ccc,#ff1e3c00)}
+#dirDolor .dD{right:0;top:0;bottom:0;width:18%;background:linear-gradient(270deg,#ff1e3ccc,#ff1e3c00)}
+#dirDolor .dA{left:0;right:0;top:0;height:22%;background:linear-gradient(180deg,#ff1e3ccc,#ff1e3c00)}
+#dirDolor .dB{left:0;right:0;bottom:0;height:22%;background:linear-gradient(0deg,#ff1e3ccc,#ff1e3c00)}
+/* (3) moneda que vuela al oro */
+.monVuela{position:fixed;width:26px;height:26px;margin:-13px 0 0 -13px;background:url(ui/ap_obj_oro.webp) center/contain no-repeat;pointer-events:none;z-index:9;filter:drop-shadow(0 0 6px #ffd24a);transition:left .55s cubic-bezier(.5,-.3,.7,1),top .55s cubic-bezier(.3,.1,.7,1),transform .55s;transform:scale(1.1)}
+#oro.cobra{animation:apCobra .3s}
+@keyframes apCobra{40%{transform:scale(1.35);color:#fff36a}}
 </style></head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>
@@ -899,5 +911,5 @@ body[data-heroe=rohan] #bAt::after{background-image:url(ui/ap_aro_at_rohan.webp)
   }
   setTimeout(rayo, 1800);
 })();
-</script></body>
+</script><div id="dirDolor"><i class="dI"></i><i class="dD"></i><i class="dA"></i><i class="dB"></i></div></body>
 </html>

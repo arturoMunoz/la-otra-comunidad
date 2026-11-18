@@ -1342,6 +1342,60 @@ body[data-heroe=rohan] #bAt::after{background-image:url(ui/ap_aro_at_rohan.webp)
 #bAtT,#bAtS{z-index:3!important}
 </style></head>""", donde='html')
 
+# ---------- EN PARTIDA II (18/11, Henar: «mételos») ----------
+# (1) el héroe ENEMIGO con el filo rojo más fuerte y más ancho que tus aliados: no se pierde entre sus soldados rojos
+js = sub(js, "n.userData.rim = {value: c};", "n.userData.rim = {value: c}; n.userData.rimF = {value: color === '#ff3048' ? 2.4 : 1.35};")
+js = sub(js, "sh.uniforms.uRim = n.userData.rim;", "sh.uniforms.uRim = n.userData.rim; sh.uniforms.uRimF = n.userData.rimF;")
+js = sub(js, "'#include <common>\\nuniform vec3 uRim;'", "'#include <common>\\nuniform vec3 uRim; uniform float uRimF;'")
+js = sub(js, "gl_FragColor.rgb+=uRim*pow(fr,2.)*1.35;", "gl_FragColor.rgb+=uRim*pow(fr,uRimF>2.?1.6:2.)*uRimF;")
+# (2) de dónde te pegan: destello rojo en el borde de la pantalla del lado del que pega (si está fuera de la pantalla o cerca del borde)
+html = sub(html, '</body>', '<div id="dirDolor"><i class="dI"></i><i class="dD"></i><i class="dA"></i><i class="dB"></i></div></body>', donde='html')
+html = sub(html, '</head>', """<style>
+#dirDolor{position:fixed;inset:0;pointer-events:none;z-index:6}
+#dirDolor i{position:absolute;opacity:0;transition:opacity .45s ease-out}
+#dirDolor i.on{opacity:1;transition:none}
+#dirDolor .dI{left:0;top:0;bottom:0;width:18%;background:linear-gradient(90deg,#ff1e3ccc,#ff1e3c00)}
+#dirDolor .dD{right:0;top:0;bottom:0;width:18%;background:linear-gradient(270deg,#ff1e3ccc,#ff1e3c00)}
+#dirDolor .dA{left:0;right:0;top:0;height:22%;background:linear-gradient(180deg,#ff1e3ccc,#ff1e3c00)}
+#dirDolor .dB{left:0;right:0;bottom:0;height:22%;background:linear-gradient(0deg,#ff1e3ccc,#ff1e3c00)}
+/* (3) moneda que vuela al oro */
+.monVuela{position:fixed;width:26px;height:26px;margin:-13px 0 0 -13px;background:url(ui/ap_obj_oro.webp) center/contain no-repeat;pointer-events:none;z-index:9;filter:drop-shadow(0 0 6px #ffd24a);transition:left .55s cubic-bezier(.5,-.3,.7,1),top .55s cubic-bezier(.3,.1,.7,1),transform .55s;transform:scale(1.1)}
+#oro.cobra{animation:apCobra .3s}
+@keyframes apCobra{40%{transform:scale(1.35);color:#fff36a}}
+</style></head>""", donde='html')
+js = sub(js, "  if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140);}\n}",
+         "  if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140); dirDolor(de);}\n}\n"
+         """const _dd = new THREE.Vector3();
+function dirDolor(de) {
+  const va = VISTA.get(de); if (!va) return; _dd.set(va.xi ?? va.x, 1, va.zi ?? va.z).project(camera);
+  const x = _dd.x * (_dd.z > 1 ? -1 : 1), y = _dd.y * (_dd.z > 1 ? -1 : 1); if (Math.abs(x) < 0.8 && Math.abs(y) < 0.75) return;  /* lo ves: no hace falta */
+  const cl = Math.abs(x) > Math.abs(y) ? (x < 0 ? 'dI' : 'dD') : (y > 0 ? 'dA' : 'dB'), el = document.querySelector('#dirDolor .' + cl); if (!el) return;
+  el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 60);
+}""")
+# (3) al rematar, la moneda vuela desde el soldado hasta tu contador de oro
+js = sub(js, "if (e[4] === 'o') {suena('moneda', 0.3); flip('monedas', e[1], e[2], 1.8, false, 0, 1.4);}",
+         "if (e[4] === 'o') {suena('moneda', 0.3); flip('monedas', e[1], e[2], 1.8, false, 0, 1.4); monedaVuela(e[1], e[2]);}")
+js = sub(js, "function numero(x, z, txt, cls) {", """function monedaVuela(x, z) {
+  const oro = $('oro'); if (!oro || document.querySelectorAll('.monVuela').length > 6) return;
+  _dd.set(x, 1.4, z).project(camera); const sx = (_dd.x + 1) / 2 * VW, sy = (1 - _dd.y) / 2 * VH, b = oro.getBoundingClientRect(), r = GIRO ? {left: b.top, top: innerWidth - b.right, height: b.width} : b;
+  const m = document.createElement('i'); m.className = 'monVuela'; m.style.left = sx + 'px'; m.style.top = sy + 'px'; document.body.appendChild(m);
+  requestAnimationFrame(() => requestAnimationFrame(() => {m.style.left = (r.left + 10) + 'px'; m.style.top = (r.top + r.height / 2) + 'px'; m.style.transform = 'scale(.6)';}));
+  setTimeout(() => {m.remove(); oro.classList.remove('cobra'); void oro.offsetWidth; oro.classList.add('cobra');}, 560);
+}
+function numero(x, z, txt, cls) {""")
+# (4) cámara 60/40: el héroe se queda en el 40 % de la pantalla del lado de donde viene y ve el 60 % hacia donde va (según hacia dónde camina)
+js = sub(js, "  const {F} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, ade = CAM_FIN ? 0 : APAI ? 5 : 3;\n  camM.x += (x + F.x * ade - camM.x) * Math.min(1, dt * 6); camM.z += (z + F.z * ade - camM.z) * Math.min(1, dt * 6);",
+         """  const {F, R} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z;
+  {const L = CAM_LEAD; if (L.x === undefined) {L.x = x; L.z = z; L.fx = F.x; L.fz = F.z;}
+   const mx = x - L.x, mz = z - L.z, sp = Math.hypot(mx, mz) / Math.max(dt, 1e-3); L.x = x; L.z = z;
+   if (sp > 1.2 && sp < 40) {const k = Math.min(1, dt * 3); L.fx += (mx / (sp * dt) - L.fx) * k; L.fz += (mz / (sp * dt) - L.fz) * k; const l = Math.hypot(L.fx, L.fz) || 1; L.fx /= l; L.fz /= l;}
+   const z0 = ZOOMS[zoomI], dist = Math.hypot(z0[0], z0[1]), t = Math.tan(camera.fov * Math.PI / 360), sinP = z0[0] / dist,
+     hw = dist * t * camera.aspect, hh = dist * t / sinP, fr = L.fx * R.x + L.fz * R.z, ff = L.fx * F.x + L.fz * F.z;
+   const ox = CAM_FIN ? 0 : R.x * fr * 0.2 * hw + F.x * ff * 0.2 * hh, oz = CAM_FIN ? 0 : R.z * fr * 0.2 * hw + F.z * ff * 0.2 * hh;
+   L.ox = (L.ox || 0) + (ox - (L.ox || 0)) * Math.min(1, dt * 2.5); L.oz = (L.oz || 0) + (oz - (L.oz || 0)) * Math.min(1, dt * 2.5);}
+  camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);""")
+js = sub(js, "let CAM_FIN = null;", "let CAM_FIN = null; const CAM_LEAD = {};")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

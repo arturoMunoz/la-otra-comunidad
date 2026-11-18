@@ -337,3 +337,25 @@ ART · Pack Autopista 42 · Aro del botón de ATAQUE BÁSICO de A-6 (juego móvi
  7) Moha, guerrero del desierto: aro de bronce arenoso con arena dorada girando alrededor y filo ARENA/dorado.
 Todos con el mismo grosor de aro (15 % del radio) y la misma forma exterior para que se puedan cambiar sin mover nada.
 ```
+
+## 18/11 · Pack Autopista 43 ART — iconos de estado sobre la cabeza (sin adjuntos)
+
+```
+ART · Pack Autopista 43 · Iconos de ESTADO que salen encima de la cabeza de los héroes en A-6 (juego móvil tipo Wild Rift visto desde arriba, HUD cyberpunk con colores vivos y neón). Tienen que entenderse de un vistazo a 28 px. 8 iconos redondos de 256x256, cada uno con un aro fino de neón de su color y el dibujo dentro bien grueso, sin texto, sobre fondo magenta liso #FF00FF, separados, en una imagen de 1536x1024 (4 arriba, 4 abajo):
+ 1) ATURDIDO: tres estrellas y espirales girando, AMARILLO.
+ 2) RALENTIZADO: un caracol o un reloj de arena con hielo, CIAN.
+ 3) QUEMANDO: llama, NARANJA.
+ 4) SANGRANDO: tres gotas, ROJO.
+ 5) ESCUDO: escudo hexagonal de energía, AZUL.
+ 6) INVISIBLE / ESCONDIDO: ojo tachado, MORADO.
+ 7) VELOCIDAD: flechas hacia delante con estela, VERDE LIMA.
+ 8) FURIA (más daño): puño o garra con brillo, ROJO-ROSA.
+```
+
+## 18/11 · Pack Autopista 44 ART — pantalla de derribado y reaparición (sin adjuntos)
+
+```
+ART · Pack Autopista 44 · Pantalla de «te han derribado» de A-6 (juego móvil tipo Wild Rift en horizontal, autopista española de noche bajo la tormenta, cyberpunk con colores vivos). Ahora la pantalla solo se vuelve gris. Quiero 2 imágenes, una por mensaje, sin texto (los textos y números los pone el juego):
+IMAGEN 1 (1920x1080) — VELO de la pantalla: bordes oscurecidos con grietas de cristal roto y un tono rojo apagado que se va a transparente hacia el centro (el centro de la imagen TRANSPARENTE de verdad, en PNG con transparencia; si no puedes, fondo negro puro #000000 en el centro); algo de lluvia y reflejos de neón rojo en los bordes.
+IMAGEN 2 (1024x1024) — RELOJ DE REAPARICIÓN: un aro grande de neón rojo-rosa, roto en segmentos como un cronómetro digital, con un hueco redondo grande en el centro vacío (ahí va el número de segundos), y abajo un pequeño hueco alargado para el nombre de quien te derribó; sobre fondo magenta liso #FF00FF.
+```

@@ -1487,9 +1487,9 @@ function rimHeroe(o, color) {
   o.rimMats = []; o.matsPropios = [];
   const c = new THREE.Color(color);
   o.raiz.traverse((m) => {if (!m.isMesh || !m.material) return; const mats = Array.isArray(m.material) ? m.material : [m.material];
-    const nuevos = mats.map((mt) => {const n = mt.clone(); n.userData.rim = {value: c}; n.userData.op = mt.opacity;
-      n.onBeforeCompile = (sh) => {sh.uniforms.uRim = n.userData.rim;
-        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRim;').replace('#include <dithering_fragment>', '#include <dithering_fragment>\n#ifdef USE_RIM_A6\n#endif\n{float fr=1.-abs(dot(normalize(normal),normalize(vViewPosition)));gl_FragColor.rgb+=uRim*pow(fr,2.)*1.35;}');};
+    const nuevos = mats.map((mt) => {const n = mt.clone(); n.userData.rim = {value: c}; n.userData.rimF = {value: color === '#ff3048' ? 2.4 : 1.35}; n.userData.op = mt.opacity;
+      n.onBeforeCompile = (sh) => {sh.uniforms.uRim = n.userData.rim; sh.uniforms.uRimF = n.userData.rimF;
+        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRim; uniform float uRimF;').replace('#include <dithering_fragment>', '#include <dithering_fragment>\n#ifdef USE_RIM_A6\n#endif\n{float fr=1.-abs(dot(normalize(normal),normalize(vViewPosition)));gl_FragColor.rgb+=uRim*pow(fr,uRimF>2.?1.6:2.)*uRimF;}');};
       n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (n.emissive) o.matsPropios.push(n); return n;});
     m.material = Array.isArray(m.material) ? nuevos : nuevos[0];});
 }
@@ -1794,7 +1794,14 @@ function golpeVisual(id, de, fuerte) {
   if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; {const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);} suena(fuerte ? 'espada' : v.k === 'h' ? 'golpeH' : 'golpe', yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}
   if (meDan) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.35 : 0.18);
   else if (yoPego && (fuerte || v.k === 'h')) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.22 : 0.1);
-  if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140);}
+  if (meDan) {const d = $('dolor'); d.style.opacity = 1; clearTimeout(d._t); d._t = setTimeout(() => {d.style.opacity = 0;}, 140); dirDolor(de);}
+}
+const _dd = new THREE.Vector3();
+function dirDolor(de) {
+  const va = VISTA.get(de); if (!va) return; _dd.set(va.xi ?? va.x, 1, va.zi ?? va.z).project(camera);
+  const x = _dd.x * (_dd.z > 1 ? -1 : 1), y = _dd.y * (_dd.z > 1 ? -1 : 1); if (Math.abs(x) < 0.8 && Math.abs(y) < 0.75) return;  /* lo ves: no hace falta */
+  const cl = Math.abs(x) > Math.abs(y) ? (x < 0 ? 'dI' : 'dD') : (y > 0 ? 'dA' : 'dB'), el = document.querySelector('#dirDolor .' + cl); if (!el) return;
+  el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 60);
 }
 function tiñe(raiz, color, k) {const c = new THREE.Color(color); raiz.traverse((q) => {if (q.isMesh && q.material) {q.material.color.lerp(c, k * 0.6); if (q.material.emissive) {q.material.emissive.copy(c); q.material.emissiveIntensity = 0.25 * k;}}});}
 function quitaVis(id) {const o = VIS.get(id); if (!o) return; scene.remove(o.raiz); o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.dispose) q.material.dispose();}); if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} VIS.delete(id); const b = BARRAS.get(id); if (b) {b.remove(); BARRAS.delete(id);}}
@@ -2052,10 +2059,17 @@ function ponSonido(cual, on) {
   AUD[cual + 'On'] = on; localStorage.setItem('auto.' + cual, on ? '1' : '0'); audio(); if (!AC) return;
   if (cual === 'mus') AUD.mus.gain.value = on ? 0.55 : 0; else {AUD.fx.gain.value = on ? 0.9 : 0; AUD.voz.gain.value = on ? 1 : 0;}
 }
+function monedaVuela(x, z) {
+  const oro = $('oro'); if (!oro || document.querySelectorAll('.monVuela').length > 6) return;
+  _dd.set(x, 1.4, z).project(camera); const sx = (_dd.x + 1) / 2 * VW, sy = (1 - _dd.y) / 2 * VH, b = oro.getBoundingClientRect(), r = GIRO ? {left: b.top, top: innerWidth - b.right, height: b.width} : b;
+  const m = document.createElement('i'); m.className = 'monVuela'; m.style.left = sx + 'px'; m.style.top = sy + 'px'; document.body.appendChild(m);
+  requestAnimationFrame(() => requestAnimationFrame(() => {m.style.left = (r.left + 10) + 'px'; m.style.top = (r.top + r.height / 2) + 'px'; m.style.transform = 'scale(.6)';}));
+  setTimeout(() => {m.remove(); oro.classList.remove('cobra'); void oro.offsetWidth; oro.classList.add('cobra');}, 560);
+}
 function numero(x, z, txt, cls) {if (cls === 'v') cls = 'cur'; if (NUMS.length > 24) {NUMS[0].el.remove(); NUMS.shift();}const el = document.createElement('div'); el.className = 'num ' + (cls || ''); el.textContent = txt; $('barras').appendChild(el); NUMS.push({el, x: x + rnd(-0.3, 0.3), z, t: 0});}
 function efectoLocal(e) {
   const t = e[0];
-  if (t === 'num') {if (e[4] === 'o' && e[5] !== YO) return; if ((e[4] === '' || e[4] === 'c') && e[6] !== undefined && e[5] !== YO && e[6] !== YO) return; /* como en el Wild Rift: solo los números de tus golpes y de los que te dan */ if (e[6] === YO && e[4] !== 'c') e[4] = 'r'; numero(e[1], e[2], e[3], e[4]); if (e[4] === 'o') {suena('moneda', 0.3); flip('monedas', e[1], e[2], 1.8, false, 0, 1.4);}}
+  if (t === 'num') {if (e[4] === 'o' && e[5] !== YO) return; if ((e[4] === '' || e[4] === 'c') && e[6] !== undefined && e[5] !== YO && e[6] !== YO) return; /* como en el Wild Rift: solo los números de tus golpes y de los que te dan */ if (e[6] === YO && e[4] !== 'c') e[4] = 'r'; numero(e[1], e[2], e[3], e[4]); if (e[4] === 'o') {suena('moneda', 0.3); flip('monedas', e[1], e[2], 1.8, false, 0, 1.4); monedaVuela(e[1], e[2]);}}
   if (t === 'fx') {if (e[1] === 'onda') flip('onda', e[2], e[3], e[4], true); else flip(e[1], e[2], e[3], e[4], e[1] === 'tajo'); if (e[1] === 'explosion') suena('explosion', 0.6, e[2], e[3]); if (e[1] === 'onda') suena('viento', 0.4, e[2], e[3]);}
   if (t === 'proy') {const o = modeloProy(e[1]); o.scale.multiplyScalar(e[6] || 1); scene.add(o); const pr = {tipo: 'proy', k: e[1], o, x: e[2], z: e[3], y: e[7] || 1.2, d: e[4], v: e[5], t: 0};
     if (e[1] === 'piedra' && (e[6] || 1) > 2) {/* 17/11 (solo las torres: la honda del hobbit no lleva fuego) («los cañonazos de las torres son cutres»): pedrusco ardiendo con halo, estela de fuego, parábola y estallido al caer */
@@ -2167,12 +2181,19 @@ function relojRemoto(est, llegada, tRemoto) {
 }
 const RELOJ_F = {offs: [], tarde: [], ip: 100, paso: 1000 / 15}; let FOTO_TS = 0;
 function ipVisto() {let m = INTERP_MS; for (const v of VISTA.values()) if (v.reloj && v.k === 'h' && v.eq !== MI_EQ) m = Math.max(m, v.reloj.ip); return m;} /* 17/11: el retraso de pintado se adapta a la red (fotos a trompicones → más colchón; red buena → menos retraso) */
-let CAM_FIN = null; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
+let CAM_FIN = null; const CAM_LEAD = {}; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
 function camara(dt) {
   try {animaRim();} catch (e) {}
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
-  const {F} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z, ade = CAM_FIN ? 0 : APAI ? 5 : 3;
-  camM.x += (x + F.x * ade - camM.x) * Math.min(1, dt * 6); camM.z += (z + F.z * ade - camM.z) * Math.min(1, dt * 6);
+  const {F, R} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z;
+  {const L = CAM_LEAD; if (L.x === undefined) {L.x = x; L.z = z; L.fx = F.x; L.fz = F.z;}
+   const mx = x - L.x, mz = z - L.z, sp = Math.hypot(mx, mz) / Math.max(dt, 1e-3); L.x = x; L.z = z;
+   if (sp > 1.2 && sp < 40) {const k = Math.min(1, dt * 3); L.fx += (mx / (sp * dt) - L.fx) * k; L.fz += (mz / (sp * dt) - L.fz) * k; const l = Math.hypot(L.fx, L.fz) || 1; L.fx /= l; L.fz /= l;}
+   const z0 = ZOOMS[zoomI], dist = Math.hypot(z0[0], z0[1]), t = Math.tan(camera.fov * Math.PI / 360), sinP = z0[0] / dist,
+     hw = dist * t * camera.aspect, hh = dist * t / sinP, fr = L.fx * R.x + L.fz * R.z, ff = L.fx * F.x + L.fz * F.z;
+   const ox = CAM_FIN ? 0 : R.x * fr * 0.2 * hw + F.x * ff * 0.2 * hh, oz = CAM_FIN ? 0 : R.z * fr * 0.2 * hw + F.z * ff * 0.2 * hh;
+   L.ox = (L.ox || 0) + (ox - (L.ox || 0)) * Math.min(1, dt * 2.5); L.oz = (L.oz || 0) + (oz - (L.oz || 0)) * Math.min(1, dt * 2.5);}
+  camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);
   camGolpe = Math.max(0, camGolpe - dt * 1.5); const zg = 1 - 0.16 * Math.sin(Math.min(1, camGolpe) * Math.PI), z0 = ZOOMS[zoomI], zz = [z0[0] * zg, z0[1] * zg]; tiemblaCam = Math.max(0, tiemblaCam - dt * 1.6); const tb = tiemblaCam * tiemblaCam * 1.6, ox = (Math.random() - 0.5) * tb, oz = (Math.random() - 0.5) * tb;
   camera.position.set(camM.x - F.x * zz[1] + ox, zz[0], camM.z - F.z * zz[1] + oz); camera.lookAt(camM.x + ox, 0, camM.z + oz);
   luces(); {const p = Math.round(camM.x / 6) * 6, q = Math.round(camM.z / 6) * 6; if (p !== SOL_C.x || q !== SOL_C.z) {SOL_C.x = p; SOL_C.z = q; SOL_C.forzar = true; sol.position.set(p + 10, 40, q + 8); sol.target.position.set(p, 0, q);}}
