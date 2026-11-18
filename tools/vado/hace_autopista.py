@@ -1798,6 +1798,16 @@ js = sub(js, "    renderer.compile(scene, camera);\n    setTimeout(() => tmp.for
     try {const vuelve = []; for (const o of tmp) o.traverse((q) => {if (q.isMesh && q.material && q.material.customProgramCacheKey && q.material.customProgramCacheKey() === 'rimA6' && !q.material.transparent) {q.material.transparent = true; vuelve.push(q.material);}}); if (vuelve.length) {renderer.compile(scene, camera); vuelve.forEach((m) => {m.transparent = false;});}} catch (e) {}
     setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400);""")
 
+# ---------- JUNGLA MENOS RECARGADA (18/11, Henar: «quita mierda del mapa, está muy recargado, sobre todo la jungla») ----------
+# Solo decorado (la simulación no cambia: los árboles que chocan y la hierba de esconderse se quedan):
+# fuera la chatarra alrededor de los claros (palés, neumáticos, bidones, cascotes), fuera las rocas sueltas de la jungla,
+# juncos del río de 90 a 30 y farolas de las calzadas a la mitad.
+js = sub(js, "if (c.tipo === 'troll') {chatarra(c); continue;}", "if (c.tipo === 'troll') continue;")
+js = sub(js, "chatarra(PIT, 6.2); chatarra(PIT2, 6.2);", "")
+js = sub(js, "for (let f = 0.12; f < 0.9; f += 0.11)", "for (let f = 0.14; f < 0.9; f += 0.22)")
+js = sub(js, "if (TIPO_MAPA === 'ojo') for (let i = 0; i < 90; i++)", "if (TIPO_MAPA === 'ojo') for (let i = 0; i < 30; i++)")
+js = sub(js, "for (let i = 0; i < 40; i++) {const x = (al() - 0.5) * 60", "for (let i = 0; i < (TIPO_MAPA === 'ojo' ? 0 : 40); i++) {const x = (al() - 0.5) * 60")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

@@ -535,9 +535,9 @@ function construyeMapa() {
   /* hierba alta, juncos del río, piedras de vadear y rocas */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
   for (const b of HIERBAS) for (let i = 0; i < 9; i++) {const a = al() * 6.28, d = Math.sqrt(al()) * b.r * 0.85; mata('arbusto_0' + (1 + i % 4), b.x + Math.cos(a) * d, b.z + Math.sin(a) * d, 1.3 + al() * 0.5);}
-  if (TIPO_MAPA === 'ojo') for (let i = 0; i < 90; i++) {const t = (al() - 0.5) * 70, o = (al() < 0.5 ? -1 : 1) * (2.4 + al() * 1.8), x = -t * EJE.z + o * EJE.x, z = t * EJE.x + o * EJE.z; if (Math.hypot(x - PIT.x, z - PIT.z) < 8 || Math.hypot(x - PIT2.x, z - PIT2.z) < 8 || distCarril(x, z) < 3 || Math.abs(x) > 33 || Math.abs(z) > 57) continue; mata('juncos_0' + (1 + i % 3), x, z, 0.9 + al() * 0.6);}
+  if (TIPO_MAPA === 'ojo') for (let i = 0; i < 30; i++) {const t = (al() - 0.5) * 70, o = (al() < 0.5 ? -1 : 1) * (2.4 + al() * 1.8), x = -t * EJE.z + o * EJE.x, z = t * EJE.x + o * EJE.z; if (Math.hypot(x - PIT.x, z - PIT.z) < 8 || Math.hypot(x - PIT2.x, z - PIT2.z) < 8 || distCarril(x, z) < 3 || Math.abs(x) > 33 || Math.abs(z) > 57) continue; mata('juncos_0' + (1 + i % 3), x, z, 0.9 + al() * 0.6);}
   for (const l of []) {const L = CARRILES[l]; let mejor = 0; for (let f = 0; f <= 1; f += 0.01) {const p = puntoCarril(l, f); if (Math.abs(ladoDe(p)) < Math.abs(ladoDe(puntoCarril(l, mejor)))) mejor = f;} const c = puntoCarril(l, mejor); for (let i = 0; i < 8; i++) mata('piedra_vado_0' + (1 + i % 6), c.x + (al() - 0.5) * 5, c.z + (al() - 0.5) * 3, 0.5 + al() * 0.3);}
-  for (let i = 0; i < 40; i++) {const x = (al() - 0.5) * 60, z = (al() - 0.5) * 100; if (!dentroOjo(x, z) || (TIPO_MAPA === 'linea' && Math.abs(x) < 9) || distCarril(x, z) < 5 || CAMPOS.some((c) => Math.hypot(c.x - x, c.z - z) < 4) || sendas.some(([a, b]) => distSeg(x, z, a, b) < 2.4)) continue; mata('roca_0' + (1 + i % 6), x, z, 0.35 + al() * 0.5);}
+  for (let i = 0; i < (TIPO_MAPA === 'ojo' ? 0 : 40); i++) {const x = (al() - 0.5) * 60, z = (al() - 0.5) * 100; if (!dentroOjo(x, z) || (TIPO_MAPA === 'linea' && Math.abs(x) < 9) || distCarril(x, z) < 5 || CAMPOS.some((c) => Math.hypot(c.x - x, c.z - z) < 4) || sendas.some(([a, b]) => distSeg(x, z, a, b) < 2.4)) continue; mata('roca_0' + (1 + i % 6), x, z, 0.35 + al() * 0.5);}
   for (const n in matas) instancias('vado_rocas', n, matas[n], !n.startsWith('juncos'));
   /* cubiles de las bestias, braseros y fuentes */
   for (const c of []) {
@@ -602,9 +602,9 @@ function decoradoOjo(pon2, al) {
     if (!I) {I = new Uint32Array(P.count); for (let i = 0; i < P.count; i++) I[i] = i;} const k = []; for (let i = 0; i < I.length; i += 3) {const ya = P.getY(I[i]), yb = P.getY(I[i + 1]), yc = P.getY(I[i + 2]); if (Math.max(ya, yb, yc) < 0.8 && Math.max(ya, yb, yc) - Math.min(ya, yb, yc) < 0.04) continue; k.push(I[i], I[i + 1], I[i + 2]);} g.setIndex(k); q.geometry = g;});
   const chatarra = (c, esc = 1) => {const L = [['palé', 3.6, 0.2, 1.4], ['palé', 3.9, 0.55, 1.2], ['neumatico_1', 4.1, 1.5, 1.3], ['neumatico_2', 3.7, 2.2, 1.2], ['bidon_1', 4.3, 2.9, 1.1], ['bidon_2', 4.0, 3.15, 1.1], ['cascotes_2', 4.4, 3.9, 1.3], ['neumatico_1', 3.8, 4.6, 1.25], ['palé', 4.2, 5.3, 1.3], ['cascotes_1', 4.5, 5.9, 1.2]];
     const a0 = haciaCentro(c) + Math.PI; for (const [n, r, a, e] of L) {const o = pieza('ap_suelo_props', n), an = a0 + a; o.position.set(c.x + Math.sin(an) * r * esc / (esc > 1 ? 4 : 1), 0, c.z + Math.cos(an) * r * esc / (esc > 1 ? 4 : 1)); o.rotation.y = an * 3.1; o.scale.setScalar(e); fusiona(o); G.add(o);}};
-  for (const c of CAMPOS) {const nd = NEUTRO[c.tipo]; if (nd.jefe || nd.draco || nd.pasiva) continue; if (c.tipo === 'troll') {chatarra(c); continue;}
+  for (const c of CAMPOS) {const nd = NEUTRO[c.tipo]; if (nd.jefe || nd.draco || nd.pasiva) continue; if (c.tipo === 'troll') continue;
     const o = pieza('ap_jungla', c.tipo === 'huorn' ? 'cubil_coloso' : 'cubil'); sinSuelo(o); o.position.set(c.x, 0, c.z); o.rotation.y = haciaCentro(c); fusiona(o); G.add(o);}
-  chatarra(PIT, 6.2); chatarra(PIT2, 6.2);  /* Nasor y el lagarto: en un claro con chatarra, sin el foso de tierra con valla */
+    /* Nasor y el lagarto: en un claro con chatarra, sin el foso de tierra con valla */
   /* orillas del río: a los dos lados, siguiendo su curva, salvo donde pasan las calzadas y en los fosos */
   const pe = {x: -EJE.z, z: EJE.x};
   for (let a = -40; a <= 40; a += 10) for (const lado of [1, -1]) {
@@ -615,7 +615,7 @@ function decoradoOjo(pon2, al) {
   for (const p of ORILLA) pz('puente_vado', p.x, p.z, Math.atan2(EJE.x, EJE.z) + Math.PI / 2);
   /* las calzadas: farolas a un lado cada ~16 m y quitamiedos donde cruzan el río */
   for (const l of [0, 1]) {
-    for (let f = 0.12; f < 0.9; f += 0.11) {const p = puntoCarril(l, f), q = puntoCarril(l, f + 0.01), dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz) || 1, nx = dz / d, nz = -dx / d, sg = l ? -1 : 1;
+    for (let f = 0.14; f < 0.9; f += 0.22) {const p = puntoCarril(l, f), q = puntoCarril(l, f + 0.01), dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz) || 1, nx = dz / d, nz = -dx / d, sg = l ? -1 : 1;
       const x = p.x + nx * 5.6 * sg, z = p.z + nz * 5.6 * sg; if (Math.abs(ladoDe({x, z})) < 4 || BASES.some((b) => Math.hypot(b.torre.x - x, b.torre.z - z) < 6)) continue;
       const o = pon2('ap_farola', x, z, Math.atan2(-nx * sg, -nz * sg) + Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});}
     let mejor = 0; for (let f = 0; f <= 1; f += 0.005) if (Math.abs(ladoDe(puntoCarril(l, f))) < Math.abs(ladoDe(puntoCarril(l, mejor)))) mejor = f;
