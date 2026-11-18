@@ -423,6 +423,22 @@ ART · Pack Autopista 48 · Imagen 4 de 4 · Dos hojas de animación de efectos 
  - Hoja B «Sobrecarga»: anillo de energía alrededor de un personaje (centro del fotograma vacío) que se carga en 4 pasos, chispea y estalla en una onda.
 ```
 
+## 18/11 · Pack Autopista 49 ART — fondo propio en el retrato de cada héroe (adjuntar Pack49_retratos.zip; 7 imágenes, una por mensaje, cada una con SU retrato adjunto)
+
+Plantilla (cambiar NOMBRE, ARCHIVO y FONDO en cada mensaje):
+
+```
+ART · Pack Autopista 49 · Retrato de NOMBRE (A-6, juego móvil tipo Wild Rift en una autopista española). Te adjunto su retrato actual ARCHIVO. Quiero EL MISMO personaje, idéntico: misma cara, misma pose, misma ropa, mismo arma, mismo encuadre y mismo estilo pictórico. Cambia SOLO el FONDO y la luz que el fondo echa sobre él, para que cada héroe tenga su propio escenario con su color. Fondo: FONDO. Formato vertical 768x1024, sin texto, sin marco, sin logos.
+```
+
+1. Dalinar · `1_dalinar.png` · un puerto de montaña con la autopista nevada al amanecer, ventisca suave, quitanieves con luces giratorias a lo lejos, todo en BLANCO y AZUL HIELO, la luz de su armadura reflejada en la nieve.
+2. Vael · `2_vael.png` · la autopista en llamas de noche: coches ardiendo, un incendio en las colinas, pavesas y humo, cielo NARANJA y ROJO fuego.
+3. Grub · `3_grub.png` · la boca de un túnel de autopista abandonado, niebla VERDE tóxica saliendo del túnel, luces de emergencia verdes, charcos que reflejan su espada.
+4. Ata · `4_ata.png` · un paso elevado de noche sobre un atasco: cientos de luces de freno ROJAS abajo, lluvia fina, la ciudad al fondo, luz roja de láser en el humo.
+5. Birdie · `5_birdie.png` · un campo de golf pegado a la autopista en un día de sol: césped VERDE brillante, una bandera de hoyo, la autopista y una valla al fondo, cielo azul con nubes.
+6. Fu · `6_fu.png` · una gasolinera abandonada de noche junto a la autopista, letreros de neón MORADO parpadeando, niebla morada a ras de suelo.
+7. Moha · `7_moha.png` · la autopista cruzando el desierto de Tabernas (Almería) en plena tormenta de arena DORADA, sol bajo, dunas y un cartel de salida medio enterrado.
+
 ## Sonidos ElevenLabs (18/11) — ElevenLabs → Sound Effects, 3 versiones de cada uno
 Estilo común (añadir al final de cada prompt): `game sound effect, mobile MOBA, modern cyberpunk highway, punchy and clean, no music, no voice, dry, no long reverb`
 | archivo | duración | prompt |

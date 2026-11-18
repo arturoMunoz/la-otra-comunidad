@@ -86,7 +86,7 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] ~~18/11 · Pack Autopista 38 ART — botones del menú chillones (prompt en docs/prompts-autopista.md; sustituye al 37)~~ metido 18/11
 - [ ] 18/11 · Pack Autopista 39 WORK — matorrales para esconderse (adelfas y carrizo; adjunto Pack39_referencia.zip)
 - [ ] 18/11 · Pack Autopista 40 ART — disparo de plasma de las torres + impacto
-- [ ] 18/11 · Pack Autopista 41 WORK — rifle de Ata a dos manos y swing de golf de Birdie (adjunto Pack41_modelos.zip)
+- [x] ~~18/11 · Pack Autopista 41 WORK — rifle de Ata a dos manos y swing de golf de Birdie (adjunto Pack41_modelos.zip)
 - [x] ~~18/11 · Pack Autopista 42 ART — aro del botón de ataque básico, uno por héroe~~ metido 18/11
 - [x] ~~18/11 · Pack Autopista 40 ART imagen 2 — impacto del plasma (la 1 ya está metida)~~ metida 18/11
 - [x] ~~18/11 · Pack Autopista 43 ART — iconos de estado sobre la cabeza~~ metido 18/11
@@ -98,4 +98,5 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 No es ChatGPT: en ElevenLabs → Sound Effects. Cada uno 3 veces (3 versiones), bajar en mp3 y llamarlos `nombre_1.mp3`, `nombre_2.mp3`, `nombre_3.mp3`; pasar todo en un zip. Al llegar se normalizan con ffmpeg y van a `public/batalla/sonidos_ap/fx/` (mismos nombres que `SON_LISTA`). Prompts en `docs/prompts-autopista.md` («Sonidos ElevenLabs»).
 - [ ] golpe_carne, espada_armadura, espada_corte, muerte_orco, explosion_piedras, explosion_fuego, derrumbe_muro, rayo_magico, subir_nivel, recoger_moneda, cuerno_lejano, rafaga_viento, ap_cadena, ap_plasma
 - [x] ~~18/11 · Pack Autopista 47 WORK — modelo del héroe mágico nuevo «el Visor» (adjuntar Pack47_referencia.zip; prompt en `docs/prompts-autopista.md`)~~ (llegó 18/11, `tools/autopista/pack47`)
-- [ ] 18/11 · Pack Autopista 48 ART — arte del Visor, 4 imágenes (adjuntar Pack48_referencia.zip; prompt en `docs/prompts-autopista.md`)
+- [x] ~~18/11 · Pack Autopista 48 ART — arte del Visor, 4 imágenes (adjuntar Pack48_referencia.zip; prompt en `docs/prompts-autopista.md`)~~ (metido 18/11)
+- [ ] 18/11 · Pack Autopista 49 ART — fondo propio en el retrato de cada héroe, 7 imágenes (adjuntar Pack49_retratos.zip; prompt en `docs/prompts-autopista.md`)

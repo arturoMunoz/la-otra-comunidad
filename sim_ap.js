@@ -44,6 +44,11 @@ const HEROES = {
       w: {n: 'Meditación', cd: 14, mn: 40, tipo: 'suerte', cura: 0.25, vel: 0.3, dur: 3, icono: 'h_gollum_w', d: 'Respira hondo: se cura un 25 %, corre más y pega más fuerte 3 s.'},
       e: {n: 'Kusarigama', cd: 10, mn: 35, tipo: 'linea', alc: 9, ancho: 0.8, dano: 70, aturde: 1.0, proy: 'cadena', icono: 'h_gollum_e', d: 'Lanza la hoz con cadena: atrapa 1 s al primero que toca.'},
       r: {n: 'Bomba de humo', cd: 50, mn: 80, tipo: 'invis', dur: 5, vel: 0.6, icono: 'h_gollum_r', d: 'Desaparece 5 s entre el humo y corre mucho más: nadie le ve llegar.'}}},
+  visor: {nombre: 'El Visor', modelo: 'ap_visor', ret: 'ui/ap_r_visor.webp', mana: 400, crecM: 38, vida: 565, dano: 52, vatq: 0.92, alcance: 6.8, vel: 5.2, crecV: 82, crecD: 4.6, mag: true, arm: 20, rm: 30, proy: 'rayo',
+    hab: {q: {n: 'Impacto óptico', cd: 7, mn: 45, tipo: 'linea', mag: true, alc: 10, ancho: 0.7, dano: 135, lento: 0.4, durL: 1.2, proy: 'rayo', icono: 'h_visor_q', d: 'Un rayo corto y potente: hiere y frena un 40 % al primero que toca.'},
+      w: {n: 'Rebote', cd: 11, mn: 55, tipo: 'linea', mag: true, alc: 12, ancho: 0.7, dano: 110, perfora: true, proy: 'rayo', icono: 'h_visor_w', d: 'Un rayo que atraviesa a todos los enemigos de su línea.'},
+      e: {n: 'Ráfaga', cd: 9, mn: 50, tipo: 'cono', mag: true, alc: 6, ang: 1.05, dano: 110, lento: 0.35, durL: 1.5, icono: 'h_visor_e', d: 'Un abanico de rayos delante de él: hiere y frena un 35 %.'},
+      r: {n: 'Mirada total', cd: 50, mn: 100, tipo: 'linea', mag: true, alc: 17, ancho: 1.6, dano: 300, perfora: true, proy: 'rayo', icono: 'h_visor_r', d: 'Abre la visera del todo: un rayo gigantesco que atraviesa todo lo que hay en su línea.'}}},
   rohan: {nombre: 'Moha, el Halcón del Atlas', modelo: 'ap_moha', ret: 'ui/ap_r_rohan.webp', mana: 300, crecM: 30, vida: 650, dano: 62, vatq: 0.9, alcance: 2.5, vel: 5.2, crecV: 85, crecD: 4.5, arm: 32, rm: 30,
     hab: {q: {n: 'Gumía', cd: 6, mn: 35, tipo: 'dash', dist: 5.5, dano: 95, icono: 'lanza', d: 'Se lanza hacia delante con su daga curva y hiere a todos los que atraviesa.'},
       w: {n: 'Velo de arena', cd: 12, mn: 45, tipo: 'escudo', val: 170, dur: 3, icono: 'escudo', d: 'Un remolino de arena que absorbe daño durante 3 s.'},
@@ -56,6 +61,7 @@ const PASIVA = {
   orco: {n: 'Disciplina', d: 'Sus golpes a héroes se acumulan (hasta 5); con 5, +40 % de daño durante 5 s.'},
   gollum: {n: 'Acecho', d: 'Desde la hierba alta, su golpe básico es un salto hasta la presa (hasta 6 m).'},
   rohan: {n: 'Ojo de halcón', d: 'El primer golpe a cada enemigo quita un 8 % de su vida actual; se repite cada 6 s por enemigo.'},
+  visor: {n: 'Sobrecarga', d: 'Cada 4.º golpe básico es un rayo cargado: daño mágico extra.'},
   elfo: {n: 'Balas de goma', d: 'Sus disparos frenan un 25 % durante 1,5 s.'},
   enano: {n: 'Armadura viva', d: 'Un escudo del 10 % de su vida máxima que vuelve si pasa 10 s sin recibir daño.'},
   hobbit: {n: 'Concentración', d: 'Si se queda quieto 1,5 s se vuelve invisible hasta que se mueve o ataca.'},
@@ -418,7 +424,7 @@ function golpea(o, d) {
     const st = stats(o), crit = st.crit && Math.random() < st.crit, n = st.dano * (crit ? 2 : 1), b = HEROES[o.tipo];
     o.ac++;
     pasivaGolpe(o, d);
-    if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');
+    if (b.proy) {const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}
     else luego(0.18, () => {if (d.vida > 0 && !o.muerto) {dana(o, d, n, crit ? 'crit' : 'at'); ev(['fx', 'impacto', d.x, d.z, 1.4]);}});
     return;
   }
@@ -433,6 +439,7 @@ function pasivaGolpe(o, d) {
   if (t === 'orco' && heroe) luego(0.2, () => {if (!vivo()) return; const s0 = d.sang && d.sang.hasta > S.t ? d.sang.n : 0; d.sang = {n: Math.min(5, s0 + 1), hasta: S.t + 5, o: o.id, tick: 0}; if (d.sang.n === 5 && !(o.buf.furiaO > 0)) {o.buf.furiaO = 5; ev(['num', o.x, o.z, '¡Disciplina!', 'r']);}});
   if (t === 'gandalf' && d.luz > S.t) {d.luz = 0; const extra = 20 + 10 * o.nivel + stats(o).poder * 0.35; luego(0.3, () => {if (vivo()) {dana(o, d, extra, 'mag'); ev(['fx', 'impacto', d.x, d.z, 2.2]); ev(['num', d.x, d.z, '✦', 'y']);}});}
   if (t === 'rohan' && d.k !== 't' && d.k !== 'n') {o.jarv = o.jarv || {}; if (!(o.jarv[d.id] > S.t)) {o.jarv[d.id] = S.t + 6; luego(0.2, () => {if (vivo()) dana(o, d, Math.min(d.k === 'h' ? 9999 : 260, d.vida * 0.08), 'pura');});}}
+  if (t === 'visor') {o.carga = (o.carga || 0) + 1; if (o.carga % 4 === 0) {const extra = 25 + 12 * o.nivel + stats(o).poder * 0.4; luego(0.3, () => {if (vivo()) {dana(o, d, extra, 'mag'); ev(['fx', 'impacto', d.x, d.z, 2]); ev(['num', d.x, d.z, '⚡', 'y']);}});}}
   if (t === 'elfo' && d.k !== 't' && d.k !== 'n') luego(0.25, () => {if (!vivo()) return; if (heroe) {d.buf.lento = 1.5; d.buf.lentoV = Math.max(d.buf.lentoV || 0, 0.25);} else d.lento = S.t + 1.5;});
 }
 function lanzaProy(o, d, modelo, n, tipo, esc = 1, y = 1.2) {

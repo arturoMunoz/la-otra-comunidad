@@ -1605,6 +1605,52 @@ function flechaAP(tipo, x, z, wx, wz, alc, W) {""")
 
 js = sub(js, "const k = W / 82.5, kh = W / 155, ks = W / 100, finCuerpo", "const k = W / 82.5, kh = Math.min(W / 155, alc / 360), ks = W / 100, finCuerpo")  # flecha cortada (se para en el primero): la punta se encoge para no salir por detrás
 
+# ---------- EL VISOR (18/11, Packs Autopista 47 WORK y 48 ART): héroe mágico nuevo, rayos por los ojos (kit tipo Xerath / Vel'Koz) ----------
+# Solo existe en A-6 (clave 'visor'); usa tipos de habilidad que ya había: linea, cono y linea perforante, todo daño mágico.
+js = sub(js, "  rohan: {nombre: 'Moha", """  visor: {nombre: 'El Visor', modelo: 'ap_visor', ret: 'ui/ap_r_visor.webp', mana: 400, crecM: 38, vida: 565, dano: 52, vatq: 0.92, alcance: 6.8, vel: 5.2, crecV: 82, crecD: 4.6, mag: true, arm: 20, rm: 30, proy: 'rayo',
+    hab: {q: {n: 'Impacto óptico', cd: 7, mn: 45, tipo: 'linea', mag: true, alc: 10, ancho: 0.7, dano: 135, lento: 0.4, durL: 1.2, proy: 'rayo', icono: 'h_visor_q', d: 'Un rayo corto y potente: hiere y frena un 40 % al primero que toca.'},
+      w: {n: 'Rebote', cd: 11, mn: 55, tipo: 'linea', mag: true, alc: 12, ancho: 0.7, dano: 110, perfora: true, proy: 'rayo', icono: 'h_visor_w', d: 'Un rayo que atraviesa a todos los enemigos de su línea.'},
+      e: {n: 'Ráfaga', cd: 9, mn: 50, tipo: 'cono', mag: true, alc: 6, ang: 1.05, dano: 110, lento: 0.35, durL: 1.5, icono: 'h_visor_e', d: 'Un abanico de rayos delante de él: hiere y frena un 35 %.'},
+      r: {n: 'Mirada total', cd: 50, mn: 100, tipo: 'linea', mag: true, alc: 17, ancho: 1.6, dano: 300, perfora: true, proy: 'rayo', icono: 'h_visor_r', d: 'Abre la visera del todo: un rayo gigantesco que atraviesa todo lo que hay en su línea.'}}},
+  rohan: {nombre: 'Moha""")
+js = sub(js, "  elfo: {n: 'Balas de goma',", "  visor: {n: 'Sobrecarga', d: 'Cada 4.º golpe básico es un rayo cargado: daño mágico extra.'},\n  elfo: {n: 'Balas de goma',")
+js = sub(js, "  if (t === 'elfo' && d.k !== 't' && d.k !== 'n') luego(0.25,", "  if (t === 'visor') {o.carga = (o.carga || 0) + 1; if (o.carga % 4 === 0) {const extra = 25 + 12 * o.nivel + stats(o).poder * 0.4; luego(0.3, () => {if (vivo()) {dana(o, d, extra, 'mag'); ev(['fx', 'impacto', d.x, d.z, 2]); ev(['num', d.x, d.z, '⚡', 'y']);}});}}\n  if (t === 'elfo' && d.k !== 't' && d.k !== 'n') luego(0.25,")
+js = sub(js, "const ROL_H = {rohan: 'Asesino',", "const ROL_H = {visor: 'Mago', rohan: 'Asesino',")
+js = sub(js, "const BASICOS = {rohan:", "const BASICOS = {visor: ['atacar', 'atacar_2'], rohan:")
+js = sub(js, "gollum: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'esquivar'}};", "gollum: {q: 'atacar_2', w: 'celebrar', e: 'atacar_3', r: 'esquivar'}, visor: {q: 'atacar', w: 'atacar_2', e: 'atacar_2', r: 'canalizar'}};")
+js = sub(js, "const COLOR_FL = {", "const COLOR_FL = {visor: '#5ff4ff', ")
+js = sub(js, "'ap_birdie', 'ap_fu', 'ap_moha',", "'ap_birdie', 'ap_fu', 'ap_moha', 'ap_visor',")
+js = sub(js, "const PROY_AP = {bola: ['bola', 1.9],", "const PROY_AP = {rayo: ['rayo', 2], bola: ['bola', 1.9],")
+js = sub(js, "const PROY_CAB = {bola:", "const PROY_CAB = {rayo: [0.76, 0.41], bola:")
+js = sub(js, "const IMPACTO_AP = {bola:", "const IMPACTO_AP = {rayo: 'ap_visor_impacto', bola:")
+js = sub(js, "const fbTex = {};", "Object.assign(FB, {ap_visor_impacto: ['../batalla/fx/ap_visor_impacto.webp', 4, 4], ap_visor_abanico: ['../batalla/fx/ap_visor_abanico.webp', 4, 4], ap_visor_carga: ['../batalla/fx/ap_visor_carga.webp', 4, 4]});\nObject.assign(FB_DUR, {ap_visor_impacto: 0.4, ap_visor_abanico: 0.6, ap_visor_carga: 0.9});\nconst fbTex = {};")
+# el rayo: el cuerpo del Pack 48 (se repite y fluye) tumbado a la altura de los ojos, de x,z hacia dx,dz
+js = sub(js, "function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {", """const RAYO_V = {tex: null};
+function rayoVisor(x, z, dx, dz, L, W, dur, y = 1.9) {
+  if (!RAYO_V.tex) {RAYO_V.tex = cargaTex('../batalla/fx/ap_visor_rayo.webp'); RAYO_V.tex.wrapS = THREE.RepeatWrapping;}
+  const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2); const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setX(i, uv.getX(i) * L / 6);
+  const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({map: RAYO_V.tex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, color: '#bffaff'}));
+  m.scale.set(L, 1, W); m.rotation.y = Math.atan2(dx, dz) - Math.PI / 2; m.position.set(x + dx * L / 2, y, z + dz * L / 2); m.renderOrder = 7; scene.add(m);
+  const t0 = performance.now(), paso = () => {const t = (performance.now() - t0) / 1000 / dur; if (t >= 1) {scene.remove(m); g.dispose(); m.material.dispose(); return;}
+    m.material.opacity = t < 0.12 ? t / 0.12 : Math.min(1, (1 - t) / 0.35); m.scale.z = W * (0.85 + 0.25 * Math.abs(Math.sin(t * 37))); RAYO_V.tex.offset.x -= 0.04; requestAnimationFrame(paso);};
+  requestAnimationFrame(paso); flip('ap_visor_impacto', x + dx * L, z + dz * L, W * 1.6, false, undefined, y);
+}
+function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
+  if (v.tipo === 'visor') {
+    suena('ap_energia', k === 'r' ? 0.8 : 0.5, x, z);
+    if (k === 'q' || k === 'w') flip('ap_visor_impacto', x + dx * 1.1, z + dz * 1.1, k === 'q' ? 1.5 : 1.2, false, undefined, 1.9);
+    if (k === 'e') {flip('ap_visor_abanico', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, H.alc * 1.2, true, rot + Math.PI); temb(0.1);}
+    if (k === 'r') {flip('ap_visor_carga', x, z, 3.4, true); luego2(300, () => {const p = o.raiz.position; rayoVisor(p.x + dx * 0.8, p.z + dz * 0.8, dx, dz, H.alc, H.ancho * 2.4, 1.0); temb(0.35);});}
+    return;
+  }""")
+js = sub(js, "    else if (v.tipo === 'hobbit') {flip('tArco',", "    else if (v.tipo === 'visor') flip('ap_visor_impacto', p.x + dx * 0.9, p.z + dz * 0.9, 1, false, undefined, 1.9);\n    else if (v.tipo === 'hobbit') {flip('tArco',")
+html = sub(html, '</head>', """<style>body[data-heroe=visor]{--tinte:-22deg;--tsat:1.35;--tluz:1.05}
+body[data-heroe=visor] #bAt::after{background-image:url(ui/ap_aro_at_visor.webp)}</style></head>""", donde='html')
+
+# ---------- PACK 41 WORK (18/11): Ata con el rifle a dos manos y Birdie con swing de golf ----------
+# Su disparo sale cuando el arma llega al punto de impacto de la animación (TIEMPOS_IMPACTO.txt: Ata 0,15 s, Birdie 0,32 s; el clip va ×1,15)
+js = sub(js, "    if (b.proy) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');", "    if (b.proy) {const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
