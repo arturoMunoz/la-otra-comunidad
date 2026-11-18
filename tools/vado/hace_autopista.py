@@ -1837,14 +1837,14 @@ function tapaArboles() {
     if (m.userData.tapa) continue; m.userData.tapa = true;
     m.onBeforeCompile = (sh) => {sh.uniforms.uTapa = TAPA;
       sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vVZ;').replace('#include <project_vertex>', '#include <project_vertex>\nvVZ=-mvPosition.z;');
-      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vVZ; uniform vec4 uTapa;').replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{float dT=length(gl_FragCoord.xy-uTapa.xy); if(vVZ<uTapa.z-1.2&&dT<uTapa.w){float k=smoothstep(uTapa.w,uTapa.w*.55,dT)*.82; if(fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)<k) discard;}}');};
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vVZ; uniform vec4 uTapa;').replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{float dT=length(gl_FragCoord.xy-uTapa.xy); if(vVZ<uTapa.z-.6&&dT<uTapa.w){float k=smoothstep(uTapa.w,uTapa.w*.55,dT)*.9; if(fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)<k) discard;}}');};
     m.customProgramCacheKey = () => 'tapa'; m.needsUpdate = true;
   }}
 }
 const _tapaV = new THREE.Vector3(), _tapaB = new THREE.Vector2();
 function ponTapa(x, z) {
   camera.updateMatrixWorld(); _tapaV.set(x, 1.4, z); const vz = -_tapaV.clone().applyMatrix4(camera.matrixWorldInverse).z; _tapaV.project(camera);
-  renderer.getDrawingBufferSize(_tapaB); TAPA.value.set((_tapaV.x * 0.5 + 0.5) * _tapaB.x, (_tapaV.y * 0.5 + 0.5) * _tapaB.y, vz, _tapaB.y * 0.17);
+  renderer.getDrawingBufferSize(_tapaB); TAPA.value.set((_tapaV.x * 0.5 + 0.5) * _tapaB.x, (_tapaV.y * 0.5 + 0.5) * _tapaB.y, vz, _tapaB.y * 0.21);
 }""")
 js = sub(js, "camera.lookAt(camM.x + ox, 0, camM.z + oz);\n", "camera.lookAt(camM.x + ox, 0, camM.z + oz); ponTapa(x, z);\n")
 
@@ -1939,6 +1939,55 @@ js = sub(js, "function animaRim() {\n", """function animaRim() {
     if (on) {const k = 0.5 + 0.5 * Math.sin(tN * 4); m.color.set('#b45cff').lerp(m.userData.c0, 0.25 * k); o.aro.scale.setScalar(o.aro.userData.s0 * (1.15 + 0.1 * k)); o.nasor = true;}
     else if (o.nasor) {m.color.copy(m.userData.c0); o.aro.scale.setScalar(o.aro.userData.s0); o.nasor = false;}}} catch (e) {}
 """)
+
+# ---------- JUNGLA COMO LA DEL LoL: MUROS Y CAMINITOS (18/11, Henar: «la jungla tiene que ser como la del LoL, con sus caminitos») ----------
+# Antes: robles sueltos al azar (se quitaba un 45 %) con choque de 0,2-0,4 m: no había muros ni caminos, se colaba uno entre dos árboles
+# o se quedaba trabado. Ahora dentro del ojo los árboles hacen MUROS cerrados (rejilla de 2,6 m, poco desorden y choque de 1,3 m: entre
+# dos vecinos no cabe un héroe) y los CAMINITOS son lo que queda libre: las sendas de la red de los bots (de cada campamento a las
+# calzadas y a los otros campamentos, ~3 m libres), el río, los claros de los campamentos, la hierba alta, las plantas y los fosos.
+# Dentro de la simulación (plantaBosque es común): sims regenerados. El suelo de los caminitos se pinta de tierra pisada.
+js = sub(js, "    const px = x + (al() - 0.5) * 1.5, pz = z + (al() - 0.5) * 1.5, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;\n    if (dc < 4.7 || enBase(px, pz)) continue;",
+"""    const muro = TIPO_MAPA === 'ojo' && dentroOjo(x, z), jt = muro ? 0.5 : 1.5, H = muro ? 1 : 0;  /* muro = jungla del 2v2 */
+    const px = x + (al() - 0.5) * jt, pz = z + (al() - 0.5) * jt, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
+    if (dc < (muro ? 6.3 : 4.7) || enBase(px, pz)) continue;""")
+js = sub(js, "      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;\n      if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.45) continue;",
+"""      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6 + H * 0.9) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 + H * 1.2 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5) - H * 0.5) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3 - H * 0.6) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
+      if (TIPO_MAPA === 'linea' && Math.abs(px) < 10.2) continue;""")
+js = sub(js, "planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 0.5 : jO ? 0.75 : 1), juego);",
+             "planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 1.05 : jO ? 0.75 : 1), juego && !muro); if (juego && muro) ponArbolChoque(px, pz, 1.3);")
+
+# suelo de los caminitos: tierra pisada por las sendas (uS = pares de puntos de cada senda, hasta 48)
+js = sub(js, "    uF: {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]}};",
+"""    uF: {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]},
+    uS: {value: (() => {const r = [], ss = NAV.aristas.filter(([a, b]) => !(NAV.nodos[a].carril && NAV.nodos[b].carril)).slice(0, 48); for (const [a, b] of ss) r.push(new THREE.Vector2(NAV.nodos[a].x, NAV.nodos[a].z), new THREE.Vector2(NAV.nodos[b].x, NAV.nodos[b].z)); while (r.length < 96) r.push(new THREE.Vector2(9999, 9999)); return r;})()}};""")
+js = sub(js, "uniform vec2 uF[2]; uniform vec2 uEje, uPit, uPit2;\n", "uniform vec2 uF[2]; uniform vec2 uEje, uPit, uPit2; uniform vec2 uS[96];\n      float dSegS(vec2 p,vec2 a,vec2 b){vec2 v=b-a;float t=clamp(dot(p-a,v)/max(dot(v,v),1e-4),0.,1.);return length(p-a-v*t);}\n")
+js = sub(js, "      /* el centro: un claro de barro y piedra donde duerme el Uruk Azul */",
+"""      ${TIPO_MAPA === 'ojo' ? `{float dS=1e3; for(int i=0;i<48;i++){dS=min(dS,dSegS(w,uS[i*2],uS[i*2+1]));}
+        float sen=(1.-smoothstep(1.5,2.6,dS+fbm(w*.55)*.9))*(1.-roadO);
+        float lt=dot(texture2D(tH,w*.11).rgb,vec3(.33)); vec3 tierra=mix(vec3(.4,.31,.21),vec3(.5,.41,.28),fbm(w*.35+5.))*(.7+lt*.5);
+        col=mix(col,tierra,sen*.75); col=mix(col,col*.78,(1.-smoothstep(.1,.45,abs(dS-2.15)))*(1.-roadO)*.6);}` : ''}
+      /* el centro: un claro de barro y piedra donde duerme el Uruk Azul */""")
+
+# los caminitos: en la Batalla de A-6 la red de sendas ya no une cada campamento con todo lo que tiene cerca (eran triángulos por todas
+# partes y no quedaba sitio para muros), sino unas pocas sendas como en la jungla del LoL, simétricas: cada campamento sale a su calzada
+# por el punto más cercano y se une con sus vecinos; los fosos y la rata, por el río. Los bots van por estas mismas sendas.
+js = sub(js, """  for (const c of camp) {
+    const cerca = (lista, n, max) =>""", """  const SENDAS_J = [['sapo', 'L'], ['sapo', 'warg'], ['sapo', 'crebain'], ['warg', 'huorn'], ['warg', 'crebain'], ['huorn', 'L'], ['huorn', 'uruk'],
+    ['crebain', 'troll'], ['crebain', 'nutria'], ['troll', 'L'], ['troll', 'draco'], ['huorn', 'nutria']];
+  if (TIPO_MAPA === 'ojo') {
+    const lado = (c) => nodos[c].x * EJE.x + nodos[c].z * EJE.z, pits = new Set(['uruk', 'draco', 'nutria']);
+    const deTipo = (t, s) => camp.find((c) => CAMPOS[c - camp[0]].tipo === t && (pits.has(t) || Math.sign(lado(c)) === s));
+    const aLinea = (c) => {let m = null; CARRILES.forEach((L) => {for (let i = 1; i < L.length; i++) {const a = L[i - 1], b = L[i], vx = b.x - a.x, vz = b.z - a.z, t = Math.max(0, Math.min(1, ((nodos[c].x - a.x) * vx + (nodos[c].z - a.z) * vz) / (vx * vx + vz * vz))), x = a.x + vx * t, z = a.z + vz * t, dd = Math.hypot(nodos[c].x - x, nodos[c].z - z); if (!m || dd < m.d) m = {d: dd, x, z, a: idx.get(a.x + ',' + a.z), b: idx.get(b.x + ',' + b.z)};}}); const n = add({x: m.x, z: m.z}, {carril: true, puerta: true}); aristas.push([m.a, n], [n, m.b], [c, n]);};
+    for (const s of [-1, 1]) for (const [p, q] of SENDAS_J) {const a = deTipo(p, s); if (a === undefined) continue; if (q === 'L') {aLinea(a); continue;} const b = deTipo(q, s); if (b !== undefined && !aristas.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) aristas.push([a, b]);}
+    const pz = ['uruk', 'draco'].map((t) => deTipo(t)), nu = deTipo('nutria'); for (const c of pz) aristas.push([c, nu]);
+  } else for (const c of camp) {
+    const cerca = (lista, n, max) =>""")
+
+# el tramado de los árboles delante de tu héroe NUNCA funcionó: el «mecer» de los árboles (vidaMapa) se ponía después y sustituía su
+# onBeforeCompile. Ahora el mecer encadena lo que hubiera antes.
+js = sub(js, "  for (const im of BOSQUE) {const m = im.material; if (vistos.has(m)) continue; vistos.add(m);\n    m.onBeforeCompile = (sh) => {sh.uniforms.uT = UT;",
+             "  for (const im of BOSQUE) {const m = im.material; if (vistos.has(m)) continue; vistos.add(m); const antes = m.onBeforeCompile;\n    m.onBeforeCompile = (sh, rr) => {if (antes) antes.call(m, sh, rr); sh.uniforms.uT = UT;")
+js = sub(js, "    m.customProgramCacheKey = () => 'mecer'; m.needsUpdate = true;}", "    m.customProgramCacheKey = () => 'mecer' + (m.userData.tapa ? '+tapa' : ''); m.needsUpdate = true;}")
 
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')

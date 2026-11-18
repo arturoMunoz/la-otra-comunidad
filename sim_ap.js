@@ -168,15 +168,16 @@ function plantaBosque(al, planta, enBase) {
   const sendas = NAV.aristas.filter(([a, b]) => !(NAV.nodos[a].carril && NAV.nodos[b].carril)).map(([a, b]) => [NAV.nodos[a], NAV.nodos[b]]);
   enBase = enBase || ((x, z) => BASES.some((b) => Math.hypot(b.fuente.x - x, b.fuente.z - z) < 10 || Math.hypot(b.nexo.x - x, b.nexo.z - z) < 9 || Math.hypot(b.torre.x - x, b.torre.z - z) < 6));
   for (let x = -58; x <= 58; x += 2.6) for (let z = -84; z <= 84; z += 2.6) {
-    const px = x + (al() - 0.5) * 1.5, pz = z + (al() - 0.5) * 1.5, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
-    if (dc < 4.7 || enBase(px, pz)) continue;
+    const muro = TIPO_MAPA === 'ojo' && dentroOjo(x, z), jt = muro ? 0.5 : 1.5, H = muro ? 1 : 0;  /* muro = jungla del 2v2 */
+    const px = x + (al() - 0.5) * jt, pz = z + (al() - 0.5) * jt, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
+    if (dc < (muro ? 6.3 : 4.7) || enBase(px, pz)) continue;
     if (juego) {
-      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
-      if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.45) continue;
+      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6 + H * 0.9) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 + H * 1.2 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5) - H * 0.5) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3 - H * 0.6) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
+      if (TIPO_MAPA === 'linea' && Math.abs(px) < 10.2) continue;
     }
     const isen = ladoDe({x: px, z: pz}) > 0, r = al();
     const n = isen ? (r < 0.3 ? 'arbol_muerto_0' + (1 + (r < 0.12 ? 1 : 0)) : 'pino_0' + (1 + Math.floor(al() * 4))) : (r < 0.45 ? 'roble_0' + (1 + Math.floor(al() * 3)) : 'pino_0' + (1 + Math.floor(al() * 4)));
-    const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 0.5 : jO ? 0.75 : 1), juego);
+    const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 1.05 : jO ? 0.75 : 1), juego && !muro); if (juego && muro) ponArbolChoque(px, pz, 1.3);
   }
 }
 function lineaLibre(a, b) {const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
@@ -206,7 +207,15 @@ function haceNav() {
   const camp = CAMPOS.map((c) => add(c, {campo: true}));
   const carriles = nodos.map((n, i) => i).filter((i) => nodos[i].carril);
   const d = (a, b) => Math.hypot(nodos[a].x - nodos[b].x, nodos[a].z - nodos[b].z);
-  for (const c of camp) {
+  const SENDAS_J = [['sapo', 'L'], ['sapo', 'warg'], ['sapo', 'crebain'], ['warg', 'huorn'], ['warg', 'crebain'], ['huorn', 'L'], ['huorn', 'uruk'],
+    ['crebain', 'troll'], ['crebain', 'nutria'], ['troll', 'L'], ['troll', 'draco'], ['huorn', 'nutria']];
+  if (TIPO_MAPA === 'ojo') {
+    const lado = (c) => nodos[c].x * EJE.x + nodos[c].z * EJE.z, pits = new Set(['uruk', 'draco', 'nutria']);
+    const deTipo = (t, s) => camp.find((c) => CAMPOS[c - camp[0]].tipo === t && (pits.has(t) || Math.sign(lado(c)) === s));
+    const aLinea = (c) => {let m = null; CARRILES.forEach((L) => {for (let i = 1; i < L.length; i++) {const a = L[i - 1], b = L[i], vx = b.x - a.x, vz = b.z - a.z, t = Math.max(0, Math.min(1, ((nodos[c].x - a.x) * vx + (nodos[c].z - a.z) * vz) / (vx * vx + vz * vz))), x = a.x + vx * t, z = a.z + vz * t, dd = Math.hypot(nodos[c].x - x, nodos[c].z - z); if (!m || dd < m.d) m = {d: dd, x, z, a: idx.get(a.x + ',' + a.z), b: idx.get(b.x + ',' + b.z)};}}); const n = add({x: m.x, z: m.z}, {carril: true, puerta: true}); aristas.push([m.a, n], [n, m.b], [c, n]);};
+    for (const s of [-1, 1]) for (const [p, q] of SENDAS_J) {const a = deTipo(p, s); if (a === undefined) continue; if (q === 'L') {aLinea(a); continue;} const b = deTipo(q, s); if (b !== undefined && !aristas.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) aristas.push([a, b]);}
+    const pz = ['uruk', 'draco'].map((t) => deTipo(t)), nu = deTipo('nutria'); for (const c of pz) aristas.push([c, nu]);
+  } else for (const c of camp) {
     const cerca = (lista, n, max) => lista.filter((i) => i !== c).sort((a, b) => d(c, a) - d(c, b)).slice(0, n).filter((i) => d(c, i) < max);
     for (const i of cerca(carriles, 2, 24)) aristas.push([c, i]);
     for (const i of cerca(camp, nodos[c].x === 0 && nodos[c].z === 0 ? 4 : 2, 26)) aristas.push([c, i]);

@@ -170,15 +170,16 @@ function plantaBosque(al, planta, enBase) {
   const sendas = NAV.aristas.filter(([a, b]) => !(NAV.nodos[a].carril && NAV.nodos[b].carril)).map(([a, b]) => [NAV.nodos[a], NAV.nodos[b]]);
   enBase = enBase || ((x, z) => BASES.some((b) => Math.hypot(b.fuente.x - x, b.fuente.z - z) < 10 || Math.hypot(b.nexo.x - x, b.nexo.z - z) < 9 || Math.hypot(b.torre.x - x, b.torre.z - z) < 6));
   for (let x = -58; x <= 58; x += 2.6) for (let z = -84; z <= 84; z += 2.6) {
-    const px = x + (al() - 0.5) * 1.5, pz = z + (al() - 0.5) * 1.5, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
-    if (dc < 4.7 || enBase(px, pz)) continue;
+    const muro = TIPO_MAPA === 'ojo' && dentroOjo(x, z), jt = muro ? 0.5 : 1.5, H = muro ? 1 : 0;  /* muro = jungla del 2v2 */
+    const px = x + (al() - 0.5) * jt, pz = z + (al() - 0.5) * jt, dc = distCarril(px, pz), juego = Math.abs(px) < MAPA.ancho + 1 && Math.abs(pz) < MAPA.largo + 1;
+    if (dc < (muro ? 6.3 : 4.7) || enBase(px, pz)) continue;
     if (juego) {
-      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5)) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
-      if (TIPO_MAPA === 'linea' ? Math.abs(px) < 10.2 : dentroOjo(px, pz) && al() < 0.45) continue;
+      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6 + H * 0.9) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 + H * 1.2 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5) - H * 0.5) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3 - H * 0.6) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
+      if (TIPO_MAPA === 'linea' && Math.abs(px) < 10.2) continue;
     }
     const isen = ladoDe({x: px, z: pz}) > 0, r = al();
     const n = isen ? (r < 0.3 ? 'arbol_muerto_0' + (1 + (r < 0.12 ? 1 : 0)) : 'pino_0' + (1 + Math.floor(al() * 4))) : (r < 0.45 ? 'roble_0' + (1 + Math.floor(al() * 3)) : 'pino_0' + (1 + Math.floor(al() * 4)));
-    const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 0.5 : jO ? 0.75 : 1), juego);
+    const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 1.05 : jO ? 0.75 : 1), juego && !muro); if (juego && muro) ponArbolChoque(px, pz, 1.3);
   }
 }
 function lineaLibre(a, b) {const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
@@ -208,7 +209,15 @@ function haceNav() {
   const camp = CAMPOS.map((c) => add(c, {campo: true}));
   const carriles = nodos.map((n, i) => i).filter((i) => nodos[i].carril);
   const d = (a, b) => Math.hypot(nodos[a].x - nodos[b].x, nodos[a].z - nodos[b].z);
-  for (const c of camp) {
+  const SENDAS_J = [['sapo', 'L'], ['sapo', 'warg'], ['sapo', 'crebain'], ['warg', 'huorn'], ['warg', 'crebain'], ['huorn', 'L'], ['huorn', 'uruk'],
+    ['crebain', 'troll'], ['crebain', 'nutria'], ['troll', 'L'], ['troll', 'draco'], ['huorn', 'nutria']];
+  if (TIPO_MAPA === 'ojo') {
+    const lado = (c) => nodos[c].x * EJE.x + nodos[c].z * EJE.z, pits = new Set(['uruk', 'draco', 'nutria']);
+    const deTipo = (t, s) => camp.find((c) => CAMPOS[c - camp[0]].tipo === t && (pits.has(t) || Math.sign(lado(c)) === s));
+    const aLinea = (c) => {let m = null; CARRILES.forEach((L) => {for (let i = 1; i < L.length; i++) {const a = L[i - 1], b = L[i], vx = b.x - a.x, vz = b.z - a.z, t = Math.max(0, Math.min(1, ((nodos[c].x - a.x) * vx + (nodos[c].z - a.z) * vz) / (vx * vx + vz * vz))), x = a.x + vx * t, z = a.z + vz * t, dd = Math.hypot(nodos[c].x - x, nodos[c].z - z); if (!m || dd < m.d) m = {d: dd, x, z, a: idx.get(a.x + ',' + a.z), b: idx.get(b.x + ',' + b.z)};}}); const n = add({x: m.x, z: m.z}, {carril: true, puerta: true}); aristas.push([m.a, n], [n, m.b], [c, n]);};
+    for (const s of [-1, 1]) for (const [p, q] of SENDAS_J) {const a = deTipo(p, s); if (a === undefined) continue; if (q === 'L') {aLinea(a); continue;} const b = deTipo(q, s); if (b !== undefined && !aristas.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) aristas.push([a, b]);}
+    const pz = ['uruk', 'draco'].map((t) => deTipo(t)), nu = deTipo('nutria'); for (const c of pz) aristas.push([c, nu]);
+  } else for (const c of camp) {
     const cerca = (lista, n, max) => lista.filter((i) => i !== c).sort((a, b) => d(c, a) - d(c, b)).slice(0, n).filter((i) => d(c, i) < max);
     for (const i of cerca(carriles, 2, 24)) aristas.push([c, i]);
     for (const i of cerca(camp, nodos[c].x === 0 && nodos[c].z === 0 ? 4 : 2, 26)) aristas.push([c, i]);
@@ -356,14 +365,14 @@ function tapaArboles() {
     if (m.userData.tapa) continue; m.userData.tapa = true;
     m.onBeforeCompile = (sh) => {sh.uniforms.uTapa = TAPA;
       sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vVZ;').replace('#include <project_vertex>', '#include <project_vertex>\nvVZ=-mvPosition.z;');
-      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vVZ; uniform vec4 uTapa;').replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{float dT=length(gl_FragCoord.xy-uTapa.xy); if(vVZ<uTapa.z-1.2&&dT<uTapa.w){float k=smoothstep(uTapa.w,uTapa.w*.55,dT)*.82; if(fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)<k) discard;}}');};
+      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vVZ; uniform vec4 uTapa;').replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\n{float dT=length(gl_FragCoord.xy-uTapa.xy); if(vVZ<uTapa.z-.6&&dT<uTapa.w){float k=smoothstep(uTapa.w,uTapa.w*.55,dT)*.9; if(fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)<k) discard;}}');};
     m.customProgramCacheKey = () => 'tapa'; m.needsUpdate = true;
   }}
 }
 const _tapaV = new THREE.Vector3(), _tapaB = new THREE.Vector2();
 function ponTapa(x, z) {
   camera.updateMatrixWorld(); _tapaV.set(x, 1.4, z); const vz = -_tapaV.clone().applyMatrix4(camera.matrixWorldInverse).z; _tapaV.project(camera);
-  renderer.getDrawingBufferSize(_tapaB); TAPA.value.set((_tapaV.x * 0.5 + 0.5) * _tapaB.x, (_tapaV.y * 0.5 + 0.5) * _tapaB.y, vz, _tapaB.y * 0.17);
+  renderer.getDrawingBufferSize(_tapaB); TAPA.value.set((_tapaV.x * 0.5 + 0.5) * _tapaB.x, (_tapaV.y * 0.5 + 0.5) * _tapaB.y, vz, _tapaB.y * 0.21);
 }
 function cullBosque(cx, cz, forzar) {
   if (!forzar && bosqueEn && Math.hypot(cx - bosqueEn.x, cz - bosqueEn.z) < 3) return; bosqueEn = {x: cx, z: cz};
@@ -460,11 +469,13 @@ function construyeMapa() {
   const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
   const BX = MAPA.ancho + 14, BZ = MAPA.largo + 12; /* zona horneada (la jugable con margen); fuera, suelo sencillo bajo el bosque */
   const bakeU = {tH: {value: tH}, tB: {value: tB}, tC: {value: tC}, uA: {value: v2(CARRILES[0])}, uB: {value: v2(CARRILES[1])}, uEje: {value: new THREE.Vector2(EJE.x, EJE.z)}, uPit: {value: new THREE.Vector2(PIT.x, PIT.z)}, uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)},
-    uF: {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]}};
+    uF: {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]},
+    uS: {value: (() => {const r = [], ss = NAV.aristas.filter(([a, b]) => !(NAV.nodos[a].carril && NAV.nodos[b].carril)).slice(0, 48); for (const [a, b] of ss) r.push(new THREE.Vector2(NAV.nodos[a].x, NAV.nodos[a].z), new THREE.Vector2(NAV.nodos[b].x, NAV.nodos[b].z)); while (r.length < 96) r.push(new THREE.Vector2(9999, 9999)); return r;})()}};
   const bakeM = new THREE.ShaderMaterial({uniforms: bakeU, depthTest: false, depthWrite: false,
     vertexShader: `varying vec3 vWP; void main(){vWP=(modelMatrix*vec4(position,1.)).xyz; gl_Position=vec4(uv*2.-1.,0.,1.);}`,
     fragmentShader: `varying vec3 vWP; 
-      uniform sampler2D tH,tB,tC; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec2 uEje, uPit, uPit2;
+      uniform sampler2D tH,tB,tC; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec2 uEje, uPit, uPit2; uniform vec2 uS[96];
+      float dSegS(vec2 p,vec2 a,vec2 b){vec2 v=b-a;float t=clamp(dot(p-a,v)/max(dot(v,v),1e-4),0.,1.);return length(p-a-v*t);}
       float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
       float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<4;i++){s+=a*vn(p);p*=2.03;a*=.5;}return s;}
@@ -512,6 +523,10 @@ function construyeMapa() {
       `}
       /* lado de Isengard: tierra cenicienta y quemada */
 
+      ${TIPO_MAPA === 'ojo' ? `{float dS=1e3; for(int i=0;i<48;i++){dS=min(dS,dSegS(w,uS[i*2],uS[i*2+1]));}
+        float sen=(1.-smoothstep(1.5,2.6,dS+fbm(w*.55)*.9))*(1.-roadO);
+        float lt=dot(texture2D(tH,w*.11).rgb,vec3(.33)); vec3 tierra=mix(vec3(.4,.31,.21),vec3(.5,.41,.28),fbm(w*.35+5.))*(.7+lt*.5);
+        col=mix(col,tierra,sen*.75); col=mix(col,col*.78,(1.-smoothstep(.1,.45,abs(dS-2.15)))*(1.-roadO)*.6);}` : ''}
       /* el centro: un claro de barro y piedra donde duerme el Uruk Azul */
       col=mix(col,ba*vec3(.7,.72,.8),(1.-smoothstep(5.5,8.,length(w-uPit)+fbm(w*.5)*1.5))*.9); col=mix(col,ba*vec3(.78,.66,.6),(1.-smoothstep(5.5,8.,length(w-uPit2)+fbm(w*.5)*1.5))*.9);
       /* el vado: el río cruza de lado a lado por la mitad del mapa */
@@ -766,12 +781,12 @@ function vidaMapa(g) {
   const pts = new THREE.Points(pg, pm); pts.frustumCulled = false; pts.renderOrder = 6; pts.userData.vivo = 1; pts.name = 'luciernagas'; pts.visible = GRAF.cal !== 'baja'; LUCES_AIRE = pts; g.add(pts);
   /* los árboles se mecen con el viento (solo en el sombreador: no cuesta nada al procesador) */
   const vistos = new Set();
-  for (const im of BOSQUE) {const m = im.material; if (vistos.has(m)) continue; vistos.add(m);
-    m.onBeforeCompile = (sh) => {sh.uniforms.uT = UT; sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uT;').replace('#include <begin_vertex>', `#include <begin_vertex>
+  for (const im of BOSQUE) {const m = im.material; if (vistos.has(m)) continue; vistos.add(m); const antes = m.onBeforeCompile;
+    m.onBeforeCompile = (sh, rr) => {if (antes) antes.call(m, sh, rr); sh.uniforms.uT = UT; sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uT;').replace('#include <begin_vertex>', `#include <begin_vertex>
       #ifdef USE_INSTANCING
       vec2 ip=instanceMatrix[3].xz; float hb=max(0.,position.y); transformed.x+=sin(uT*1.4+ip.x*.3+ip.y*.2)*.012*hb*hb; transformed.z+=cos(uT*1.1+ip.x*.2)*.008*hb*hb;
       #endif`);};
-    m.customProgramCacheKey = () => 'mecer'; m.needsUpdate = true;}
+    m.customProgramCacheKey = () => 'mecer' + (m.userData.tapa ? '+tapa' : ''); m.needsUpdate = true;}
 }
 /* el decorado quieto se junta por material: de ~900 mallas a unas pocas decenas (en el móvil cada malla es una llamada de dibujo, y otra más para la sombra) */
 /* los modelos del Pack 14 vienen cuantizados (enteros de 16 bits): para moverlos y juntarlos hay que pasarlos a decimales */
