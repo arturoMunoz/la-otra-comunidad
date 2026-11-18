@@ -351,7 +351,7 @@ function cullBosque(cx, cz, forzar) {
   }
 }
 const ALTO = {};
-const AJ_ALTO = {ap_brask: 1.83};
+const AJ_ALTO = {};
 function alto(n) {if (!ALTO[n]) {const b = new THREE.Box3().setFromObject(M[n].scene, /^ap_(nasor|lagarto|toro|coloso|perro|perro_jefe|buitre|jabali|rata)$/.test(n)); ALTO[n] = Math.max(0.5, b.max.y - b.min.y) / (AJ_ALTO[n] || 1);} return ALTO[n];}
 /* Pack Vado 17: equipo de cada héroe (piezas sueltas de ChatGPT hechas para un maniquí de 2 m) enganchado a los huesos de KayKit.
    Cabeza: al centro de la cabeza, del ancho de la cabeza; pecho: al hueso chest; armas: en el sitio del arma original (que se esconde). */

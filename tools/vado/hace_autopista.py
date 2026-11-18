@@ -1668,6 +1668,10 @@ js = sub(js, "  const cn = $('canal');", "  if (volverBase > 0 && !(window._tpB 
 js = sub(js, "if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; p.el.play().catch(() => {});}}",
          "if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota') p.el.currentTime = 0; else if ((n === 'menu' || n === 'batalla') && p.el.currentTime < 2.4) p.el.currentTime = 2.4; if ((n === 'menu' || n === 'batalla') && !p.el._bucle) {p.el._bucle = 1; p.el.addEventListener('timeupdate', () => {if (p.el.duration && p.el.currentTime > p.el.duration - 6) p.el.currentTime = 2.4;});} p.el.play().catch(() => {});}}")
 
+# ---------- PACKS 31 y 50 WORK (18/11): Dalinar con cuerpo de humano y armadura del retrato; Ata con pelo, trenza y cara del retrato ----------
+# El Dalinar nuevo ya no tiene la caja de reposo inflada del enano: fuera la corrección AJ_ALTO.
+js = sub(js, "const AJ_ALTO = {ap_brask: 1.83};", "const AJ_ALTO = {};")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
