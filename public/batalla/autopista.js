@@ -1948,7 +1948,7 @@ function estadosBarra(b, v) {
   let d = b._estD; if (!d) {d = b._estD = document.createElement('div'); d.className = 'est'; b.appendChild(d);}
   d.innerHTML = l.map((n) => '<img src="ui/ap_est_' + n + '.webp" alt="">').join('');
 }
-function quitaVis(id) {const o = VIS.get(id); if (!o) return; scene.remove(o.raiz); o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.dispose) q.material.dispose();}); if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} VIS.delete(id); const b = BARRAS.get(id); if (b) {b.remove(); BARRAS.delete(id);}}
+function quitaVis(id) {const o = VIS.get(id); if (!o) return; scene.remove(o.raiz); o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.dispose) q.material.dispose(); if (q.isSkinnedMesh && q.skeleton) q.skeleton.dispose(); /* 18/11: la textura de huesos de cada súbdito no se borraba nunca (~1 textura nueva por segundo en la gráfica, toda la partida) */}); if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} VIS.delete(id); const b = BARRAS.get(id); if (b) {b.remove(); BARRAS.delete(id);}}
 const BARRAS = new Map();
 let MD_F = -1, MD_V = 0;
 /* daño de tu golpe básico (lo mismo que suma stats(), sin las bendiciones: mejor quedarse corto que fallar el remate) */
@@ -2341,6 +2341,12 @@ function relojRemoto(est, llegada, tRemoto) {
 const RELOJ_F = {offs: [], tarde: [], ip: 100, paso: 1000 / 15}; let FOTO_TS = 0;
 function ipVisto() {let m = INTERP_MS; for (const v of VISTA.values()) if (v.reloj && v.k === 'h' && v.eq !== MI_EQ) m = Math.max(m, v.reloj.ip); return m;} /* 17/11: el retraso de pintado se adapta a la red (fotos a trompicones → más colchón; red buena → menos retraso) */
 let CAM_FIN = null; const CAM_LEAD = {}; /* como en el Wild Rift: al caer el estandarte la cámara va a él y estalla antes de la pantalla final */
+function apuntaCam(R, F, hw, hh) {
+  const m = (MIRA_ACT && MIRA_ACT.dx !== null && MIRA_ACT.dx !== undefined) ? MIRA_ACT : (MIRA_AT && MIRA_AT.dx !== undefined ? MIRA_AT : null);
+  if (!m) return [0, 0, 0];
+  const l = Math.hypot(m.dx, m.dy) || 1, k = Math.min(1, l / 90) * (m === MIRA_AT ? 0.12 : 0.28), sx = m.dx / l, sy = -m.dy / l;
+  return [(R.x * sx * hw + F.x * sy * hh) * k, (R.z * sx * hw + F.z * sy * hh) * k, 1];
+}
 function camara(dt) {
   try {animaRim();} catch (e) {}
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
@@ -2351,8 +2357,9 @@ function camara(dt) {
    if (sp > 1.2 && sp < 40) {const k = Math.min(1, dt * 3); L.fx += (mx / (sp * dt) - L.fx) * k; L.fz += (mz / (sp * dt) - L.fz) * k; const l = Math.hypot(L.fx, L.fz) || 1; L.fx /= l; L.fz /= l;}
    const z0 = ZOOMS[zoomI], dist = Math.hypot(z0[0], z0[1]), t = Math.tan(camera.fov * Math.PI / 360), sinP = z0[0] / dist,
      hw = dist * t * camera.aspect, hh = dist * t / sinP, fr = L.fx * R.x + L.fz * R.z, ff = L.fx * F.x + L.fz * F.z;
-   const ox = CAM_FIN ? 0 : R.x * fr * 0.2 * hw + F.x * ff * 0.2 * hh, oz = CAM_FIN ? 0 : R.z * fr * 0.2 * hw + F.z * ff * 0.2 * hh;
-   L.ox = (L.ox || 0) + (ox - (L.ox || 0)) * Math.min(1, dt * 2.5); L.oz = (L.oz || 0) + (oz - (L.oz || 0)) * Math.min(1, dt * 2.5);}
+   const ap = CAM_FIN ? [0, 0] : apuntaCam(R, F, hw, hh), bR = 0.12, bF = 0.2; /* héroe un poco abajo a la izquierda, como en el Wild Rift */
+   const ox = CAM_FIN ? 0 : R.x * (fr * 0.12 + bR) * hw + F.x * (ff * 0.12 + bF) * hh + ap[0], oz = CAM_FIN ? 0 : R.z * (fr * 0.12 + bR) * hw + F.z * (ff * 0.12 + bF) * hh + ap[1];
+   const kc = Math.min(1, dt * (ap[2] ? 6 : 3)); L.ox = (L.ox || 0) + (ox - (L.ox || 0)) * kc; L.oz = (L.oz || 0) + (oz - (L.oz || 0)) * kc;}
   if (CAM_FIN) {camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);} else {camM.x = x + CAM_LEAD.ox; camM.z = z + CAM_LEAD.oz;}
   camGolpe = Math.max(0, camGolpe - dt * 1.5); const zg = 1 - 0.16 * Math.sin(Math.min(1, camGolpe) * Math.PI), z0 = ZOOMS[zoomI], zz = [z0[0] * zg, z0[1] * zg]; tiemblaCam = Math.max(0, tiemblaCam - dt * 1.6); const tb = tiemblaCam * tiemblaCam * 1.6, ox = (Math.random() - 0.5) * tb, oz = (Math.random() - 0.5) * tb;
   camera.position.set(camM.x - F.x * zz[1] + ox, zz[0], camM.z - F.z * zz[1] + oz); camera.lookAt(camM.x + ox, 0, camM.z + oz); ponTapa(x, z);

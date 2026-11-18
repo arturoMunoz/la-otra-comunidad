@@ -1849,6 +1849,47 @@ function ponTapa(x, z) {
 js = sub(js, "camera.lookAt(camM.x + ox, 0, camM.z + oz);\n", "camera.lookAt(camM.x + ox, 0, camM.z + oz); ponTapa(x, z);\n")
 
 
+# ---------- CÁMARA Y BARRAS COMO EL WILD RIFT (18/11, Henar: «la vida del enemigo le tapa, con los minions en teamfight no se ve nada;
+# cuando el enemigo se pone en la botonera… haz lo mismo que el Wild Rift») ----------
+# (1) cámara: tu héroe va un poco abajo a la izquierda del centro (más pantalla libre arriba y a la derecha, lejos de los botones),
+#     el adelanto al andar baja al 12 % y, al APUNTAR una habilidad arrastrando, la cámara se va hacia donde apuntas
+#     (hasta un 28 % de media pantalla; el básico arrastrado, un 12 %), rápido, y vuelve al soltar.
+js = sub(js, "const ox = CAM_FIN ? 0 : R.x * fr * 0.2 * hw + F.x * ff * 0.2 * hh, oz = CAM_FIN ? 0 : R.z * fr * 0.2 * hw + F.z * ff * 0.2 * hh;",
+"""const ap = CAM_FIN ? [0, 0] : apuntaCam(R, F, hw, hh), bR = 0.12, bF = 0.2; /* héroe un poco abajo a la izquierda, como en el Wild Rift */
+   const ox = CAM_FIN ? 0 : R.x * (fr * 0.12 + bR) * hw + F.x * (ff * 0.12 + bF) * hh + ap[0], oz = CAM_FIN ? 0 : R.z * (fr * 0.12 + bR) * hw + F.z * (ff * 0.12 + bF) * hh + ap[1];""")
+js = sub(js, "L.ox = (L.ox || 0) + (ox - (L.ox || 0)) * Math.min(1, dt * 2.5); L.oz = (L.oz || 0) + (oz - (L.oz || 0)) * Math.min(1, dt * 2.5);}",
+         "const kc = Math.min(1, dt * (ap[2] ? 6 : 3)); L.ox = (L.ox || 0) + (ox - (L.ox || 0)) * kc; L.oz = (L.oz || 0) + (oz - (L.oz || 0)) * kc;}")
+js = sub(js, "function camara(dt) {", """function apuntaCam(R, F, hw, hh) {
+  const m = (MIRA_ACT && MIRA_ACT.dx !== null && MIRA_ACT.dx !== undefined) ? MIRA_ACT : (MIRA_AT && MIRA_AT.dx !== undefined ? MIRA_AT : null);
+  if (!m) return [0, 0, 0];
+  const l = Math.hypot(m.dx, m.dy) || 1, k = Math.min(1, l / 90) * (m === MIRA_AT ? 0.12 : 0.28), sx = m.dx / l, sy = -m.dy / l;
+  return [(R.x * sx * hw + F.x * sy * hh) * k, (R.z * sx * hw + F.z * sy * hh) * k, 1];
+}
+function camara(dt) {""")
+# (2) barras: sin placa ni marco, finas y planas (verde tú, azul aliados, rojo enemigos; energía fucsia de 2,5 px),
+#     nombre más pequeño, soldados con barra de 24×3 px y los tuyos medio transparentes.
+html = sub(html, '</body>', """<style>
+/* A-6 · barras como el Wild Rift: sin marco, finas, planas */
+.bv.h i::before{content:none !important}
+.bv.h i{width:58px !important;height:6px !important;background:#0b0f16 !important;box-shadow:0 0 0 1px #000b !important;border:0 !important;border-radius:1px !important;overflow:hidden !important}
+.bv.h.yo i{width:66px !important;height:7px !important;box-shadow:0 0 0 1px #000b !important}
+.bv.h i u{background:#46d42c !important;animation:none !important;box-shadow:none !important}
+.bv.h.e0:not(.yo) i u{background:#2ea8f2 !important}
+.bv.h.e1 i u{background:#e8301f !important}
+.bv.h i u::before,.bv.h i u::after,.bv.h .mn u::after{content:none !important}
+.bv.h i::after{opacity:.5 !important}
+.bv.h .mn{width:58px !important;height:2.5px !important;margin-top:1px !important;background:#0b0f16 !important;border:0 !important;box-shadow:none !important;overflow:hidden !important}
+.bv.h.yo .mn{width:66px !important;height:3px !important}
+.bv.h .mn u{background:#e0189a !important;animation:none !important}
+.bv b{font-size:9.5px !important;margin-bottom:1px !important;-webkit-text-stroke:2.5px #05070b !important}
+.bv.yo b{font-size:10px !important}
+.bv b em{font-size:8.5px !important;padding:0 3px !important}
+.bv.m i{width:24px !important;height:3px !important;border:0 !important;border-radius:0 !important;box-shadow:0 0 0 1px #0009 !important;background:#0b0f16 !important}
+.bv.m.e0{opacity:.6}
+.bv.t i{width:66px !important;height:6px !important;border:0 !important;box-shadow:0 0 0 1px #000b !important}
+</style>
+</body>""", donde='html')
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
