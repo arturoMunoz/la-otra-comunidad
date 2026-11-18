@@ -92,3 +92,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] ~~18/11 · Pack Autopista 43 ART — iconos de estado sobre la cabeza~~ metido 18/11
 - [x] ~~18/11 · Pack Autopista 44 ART — pantalla de derribado y reaparición~~ imagen 1 metida 18/11 (falta la 2: el reloj)
 - [x] ~~18/11 · Pack Autopista 45 ART — plataforma de salida vista desde arriba~~ (metido 18/11)
+- [ ] Pack Autopista 46 WORK (18/11, Henar: «los items de vida y visión se ven como un png en medio del mapa, feos»): máquina expendedora (vida), radar (visión), boca de riego (salto) y botiquín del Duelo en 3D, con material «luz» y nodos «plato»/«tapa». Prompt en `docs/prompts-autopista.md`. Al llegar: sustituir los sprites `ap_pl_*` de `PLANTAS` y el atlas del botiquín por los modelos (latido de la luz, plato que gira, tapa que bota; apagados mientras están gastados).

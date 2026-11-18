@@ -519,6 +519,7 @@ em.fis,em.mag{font-style:normal;font-weight:800;border-radius:5px;padding:0 4px}
 #tienda .tE{display:grid;grid-template-columns:1fr auto;gap:0 6px;font:600 12px/1.25 system-ui,'Segoe UI',Roboto,sans-serif}#tienda .tE span{color:#e6d6b0}#tienda .tE b{color:#fff}#tienda .tE b u{text-decoration:none;color:#7dff6a}#tienda .tE small{grid-column:1/-1;color:#93a3b8;font-size:11px}
 #tienda .tE.mal{display:block;color:#ffb070;font-weight:700}
 @media (max-width:620px){#fichaH .fRej{grid-template-columns:1fr}}
+#elige .eRival{display:flex;align-items:center;gap:5px;margin:2px 0;font-size:12px;color:#cfd8e6}#elige .eRival span{margin-right:2px}#elige .eRival button{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid #fff3;background:#0008;overflow:hidden;font-size:15px;line-height:26px}#elige .eRival button img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}#elige .eRival button.on{border-color:#ff5a4a;box-shadow:0 0 8px #ff5a4a}
 </style><style>
 /* A-6 · HUD de partida (17/11) */
 #mini{top:calc(6px + var(--sat)) !important;border:2px solid #4a6a8a !important;border-radius:10px !important}
@@ -717,6 +718,11 @@ body[data-heroe=rohan]{--tinte:-150deg;--tsat:.9;--tluz:.95}  /* Moha: arena dor
 .bv.h .mn{overflow:visible !important}
 </style>
 <style>
+/* A-6 · iconos que llenan el aro */
+.hb[data-k] img,#bR img{inset:-4% !important;width:108% !important;height:108% !important}
+.hb.hs img{inset:1% !important;width:98% !important;height:98% !important}
+</style>
+<style>
 /* A-6 · MANDOS EN ARCO */
 #mandos{right:calc(8px + var(--sar)) !important;bottom:calc(6px + var(--sab)) !important;width:340px !important;height:300px !important;pointer-events:none}
 #mandos > *{pointer-events:auto}
@@ -859,8 +865,12 @@ body[data-heroe=rohan] #bAt::after{background-image:url(ui/ap_aro_at_rohan.webp)
 .bv.yo .est img{width:26px;height:26px}
 .bv .est img:first-child{animation:apEst .9s ease-out}
 @keyframes apEst{0%{transform:scale(1.8);opacity:0}100%{transform:scale(1);opacity:1}}
-/* 44: velo de derribado (cristal roto y neón rojo en los bordes) */
-#muerto{background:url(ui/ap_velo_muerte.webp) center/100% 100% no-repeat,#05060c70!important}
+/* derribado como en el Wild Rift (18/11, Henar: «al morir sale este pedazo de horror»): el velo de cristal roto (Pack 44) ya no se usa.
+   La partida se sigue viendo en GRIS (el filtro del lienzo ya lo pone juego.js) con un viñeteado rojo
+   suave en los bordes; arriba, una ficha pequeña con quién te ha derribado y la cuenta atrás. */
+#muerto{background:radial-gradient(ellipse at center,#0000 55%,#3a0508aa 100%)!important;justify-content:flex-start!important;padding-top:calc(var(--sat,0px) + 64px)}
+#muerto .mRec{transform:scale(.82);background:#05060ccc}
+#muerto{font-size:18px!important}
 </style></head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>

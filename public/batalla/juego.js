@@ -274,7 +274,9 @@ const renderer = new THREE.WebGLRenderer({antialias: true, powerPreference: 'hig
 const GRAF = {cal: localStorage.getItem('vado.cal') || (() => {const n = navigator.hardwareConcurrency || 4, m = navigator.deviceMemory || 4; return n >= 8 && m >= 6 ? 'alta' : n <= 4 || m <= 3 ? 'baja' : 'media';})(), fps: +(localStorage.getItem('vado.fps') || 60), ult: 0};
 /* 17/11 (Henar: «se ve borroso al moverse»): la resolución bajaba a 0,75 en cuanto el móvil iba un poco justo y se notaba; ahora no baja de
    1 (media) o 1,25 (alta) y solo baja tras DOS tandas seguidas lentas. Para ganar fluidez de verdad: Calidad Baja o 30 fps en ⚙. */
-const PR_MIN = (c) => Math.min(devicePixelRatio, c === 'baja' ? 0.75 : c === 'alta' ? 1.25 : 1);
+/* 18/11 (Henar: «siguen saliendo difuminados al moverse»): en Media y Alta la resolución ya NO baja nunca (cada bajada se veía como
+   un emborronado justo al moverse, que es cuando el móvil va más justo). Solo en Baja sigue adaptándose. */
+const PR_MIN = (c) => c === 'baja' ? Math.min(devicePixelRatio, 0.75) : Math.min(devicePixelRatio, {media: 1.5, alta: 2}[c] || 1.5);
 const PR = {max: Math.min(devicePixelRatio, {baja: 1, media: 1.5, alta: 2}[GRAF.cal] || 1.5), min: PR_MIN(GRAF.cal), t: 0, n: 0, acum: 0, malas: 0}; PR.v = PR.max;
 renderer.setPixelRatio(PR.v); renderer.setSize(VW, VH);
 function ajustaResolucion(dt) {
@@ -666,10 +668,11 @@ function nuevaPartida(jugadores, modo) {
   const plazas = modo === '2v2' ? 4 : 2; S.carriles = modo === '2v2' ? [0, 1] : [0];
   for (let slot = 0; slot < plazas; slot++) {
     const j = jugadores.find((q) => q.slot === slot);
-    const tipo = j ? j.heroe : Object.keys(HEROES)[(slot * 5 + 1) % Object.keys(HEROES).length];
+    const esBot = !j || !!j.bot; /* 18/11: contra la máquina se puede elegir el héroe del bot rival ({slot, heroe, bot: true}) */
+    const tipo = j && j.heroe && HEROES[j.heroe] ? j.heroe : Object.keys(HEROES)[(slot * 5 + 1) % Object.keys(HEROES).length];
     const eq = slot % 2, f = BASES[eq].fuente, x = f.x + (slot >= 2 ? 1.5 : -1.5), z0 = f.z - signo(eq) * 2.5;
     const b = HEROES[tipo] || HEROES.rohan;
-    S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: !j, nombre: j ? j.nombre : 'Bot ' + b.nombre.split(/[ ,]/)[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
+    S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: esBot, nombre: !esBot ? j.nombre : 'Bot ' + b.nombre.split(/[ ,]/)[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
       vida: b.vida, max: b.vida, mana: b.mana, nivel: 1, xp: 0, oro: 500, vg: 1, vgT: 210, inv: [], enc: '', hf: j && j.hech === 'c' ? 'c' : 'f', modoAt: '', fijo: 0, cd: {q: 0, w: 0, e: 0, r: 0, a: 0, d: 0, f: 0}, rk: {q: 0, w: 0, e: 0, r: 0}, pts: 1, muertes: 0, asist: 0, cs: 0, racha: 0, hierba: -1, multi: 0, multiT: -99, danos: {}, buf: {}, resp: 0, muerto: false, ac: 0, hc: 0, hk: '', mueve: false, ataca: false, mx: 0, mz: 0, kills: 0, plan: 0});
   }
   for (const eq of [0, 1]) {
@@ -2561,8 +2564,8 @@ function sueltaApaisado() {try {if (screen.orientation && screen.orientation.unl
 /* ---------- menú y sala ---------- */
 let hechElegido = localStorage.getItem('vado.hech') || 'f', heroeElegido = localStorage.getItem('vado.heroe') || 'rohan', modoElegido = localStorage.getItem('vado.modo') || '1v1';
 const ROL_H = {rohan: 'Luchador', enano: 'Tanque', elfo: 'Tirador', hobbit: 'Asesino', gandalf: 'Mago', orco: 'Luchador', gollum: 'Asesino'};
-let eligeSel = null;
-function eligeHeroe(titulo, listo) {
+let eligeSel = null, rivalElegido = localStorage.getItem('vado.rival') || '';
+function eligeHeroe(titulo, listo, conRival) {
   /* 17/11: una sola pantalla sin scroll: retrato a la izquierda; a la derecha héroes en fila, barras, iconos P/Q/W/E/R
      (al tocar uno se ve su descripción en un único recuadro), hechizos y botones */
   const el = $('elige'); eligeSel = heroeElegido; let habSel = 'p'; el.classList.remove('hidden'); el.classList.add('e2');
@@ -2582,9 +2585,11 @@ function eligeHeroe(titulo, listo) {
       '<div class="eIcos">' + habs.map((k) => '<button data-k="' + k + '" class="' + (k === habSel ? 'on' : '') + (k === 'r' ? ' ult' : '') + '"><img src="' + ico(k) + '" alt=""><span>' + (k === 'p' ? 'P' : k.toUpperCase()) + '</span></button>').join('') + '</div>' +
       '<div class="eDet">' + det + '</div>' +
       '<div class="eHech"><span>Hechizos:</span><b><img src="ui/hz_destello.webp" alt="">Destello</b>' + ['f', 'c'].map((k) => '<button data-hz="' + k + '"' + (hechElegido === k ? ' class="on"' : '') + '><img src="' + HECHIZOS[k].icono + '" alt="">' + HECHIZOS[k].n + '</button>').join('') + '</div>' +
+      (conRival ? '<div class="eRival"><span>Rival de la máquina:</span><button data-r=""' + (!rivalElegido ? ' class="on"' : '') + '>🎲</button>' + Object.keys(HEROES).map((k) => '<button data-r="' + k + '"' + (k === rivalElegido ? ' class="on"' : '') + '><img src="ui/splash_' + k + '.webp" alt=""></button>').join('') + '</div>' : '') +
       '<div class="eBot"><button class="bt s" id="eVolver">← Volver</button><button class="bt" id="eOk">¡Confirmar!</button></div></div>';
     el.querySelectorAll('[data-h]').forEach((b) => b.onclick = () => {eligeSel = b.dataset.h; pinta();});
     el.querySelectorAll('[data-k]').forEach((b) => b.onclick = () => {habSel = b.dataset.k; pinta();});
+    el.querySelectorAll('[data-r]').forEach((b) => b.onclick = () => {rivalElegido = b.dataset.r; localStorage.setItem('vado.rival', rivalElegido); pinta();});
     el.querySelectorAll('[data-hz]').forEach((b) => b.onclick = () => {hechElegido = b.dataset.hz; localStorage.setItem('vado.hech', hechElegido); pinta();});
     $('eVolver').onclick = () => el.classList.add('hidden');
     $('eInfo').onclick = () => abreFicha(eligeSel);
@@ -2671,7 +2676,7 @@ function preparaMenu() {
   $('bGuia').onclick = () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; empieza([{slot: 0, nombre: nombreJugador(), heroe: 'rohan', hech: 'f'}], '1v1', true); if (S) S.facil = true; guiaEmpieza();}, false);};
   if (!localStorage.getItem('vado.guia')) $('bGuia').classList.add('nueva');
   $('guiaX').addEventListener('pointerdown', (e) => {e.preventDefault(); e.stopPropagation(); guiaAcaba(true);});
-  $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; empieza(js, modoElegido, true);}, modoElegido === '2v2');});
+  $('bBots').onclick = () => eligeHeroe('Elige a tu héroe · ' + (modoElegido === '2v2' ? '2 contra 2' : 'Duelo'), () => {apaisa(); trasCarga(() => {NET.soy = 0; NET.anf = 0; const js = [{slot: 0, nombre: nombreJugador(), heroe: heroeElegido, hech: hechElegido}]; if (rivalElegido && HEROES[rivalElegido]) js.push({slot: 1, heroe: rivalElegido, bot: true}); empieza(js, modoElegido, true);}, modoElegido === '2v2');}, true);
   $('bCrear').onclick = () => eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => {const c = Array.from({length: 4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join(''); conecta(c, modoElegido, nombreJugador(), heroeElegido);}, true);});
   $('bUnir').onclick = () => {const c = $('codigo').value.trim().toUpperCase(); if (c.length < 3) {msg('Escribe el código que te han pasado'); return;} eligeHeroe('Elige a tu héroe', () => {apaisa(); trasCarga(() => conecta(c, modoElegido, nombreJugador(), heroeElegido), true);});};
   $('bSalir').onclick = () => {if (window.BrechaAndroid) {BrechaAndroid.salir(); return;} sueltaApaisado(); location.href = '../';};

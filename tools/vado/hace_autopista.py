@@ -983,6 +983,18 @@ js = sub(js, "const f = marcaH(v.tipo, 'basico', 'flecha') || mira.flecha; f.vis
              "flechaAP(v.tipo, x, z, wx, wz, alc, 0.55);")
 js = sub(js, "function ocultaMira() {", "function ocultaMira() {if (FL.g) FL.g.visible = false; ")
 
+# ---------- ICONOS QUE LLENAN EL ARO (18/11, Henar: «los botones de habilidad no llegan hasta el final del aro; calcula y pon un tamaño igual
+# para todos»). Medido: el hueco de los aros (`ap_aro_hab`, `_lista`, `_ulti`, `_hechizo`) es el 77,3 % de su imagen y el aro se pinta a
+# 1,22 × el botón (inset −11 %), así que el hueco = 0,943 del botón. Los iconos de habilidad tienen su dibujo en el 88-90 % de la imagen
+# (antes al 88 % del botón: el dibujo se quedaba en el 0,79 y dejaba un anillo oscuro de ~4 px). Ahora el dibujo llega a 0,96 (pasa
+# un pelo por debajo del aro): habilidades al 108 % (inset −4 %), hechizos (dibujo al 98-100 %) al 98 % (inset 1 %).
+html = sub(html, '</head>', """<style>
+/* A-6 · iconos que llenan el aro */
+.hb[data-k] img,#bR img{inset:-4% !important;width:108% !important;height:108% !important}
+.hb.hs img{inset:1% !important;width:98% !important;height:98% !important}
+</style>
+</head>""", donde='html')
+
 # ---------- MANDOS EN ARCO (17/11, Henar: «es una chapuza»: botones pisándose) ----------
 # Esquema fijo como el del Wild Rift alrededor del ataque (abajo a la derecha): Q a la izquierda, W en diagonal, E encima y la R
 # más afuera; el «+» como insignia arriba a la izquierda de cada habilidad; torre y soldados pegados al ataque; hechizos, BASE y
@@ -1142,7 +1154,7 @@ js = sub(js, "/* LA AUTOPISTA: quitamiedos a los dos lados, farolas,", """/* LA 
 function decoradoOjo(pon2, al) {
   const G = MAPA_G;
   if (!M.ap_jungla) {const t = setInterval(() => {if (MAPA_G !== G) clearInterval(t); else if (M.ap_jungla) {clearInterval(t); decoradoOjo(pon2, al);}}, 400); return;}
-  const pz = (n, x, z, ry, e = 1) => {const o = pieza('ap_jungla', n); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.setScalar(e); fusiona(o); G.add(o); return o;};
+  const pz = (n, x, z, ry, e = 1) => {const o = pieza('ap_jungla', n); o.position.set(x, 0.05, z); o.traverse((q) => {if (q.isMesh) for (const m of [].concat(q.material)) {m.polygonOffset = true; m.polygonOffsetFactor = -2; m.polygonOffsetUnits = -2;}}); /* 18/11: el suelo de los fosos y cubiles estaba a la misma altura que el suelo del mapa y se veían rayas negras al moverse (z-fighting) */ o.rotation.y = ry; o.scale.setScalar(e); fusiona(o); G.add(o); return o;};
   const haciaCentro = (p) => Math.atan2(-p.x, -p.z);
   pz('foso_nasor', PIT.x, PIT.z, haciaCentro(PIT)); pz('guarida_lagarto', PIT2.x, PIT2.z, haciaCentro(PIT2));
   for (const c of CAMPOS) {const nd = NEUTRO[c.tipo]; if (nd.jefe || nd.draco || nd.pasiva) continue; pz(c.tipo === 'troll' ? 'cubil_toro' : c.tipo === 'huorn' ? 'cubil_coloso' : 'cubil', c.x, c.z, haciaCentro(c));}
@@ -1420,8 +1432,12 @@ html = sub(html, '</head>', """<style>
 .bv.yo .est img{width:26px;height:26px}
 .bv .est img:first-child{animation:apEst .9s ease-out}
 @keyframes apEst{0%{transform:scale(1.8);opacity:0}100%{transform:scale(1);opacity:1}}
-/* 44: velo de derribado (cristal roto y neón rojo en los bordes) */
-#muerto{background:url(ui/ap_velo_muerte.webp) center/100% 100% no-repeat,#05060c70!important}
+/* derribado como en el Wild Rift (18/11, Henar: «al morir sale este pedazo de horror»): el velo de cristal roto (Pack 44) ya no se usa.
+   La partida se sigue viendo en GRIS (el filtro del lienzo ya lo pone juego.js) con un viñeteado rojo
+   suave en los bordes; arriba, una ficha pequeña con quién te ha derribado y la cuenta atrás. */
+#muerto{background:radial-gradient(ellipse at center,#0000 55%,#3a0508aa 100%)!important;justify-content:flex-start!important;padding-top:calc(var(--sat,0px) + 64px)}
+#muerto .mRec{transform:scale(.82);background:#05060ccc}
+#muerto{font-size:18px!important}
 </style></head>""", donde='html')
 
 # ---------- NÚCLEOS Y PLATAFORMA DE SALIDA (18/11, Henar: «los núcleos más pequeños y rojo/azul; tu zona de spawn marcada con una plataforma») ----------

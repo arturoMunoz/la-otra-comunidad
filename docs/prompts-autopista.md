@@ -365,3 +365,16 @@ IMAGEN 2 (1024x1024) — RELOJ DE REAPARICIÓN: un aro grande de neón rojo-rosa
 ```
 ART · Pack Autopista 45 · Plataforma de SALIDA (donde reaparecen los héroes) de A-6, vista desde ARRIBA en planta, juego móvil tipo Wild Rift, autopista española de noche, cyberpunk con colores vivos. Una sola imagen 1024x1024, sin texto, fondo magenta liso #FF00FF: una plataforma HEXAGONAL de hormigón pulido y placas de acero que ocupa casi todo el cuadro (vértices tocando el borde izquierdo y derecho), con juntas de neón BLANCO (el juego lo tiñe de azul o rojo) que forman un dibujo de pista de aterrizaje: un círculo central, rayas como un helipuerto y flechas en los 6 lados; marcas de pintura gastada, tornillos y una ligera rejilla de ventilación. Vista perfectamente cenital, sin perspectiva ni sombras proyectadas fuera de la plataforma.
 ```
+
+## 18/11 · Pack Autopista 46 WORK — objetos del mapa en 3D (vida, visión, salto y botiquín)
+
+```
+WORK · Pack Autopista 46 · Modelos 3D (.glb) de los objetos que se recogen en el mapa de A-6 (juego móvil tipo Wild Rift, vista cenital, autopista abandonada con estética cyberpunk seria: hormigón, chapa, neón). Ahora son dibujos planos que se ven como pegatinas: hay que hacerlos en 3D, low-poly (800-2.500 triángulos cada uno), estilo de los modelos CC0 de Kenney/Quaternius, UNA textura atlas de 512 + un material aparte llamado «luz» SOLO en las partes que brillan (para encenderlas/apagarlas por código). Pies en y=0, mirando a +Z, escala real. Puedes partir de piezas CC0 (Kenney City Kit, Quaternius) y montarlas.
+
+1. `ap_obj_vida.glb` — MÁQUINA EXPENDEDORA de bebidas energéticas (cura): 1,4 m de alto, chapa roja y gris rayada, panel frontal con botellas de líquido VERDE y una cruz de luz verde arriba (material «luz»).
+2. `ap_obj_vision.glb` — RADAR / antena parabólica sobre un trípode (da visión): 1,5 m, plato que pueda girar (el plato en un nodo aparte llamado «plato», con su pivote en el eje), luz cian en el centro del plato y en las patas (material «luz»).
+3. `ap_obj_salto.glb` — BOCA DE RIEGO de incendios (lanza por los aires a quien la toca): 0,9 m, roja y desconchada, con una tapa en un nodo aparte llamado «tapa», y un aro naranja de luz en la base (material «luz»).
+4. `ap_botiquin.glb` — BOTIQUÍN grande de emergencias (el del puente del Duelo): maletín de 0,6 x 0,45 x 0,25 m sobre un pequeño pedestal de hormigón, cruz verde que brilla (material «luz»).
+
+Entrega los 4 .glb en un zip con una captura de cada uno y las licencias CC0 en un txt. Nada de animaciones (las haremos por código: girar el plato, botar la tapa, latir la luz).
+```
