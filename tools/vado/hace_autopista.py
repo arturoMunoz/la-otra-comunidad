@@ -1255,6 +1255,25 @@ html = sub(html, '</head>', """<style>
 @media (max-height:440px){#menu .jugar{height:46px!important}#menu #bCrear,#menu .mAmigos{height:32px!important;min-height:32px!important}}
 </style></head>""", donde='html')
 
+# ---------- PACK 38 ART (18/11): botones chillones del menú (tools/autopista/procesa_pack38.py -> ui/ap_c_*.webp) ----------
+# misma colocación que el MENÚ CHILLÓN; el halo de neón lo pone CSS (drop-shadow) porque sobre el verde no se podía recortar limpio
+html = sub(html, '</head>', """<style>
+#menu .jugar{clip-path:none!important;background:none!important;border-style:solid!important;border-width:9px 14px!important;border-image:url(ui/ap_c_jugar.webp) 34 48 fill stretch!important;border-radius:0!important;filter:drop-shadow(0 0 6px #ff1f5a) drop-shadow(0 0 14px #ff1f5a99)!important;animation:apJug3 1.6s ease-in-out infinite!important}
+@keyframes apJug3{50%{border-image-source:url(ui/ap_c_jugar_on.webp);filter:drop-shadow(0 0 9px #ff3a7a) drop-shadow(0 0 22px #ff1f5acc)}}
+#menu .mPanel::before{display:none!important}
+#menu .modos button::after{height:7px!important;bottom:-2px!important;left:-14%!important;right:-14%!important;border-radius:0!important;background:url(ui/ap_c_raya.webp) center/100% 100% no-repeat!important;box-shadow:none!important;filter:drop-shadow(0 0 5px #00e5ff)}
+#menu #bCrear{background:none!important;box-shadow:none!important;border-radius:0!important;border-style:solid!important;border-width:6px 12px 6px 34px!important;border-image:url(ui/ap_c_crear.webp) 30 40 30 165 fill stretch!important;filter:drop-shadow(0 0 5px #00e5ff);padding:0 0 0 6px!important;overflow:visible!important}
+#menu #bCrear img{position:absolute!important;left:-30px;top:1px;width:24px!important;height:24px!important;margin:0!important;border-radius:50%}
+#menu .mAmigos{background:none!important;box-shadow:none!important;border-radius:0!important;border-style:solid!important;border-width:6px 10px!important;border-image:url(ui/ap_c_codigo.webp) 30 40 fill stretch!important;filter:drop-shadow(0 0 5px #ff2bd6);padding:0!important}
+#menu .mAmigos #bUnir,#menu #bUnir{background:none!important;box-shadow:none!important;border-radius:0!important;border-style:solid!important;border-width:5px 9px!important;border-image:url(ui/ap_c_unirse.webp) 30 40 fill stretch!important;height:22px!important;padding:0 4px!important;filter:drop-shadow(0 0 4px #ff2bd6)}
+#menu #bGuia.mT{background:url(ui/ap_c_aro_cian.webp) center/100% 100% no-repeat!important;filter:drop-shadow(0 0 6px #00e5ff)}
+#menu #bGuia img{width:72%!important;height:72%!important;margin:14%!important;border:0!important;box-shadow:none!important}
+#menu #bSon{background:url(ui/ap_b_ajustes.webp) center/66% no-repeat,url(ui/ap_c_aro_fucsia.webp) center/100% 100% no-repeat!important;filter:drop-shadow(0 0 6px #ff2bd6)}
+/* 18/11 (Henar): el fondo de tormenta un pelín menos oscuro, con más brillo y color */
+#menu #mFondo .fc,#menu #mFondo .tL{filter:brightness(1.3) saturate(1.45) contrast(1.05)}
+@media (max-height:440px){#menu #bCrear{border-left-width:32px!important}#menu #bCrear img{left:-29px;top:0;width:24px!important;height:24px!important}}
+</style></head>""", donde='html')
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
