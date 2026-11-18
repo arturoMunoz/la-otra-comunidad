@@ -266,3 +266,16 @@ ART · Pack Autopista 36 · Iconos para la jungla del mapa 2v2 de A-6 (juego mó
 IMAGEN 1 (1536x1024) — marcas del minimapa, 9 iconos redondos pequeños y muy legibles (cabeza del bicho de frente, silueta clara): gusano gigante acorazado (Nasor, morado), lagarto con cables (gris), toro negro con cuernos en brasa (rojo), gólem de chatarra (azul), perro (gris), buitre (marrón), jabalí (pardo), rata (verde), y una lápida de aro dorado vacía (campamento muerto).
 IMAGEN 2 (1536x1024) — bendiciones y plantas: Furia de Nasor (fauces moradas), Alma del lagarto fuego (llama naranja) y hielo (cristal cian), Brasa del toro (cuerno con fuego), Turbo del coloso (motor con rayo azul), Jauría (huella de perro ámbar); y tres «plantas» del mapa: boca de riego que echa agua a presión, máquina expendedora con luz verde, radar de tráfico con un destello.
 ```
+
+## 18/11 · Pack Autopista 37 ART — kit de botones del menú en neón rojo, azul y negro
+
+```
+ART · Pack Autopista 37 · Kit de botones del menú principal de A-6 (juego móvil tipo Wild Rift ambientado en una autopista española de noche bajo la tormenta, estilo cyberpunk serio). Colores: NEGRO casi puro de base, filos y luces de NEÓN ROJO (#ff2a4a) y NEÓN AZUL (#3aa0ff), algo de metal oscuro; nada de amarillo ni rayas de obra, nada de caramelo. Sin texto, sin letras, sin iconos dentro (el texto lo pone el juego). Vista frontal plana, sin perspectiva. Todo sobre fondo magenta liso #FF00FF, cada pieza separada con mucho hueco. Una sola imagen 1536x1024:
+ A) JUGAR: placa alargada proporción 6:1, interior negro mate con un degradado rojo muy oscuro, filo de neón ROJO fino que brilla, esquinas cortadas en diagonal (chaflán), dos remaches discretos en los extremos.
+ B) La misma placa JUGAR pulsada/encendida: el neón rojo más intenso y un halo rojo suave alrededor.
+ C) Pestaña 3:1 APAGADA: negro, filo azul muy tenue, esquinas en chaflán.
+ D) La misma pestaña ENCENDIDA: filo de neón AZUL brillante y un leve brillo azul dentro.
+ E) Botón secundario 4:1 (para «Crear sala» y la caja del código): negro, filo azul fino, a la izquierda un hueco redondo vacío del alto del botón para poner un icono.
+ F) Botón pequeño 2,5:1 («Unirse»): negro con filo de neón ROJO.
+Los interiores de todas las placas deben ser lisos (sin dibujos) para que el texto se lea, y los filos finos (que no se coman el botón al verse pequeño, a 40 px de alto).
+```

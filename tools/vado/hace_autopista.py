@@ -1188,6 +1188,29 @@ html = sub(html, '</head>', """<style>
 @media (max-height:440px){#menu .modos button{height:40px!important}#menu .jugar{height:52px!important}#menu #bCrear,#menu .mAmigos{height:36px!important;min-height:36px!important}}
 </style></head>""", donde='html')
 
+# ---------- MENÚ NEÓN (18/11, Henar: «más pequeño, colores rojo, azul y negro neón; el contra la máquina sale mal») ----------
+# provisional con CSS hasta que llegue el kit del Pack Autopista 37 ART: placas negras con filo de neón (JUGAR rojo, lo demás azul)
+html = sub(html, '</head>', """<style>
+#menu .mPanel{width:min(40%,350px)!important;gap:6px!important;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)!important}
+#menu .jugar,#menu .modos button,#menu #bCrear,#menu .mAmigos,#menu #bUnir{border-image:none!important;border-style:solid!important;background-image:none!important;filter:none!important}
+#menu .jugar{height:44px!important;border-width:2px!important;border-color:#ff2a4a!important;border-radius:8px!important;background:linear-gradient(180deg,#1a0a10,#07080c)!important;box-shadow:0 0 12px #ff2a4a99,inset 0 0 14px #ff2a4a44!important}
+#menu .jugar b{font-size:20px!important;color:#fff!important;letter-spacing:.12em;text-shadow:0 0 8px #ff2a4a,0 0 2px #ff6a80}
+#menu .jugar small,#menu .jugar i{display:none!important}
+#menu .modos button{height:34px!important;border-width:1.5px!important;border-color:#2f8cff55!important;border-radius:7px!important;background:#07090ecc!important;box-shadow:none!important;align-items:center!important;opacity:.7}
+#menu .modos button.on{opacity:1;border-color:#3aa0ff!important;box-shadow:0 0 10px #3aa0ff88,inset 0 0 10px #3aa0ff33!important}
+#menu .modos button b{font-size:13px!important;text-shadow:0 0 6px #3aa0ff}
+#menu .modos button span{display:none!important}
+#menu #bCrear,#menu .mAmigos{height:34px!important;min-height:34px!important;border-width:1.5px!important;border-color:#3aa0ff88!important;border-radius:7px!important;background:#07090ecc!important;box-shadow:0 0 6px #3aa0ff44!important}
+#menu #bCrear img{width:24px!important;height:24px!important}
+#menu #bCrear b{font-size:12px!important;color:#fff!important}#menu #bCrear small{display:none!important}
+#menu .mAmigos{padding:0 3px 0 0!important}
+#menu .mAmigos input{background:transparent!important;color:#cfe6ff!important;font-size:11px!important}
+#menu #bUnir{height:26px!important;min-height:0!important;margin:auto 0!important;padding:0 10px!important;border-width:1.5px!important;border-color:#ff2a4a!important;border-radius:5px!important;background:#1a0a10!important;color:#fff!important;font-size:11px!important;box-shadow:0 0 6px #ff2a4a77!important}
+#menu .modos button.on{transform:none!important}
+#menu .mAmigos #bUnir{width:auto!important;height:26px!important;padding:0 12px!important;background-image:none!important;background:#1a0a10!important;color:#fff!important;border-radius:5px!important}
+@media (max-height:440px){#menu .jugar{height:40px!important}#menu .modos button,#menu #bCrear,#menu .mAmigos{height:31px!important;min-height:31px!important}}
+</style></head>""", donde='html')
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
