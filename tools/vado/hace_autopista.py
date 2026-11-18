@@ -1504,6 +1504,30 @@ js = sub(js, "  for (const c of CAMPOS) {const nd = NEUTRO[c.tipo]; if (nd.jefe 
 js = sub(js, "pz('foso_nasor', PIT.x, PIT.z, haciaCentro(PIT)); pz('guarida_lagarto', PIT2.x, PIT2.z, haciaCentro(PIT2));", "")
 
 
+# ---------- BOLA DE BIRDIE EN 3D Y DEL TAMAÑO DE LO QUE GOLPEA (18/11, Henar: «parece más grande el png que el hitbox, da la sensación de que no entra») ----------
+# el dibujo plano medía 1,9 m con la bola 0,4 m por delante del punto real y una estela verde enorme: llegaba antes de tiempo y «tocaba» sin dar.
+# Ahora es una bola 3D centrada en el punto exacto del proyectil, con un halo verde cuyo borde ES el ancho de lo que golpea (2 × 0,6 m)
+# y una estela corta detrás. La Q («Drive») golpea con ancho 0,6 (antes 0,8): halo y golpe coinciden.
+js = sub(js, "q: {n: 'Drive', cd: 7, mn: 40, tipo: 'linea', alc: 11, ancho: 0.8,", "q: {n: 'Drive', cd: 7, mn: 40, tipo: 'linea', alc: 11, ancho: 0.6,")
+js = sub(js, "function proyAP(n) {\n  if (!PROY_AP_G[n]) {", """let HALO_BOLA = null;
+function bolaGolf() {
+  const g = new THREE.Group();
+  const b = new THREE.Mesh(new THREE.SphereGeometry(0.27, 20, 14), new THREE.MeshStandardMaterial({color: '#ffffff', roughness: 0.35, metalness: 0, emissive: '#2a3a2a'})); g.add(b);
+  if (!HALO_BOLA) {const cv = document.createElement('canvas'); cv.width = cv.height = 64; const x = cv.getContext('2d'), gr = x.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.45, 'rgba(255,255,255,.55)'); gr.addColorStop(0.85, 'rgba(255,255,255,.18)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = gr; x.fillRect(0, 0, 64, 64); HALO_BOLA = new THREE.CanvasTexture(cv);}
+  const h = new THREE.Sprite(new THREE.SpriteMaterial({map: HALO_BOLA, color: '#5dff5a', transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending})); h.scale.setScalar(1.2); g.add(h);
+  const e = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1.3, 14, 1, true), new THREE.MeshBasicMaterial({color: '#4dff4a', transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide}));
+  e.rotation.x = Math.PI / 2; e.position.z = -0.7; g.add(e);  /* la punta de la estela hacia atrás (los proyectiles miran a +Z) */
+  g.userData.tamFijo = 1;  /* su tamaño ya es el real: no se agranda como los dibujos */
+  return g;
+}
+function proyAP(n) {
+  if (n === 'bola') {if (!PROY_AP_G.bola) PROY_AP_G.bola = bolaGolf(); return PROY_AP_G.bola.clone(true);}
+  if (!PROY_AP_G[n]) {""")
+
+
+js = sub(js, "if (t === 'proy') {const o = modeloProy(e[1]); o.scale.multiplyScalar(e[6] || 1);", "if (t === 'proy') {const o = modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(e[6] || 1);")
+js = sub(js, "if (t === 'tiro') {const o = modeloProy(e[1]); o.scale.multiplyScalar(1.6);", "if (t === 'tiro') {const o = modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(1.6);")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
