@@ -100,3 +100,4 @@ No es ChatGPT: en ElevenLabs → Sound Effects. Cada uno 3 veces (3 versiones), 
 - [x] ~~18/11 · Pack Autopista 47 WORK — modelo del héroe mágico nuevo «el Visor» (adjuntar Pack47_referencia.zip; prompt en `docs/prompts-autopista.md`)~~ (llegó 18/11, `tools/autopista/pack47`)
 - [x] ~~18/11 · Pack Autopista 48 ART — arte del Visor, 4 imágenes (adjuntar Pack48_referencia.zip; prompt en `docs/prompts-autopista.md`)~~ (metido 18/11)
 - [x] ~~18/11 · Pack Autopista 49 ART — fondo propio en el retrato de cada héroe, 7 imágenes (adjuntar Pack49_retratos.zip; prompt en `docs/prompts-autopista.md`)~~ (metido 18/11)
+- [ ] 18/11 · Pack Autopista 50 WORK — Ata más fiel a su retrato (adjuntar Pack50_ata.zip; prompt en `docs/prompts-autopista.md`)

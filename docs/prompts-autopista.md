@@ -448,6 +448,15 @@ ART · Pack Autopista 49 · Retrato de NOMBRE (A-6, juego móvil tipo Wild Rift 
 6. Fu · `6_fu.png` · una gasolinera abandonada de noche junto a la autopista, letreros de neón MORADO parpadeando, niebla morada a ras de suelo.
 7. Moha · `7_moha.png` · la autopista cruzando el desierto de Tabernas (Almería) en plena tormenta de arena DORADA, sol bajo, dunas y un cartel de salida medio enterrado.
 
+## 18/11 · Pack Autopista 50 WORK — Ata más fiel a su retrato (adjuntar Pack50_ata.zip)
+
+```
+WORK · Pack Autopista 50 · Mejorar el modelo 3D de «Ata, la Francotiradora» de A-6 (juego móvil tipo Wild Rift visto desde arriba, autopista española, estilo serio con toque cyberpunk). Te adjunto `ap_ata.glb` (el modelo actual, con las animaciones del rifle a dos manos que hiciste en el Pack 41) y `ata_retrato.png` (su retrato oficial: el modelo tiene que parecerse a ESE retrato). Problema: dentro del juego, vista desde arriba, parece un hombre medio calvo: la trenza se pierde y la cara no se lee como de mujer.
+NO toques el esqueleto ni las animaciones: mismos huesos con los mismos nombres y los MISMOS clips con sus mismos tiempos (andar, atacar, atacar_2, aturdido, celebrar, correr, esquivar, golpe_cargado, morir, morir_2, quieto, quieto_2, recibir_golpe; el disparo sigue a 0,15 s). Solo rehaz la malla y la textura del personaje, bien pesada al mismo esqueleto.
+Como el retrato: mujer de unos 30 años, cara femenina clara (pómulos, labios, cejas finas), PELO OSCURO ABUNDANTE con volumen arriba de la cabeza (que desde arriba se vea pelo, no cráneo) y una TRENZA LARGA y gruesa que le cae por delante del hombro; monóculo-visor naranja en un ojo; chaqueta táctica gris oscura con franjas NARANJA y cuello alto, cinturón con balas y bolsillos, pantalón cargo negro con franjas naranja, guantes sin dedos. Mantén el rifle de francotirador tal cual. Colores con contraste para que se distinga desde arriba (el naranja bien visible en hombros y espalda).
+Técnico: 6.000-9.000 triángulos, una textura de 1024 (atlas), altura 2,0 m en «quieto», pies en y=0, mirando a +Z. Entrega `ap_ata.glb`, capturas de frente, de lado y desde arriba en diagonal (como se verá en el juego) junto al modelo antiguo, y las licencias CC0 en un txt.
+```
+
 ## Sonidos ElevenLabs (18/11) — ElevenLabs → Sound Effects, 3 versiones de cada uno
 Estilo común (añadir al final de cada prompt): `game sound effect, mobile MOBA, modern cyberpunk highway, punchy and clean, no music, no voice, dry, no long reverb`
 | archivo | duración | prompt |
