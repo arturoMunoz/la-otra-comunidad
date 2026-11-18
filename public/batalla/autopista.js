@@ -2254,7 +2254,8 @@ let CAM_FIN = null; const CAM_LEAD = {}; /* como en el Wild Rift: al caer el est
 function camara(dt) {
   try {animaRim();} catch (e) {}
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
-  const {F, R} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z;
+  const {F, R} = ejes(); let x = v.xi ?? v.x, z = v.zi ?? v.z;
+  if (!CAM_FIN && S && v.x0 !== undefined) {x = v.x0 + (v.x - v.x0) * ALFA; z = v.z0 + (v.z - v.z0) * ALFA;}  /* donde se va a pintar ESTE fotograma */
   {const L = CAM_LEAD; if (L.x === undefined) {L.x = x; L.z = z; L.fx = F.x; L.fz = F.z;}
    const mx = x - L.x, mz = z - L.z, sp = Math.hypot(mx, mz) / Math.max(dt, 1e-3); L.x = x; L.z = z;
    if (sp > 1.2 && sp < 40) {const k = Math.min(1, dt * 3); L.fx += (mx / (sp * dt) - L.fx) * k; L.fz += (mz / (sp * dt) - L.fz) * k; const l = Math.hypot(L.fx, L.fz) || 1; L.fx /= l; L.fz /= l;}
@@ -2262,7 +2263,7 @@ function camara(dt) {
      hw = dist * t * camera.aspect, hh = dist * t / sinP, fr = L.fx * R.x + L.fz * R.z, ff = L.fx * F.x + L.fz * F.z;
    const ox = CAM_FIN ? 0 : R.x * fr * 0.2 * hw + F.x * ff * 0.2 * hh, oz = CAM_FIN ? 0 : R.z * fr * 0.2 * hw + F.z * ff * 0.2 * hh;
    L.ox = (L.ox || 0) + (ox - (L.ox || 0)) * Math.min(1, dt * 2.5); L.oz = (L.oz || 0) + (oz - (L.oz || 0)) * Math.min(1, dt * 2.5);}
-  camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);
+  if (CAM_FIN) {camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);} else {camM.x = x + CAM_LEAD.ox; camM.z = z + CAM_LEAD.oz;}
   camGolpe = Math.max(0, camGolpe - dt * 1.5); const zg = 1 - 0.16 * Math.sin(Math.min(1, camGolpe) * Math.PI), z0 = ZOOMS[zoomI], zz = [z0[0] * zg, z0[1] * zg]; tiemblaCam = Math.max(0, tiemblaCam - dt * 1.6); const tb = tiemblaCam * tiemblaCam * 1.6, ox = (Math.random() - 0.5) * tb, oz = (Math.random() - 0.5) * tb;
   camera.position.set(camM.x - F.x * zz[1] + ox, zz[0], camM.z - F.z * zz[1] + oz); camera.lookAt(camM.x + ox, 0, camM.z + oz);
   luces(); {const p = Math.round(camM.x / 6) * 6, q = Math.round(camM.z / 6) * 6; if (p !== SOL_C.x || q !== SOL_C.z) {SOL_C.x = p; SOL_C.z = q; SOL_C.forzar = true; sol.position.set(p + 10, 40, q + 8); sol.target.position.set(p, 0, q);}}
@@ -2808,7 +2809,7 @@ function bucle() {
       UT.value += dt; animaPalantir(); const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); else if (MIRA_AT) miraAtaque(); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
-  const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') {renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = (SOMBRA_F = (SOMBRA_F + 1) % 2) === 0 || SOL_C.forzar; SOL_C.forzar = false; renderer.render(scene, camera);} /* 17/11: la sombra se repinta un fotograma sí y otro no (es otra pasada entera de la escena; a 60 fps no se nota) */ /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
+  const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') {renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true; SOL_C.forzar = false; renderer.render(scene, camera);} /* 17/11: la sombra se repinta un fotograma sí y otro no (es otra pasada entera de la escena; a 60 fps no se nota) */ /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];

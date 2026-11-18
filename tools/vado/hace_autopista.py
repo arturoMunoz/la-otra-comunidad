@@ -1549,6 +1549,21 @@ js = sub(js, "if (t === 'tiro') {const o = modeloProy(e[1]); if (!o.userData.tam
 js = sub(js, "if (t === 'proy') {const o = modeloProy(e[1]); if (!o.userData.tamFijo)", "if (t === 'proy') {const o = PROY_AP[e[1]] ? proyAP(e[1], 0.7) : modeloProy(e[1]); if (!o.userData.tamFijo)")
 
 
+# ---------- TU HÉROE NÍTIDO AL MOVERSE (18/11, Henar: «sigue viéndose borroso ÚNICAMENTE mi personaje al moverse») ----------
+# Tres cosas que solo se notan en el personaje que sigue la cámara:
+# (1) la cámara iba detrás de tu héroe con un muelle (dt × 6) y además con la posición del fotograma ANTERIOR (camara() va antes que
+#     dibuja()): tu héroe se deslizaba por la pantalla al andar y el ojo, que lo sigue, lo ve emborronado (con 30 fps, doble).
+#     Ahora la cámara va CLAVADA a tu héroe (como en el Wild Rift), con la posición de ESTE fotograma; solo se suaviza el adelanto 60/40.
+# (2) la sombra se repintaba un fotograma sí y otro no: la de tu héroe, que se mueve, salía a saltos debajo de él (doble contorno).
+#     Ahora se repinta en cada fotograma.
+# (3) la cámara de la pantalla final (CAM_FIN) sigue con su muelle.
+js = sub(js, "  const {F, R} = ejes(), x = v.xi ?? v.x, z = v.zi ?? v.z;\n  {const L = CAM_LEAD;",
+         "  const {F, R} = ejes(); let x = v.xi ?? v.x, z = v.zi ?? v.z;\n  if (!CAM_FIN && S && v.x0 !== undefined) {x = v.x0 + (v.x - v.x0) * ALFA; z = v.z0 + (v.z - v.z0) * ALFA;}  /* donde se va a pintar ESTE fotograma */\n  {const L = CAM_LEAD;")
+js = sub(js, "  camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);",
+         "  if (CAM_FIN) {camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);} else {camM.x = x + CAM_LEAD.ox; camM.z = z + CAM_LEAD.oz;}")
+js = sub(js, "renderer.shadowMap.needsUpdate = (SOMBRA_F = (SOMBRA_F + 1) % 2) === 0 || SOL_C.forzar;", "renderer.shadowMap.needsUpdate = true;")
+
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
