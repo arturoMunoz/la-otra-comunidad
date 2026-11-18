@@ -1433,13 +1433,15 @@ js = sub(js, "v.k === 't' ? 8 : 8.4;", "v.k === 't' ? 8 : 6;")
 js = sub(js, "  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja');",
          "  for (const eq of [0, 1]) plataformaSalida(eq);\n  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja');")
 js = sub(js, "const FUENTES_A6 = [];", """const FUENTES_A6 = [];
-let TEX_HOR_PL = null;
+let TEX_HOR_PL = null, PLAT_TEX = null;
 function plataformaSalida(eq) {
   const f = BASES[eq].fuente, col = eq === MI_EQ ? '#2f9cff' : '#ff2a3a', g = new THREE.Group();
   if (!TEX_HOR_PL) {TEX_HOR_PL = cargaTex('../batalla/texturas/ap_hormigon.webp', true); TEX_HOR_PL.repeat.set(3, 3);}
   const losa = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.6, 0.36, 6), new THREE.MeshLambertMaterial({map: TEX_HOR_PL, color: '#8a909a'})); losa.position.y = 0.18; losa.receiveShadow = true; g.add(losa);
   const filo = new THREE.Mesh(new THREE.CylinderGeometry(5.72, 5.72, 0.12, 6, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.9, side: THREE.DoubleSide})); filo.position.y = 0.3; g.add(filo);
   const halo = new THREE.Mesh(new THREE.CylinderGeometry(5.75, 6.4, 0.02, 6, 1, true), new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide})); halo.position.y = 0.05; g.add(halo);
+  {if (!PLAT_TEX) PLAT_TEX = cargaTex('../batalla/texturas/ap_plataforma.webp'); const gp = new THREE.PlaneGeometry(10.5, 10.5); gp.rotateX(-Math.PI / 2);  /* Pack 45 ART: el dibujo cenital va tumbado encima de la losa */
+   const tapa = new THREE.Mesh(gp, new THREE.MeshLambertMaterial({map: PLAT_TEX, transparent: true, alphaTest: 0.4, color: new THREE.Color('#ffffff').lerp(new THREE.Color(col), 0.22)})); tapa.position.y = 0.37; tapa.rotation.y = -Math.PI / 6; tapa.receiveShadow = true; g.add(tapa);}
   g.position.set(f.x, 0, f.z); g.rotation.y = Math.PI / 6; g.userData.salida = 1; (MAPA_G || scene).add(g); FUENTES_A6.push(g);
 }""")
 

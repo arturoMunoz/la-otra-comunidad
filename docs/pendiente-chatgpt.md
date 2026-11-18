@@ -91,4 +91,4 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] ~~18/11 · Pack Autopista 40 ART imagen 2 — impacto del plasma (la 1 ya está metida)~~ metida 18/11
 - [x] ~~18/11 · Pack Autopista 43 ART — iconos de estado sobre la cabeza~~ metido 18/11
 - [x] ~~18/11 · Pack Autopista 44 ART — pantalla de derribado y reaparición~~ imagen 1 metida 18/11 (falta la 2: el reloj)
-- [ ] 18/11 · Pack Autopista 45 ART — plataforma de salida vista desde arriba
+- [x] ~~18/11 · Pack Autopista 45 ART — plataforma de salida vista desde arriba~~ (metido 18/11)
