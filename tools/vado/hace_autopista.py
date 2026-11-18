@@ -1672,6 +1672,18 @@ js = sub(js, "if (on) {if (p.el.paused) {if (k === 'victoria' || k === 'derrota'
 # El Dalinar nuevo ya no tiene la caja de reposo inflada del enano: fuera la corrección AJ_ALTO.
 js = sub(js, "const AJ_ALTO = {ap_brask: 1.83};", "const AJ_ALTO = {};")
 
+# ---------- DALINAR EMANA LUZ (18/11, Henar): las juntas de luz (material «luz» del Pack 31) brillan siempre y laten despacio ----------
+# juntaPiezas ya no las mezcla con el resto (perdían el emisivo); brillaArmadura no las apaga; resto de la armadura con un leve tono azul
+js = sub(js, "+ '|' + !!m.transparent;", "+ '|' + !!m.transparent + (m.name === 'luz' ? '|luz' : '');")
+js = sub(js, "n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (n.emissive) o.matsPropios.push(n); return n;});",
+         "n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (mt.name === 'luz') {(o.luzMats = o.luzMats || []).push(n); n.userData.e0 = n.emissiveIntensity;} else if (n.emissive) o.matsPropios.push(n); return n;});")
+js = sub(js, "function animaRim() {\n", """function animaRim() {
+  const tl = performance.now() / 1000;
+  for (const [id, o] of VIS) {if (!o.luzMats) continue; const vv = VISTA.get(id), esD = vv && vv.tipo === 'enano'; const k = 1.9 + 0.7 * Math.sin(tl * 2.2) + 0.25 * Math.sin(tl * 5.3); for (const m of o.luzMats) {if (!m.userData.cLuz) {m.userData.cLuz = true; m.emissive.set('#7fd4ff');} m.emissiveIntensity = (m.userData.e0 || 1) * k;}
+    if (!esD) continue; if (!o.tonoLuz) {o.tonoLuz = true; for (const m of o.matsPropios || []) m.emissive.setRGB(0.004, 0.01, 0.024);}
+    for (const m of o.matsPropios || []) if (!m.userData.brillando && m.emissive.b < 0.05) m.emissive.setRGB(0.004, 0.01, 0.024);}
+""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

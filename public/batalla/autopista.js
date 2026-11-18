@@ -388,7 +388,7 @@ function vistePiezas(raiz, tipo) {
 function juntaPiezas(n) {
   const sc = M[n] && M[n].scene; if (!sc || sc.userData.juntado || !/^ap_/.test(n)) return; sc.userData.juntado = true;
   const grupos = new Map();
-  sc.traverse((o) => {if (!o.isSkinnedMesh || !o.parent) return; const m = o.material, k = o.parent.uuid + '|' + o.skeleton.uuid + '|' + (m.map ? m.map.uuid : '-') + '|' + (m.metalness > 0.3 ? 'met' : 'mate') + '|' + !!m.transparent; (grupos.get(k) || grupos.set(k, []).get(k)).push(o);});
+  sc.traverse((o) => {if (!o.isSkinnedMesh || !o.parent) return; const m = o.material, k = o.parent.uuid + '|' + o.skeleton.uuid + '|' + (m.map ? m.map.uuid : '-') + '|' + (m.metalness > 0.3 ? 'met' : 'mate') + '|' + !!m.transparent + (m.name === 'luz' ? '|luz' : ''); (grupos.get(k) || grupos.set(k, []).get(k)).push(o);});
   for (const lista of grupos.values()) {
     if (lista.length < 2) continue; const a = lista[0];
     let g = null; try {g = mergeGeometries(lista.map((o) => {const q = o.geometry.clone(); for (const k of Object.keys(q.attributes)) if (!a.geometry.attributes[k]) q.deleteAttribute(k); return q;}), false);} catch (e) {g = null;}
@@ -1539,10 +1539,14 @@ function rimHeroe(o, color) {
     const nuevos = mats.map((mt) => {const n = mt.clone(); n.userData.rim = {value: c}; n.userData.rimF = {value: color === '#ff3048' ? 2.4 : 1.35}; n.userData.op = mt.opacity;
       n.onBeforeCompile = (sh) => {sh.uniforms.uRim = n.userData.rim; sh.uniforms.uRimF = n.userData.rimF;
         sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRim; uniform float uRimF;').replace('#include <dithering_fragment>', '#include <dithering_fragment>\n#ifdef USE_RIM_A6\n#endif\n{float fr=1.-abs(dot(normalize(normal),normalize(vViewPosition)));fr=0.;{float l=dot(gl_FragColor.rgb,vec3(.299,.587,.114));gl_FragColor.rgb=max(mix(vec3(l),gl_FragColor.rgb,1.3)*1.04,0.);}}');};
-      n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (n.emissive) o.matsPropios.push(n); return n;});
+      n.customProgramCacheKey = () => 'rimA6'; o.rimMats.push(n); if (mt.name === 'luz') {(o.luzMats = o.luzMats || []).push(n); n.userData.e0 = n.emissiveIntensity;} else if (n.emissive) o.matsPropios.push(n); return n;});
     m.material = Array.isArray(m.material) ? nuevos : nuevos[0];});
 }
 function animaRim() {
+  const tl = performance.now() / 1000;
+  for (const [id, o] of VIS) {if (!o.luzMats) continue; const vv = VISTA.get(id), esD = vv && vv.tipo === 'enano'; const k = 1.9 + 0.7 * Math.sin(tl * 2.2) + 0.25 * Math.sin(tl * 5.3); for (const m of o.luzMats) {if (!m.userData.cLuz) {m.userData.cLuz = true; m.emissive.set('#7fd4ff');} m.emissiveIntensity = (m.userData.e0 || 1) * k;}
+    if (!esD) continue; if (!o.tonoLuz) {o.tonoLuz = true; for (const m of o.matsPropios || []) m.emissive.setRGB(0.004, 0.01, 0.024);}
+    for (const m of o.matsPropios || []) if (!m.userData.brillando && m.emissive.b < 0.05) m.emissive.setRGB(0.004, 0.01, 0.024);}
   for (const [id, o] of VIS) {if (!o.rimMats) continue; const v = VISTA.get(id); if (!v) continue;
     const esc = v.eq === MI_EQ && HIERBAS.length && enHierba({x: v.xi ?? v.x, z: v.zi ?? v.z}) >= 0, op = esc ? 0.5 : 1;
     if (o.rimOp !== op) {o.rimOp = op; for (const m of o.rimMats) {m.transparent = op < 1 || m.userData.op < 1; m.opacity = op < 1 ? op : m.userData.op; m.depthWrite = op >= 1;}}}
