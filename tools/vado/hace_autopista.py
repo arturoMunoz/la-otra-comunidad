@@ -1716,6 +1716,88 @@ js = sub(js, "function basicoFx(v, o, n, rot) {", """function brazosVisor(o) {
 }
 function basicoFx(v, o, n, rot) {""")
 
+# ---------- TIRONES EN LAS PELEAS: TEXTURAS SUBIDAS ANTES (18/11, Henar: «en el 2v2 con minions y habilidades da tirones») ----------
+# Medido (tools/pruebas/t_lag.py): en la primera pelea los picos de 60-110 ms venían de subir a la gráfica en mitad de la pelea
+# texturas que nunca se habían dibujado: las de los modelos (1024 px con mipmaps) la primera vez que sale cada súbdito, bestia
+# o héroe, y la hoja de cada efecto la primera vez que se usa. El calentado del VS dibujaba los efectos 40 m bajo el suelo
+# (fuera de cámara: no se dibujaban) y renderer.compile solo compila sombreadores, no sube texturas.
+# Ahora en el VS se suben TODAS con renderer.initTexture (las que aún no han cargado, en cuanto cargan).
+js = sub(js, "function pantallaVS(jugadores, modo) {", """const PRE_TEX = new WeakSet();
+function subeTex(t) {
+  if (!t || PRE_TEX.has(t)) return; const im = t.image;
+  if (!im || !(im.width || im.videoWidth) || im.complete === false) return; /* aún no ha cargado: se reintenta luego */
+  PRE_TEX.add(t); try {renderer.initTexture(t);} catch (e) {}
+}
+function subeTexturas(raiz) {
+  raiz.traverse((o) => {if (!o.material) return; for (const m of [].concat(o.material)) for (const k of ['map', 'emissiveMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'alphaMap', 'aoMap']) subeTex(m[k]);});
+}
+function precargaGPU() {
+  try {
+    for (const n in M) if (M[n] && M[n].scene) subeTexturas(M[n].scene);
+    for (const n in FB) {const f = FB[n][0]; subeTex(fbTex[f] || (fbTex[f] = cargaTex(f)));}
+    subeTexturas(scene);
+  } catch (e) {}
+}
+function pantallaVS(jugadores, modo) {
+  precargaGPU(); for (const ms of [800, 2000, 4000, 8000]) setTimeout(precargaGPU, ms);""")
+
+# (y) los proyectiles cargaban SU imagen otra vez por cada tamaño distinto (una textura nueva, otra descarga y otra subida por
+#     habilidad); ahora una por imagen. Y se suben también las marcas del suelo y los proyectiles.
+js = sub(js, "new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false}));\n     m.scale.setScalar(S)",
+         "new THREE.MeshBasicMaterial({map: texProy(f), transparent: true, depthWrite: false, depthTest: false}));\n     m.scale.setScalar(S)")
+js = sub(js, "m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false})); m.scale.setScalar(tam);",
+         "m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: texProy(f), transparent: true, depthWrite: false, depthTest: false})); m.scale.setScalar(tam);")
+js = sub(js, "function proyAP(n, D = 0.7) {", "const PROY_TX = {};\nfunction texProy(f) {return PROY_TX[f] || (PROY_TX[f] = cargaTex('../batalla/ui/ap_pr_' + f + '.webp'));}\nfunction proyAP(n, D = 0.7) {")
+js = sub(js, "    subeTexturas(scene);\n  } catch (e) {}", """    subeTexturas(scene);
+    for (const n in PROY_AP) subeTex(texProy(PROY_AP[n][0]));
+    for (const n of ['ind_area', 'ind_alcance', 'ind_flecha', 'ind_cono', 'ap_objetivo']) subeTex(IND[n] || (IND[n] = cargaTex('../batalla/ui/' + (IND_AP[n] || n) + '.webp')));
+    for (const n in IND) subeTex(IND[n]);
+  } catch (e) {}""")
+
+# (z) las flechas de los soldados (modelos de proyectiles.glb) compilaban su sombreador en la primera pelea: se compilan en el VS
+js = sub(js, "tmp.push(q);}\n    renderer.compile(scene, camera);", "tmp.push(q);}\n    for (const n of ['flecha_orca', 'flecha_elfica', 'piedra', 'flecha_clavada']) {try {const q = modeloProy(n); if (q) {q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);}} catch (e) {}}\n    if (M.brasero) {const q = M.brasero.scene.clone(true); q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);} /* las balizas */\n    renderer.compile(scene, camera);")
+
+# (z2) los héroes se pintan con el sombreador de rimHeroe (otro programa): en el VS se compilaban sin él y cada héroe
+#      volvía a compilar al aparecer en la pelea
+js = sub(js, "for (const n of mods) if (M[n]) {const o = montar(n, 1); o.raiz.position.set(0, -60, 0); scene.add(o.raiz); tmp.push(o.raiz);}",
+         "const modH = new Set(Object.values(HEROES).map((h) => h.modelo)); for (const n of mods) if (M[n]) {const o = montar(n, 1); o.raiz.position.set(0, -60, 0); if (modH.has(n)) {try {rimHeroe(o, '#ffffff');} catch (e) {}} scene.add(o.raiz); tmp.push(o.raiz);}")
+
+# (z3) las 4 luces de fuego se creaban en el primer fotograma de la partida, DESPUÉS de compilar en el VS: todo lo compilado
+#      llevaba 0 luces y se volvía a compilar (lo que apareciera por primera vez en una pelea, en mitad de la pelea)
+js = sub(js, "  precargaGPU(); for (const ms of [800, 2000, 4000, 8000]) setTimeout(precargaGPU, ms);", "  try {luces();} catch (e) {}\n  precargaGPU(); for (const ms of [800, 2000, 4000, 8000]) setTimeout(precargaGPU, ms);")
+
+# (w) el decorado de la Batalla (chatarra, cubiles, orillas, pasarelas, farolas, quitamiedos) llega con la jungla, después de
+#     fusionar el mapa: cada pieza iba en su propia llamada de dibujo (y otra en la sombra). En una pelea con la cámara
+#     en la jungla eran ~120 de las ~220 llamadas. Ahora se fusiona todo junto al terminar.
+js = sub(js, "  const haciaCentro = (p) => Math.atan2(-p.x, -p.z);", "  const n0 = G.children.length;\n  const haciaCentro = (p) => Math.atan2(-p.x, -p.z);")
+js = sub(js, "    for (const sg of [1, -1]) pon2('ap_quitamiedos', p.x + nx * 4.95 * sg, p.z + nz * 4.95 * sg, Math.atan2(dx, dz) + Math.PI / 2, 1);\n  }\n}",
+         "    for (const sg of [1, -1]) pon2('ap_quitamiedos', p.x + nx * 4.95 * sg, p.z + nz * 4.95 * sg, Math.atan2(dx, dz) + Math.PI / 2, 1);\n  }\n  try {const D = new THREE.Group(); D.name = 'decoradoOjo'; for (const c of G.children.slice(n0)) D.add(c); G.add(D); fusiona(D);} catch (e) {console.error(e);}\n}")
+
+# (v) cada planta/roca del decorado venía en varias mallas pequeñas (hojas, briznas) y se hacía un InstancedMesh por malla:
+#     en el 2v2 eran 64 llamadas de dibujo solo de hierba (28 triángulos cada una). Ahora las mallas de un objeto con el
+#     mismo material se juntan antes de instanciar: una llamada por material.
+js = sub(js, """  o.traverse((malla) => {
+    if (!malla.isMesh) return;
+    const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, lambert(malla.material), lista.length);""",
+"""  const unidas = [], porMat = new Map();
+  o.traverse((malla) => {if (!malla.isMesh) return; if (Array.isArray(malla.material)) {unidas.push(malla); return;} const g = malla.geometry, k = malla.material.uuid + '|' + Object.keys(g.attributes).sort().join(',') + '|' + !!g.index; if (!porMat.has(k)) porMat.set(k, []); porMat.get(k).push(malla);});
+  for (const l of porMat.values()) {
+    if (l.length === 1) {unidas.push(l[0]); continue;}
+    try {const gs = l.map((mm) => {const g = flota(mm.geometry.clone()); g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, mm.matrixWorld)); return g;}); const mg = mergeGeometries(gs, false); gs.forEach((g) => g.dispose()); if (!mg) throw 0;
+      const f = new THREE.Mesh(mg, l[0].material); f.matrixWorld.copy(o.matrixWorld); unidas.push(f);} catch (e) {unidas.push(...l);}
+  }
+  unidas.forEach((malla) => {
+    const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, lambert(malla.material), lista.length);""")
+
+# (u) dos sombreadores que aún se compilaban en mitad de la pelea: el de los héroes medio transparentes (al meterse un aliado
+#     en la hierba, animaRim pone transparent = true y eso es otro programa) y la columna de luz de las plantas del 2v2.
+js = sub(js, "    renderer.compile(scene, camera);\n    setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400);",
+"""    try {for (const tp of ['baya', 'flor', 'seta']) {const q = plantaA6({tipo: tp, x: 0, z: 0}); if (q) {(q.isObject3D ? q : q.g || q.raiz) && ((q.isObject3D ? q : q.g || q.raiz).position.y = -60); const oq = q.isObject3D ? q : q.g || q.raiz; if (oq) {if (!oq.parent) scene.add(oq); tmp.push(oq); subeTexturas(oq);}}}} catch (e) {}
+    renderer.compile(scene, camera);
+    /* y la variante transparente de los héroes (dentro de la hierba) */
+    try {const vuelve = []; for (const o of tmp) o.traverse((q) => {if (q.isMesh && q.material && q.material.customProgramCacheKey && q.material.customProgramCacheKey() === 'rimA6' && !q.material.transparent) {q.material.transparent = true; vuelve.push(q.material);}}); if (vuelve.length) {renderer.compile(scene, camera); vuelve.forEach((m) => {m.transparent = false;});}} catch (e) {}
+    setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400);""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

@@ -329,8 +329,14 @@ function instancias(archivo, nombre, lista, sombra = true) {
   const o = M[archivo] && M[archivo].scene.getObjectByName(nombre); if (!o || !lista.length) return;
   M[archivo].scene.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(o.matrixWorld).invert();
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Vector3(), p = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
-  o.traverse((malla) => {
-    if (!malla.isMesh) return;
+  const unidas = [], porMat = new Map();
+  o.traverse((malla) => {if (!malla.isMesh) return; if (Array.isArray(malla.material)) {unidas.push(malla); return;} const g = malla.geometry, k = malla.material.uuid + '|' + Object.keys(g.attributes).sort().join(',') + '|' + !!g.index; if (!porMat.has(k)) porMat.set(k, []); porMat.get(k).push(malla);});
+  for (const l of porMat.values()) {
+    if (l.length === 1) {unidas.push(l[0]); continue;}
+    try {const gs = l.map((mm) => {const g = flota(mm.geometry.clone()); g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, mm.matrixWorld)); return g;}); const mg = mergeGeometries(gs, false); gs.forEach((g) => g.dispose()); if (!mg) throw 0;
+      const f = new THREE.Mesh(mg, l[0].material); f.matrixWorld.copy(o.matrixWorld); unidas.push(f);} catch (e) {unidas.push(...l);}
+  }
+  unidas.forEach((malla) => {
     const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, lambert(malla.material), lista.length);
     lista.forEach((c, i) => {q.setFromAxisAngle(up, c.ry || 0); p.set(c.x, c.y || 0, c.z); e.setScalar(c.s || 1); m4.compose(p, q, e).multiply(rel); im.setMatrixAt(i, m4);});
     im.castShadow = sombra; im.receiveShadow = true; im.computeBoundingSphere(); (MAPA_G || scene).add(im);
@@ -589,6 +595,7 @@ function decoradoOjo(pon2, al) {
   const G = MAPA_G;
   if (!M.ap_jungla) {const t = setInterval(() => {if (MAPA_G !== G) clearInterval(t); else if (M.ap_jungla) {clearInterval(t); decoradoOjo(pon2, al);}}, 400); return;}
   const pz = (n, x, z, ry, e = 1) => {const o = pieza('ap_jungla', n); o.position.set(x, 0.05, z); o.traverse((q) => {if (q.isMesh) for (const m of [].concat(q.material)) {m.polygonOffset = true; m.polygonOffsetFactor = -2; m.polygonOffsetUnits = -2;}}); /* 18/11: el suelo de los fosos y cubiles estaba a la misma altura que el suelo del mapa y se veían rayas negras al moverse (z-fighting) */ o.rotation.y = ry; o.scale.setScalar(e); fusiona(o); G.add(o); return o;};
+  const n0 = G.children.length;
   const haciaCentro = (p) => Math.atan2(-p.x, -p.z);
   
   const sinSuelo = (o) => o.traverse((q) => {if (!q.isMesh) return; const g = q.geometry.index ? q.geometry.clone() : q.geometry.clone(); const P = g.attributes.position; let I = g.index ? g.index.array : null;
@@ -615,6 +622,7 @@ function decoradoOjo(pon2, al) {
     const p = puntoCarril(l, mejor), q = puntoCarril(l, mejor + 0.01), dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz) || 1, nx = dz / d, nz = -dx / d;
     for (const sg of [1, -1]) pon2('ap_quitamiedos', p.x + nx * 4.95 * sg, p.z + nz * 4.95 * sg, Math.atan2(dx, dz) + Math.PI / 2, 1);
   }
+  try {const D = new THREE.Group(); D.name = 'decoradoOjo'; for (const c of G.children.slice(n0)) D.add(c); G.add(D); fusiona(D);} catch (e) {console.error(e);}
 }
 /* LA AUTOPISTA: quitamiedos a los dos lados, farolas, coches abandonados, conos y señales (piezas CC0 de Kenney, Pack Autopista 2) */
 function decoradoAutopista(pon2, al) {
@@ -1137,16 +1145,18 @@ function paso(dt) {
     }
   }
   /* súbditos */
+  const EN_S = {};
   for (const u of S.u) {
     if (u.k !== 's' || u.muerto) continue;
     const sd = SUBD[u.tipo]; u.cd = Math.max(0, u.cd - dt);
     if (u.aturd > S.t) continue;
     /* como en el LoL: siguen con su objetivo; prefieren súbditos y torres; a un héroe solo si ataca a un héroe de su bando cerca o si no queda otra cosa */
-    const en = enemigosDe(u.eq).filter((e) => e.eq !== 2 && atacable(e)), rr = u.tipo === 'r' ? 7 : 6;
+    /* 18/11 (tirones en las peleas): la lista de enemigos atacables es la misma para todos los súbditos de un bando: se calcula una vez por paso (antes, una por súbdito: con 40 súbditos, 40 recorridos de todo el mapa) */
+    const en = EN_S[u.eq] || (EN_S[u.eq] = enemigosDe(u.eq).filter((e) => e.eq !== 2 && atacable(e))), rr = u.tipo === 'r' ? 7 : 6;
     /* prioridades del LoL / Wild Rift: 1 héroe que ataca a un héroe aliado, 2 súbdito que ataca a un héroe aliado, 3 súbdito que ataca a un súbdito aliado,
        4 torre que ataca a un súbdito aliado, 5 héroe que ataca a un súbdito aliado, 6 súbdito más cercano, 7 héroe más cercano. Las 1 y 2 interrumpen; el resto respeta el objetivo que ya tenía. */
     const victima = (e) => e.atacaT > S.t ? S.porId.get(e.atacaA) : null;
-    const cerca = en.filter((e) => dist(u, e) - radio(e) < rr + 1.5);
+    const cerca = en.filter((e) => e.vida > 0 && !e.muerto && Math.abs(u.x - e.x) < rr + 4 && Math.abs(u.z - e.z) < rr + 4 && dist(u, e) - radio(e) < rr + 1.5);
     const prio = (e) => {const v = victima(e); if (v && v.eq === u.eq) {if (v.k === 'h') return e.k === 'h' ? 1 : 2; if (v.k === 's') return e.k === 's' ? 3 : e.k === 't' ? 4 : 5;} return e.k === 'h' ? 7 : 6;};
     let obj = null, mejor = 9;
     for (const e of cerca) {const p = prio(e); if (p < mejor || (p === mejor && obj && dist(u, e) < dist(u, obj))) {mejor = p; obj = e;}}
@@ -1198,13 +1208,18 @@ function paso(dt) {
   }
   /* separación entre súbditos para que no se monten */
   const ss = S.u.filter((u) => (u.k === 's' || u.k === 'h') && !u.muerto);
-  for (let i = 0; i < ss.length; i++) for (let j = i + 1; j < ss.length; j++) {const a = ss[i], b = ss[j], hh = a.k === 'h' && b.k === 'h'; if (hh && (a.dash || b.dash)) continue; let dx = a.x - b.x, dz = a.z - b.z, d0 = Math.hypot(dx, dz); const m = hh ? CHOQUE_H : 0.9; if (d0 < m) {if (d0 < 0.001) {dx = a.id < b.id ? 1 : -1; dz = 0; d0 = 1;} const p = (m - d0) / 2; if (a.k === 's' || hh) {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's' || hh) {b.x -= dx / d0 * p; b.z -= dz / d0 * p;} if (hh) {choca(a); choca(b);}}}
+  /* 18/11 (tirones en las peleas): solo se comparan los que están en casillas vecinas de 1,2 m (antes, todos con todos: con 60 personajes, 1.770 parejas en cada paso) */
+  const CEL = new Map(), PARES = [];
+  ss.forEach((q, i) => {q._i = i; const k = (Math.floor(q.x / 1.2) + 512) * 1024 + Math.floor(q.z / 1.2) + 512; let c = CEL.get(k); if (!c) CEL.set(k, c = []); c.push(q);});
+  for (const q of ss) {const cx = Math.floor(q.x / 1.2) + 512, cz = Math.floor(q.z / 1.2) + 512; for (let ox = -1; ox <= 1; ox++) for (let oz = -1; oz <= 1; oz++) {const c = CEL.get((cx + ox) * 1024 + cz + oz); if (c) for (const r of c) if (r._i > q._i) PARES.push(q, r);}}
+  for (let pi = 0; pi < PARES.length; pi += 2) {const a = PARES[pi], b = PARES[pi + 1], hh = a.k === 'h' && b.k === 'h'; if (hh && (a.dash || b.dash)) continue; let dx = a.x - b.x, dz = a.z - b.z; if (dx > 1.2 || dx < -1.2 || dz > 1.2 || dz < -1.2) continue; let d0 = Math.hypot(dx, dz); const m = hh ? CHOQUE_H : 0.9; if (d0 < m) {if (d0 < 0.001) {dx = a.id < b.id ? 1 : -1; dz = 0; d0 = 1;} const p = (m - d0) / 2; if (a.k === 's' || hh) {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's' || hh) {b.x -= dx / d0 * p; b.z -= dz / d0 * p;} if (hh) {choca(a); choca(b);}}}
   /* 17/11 (Henar): los héroes chocan entre sí, como en el Wild Rift (antes se atravesaban); en las cargas y saltos no */
   /* torres */
+  const EN_T = {};
   for (const t of S.u) {
     if (t.k === 't' && t.vida <= 0 && t.respInh && S.t >= t.respInh && S.modo !== '1v1') {t.vida = t.max; t.inhib = true; t.respInh = 0; ev(['aviso', 0, 'La torre de la base de ' + (t.eq ? 'los rojos' : 'los azules') + ' se ha alzado de nuevo (sin disparar)']);}
     if (t.k !== 't' || t.vida <= 0 || t.inhib) continue; t.cd = Math.max(0, t.cd - dt);
-    const en = enemigosDe(t.eq).filter((e) => e.eq !== 2 && e.k !== 't' && e.k !== 'n' && dist(t, e) < 9.5);
+    const en = (EN_T[t.eq] || (EN_T[t.eq] = enemigosDe(t.eq))).filter((e) => e.eq !== 2 && e.k !== 't' && e.k !== 'n' && e.vida > 0 && !e.muerto && dist(t, e) < 9.5);
     /* como en el Wild Rift: la torre sigue con su objetivo hasta que muere o sale; si un héroe enemigo pega a un héroe aliado dentro del alcance, va a por él */
     let obj = en.find((e) => {if (e.k !== 'h' || !(e.atacaT > S.t)) return false; const v = S.porId.get(e.atacaA); return v && v.k === 'h' && v.eq === t.eq && dist(v, t) < 10.5;});
     if (!obj && t.obj) obj = en.find((e) => e.id === t.obj);
@@ -1510,13 +1525,15 @@ function bolaGolf() {
   g.userData.tamFijo = 1;  /* su tamaño ya es el real: no se agranda como los dibujos */
   return g;
 }
+const PROY_TX = {};
+function texProy(f) {return PROY_TX[f] || (PROY_TX[f] = cargaTex('../batalla/ui/ap_pr_' + f + '.webp'));}
 function proyAP(n, D = 0.7) {
   const k = n + '|' + D.toFixed(2);
   if (n === 'bola') {if (!PROY_AP_G[k]) {PROY_AP_G[k] = bolaGolf(); const h = PROY_AP_G[k].children[1]; h.scale.setScalar(D); PROY_AP_G[k].children[0].scale.setScalar(Math.min(1, D / 1.2));} return PROY_AP_G[k].clone(true);}
   {const f = PROY_AP[n][0], cab = PROY_CAB[f];
-   if (cab) {if (!PROY_AP_G[k]) {const S = D / cab[1], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false}));
+   if (cab) {if (!PROY_AP_G[k]) {const S = D / cab[1], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: texProy(f), transparent: true, depthWrite: false, depthTest: false}));
      m.scale.setScalar(S); m.position.z = -(cab[0] - 0.5) * S; m.renderOrder = 6; g.add(m); g.userData.tamFijo = 1; PROY_AP_G[k] = g;} return PROY_AP_G[k].clone(true);}}
-  if (!PROY_AP_G[n]) {const [f, tam] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: cargaTex('../batalla/ui/ap_pr_' + f + '.webp'), transparent: true, depthWrite: false, depthTest: false})); m.scale.setScalar(tam); m.renderOrder = 6; g.add(m); PROY_AP_G[n] = g;}
+  if (!PROY_AP_G[n]) {const [f, tam] = PROY_AP[n], g = new THREE.Group(), m = new THREE.Mesh(GEO_PROY, new THREE.MeshBasicMaterial({map: texProy(f), transparent: true, depthWrite: false, depthTest: false})); m.scale.setScalar(tam); m.renderOrder = 6; g.add(m); PROY_AP_G[n] = g;}
   return PROY_AP_G[n].clone(true);
 }
 /* golpe al llegar, propio de cada proyectil (Pack 25 ART) */
@@ -2638,16 +2655,42 @@ function empieza(jugadores, modo, simulo) {
   $('pings').classList.toggle('hidden', !(NET.online && modo === '2v2'));
   aviso('¡Al vado! Derriba las torres y el estandarte enemigo'); suena('cuerno', 0.7);
 }
+const PRE_TEX = new WeakSet();
+function subeTex(t) {
+  if (!t || PRE_TEX.has(t)) return; const im = t.image;
+  if (!im || !(im.width || im.videoWidth) || im.complete === false) return; /* aún no ha cargado: se reintenta luego */
+  PRE_TEX.add(t); try {renderer.initTexture(t);} catch (e) {}
+}
+function subeTexturas(raiz) {
+  raiz.traverse((o) => {if (!o.material) return; for (const m of [].concat(o.material)) for (const k of ['map', 'emissiveMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'alphaMap', 'aoMap']) subeTex(m[k]);});
+}
+function precargaGPU() {
+  try {
+    for (const n in M) if (M[n] && M[n].scene) subeTexturas(M[n].scene);
+    for (const n in FB) {const f = FB[n][0]; subeTex(fbTex[f] || (fbTex[f] = cargaTex(f)));}
+    subeTexturas(scene);
+    for (const n in PROY_AP) subeTex(texProy(PROY_AP[n][0]));
+    for (const n of ['ind_area', 'ind_alcance', 'ind_flecha', 'ind_cono', 'ap_objetivo']) subeTex(IND[n] || (IND[n] = cargaTex('../batalla/ui/' + (IND_AP[n] || n) + '.webp')));
+    for (const n in IND) subeTex(IND[n]);
+  } catch (e) {}
+}
 function pantallaVS(jugadores, modo) {
+  try {luces();} catch (e) {}
+  precargaGPU(); for (const ms of [800, 2000, 4000, 8000]) setTimeout(precargaGPU, ms);
   /* calentar: durante el VS se dibuja una vez cada efecto bajo el suelo, así la textura sube y el sombreador se compila antes de la primera pelea */
   try {for (const n in FB) {flip(n, 0, 0, 0.01, false, 0, -40, 0.3); flip(n, 0, 0, 0.01, true, 0, -40, 0.3);}} catch (e) {}
   try {for (const n in PROY_AP) {const o = proyAP(n); o.position.set(0, -40, 0); scene.add(o); setTimeout(() => scene.remove(o), 1500);}} catch (e) {}
   /* y se compilan ya los sombreadores de todos los personajes, bestias y marcas del suelo (antes se compilaban en la primera pelea: tirón) */
   try {
     const tmp = [], mods = new Set([...Object.values(HEROES).map((h) => h.modelo), ...MODELO_SUBD.flatMap((q) => Object.values(q)), ...Object.values(NEUTRO).map((q) => q.modelo)]);
-    for (const n of mods) if (M[n]) {const o = montar(n, 1); o.raiz.position.set(0, -60, 0); scene.add(o.raiz); tmp.push(o.raiz);}
+    const modH = new Set(Object.values(HEROES).map((h) => h.modelo)); for (const n of mods) if (M[n]) {const o = montar(n, 1); o.raiz.position.set(0, -60, 0); if (modH.has(n)) {try {rimHeroe(o, '#ffffff');} catch (e) {}} scene.add(o.raiz); tmp.push(o.raiz);}
     for (const n of ['ind_area', 'ind_alcance', 'ind_flecha', 'ind_cono']) {const q = indicador(n, '#ffffff'); q.visible = true; q.position.y = -60; tmp.push(q);}
+    for (const n of ['flecha_orca', 'flecha_elfica', 'piedra', 'flecha_clavada']) {try {const q = modeloProy(n); if (q) {q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);}} catch (e) {}}
+    if (M.brasero) {const q = M.brasero.scene.clone(true); q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);} /* las balizas */
+    try {for (const tp of ['baya', 'flor', 'seta']) {const q = plantaA6({tipo: tp, x: 0, z: 0}); if (q) {(q.isObject3D ? q : q.g || q.raiz) && ((q.isObject3D ? q : q.g || q.raiz).position.y = -60); const oq = q.isObject3D ? q : q.g || q.raiz; if (oq) {if (!oq.parent) scene.add(oq); tmp.push(oq); subeTexturas(oq);}}}} catch (e) {}
     renderer.compile(scene, camera);
+    /* y la variante transparente de los héroes (dentro de la hierba) */
+    try {const vuelve = []; for (const o of tmp) o.traverse((q) => {if (q.isMesh && q.material && q.material.customProgramCacheKey && q.material.customProgramCacheKey() === 'rimA6' && !q.material.transparent) {q.material.transparent = true; vuelve.push(q.material);}}); if (vuelve.length) {renderer.compile(scene, camera); vuelve.forEach((m) => {m.transparent = false;});}} catch (e) {}
     setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400); /* sin dispose: si se tirara el material, el sombreador compilado se borraría y volvería el tirón */
   } catch (e) {}
   const plazas = modo === '2v2' ? 4 : 2, el = $('vs'), lado = (eq) => {let h = ''; for (let s = eq; s < plazas; s += 2) {const j = jugadores.find((q) => q.slot === s), tipo = j ? j.heroe : Object.keys(HEROES)[(s * 5 + 1) % 7]; h += '<div class="vsH"><img class="spl" src="ui/ap_splash_' + tipo + '.webp" alt=""><b>' + (j ? j.nombre : 'Máquina') + '</b><span>' + HEROES[tipo].nombre + '</span></div>';} return h;};
