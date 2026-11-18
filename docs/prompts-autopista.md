@@ -210,3 +210,59 @@ IMAGEN 2 (1536x1024) — formas de área, separadas con mucho hueco negro:
  E) CÍRCULO DE ÁREA 512x512: disco que toca los cuatro bordes, aro exterior brillante y fino, interior muy translúcido con un patrón hexagonal suave.
  F) ARO DE ALCANCE 512x512: solo el aro, fino, con marcas cortas cada 30° por fuera, que toque los cuatro bordes.
 ```
+
+## 18/11 · Batalla 2v2 de A-6 (mapa «ojo» de La Brecha pasado a autopista)
+
+Equivalencias con La Brecha (mismas reglas, solo cambia el bicho): Uruk Azul → NASOR · Draco → LAGARTO DE LA CENTRAL (fuego/hielo) · Troll (roja) → TORO NEGRO · Huorn (azul) → COLOSO DEL DESGUACE · Huargos → PERROS · Huargo alfa → PERRO JEFE · Crebain → BUITRES · Sapo (Gromp) → JABALÍ · Nutria (cangrejo) → RATA DE ALCANTARILLA. Plantas: seta de humo → BOCA DE RIEGO, baya → MÁQUINA EXPENDEDORA, elanor → RADAR DE TRÁFICO.
+
+### Pack Autopista 33 WORK — los jefes (adjuntar `uruk_azul.glb`, `draco.glb`, `huorn.glb`, `ap_super_rojo.glb`)
+
+```
+WORK · Pack Autopista 33 · Cuatro monstruos jefe en 3D para A-6, juego móvil tipo Wild Rift visto desde arriba (cámara cenital a ~20 m), ambientado en una autopista española abandonada y oscura, estilo cyberpunk serio (metal sucio, óxido, neón tenue). Diseños ORIGINALES, sin marcas ni personajes conocidos. Te adjunto modelos de mi juego como REFERENCIA de formato, tamaño y nombres de clips (`uruk_azul.glb`, `draco.glb`, `huorn.glb`) y uno de estilo (`ap_super_rojo.glb`).
+
+1) `ap_nasor.glb` — NASOR, el jefe del mapa (como el Barón Nashor del LoL): un gusano-escolopendra gigante acorazado que sale de un colector de alcantarilla reventado; placas de hormigón y chapa oxidada incrustadas en el cuerpo, boca circular con dientes de rebaba metálica, ojos y grietas con brillo morado. Solo se ve la mitad delantera saliendo del suelo (la cola queda bajo tierra). Altura 4,5 m. Clips: quieto, andar (balanceo en el sitio, no se desplaza), atacar (embestida hacia delante con la boca), pisoton (se alza y golpea el suelo; el impacto a los 0,75 s), recibir_golpe, morir (se hunde en el agujero), correr.
+2) `ap_lagarto.glb` — LAGARTO DE LA CENTRAL (como el dragón del LoL): reptil de cuatro patas mutado junto a una central eléctrica, cables y aislantes de cerámica en el lomo, escamas oscuras. UNA sola textura neutra (gris/negro) con un material aparte llamado «brillo» en ojos, garganta y lomo, para teñirlo por código de NARANJA (fuego) o CIAN (hielo). Altura 2,1 m, largo ~5 m. Clips: quieto, andar, atacar (mordisco + aliento), recibir_golpe, morir.
+3) `ap_toro.glb` — TORO NEGRO (bufo rojo): toro bravo enorme y mutado, negro, cuernos con brasas rojas en las puntas, grietas de lava en el lomo, anilla metálica en el morro. Altura 2,6 m a la cruz. Clips: quieto, andar, atacar (cornada), recibir_golpe, morir.
+4) `ap_coloso.glb` — COLOSO DEL DESGUACE (bufo azul): gólem de chatarra hecho de puertas de coche, un bloque de motor por pecho con una luz azul dentro, ruedas en los hombros, brazos de tubo de escape. Altura 3,5 m. Clips: quieto, andar, atacar (puñetazo con los dos brazos), recibir_golpe, morir (se desmonta en piezas).
+
+Técnico (los 4): 4.000-9.000 triángulos, una textura de 1024 (atlas) cada uno, pies en y=0, mirando a +Z, unidad = metro, con esqueleto y clips con EXACTAMENTE esos nombres a 30 fps, en bucle quieto/andar/correr. Que se lean bien desde arriba: siluetas claras y contraste. Entrega un zip con los 4 .glb, una captura de cada uno junto a `uruk_azul.glb` para comparar el tamaño y un txt con las licencias (CC0 si usas bases de Quaternius/KayKit).
+```
+
+### Pack Autopista 34 WORK — la fauna (adjuntar `crebain.glb`, `sapo.glb`, `nutria.glb`)
+
+```
+WORK · Pack Autopista 34 · Cinco animales 3D para la jungla de A-6 (mismo juego y estilo que el Pack 33: autopista española abandonada, cyberpunk serio, vista cenital). ORIGINALES, sin marcas. Te adjunto modelos de mi juego como referencia de formato y clips (`crebain.glb`, `sapo.glb`, `nutria.glb`).
+
+1) `ap_perro.glb` — perro asilvestrado flaco, pelo sucio gris-pardo, collar roto con una chapa; altura 1,2 m a la cabeza. Clips: quieto, andar, correr, atacar (mordisco), recibir_golpe, morir.
+2) `ap_perro_jefe.glb` — el jefe de la jauría: mastín enorme con cicatrices y una placa metálica en el lomo con una luz ámbar; altura 2,0 m. Mismos clips que el perro.
+3) `ap_buitre.glb` — buitre leonado con alguna anilla y cable enredado en una pata; vuela bajo, a ~1,5 m del suelo, con las alas abiertas (envergadura 2 m). Clips: quieto (aleteo en el sitio), andar (vuelo), atacar (picotazo en picado), morir (cae al suelo).
+4) `ap_jabali.glb` — jabalí gigante y mutado (como el Gromp del LoL: solitario y duro), colmillos enormes, cerdas oscuras, una señal de tráfico doblada clavada en el lomo; altura 1,4 m. Clips: quieto, andar, atacar (embestida corta), saltar, recibir_golpe, morir.
+5) `ap_rata.glb` — rata de alcantarilla gigante (como el cangrejo del LoL: no ataca, huye), del tamaño de un perro pequeño (0,6 m), cola larga, ojos con brillo verde. Clips: quieto, andar, correr, atacar (no se usa, puede ser un chillido), morir.
+
+Técnico: 2.000-6.000 triángulos, una textura de 1024 cada uno, pies en y=0 (el buitre con su altura de vuelo ya dentro del modelo), mirando a +Z, en metros, esqueleto y clips con EXACTAMENTE esos nombres a 30 fps. Zip con los 5 .glb, una captura de todos juntos al lado de `sapo.glb` y licencias en un txt.
+```
+
+### Pack Autopista 35 WORK — guaridas y piezas del mapa 2v2
+
+```
+WORK · Pack Autopista 35 · Piezas 3D de decorado para la jungla del mapa 2v2 de A-6 (mismo juego y estilo: autopista española abandonada, cyberpunk serio, vista cenital). Sin marcas ni texto legible. Cada pieza en su propio nodo con el nombre indicado, todo en UN solo `ap_jungla.glb`, en metros, base en y=0, centrada en el origen.
+
+- `foso_nasor`: zanja de obra circular de 14 m de diámetro y 1,5 m de hondo con el colector de hormigón reventado en el centro (agujero de 4 m, por donde sale el gusano), vallas de obra caídas, cinta de balizamiento rota y focos de obra apagados alrededor del borde. El fondo, transitable y llano.
+- `guarida_lagarto`: hondonada de 12 m junto a un transformador eléctrico destrozado con aisladores y cables caídos; un centro llano de 8 m libre para pelear.
+- `cubil_toro`: corral de ganado abandonado (vallas de madera y hierro rotas, un abrevadero) de 9 m.
+- `cubil_coloso`: rincón de desguace: pila de coches aplastados y neumáticos de 9 m con un hueco central de 6 m libre.
+- `cubil` (genérico, para perros, buitres y jabalí): claro de tierra de 7 m con algún cascote, bidón y matojo en el borde.
+- `rio_orilla`: tramo recto de orilla de 10 m (taludes de hormigón agrietado con juncos y basura), que se pueda repetir.
+- `puente_vado`: pasarela peatonal metálica oxidada de 8 m de largo por 3 de ancho para cruzar el río (solo decorado, a ras de la orilla).
+
+Técnico: menos de 8.000 triángulos por pieza, 1 o 2 texturas de 1024 compartidas por todo el glb, sin luces ni cámaras dentro, el centro de cada cubil LIBRE (ahí se pelea). Zip con el glb, una captura cenital de cada pieza con una persona de 1,8 m al lado y licencias en un txt.
+```
+
+### Pack Autopista 36 ART — iconos de la jungla (chat normal)
+
+```
+ART · Pack Autopista 36 · Iconos para la jungla del mapa 2v2 de A-6 (juego móvil tipo Wild Rift, HUD cyberpunk serio: metal oscuro con neón, el mismo estilo que el HUD que ya hiciste). Sin texto, sin letras, cada icono redondo y separado sobre fondo magenta liso #FF00FF. Hazlo en 2 imágenes.
+
+IMAGEN 1 (1536x1024) — marcas del minimapa, 9 iconos redondos pequeños y muy legibles (cabeza del bicho de frente, silueta clara): gusano gigante acorazado (Nasor, morado), lagarto con cables (gris), toro negro con cuernos en brasa (rojo), gólem de chatarra (azul), perro (gris), buitre (marrón), jabalí (pardo), rata (verde), y una lápida de aro dorado vacía (campamento muerto).
+IMAGEN 2 (1536x1024) — bendiciones y plantas: Furia de Nasor (fauces moradas), Alma del lagarto fuego (llama naranja) y hielo (cristal cian), Brasa del toro (cuerno con fuego), Turbo del coloso (motor con rayo azul), Jauría (huella de perro ámbar); y tres «plantas» del mapa: boca de riego que echa agua a presión, máquina expendedora con luz verde, radar de tráfico con un destello.
+```
