@@ -314,7 +314,7 @@ js = sub(js, "m.onBeforeCompile = (sh) => {sh.uniforms.tH = {value: tH};", "m.on
 js = sub(js, "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1);", "diffuseColor.rgb*=clamp(.7+dot(dt,vec3(.3,.6,.1))*.6,.9,1.1); diffuseColor.rgb*=1.-.58*texture2D(tNie,vec2((vWD.x+32.)/64.,1.-(vWD.y+70.)/140.)).a;")
 # enemigos fuera de la vista: no se ven ni se pueden señalar (los héroes cuentan como «escondidos», igual que en la hierba)
 js = sub(js, "escondido = v.k === 'h' && v.eq !== MI_EQ && ((v.flags & 1) || ((v.flags & 8) && !veoHierba(v)));", "escondido = v.k === 'h' && v.eq !== MI_EQ && ((v.flags & 1) || ((v.flags & 8) && !veoHierba(v)) || !vistoMm(v));")
-js = sub(js, "o.raiz.visible = !escondido && !(v.k === 'h' && muerto && v.muerto > 3);", "o.raiz.visible = !escondido && !(v.k === 'h' && muerto && v.muerto > 3) && !(v.k === 's' && v.eq !== MI_EQ && !vistoMm(v));")
+js = sub(js, "o.raiz.visible = !escondido && !(v.k === 'h' && muerto && o.muertoT && ahora - o.muertoT > 3400);", "o.raiz.visible = !escondido && !(v.k === 'h' && muerto && o.muertoT && ahora - o.muertoT > 3400) && !(v.k === 's' && v.eq !== MI_EQ && !vistoMm(v));")
 # vista: héroe 16 m, soldados 9 m
 js = js.replace("VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 13]); else if (q.k === 's' && q.muerto !== 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 8]);", "VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 14]); else if (q.k === 's' && q.muerto !== 0) VIS_MM.push([q.xi ?? q.x, q.zi ?? q.z, 9]);")
 # textos que aún decían «armería»

@@ -1561,6 +1561,13 @@ function dibuja(dt) {
     v.xi = x; v.zi = z; v.ri = r;
     const muerto = v.k === 'h' ? v.muerto >= 0 : v.muerto === 0;
     o.raiz.position.set(x, o.salto ? o.raiz.position.y : 0, z);
+    /* 18/11 (Henar: «el morirse tiene que tener alguna animación para todos»): al caer se juega «morir» y el cuerpo se queda en el suelo;
+       luego se hunde y desaparece (héroes a los 2,6 s; soldados y bestias a los 0,9 s, antes de que la simulación los quite a los 1,6-2 s).
+       Antes el héroe desaparecía en el acto: se escondía si le quedaban más de 3 s para reaparecer, o sea, siempre. */
+    if (muerto) {if (!o.muertoT) {o.muertoT = ahora; if (!o.clips || !o.clips.morir) o.cae = 0;} const tm = (ahora - o.muertoT) / 1000, t0 = v.k === 'h' ? 2.6 : 0.9;
+      if (o.cae !== undefined) {o.cae = Math.min(1, tm / 0.35); o.raiz.rotation.x = -o.cae * Math.PI / 2 * 0.95;} /* sin animación de morir: se desploma hacia atrás */
+      if (tm > t0) o.raiz.position.y = -Math.min(1.6, (tm - t0) * 2.4);}
+    else if (o.muertoT) {o.muertoT = 0; if (o.cae !== undefined) {o.cae = undefined; o.raiz.rotation.x = 0;}}
     if (o.kb && o.kb.t > 0) {o.kb.t -= dt; const q = Math.sin(Math.PI * Math.max(0, 1 - o.kb.t / o.kb.d)); o.raiz.position.x += o.kb.x * q; o.raiz.position.z += o.kb.z * q;}
     if (o.clips) {
       let dr = r - (o.rv ?? r); dr = Math.atan2(Math.sin(dr), Math.cos(dr)); o.rv = (o.rv ?? r) + dr * Math.min(1, dt * 14); o.raiz.rotation.y = o.rv;
@@ -1590,7 +1597,7 @@ function dibuja(dt) {
       if (o.escala === undefined) o.escala = o.raiz.scale.x;
       if (o.sqT > 0) {o.sqT -= dt; const k = 1 - Math.max(0, o.sqT) / o.sqD, a = o.sqA * Math.sin(k * Math.PI * 1.5) * (1 - k) * 1.4; o.raiz.scale.set(o.escala * (1 - a * 0.55), o.escala * (1 + a), o.escala * (1 - a * 0.55)); o.sqOn = true;}
       else if (o.sqOn) {o.sqOn = false; o.raiz.scale.setScalar(o.escala);}
-      const invis = v.k === 'h' && (v.flags & 1 || (v.flags & 8 && v.eq === MI_EQ)), escondido = v.k === 'h' && v.eq !== MI_EQ && ((v.flags & 1) || ((v.flags & 8) && !veoHierba(v))); v.escondido = escondido; o.raiz.visible = !escondido && !(v.k === 'h' && muerto && v.muerto > 3);
+      const invis = v.k === 'h' && (v.flags & 1 || (v.flags & 8 && v.eq === MI_EQ)), escondido = v.k === 'h' && v.eq !== MI_EQ && ((v.flags & 1) || ((v.flags & 8) && !veoHierba(v))); v.escondido = escondido; o.raiz.visible = !escondido && !(v.k === 'h' && muerto && o.muertoT && ahora - o.muertoT > 3400);
       if (invis && v.eq === MI_EQ) o.raiz.traverse((q) => {if (q.isMesh) {q.material.transparent = true; q.material.opacity = 0.4;}}); else if (o.semi) o.raiz.traverse((q) => {if (q.isMesh) q.material.opacity = 1;});
       o.semi = invis;
     } else if (v.k === 't') {
