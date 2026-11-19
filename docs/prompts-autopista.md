@@ -493,3 +493,39 @@ Mensajes siguientes (uno cada vez, «Igual que la anterior, ahora…»):
 7. Moha, el Halcón del Atlas: su gumía (daga curva marroquí con funda de plata) en un tajo rápido, remolino de arena DORADA y chispas.
 8. El Visor: su visera metálica con un rayo láser CIAN muy intenso saliendo en diagonal, chispas y onda de energía.
 Al llegar: recortar el círculo, quitar el magenta, `ui/ap_at_<clave>.webp` a 512 px (antes 256) y comprobar que encaja en el hueco de `ap_aro_at_<clave>`.
+
+## 19/11 · Packs Autopista 52, 53 y 54 WORK — héroes y soldados mejor hechos y que corran bien (Henar: «corren enchepaos, sacando pecho como un palomo, con los brazos raros, sobre todo Fu»)
+Tres pedidos en modo agente, cada uno en su chat y con su zip. El 52 y el 53 son el MISMO texto cambiando la lista de héroes. Al llegar: pasar por `tools/vado/adelgaza.py`, comprobar huesos y clips con el script de siempre, `t_tira.py HEROE` (corriendo de lado) y `t_par.py`, y medir dibujos y triángulos con `t_perf.py` (no puede subir).
+
+### Pack Autopista 52 WORK (Dalinar, Vael, Grub, Ata) — adjuntar Pack52_heroes.zip
+### Pack Autopista 53 WORK (Birdie, Fu, Moha, el Visor) — adjuntar Pack53_heroes.zip
+WORK · Pack Autopista 5X · Rehacer 4 héroes de A-6 (juego móvil 3D de peleas 2 contra 2 tipo League of Legends: Wild Rift, en una autopista española de noche; three.js en el navegador del móvil, cámara cenital a unos 20 m). Te adjunto un zip con, por cada héroe: su modelo actual (`ap_<nombre>.glb`), su retrato (`<nombre>_retrato.png`, el aspecto que tiene que tener) y una tira de 6 fotos de cómo corre ahora (`<nombre>_corre_ahora.png`).
+Problema: corren encorvados o sacando pecho hacia atrás, con los brazos rígidos o en posturas raras, y los modelos se ven pobres al lado de sus retratos.
+Para cada héroe quiero un `.glb` nuevo con:
+1. MODELO más fiel al retrato: misma ropa, colores, arma y peinado, siluetas claras que se reconozcan desde arriba (hombros, cabeza y arma algo más grandes de lo real, estilo Wild Rift), cara con rasgos sencillos. Como mucho 8.000 triángulos, UNA sola malla con piel, UN material con UNA textura de 1024x1024 (si tiene partes que brillan, como juntas de luz, visera o filo de energía, un SEGUNDO material llamado «luz» con emisivo); sin texturas de normales ni de rugosidad. Que pese menos de 1,5 MB.
+2. EL MISMO ESQUELETO que el modelo actual: los mismos 41 huesos con los mismos nombres (root, hips, spine, chest, head, upperarm.l…, handslot.l/.r, y los de IK), misma escala y altura, mirando hacia +Z y con los pies en el suelo (y = 0). El arma en `handslot.r` (o donde la lleve ahora).
+3. LAS MISMAS ANIMACIONES con los MISMOS NOMBRES que tiene ahora cada glb (no quites ninguna; el juego las busca por nombre), a 30 fps, sin pistas de huesos quietos. Rehaz SOBRE TODO `correr`, `andar` y `quieto`: espalda recta o un poco inclinada HACIA DELANTE (nunca echada hacia atrás), pecho normal, brazos que se balancean en contra de las piernas (o el arma sujeta con naturalidad si va a dos manos), cabeza estable mirando al frente; ciclos que enlacen sin salto. `correr` a unos 6-7 pasos por segundo de ritmo de juego (ciclo de ~0,7 s), con algo de rebote de cadera. Repasa también los golpes (`atacar`, `atacar_2`, `atacar_3`) para que se vean con fuerza: anticipación corta, golpe rápido y vuelta; el golpe tiene que caer en el MISMO momento que en el glb actual (el juego hace el daño en ese instante).
+Por héroe:
+(lista del pack)
+Devuélveme un zip con los 4 `.glb` (mismos nombres de archivo que los que te paso) y un `LEEME.txt` con triángulos, peso, huesos y lista de animaciones con su duración y el segundo del golpe de cada ataque.
+
+Lista del 52:
+- Dalinar, Caballero de Luz (`ap_brask.glb`): humano muy alto y fuerte, armadura de placas gris acero con grietas de luz azul (material «luz»), espadón con gemas azules; corre pesado pero erguido, el espadón sujeto con las dos manos en diagonal delante del cuerpo.
+- Vael, el Mago de fuego (`ap_vael.glb`): túnica azul noche con ribetes dorados, maza-bastón de hierro con jaula de fuego (material «luz» naranja en la jaula); corre con el bastón en una mano y la otra libre balanceándose.
+- Grub, el Maestro (`ap_grub.glb`): criatura bajita y verdosa con túnica ENORME que arrastra, espada de energía VERDE (material «luz»); corre a saltitos cortos, la túnica no puede atravesar las piernas.
+- Ata, la francotiradora (`ap_ata.glb`): mantén su cara, pelo y trenza del modelo actual (ya se rehízo); rifle a dos manos pegado al pecho al correr, no apuntando al cielo.
+
+Lista del 53:
+- Birdie, el golfista (`ap_birdie.glb`): jersey de rombos verde, gorra, guante blanco y palo de golf; corre con el palo en una mano apoyado en el hombro.
+- Fu (`ap_fu.glb`): luchador ágil de ropa negra y morada con vendas rojas, cadena con hoz; corre erguido como un ninja (no agachado ni encogido), la cadena enrollada en una mano y la hoz en la otra, brazos sueltos.
+- Moha, el Halcón del Atlas (`ap_moha.glb`): chilaba azul noche con bordados dorados y capucha, gumía (daga curva) de plata; corre ligero, la gumía baja en la mano derecha.
+- El Visor (`ap_visor.glb`): chaqueta de cuero negra con líneas cian, visera metálica con cristal cian (material «luz»); corre normal con los dos brazos balanceándose (ahora corre con la carrera de rifle de Ata y los brazos quietos).
+
+### Pack Autopista 54 WORK (soldados) — adjuntar Pack54_soldados.zip
+WORK · Pack Autopista 54 · Rehacer los 6 soldados (súbditos) de A-6 (juego móvil 3D de peleas 2 contra 2 tipo League of Legends: Wild Rift, en una autopista española de noche; three.js en el navegador del móvil, cámara cenital a unos 20 m; en una pelea hay hasta 30 en pantalla, así que tienen que ser MUY ligeros). Te adjunto los 6 actuales: `ap_sub_azul_m.glb` / `ap_sub_rojo_m.glb` (cuerpo a cuerpo), `ap_sub_azul_r.glb` / `ap_sub_rojo_r.glb` (a distancia) y `ap_super_azul.glb` / `ap_super_rojo.glb` (supersoldado), más una foto de cómo se ven ahora.
+Ahora los azules y los rojos tienen esqueletos distintos (41, 32 y 17 huesos) y no parecen del mismo juego. Quiero:
+1. Los 6 con EL MISMO ESQUELETO de 41 huesos que `ap_sub_azul_m.glb` (mismos nombres), mirando a +Z, pies en y = 0, misma altura que los actuales.
+2. Azules = operarios de autopista con mono y chaleco azul eléctrico reflectante y casco; rojos = el mismo diseño en rojo y negro con detalles agresivos (máscara, pinchos). Cuerpo a cuerpo con porra o barra; a distancia con pistola de clavos; supersoldado = el doble de grande, blindado como un antidisturbios con escudo de chapa. Siluetas que se distingan desde arriba (cuerpo a cuerpo / a distancia / súper) y colores muy claros por equipo.
+3. Como mucho 2.500 triángulos (súper 4.000), UNA malla, UN material, UNA textura de 512x512 (súper 1024), sin normales ni rugosidad; menos de 400 KB cada uno.
+4. Animaciones con estos nombres exactos, 30 fps, ciclos limpios, postura erguida: `quieto`, `andar`, `correr`, `atacar` (cuerpo a cuerpo y súper) o `disparar` (a distancia), `recibir_golpe`, `morir` (cae y se queda en el suelo), `aturdido`.
+Devuélveme un zip con los 6 `.glb` (mismos nombres) y un `LEEME.txt` con triángulos, peso, huesos y animaciones con su duración.

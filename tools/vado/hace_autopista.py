@@ -2026,6 +2026,17 @@ html = sub(html, '</body>', """<style>
 #elige.e2 .eNom em{display:inline-block;background:#000a}
 </style></body>""", donde='html')
 
+# ---------- HABILIDADES DE ÁREA QUE SE VEN DEL TAMAÑO DE LO QUE GOLPEAN (19/11, Henar: «siento que las de área no dan bien») ----------
+# Medido: el golpe de un área llega a radio + 0,75 m (el cuerpo del héroe), pero la onda que se pintaba medía 1,3 veces el radio y en la
+# definitiva de Dalinar hasta 1,7 (con 4,6 m de radio: onda de 7,8 m, golpe hasta 5,35 m): parecía que fallaba con los que estaban
+# dentro de la onda. Ahora las ondas y el polvo llegan a radio + 0,5 m. Además, el salto (Dalinar E, Fu Q) hacía daño donde ÍBAS a caer
+# aunque un árbol te parase antes y sin contar el cuerpo del enemigo: ahora alrededor de donde caes de verdad y con radio + cuerpo.
+js = js.replace("flip('ondaC', x, z, H.radio * 2.6, true)", "flip('ondaC', x, z, H.radio * 2 + 1, true)")
+js = sub(js, "flip('polvoA', x, z, H.radio * 2.2, true)", "flip('polvoA', x, z, H.radio * 2 + 0.6, true)")
+js = sub(js, "luego2(180, () => flip('ondaC', x, z, H.radio * 3.4, true))", "luego2(180, () => flip('ondaC', x, z, H.radio * 2 + 1.4, true))")
+js = sub(js, "flip('ondaC', x, z, H.radio * 3.6, true); flip('polvoA', x, z, H.radio * 3.2, true)", "flip('ondaC', x, z, H.radio * 2 + 1.4, true); flip('polvoA', x, z, H.radio * 2 + 1, true)")
+js = sub(js, "if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, d.cae) < d.cae.r)", "if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, h) < d.cae.r + radio(e))")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

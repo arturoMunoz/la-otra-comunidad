@@ -1164,7 +1164,7 @@ function paso(dt) {
     if (h.dash) {
       const d = h.dash; d.t -= dt; h.x += d.vx * dt; h.z += d.vz * dt; limita(h);
       if (d.n) for (const e of enemigosDe(h.eq)) if (!d.toc.has(e.id) && e.k !== 'n' && (e.k !== 't') && dist(h, e) < 1.6 + radio(e)) {d.toc.add(e.id); dana(h, e, d.n, 'hab'); if (d.aturde && e.k !== 't') {e.aturd = S.t + d.aturde;}}
-      if (d.t <= 0) {if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, d.cae) < d.cae.r) {dana(h, e, d.cae.n, 'hab'); e.buf ? (e.buf.lento = d.cae.dur, e.buf.lentoV = d.cae.l) : (e.lento = S.t + d.cae.dur);} ev(['fx', 'onda', h.x, h.z, d.cae.r * 1.6]);} h.dash = null;}
+      if (d.t <= 0) {if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, h) < d.cae.r + radio(e)) {dana(h, e, d.cae.n, 'hab'); e.buf ? (e.buf.lento = d.cae.dur, e.buf.lentoV = d.cae.l) : (e.lento = S.t + d.cae.dur);} ev(['fx', 'onda', h.x, h.z, d.cae.r * 1.6]);} h.dash = null;}
     } else if (h.buf.estasis > 0) {h.mueve = false;
     } else if (!(h.aturd > S.t) && !(h.paraT > S.t)) {
       if (h.bot || h.local) {if (h.mx || h.mz) {const l = Math.hypot(h.mx, h.mz); h.x += h.mx / l * st.vel * Math.min(1, l) * dt; h.z += h.mz / l * st.vel * Math.min(1, l) * dt; h.rot = Math.atan2(h.mx, h.mz); limita(h); h.mueve = true;} else h.mueve = false;}
@@ -1738,11 +1738,11 @@ function habVisual(e) {
     suena('espada', 0.7, x, z); temb(0.18);
   }
   if (H.tipo === 'area') {
-    flip('ondaC', x, z, H.radio * 2.6, true); flip('polvoA', x, z, H.radio * 2.2, true);
+    flip('ondaC', x, z, H.radio * 2 + 1, true); flip('polvoA', x, z, H.radio * 2 + 0.6, true);
     if (k === 'r' && v.tipo !== 'enano') {/* Furia de Durin: el suelo se abre bajo el enano y luego alrededor, en dos oleadas */
       flip('grietas', x, z, H.radio * 2.7, true, rot, 0.13, 1.5); anillo(x, z, H.radio * 0.8, 8, 'fuego', 2.2);
       luego2(150, () => {for (let i = 0; i < 6; i++) {const a = i / 6 * Math.PI * 2 + rot; flip('grietas', x + Math.cos(a) * H.radio * 0.72, z + Math.sin(a) * H.radio * 0.72, 3.4, true, a, 0.14, 1.1); flip('explosion', x + Math.cos(a) * H.radio * 0.72, z + Math.sin(a) * H.radio * 0.72, 1.8);} temb(0.5);});
-      luego2(330, () => {flip('ondaC', x, z, H.radio * 3.6, true); flip('polvoA', x, z, H.radio * 3.2, true); auraFx(o, 'piedra', 0.9, H.radio * 1.6); temb(0.6); suena('explosion', 0.6, x, z);});
+      luego2(330, () => {flip('ondaC', x, z, H.radio * 2 + 1.4, true); flip('polvoA', x, z, H.radio * 2 + 1, true); auraFx(o, 'piedra', 0.9, H.radio * 1.6); temb(0.6); suena('explosion', 0.6, x, z);});
     }
     temb(k === 'r' ? 0.75 : 0.22); suena(k === 'r' ? 'fuego' : 'cuerno', 0.6, x, z);
   }
@@ -1818,7 +1818,7 @@ function fxAP(v, k, H, o, x, z, dx, dz, px, pz, rot, temb, luego2) {
   if (t === 'enano') {
     if (k === 'q') {abanico('ap_enano_tajo', x + dx * 0.5, z + dz * 0.5, rot, (H.alc || 4) + 0.4, 1.1); abanico('ap_enano_tajo', x + dx * 0.5, z + dz * 0.5, rot, (H.alc || 4) * 0.8, 0.12);}
     if (k === 'w') {auraFx(o, 'escudo', H.dur, 3.8); brillaArmadura(o, '#5fc4ff', 0.9, H.dur || 3);}
-    if (k === 'r') {flip('ap_enano_estallido', x, z, H.radio * 2, true); flip('ap_enano_estallido', x, z, H.radio * 1.4, false, undefined, 1.4); brillaArmadura(o, '#e8f6ff', 2.2, 2.6); flip('ondaC', x, z, H.radio * 2.6, true); luego2(180, () => flip('ondaC', x, z, H.radio * 3.4, true));}
+    if (k === 'r') {flip('ap_enano_estallido', x, z, H.radio * 2, true); flip('ap_enano_estallido', x, z, H.radio * 1.4, false, undefined, 1.4); brillaArmadura(o, '#e8f6ff', 2.2, 2.6); flip('ondaC', x, z, H.radio * 2 + 1, true); luego2(180, () => flip('ondaC', x, z, H.radio * 2 + 1.4, true));}
   }
 }
 /* lluvia de flechas: caen flechas de verdad sobre la zona */
