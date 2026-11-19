@@ -443,7 +443,7 @@ function golpea(o, d) {
     const st = stats(o), crit = st.crit && Math.random() < st.crit, n = st.dano * (crit ? 2 : 1), b = HEROES[o.tipo];
     o.ac++;
     pasivaGolpe(o, d);
-    if (b.proy) {const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}
+    if (b.proy) {const dl = {hobbit: 0.32, elfo: 0.15}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}
     else luego(0.18, () => {if (d.vida > 0 && !o.muerto) {dana(o, d, n, crit ? 'crit' : 'at'); ev(['fx', 'impacto', d.x, d.z, 1.4]);}});
     return;
   }

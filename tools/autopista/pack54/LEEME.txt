@@ -1,0 +1,64 @@
+A-6 · Pack Autopista 54
+Alturas en quieto, en metros. Se conserva la estatura individual de la tropa. Cada súper mide el doble que el soldado cuerpo a cuerpo de su equipo.
+Todos comparten los 41 huesos de ap_sub_azul_m.glb. Una malla con piel, un material y un atlas de color incrustado.
+30 fps. quieto, andar, correr y aturdido son ciclos. morir termina con una pausa en el suelo. En Three.js, reproducir morir con LoopOnce y clampWhenFinished = true.
+
+ap_sub_azul_m.glb · 1686 triángulos · 290736 bytes · 41 huesos · atlas 512 × 512
+Altura 1.790 m (original 1.790 m).
+  quieto           42/30 s  (1.400 s)
+  andar            32/30 s  (1.067 s)
+  correr           20/30 s  (0.667 s)
+  atacar           24/30 s  (0.800 s)
+  recibir_golpe    14/30 s  (0.467 s)
+  morir            40/30 s  (1.333 s)
+  aturdido         30/30 s  (1.000 s)
+
+ap_sub_azul_r.glb · 1830 triángulos · 307224 bytes · 41 huesos · atlas 512 × 512
+Altura 1.790 m (original 1.790 m).
+  quieto           42/30 s  (1.400 s)
+  andar            32/30 s  (1.067 s)
+  correr           20/30 s  (0.667 s)
+  disparar         18/30 s  (0.600 s)
+  recibir_golpe    14/30 s  (0.467 s)
+  morir            40/30 s  (1.333 s)
+  aturdido         30/30 s  (1.000 s)
+
+ap_sub_rojo_m.glb · 1710 triángulos · 290732 bytes · 41 huesos · atlas 512 × 512
+Altura 1.803 m (original 1.803 m).
+  quieto           42/30 s  (1.400 s)
+  andar            32/30 s  (1.067 s)
+  correr           20/30 s  (0.667 s)
+  atacar           24/30 s  (0.800 s)
+  recibir_golpe    14/30 s  (0.467 s)
+  morir            40/30 s  (1.333 s)
+  aturdido         30/30 s  (1.000 s)
+
+ap_sub_rojo_r.glb · 1854 triángulos · 307220 bytes · 41 huesos · atlas 512 × 512
+Altura 1.768 m (original 1.768 m).
+  quieto           42/30 s  (1.400 s)
+  andar            32/30 s  (1.067 s)
+  correr           20/30 s  (0.667 s)
+  disparar         18/30 s  (0.600 s)
+  recibir_golpe    14/30 s  (0.467 s)
+  morir            40/30 s  (1.333 s)
+  aturdido         30/30 s  (1.000 s)
+
+ap_super_azul.glb · 1926 triángulos · 340944 bytes · 41 huesos · atlas 1024 × 1024
+Altura 3.580 m (original 3.141 m).
+  quieto           42/30 s  (1.400 s)
+  andar            32/30 s  (1.067 s)
+  correr           22/30 s  (0.733 s)
+  atacar           24/30 s  (0.800 s)
+  recibir_golpe    14/30 s  (0.467 s)
+  morir            40/30 s  (1.333 s)
+  aturdido         30/30 s  (1.000 s)
+
+ap_super_rojo.glb · 1958 triángulos · 342808 bytes · 41 huesos · atlas 1024 × 1024
+Altura 3.607 m (original 3.287 m).
+  quieto           42/30 s  (1.400 s)
+  andar            32/30 s  (1.067 s)
+  correr           22/30 s  (0.733 s)
+  atacar           24/30 s  (0.800 s)
+  recibir_golpe    14/30 s  (0.467 s)
+  morir            40/30 s  (1.333 s)
+  aturdido         30/30 s  (1.000 s)

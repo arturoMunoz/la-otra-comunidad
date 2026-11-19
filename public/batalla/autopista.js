@@ -1051,7 +1051,7 @@ function golpea(o, d) {
     const st = stats(o), crit = st.crit && Math.random() < st.crit, n = st.dano * (crit ? 2 : 1), b = HEROES[o.tipo];
     o.ac++;
     pasivaGolpe(o, d);
-    if (b.proy) {const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}
+    if (b.proy) {const dl = {hobbit: 0.32, elfo: 0.15}[o.tipo] || 0, tira = () => {if (d.vida > 0 && !d.muerto && !o.muerto) lanzaProy(o, d, b.proy, n, crit ? 'crit' : 'at');}; if (dl) luego(dl, tira); else tira();}
     else luego(0.18, () => {if (d.vida > 0 && !o.muerto) {dana(o, d, n, crit ? 'crit' : 'at'); ev(['fx', 'impacto', d.x, d.z, 1.4]);}});
     return;
   }
@@ -2032,7 +2032,7 @@ function dibuja(dt) {
         if (o.clips.correr) o.clips.correr.timeScale = Math.max(0.6, Math.min(1.7, o.vel / (v.k === 'h' ? 4.2 : v.k === 'j' ? 4 : 2.9)));
       }
       /* los que están lejos de la cámara se animan a saltos (ahorra en peleas grandes) */
-      o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0; if (v.tipo === 'visor' && v.k === 'h') brazosVisor(o);}
+      o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0;}
       /* destello blanco y pequeño bote al recibir un golpe */
       const dorado = v.k === "h" && (v.flagsE & 1);
       if (dorado) {for (const m of materiales(o)) {m.m.emissive.setRGB(1, 0.72, 0.15); m.m.emissiveIntensity = 0.75 + 0.2 * Math.sin(performance.now() / 90);} o.doradoOn = true;}

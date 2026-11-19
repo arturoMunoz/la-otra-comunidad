@@ -1,0 +1,60 @@
+PACK AUTOPISTA 53 · A-6
+Metros · +Y arriba · +Z frente · 30 fps.
+Impacto: Birdie conserva el contacto a 0,320 s en sus dos swings y el golpe cargado. El Visor usa el gesto de disparo para sus básicos y el inicio del haz a 0,500 s para la definitiva. En los demás golpes se indica el instante visual estimado en el original (pico de velocidad del extremo del arma); el ZIP de origen no incluye el código de daño.
+Los canales constantes iguales a la pose base se omiten. Una clave conserva una pose fija distinta de la base cuando es necesaria.
+
+ap_birdie.glb · 5873 triángulos · 876296 bytes · 41 huesos
+atacar_3           0.500 s    golpe 0.204 s
+atacar_2           0.600 s    golpe 0.320 s
+celebrar           1.667 s
+morir              0.800 s
+esquivar           0.500 s
+golpe_cargado      0.830 s    golpe 0.320 s
+recibir_golpe      0.450 s
+aturdido           0.500 s
+quieto             1.067 s
+correr             0.700 s
+atacar             0.600 s    golpe 0.320 s
+andar              1.000 s
+
+ap_fu.glb · 7841 triángulos · 1050660 bytes · 41 huesos
+atacar_3           0.500 s    golpe 0.212 s
+atacar_2           0.550 s    golpe 0.133 s
+celebrar           1.667 s
+morir              0.800 s
+esquivar           0.500 s
+quieto             1.067 s
+correr             0.700 s
+atacar             0.600 s    golpe 0.270 s
+andar              1.000 s
+
+ap_moha.glb · 7537 triángulos · 1231112 bytes · 41 huesos
+atacar             0.550 s    golpe 0.234 s
+atacar_2           0.550 s    golpe 0.124 s
+atacar_3           0.500 s    golpe 0.121 s
+golpe_cargado      0.800 s    golpe 0.400 s
+giro               0.750 s    golpe 0.431 s
+quieto_2           0.550 s
+celebrar           1.667 s
+morir              0.800 s
+morir_2            2.633 s
+esquivar           0.500 s
+recibir_golpe      0.450 s
+aturdido           0.500 s
+quieto             0.550 s
+correr             0.700 s
+andar              1.000 s
+
+ap_visor.glb · 6893 triángulos · 1021688 bytes · 41 huesos
+atacar             0.700 s    golpe 0.240 s
+atacar_2           0.833 s    golpe 0.240 s
+celebrar           1.667 s
+morir              0.800 s
+esquivar           0.500 s
+recibir_golpe      0.467 s
+aturdido           0.500 s
+quieto             2.000 s
+correr             0.700 s
+golpe_cargado      2.333 s    golpe 0.500 s
+andar              1.000 s
+canalizar          2.000 s

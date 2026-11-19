@@ -2037,6 +2037,13 @@ js = sub(js, "luego2(180, () => flip('ondaC', x, z, H.radio * 3.4, true))", "lue
 js = sub(js, "flip('ondaC', x, z, H.radio * 3.6, true); flip('polvoA', x, z, H.radio * 3.2, true)", "flip('ondaC', x, z, H.radio * 2 + 1.4, true); flip('polvoA', x, z, H.radio * 2 + 1, true)")
 js = sub(js, "if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, d.cae) < d.cae.r)", "if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, h) < d.cae.r + radio(e))")
 
+# ---------- PACKS 52, 53 y 54 WORK (19/11): héroes y soldados rehechos ----------
+# Modelos nuevos (originales en tools/autopista/pack52|53|54, los de antes en tools/autopista/viejos_1911), pasados por adelgaza.py.
+# El golpe básico de Birdie cae ahora a 0,32 s y el de Ata a 0,15 s (LEEME del pack). El Visor ya trae carrera propia con los brazos:
+# fuera el balanceo de brazos hecho por código.
+js = sub(js, "const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0", "const dl = {hobbit: 0.32, elfo: 0.15}[o.tipo] || 0")
+js = sub(js, " if (v.tipo === 'visor' && v.k === 'h') brazosVisor(o);", "")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

@@ -1,0 +1,62 @@
+PACK AUTOPISTA 52 · A-6
+Metros · +Y arriba · +Z frente · 30 fps.
+Impacto: Ata conserva el retroceso a 0,150 s. En los demás golpes se indica el instante visual estimado en el original (pico de velocidad del extremo del arma); el ZIP de origen no incluye el código de daño.
+Los canales constantes iguales a la pose base se omiten. Una clave conserva una pose fija distinta de la base cuando es necesaria.
+
+ap_ata.glb · 7661 triángulos · 842744 bytes · 41 huesos
+atacar             0.800 s    golpe 0.150 s
+atacar_2           0.800 s    golpe 0.150 s
+celebrar           1.667 s
+morir              0.800 s
+esquivar           0.500 s
+recibir_golpe      0.450 s
+aturdido           0.500 s
+quieto             0.600 s
+correr             0.700 s
+golpe_cargado      0.800 s    golpe 0.150 s
+andar              1.000 s
+
+ap_brask.glb · 7795 triángulos · 1471208 bytes · 41 huesos
+atacar_3           0.500 s    golpe 0.204 s
+atacar_2           0.533 s    golpe 0.262 s
+atacar             0.567 s    golpe 0.241 s
+golpe_cargado      0.800 s    golpe 0.427 s
+giro               0.733 s    golpe 0.183 s
+quieto             0.500 s
+celebrar           1.667 s
+morir              0.800 s
+esquivar           0.500 s
+recibir_golpe      0.733 s
+aturdido           0.500 s
+correr             0.700 s
+andar              1.000 s
+
+ap_grub.glb · 7049 triángulos · 1219356 bytes · 41 huesos
+atacar_3           0.500 s    golpe 0.212 s
+atacar_2           0.550 s    golpe 0.133 s
+quieto_2           1.067 s
+celebrar           1.667 s
+morir              0.800 s
+morir_2            2.633 s
+esquivar           0.500 s
+golpe_cargado      0.800 s    golpe 0.307 s
+recibir_golpe      0.450 s
+aturdido           0.500 s
+quieto             1.067 s
+correr             0.700 s
+atacar             0.600 s    golpe 0.315 s
+andar              1.000 s
+
+ap_vael.glb · 6593 triángulos · 1027080 bytes · 41 huesos
+atacar             0.550 s    golpe 0.234 s
+atacar_2           0.550 s    golpe 0.124 s
+atacar_3           0.500 s    golpe 0.121 s
+golpe_cargado      0.800 s    golpe 0.400 s
+celebrar           1.667 s
+morir              0.800 s
+esquivar           0.500 s
+recibir_golpe      0.450 s
+aturdido           0.500 s
+quieto             0.550 s
+correr             0.700 s
+andar              1.000 s
