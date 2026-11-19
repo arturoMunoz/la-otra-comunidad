@@ -529,3 +529,17 @@ Ahora los azules y los rojos tienen esqueletos distintos (41, 32 y 17 huesos) y 
 3. Como mucho 2.500 triángulos (súper 4.000), UNA malla, UN material, UNA textura de 512x512 (súper 1024), sin normales ni rugosidad; menos de 400 KB cada uno.
 4. Animaciones con estos nombres exactos, 30 fps, ciclos limpios, postura erguida: `quieto`, `andar`, `correr`, `atacar` (cuerpo a cuerpo y súper) o `disparar` (a distancia), `recibir_golpe`, `morir` (cae y se queda en el suelo), `aturdido`.
 Devuélveme un zip con los 6 `.glb` (mismos nombres) y un `LEEME.txt` con triángulos, peso, huesos y animaciones con su duración.
+
+## 19/11 · Pack Autopista 55 WORK — vegetación y rocas del mapa 2v2 más reales (mismas piezas, sin añadir nada) — adjuntar Pack55_vegetacion.zip
+Henar: «no me gusta el mapa de 2v2, que se sienta más real, sin meter más objetos». Los árboles y rocas son de packs de juguete (cubos con picos). Mismas piezas y nombres, otro aspecto.
+WORK · Pack Autopista 55 · Rehacer la vegetación y las rocas del mapa de A-6 (juego móvil 3D tipo League of Legends: Wild Rift; el mapa es una zona de autopista en el sureste de España —un río, pinares, tierra seca—; three.js en el navegador del móvil, cámara cenital a unos 20 m, de noche/atardecer). Te adjunto los 3 archivos actuales (`vado_arboles.glb`, `vado_rocas.glb`, `ap_vegetacion.glb`) y dos fotos de cómo se ve ahora.
+Ahora parecen de juguete (cubos verdes con picos, colores planos de caramelo). Quiero el MISMO número de piezas con los MISMOS nombres de nodo, pero con aspecto realista estilizado (como el Wild Rift o el Valorant: formas creíbles, colores naturales apagados, sin parecer de plastilina):
+- `vado_arboles.glb`: pino_01..04 = pinos carrascos/piñoneros mediterráneos (copa irregular, tronco rojizo con corteza); roble_01..03 = encinas bajas y redondeadas de copa densa (desde arriba deben formar MUROS de copas que se toquen); arbol_muerto_01..02 = pinos secos quemados.
+- `vado_rocas.glb`: roca_01..06 = rocas calizas grises con algo de musgo seco; arbusto_01..04 = lentisco y retama; juncos_01..03 = carrizo de río; piedra_vado_01..06 = cantos rodados planos.
+- `ap_vegetacion.glb`: mata_seca, adelfa, pino, eucalipto, palmera e hierba con el mismo estilo realista.
+Reglas (es para móvil, no puede dar lag):
+1. Mismo tamaño, mismo punto de apoyo (base en y = 0, centrado en x = z = 0) y mirando igual que ahora: el juego los coloca por código.
+2. Cada pieza una malla; todas las piezas de un archivo comparten UN material y UNA textura atlas de 1024x1024 (hojas con transparencia recortada, alfa 0/1, nada de semitransparencias); sin normales ni rugosidad.
+3. Árboles como mucho 1.200 triángulos, arbustos y rocas 400, hierba y juncos 150. Cada archivo menos de 1,5 MB.
+4. Colores naturales: verdes oliva y apagados, troncos marrón rojizo, roca gris caliza, hierba amarillenta de secano.
+Devuélveme un zip con los 3 `.glb` (mismos nombres) y un `LEEME.txt` con triángulos y tamaño de cada pieza.
