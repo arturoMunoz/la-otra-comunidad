@@ -97,7 +97,7 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] ~~19/11 · Pack Autopista 52 WORK — Dalinar, Vael, Grub y Ata rehechos y corriendo bien (adjuntar Pack52_heroes.zip)~~ metido 19/11
 - [x] ~~19/11 · Pack Autopista 53 WORK — Birdie, Fu, Moha y el Visor rehechos y corriendo bien (adjuntar Pack53_heroes.zip)~~ metido 19/11
 - [x] ~~19/11 · Pack Autopista 54 WORK — los 6 soldados con un solo esqueleto, más ligeros y claros por equipo (adjuntar Pack54_soldados.zip)~~ metido 19/11
-- [ ] 19/11 · Pack Autopista 55 WORK — vegetación y rocas del 2v2 realistas, mismas piezas (adjuntar Pack55_vegetacion.zip)
+- [x] ~~19/11 · Pack Autopista 55 WORK — vegetación y rocas del 2v2 realistas, mismas piezas (adjuntar Pack55_vegetacion.zip)~~ metido 19/11
 
 ## ElevenLabs · Efectos de sonido de A-6 (18/11, Henar: «el sonido es horrible») — EN ESPERA: sin tokens de ElevenLabs (18/11)
 No es ChatGPT: en ElevenLabs → Sound Effects. Cada uno 3 veces (3 versiones), bajar en mp3 y llamarlos `nombre_1.mp3`, `nombre_2.mp3`, `nombre_3.mp3`; pasar todo en un zip. Al llegar se normalizan con ffmpeg y van a `public/batalla/sonidos_ap/fx/` (mismos nombres que `SON_LISTA`). Prompts en `docs/prompts-autopista.md` («Sonidos ElevenLabs»).

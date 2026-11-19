@@ -1954,7 +1954,7 @@ js = sub(js, "      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(p
 """      if (Math.hypot(px - PIT.x, pz - PIT.z) < 8.5 || Math.hypot(px - PIT2.x, pz - PIT2.z) < 8.5 || PLANTAS.some((q) => Math.hypot(q.x - px, q.z - pz) < 2.6 + H * 0.9) || Math.abs(ladoDe({x: px, z: pz})) < 2.6 + H * 1.2 || CAMPOS.some((c) => Math.hypot(c.x - px, c.z - pz) < (NEUTRO[c.tipo].grande ? 7 : 5.5) - H * 0.5) || HIERBAS.some((b) => Math.hypot(b.x - px, b.z - pz) < b.r + 1.3 - H * 0.6) || sendas.some(([a, b]) => distSeg(px, pz, a, b) < 3.2)) continue;
       if (TIPO_MAPA === 'linea' && Math.abs(px) < 10.2) continue;""")
 js = sub(js, "planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 0.5 : jO ? 0.75 : 1), juego);",
-             "planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 1.05 : jO ? 0.75 : 1), juego && !muro); if (juego && muro) ponArbolChoque(px, pz, 1.3);")
+             "planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 1.4 : jO ? 0.85 : 1), juego && !muro); if (juego && muro) ponArbolChoque(px, pz, 1.3);")
 
 # suelo de los caminitos: tierra pisada por las sendas (uS = pares de puntos de cada senda, hasta 48)
 js = sub(js, "    uF: {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]}};",

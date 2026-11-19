@@ -1,0 +1,56 @@
+A-6 · Pack Autopista 55
+Medidas en metros, en los ejes locales del juego. X = ancho, Y = altura, Z = fondo. Base a Y = 0, centro horizontal en el origen.
+Una malla indexada por pieza, un material y un atlas RGBA de 1024 × 1024 por GLB. Transparencia por recorte con umbral 0,5.
+Geom. (B) incluye posiciones, normales de vértice, UV e índices. La textura se contabiliza una sola vez en el peso del archivo.
+
+ap_vegetacion.glb · 15 piezas · 843996 bytes
+Nodo                  Tris       X (m)     Y (m)     Z (m)   Geom. (B)
+mata_seca_1            270        1.887     1.015     1.892       23796
+mata_seca_2            270        1.887     1.143     1.892       23796
+mata_seca_3            270        1.887     1.272     1.892       23796
+mata_seca_4            270        1.887     1.401     1.892       23796
+adelfa_1               306        1.887     1.510     1.892       26316
+adelfa_2               306        1.887     1.510     1.892       26316
+pino_1                1092        4.953     6.007     4.611       66840
+pino_2                1092        4.914     7.006     4.665       66840
+pino_3                1092        4.926     8.005     4.658       66840
+eucalipto_1            769        2.240     8.005     2.121       65158
+eucalipto_2            769        2.224     8.005     2.144       65158
+palmera_1              360        5.600     7.000     5.462       28240
+hierba_1               104        0.817     0.400     0.726        7280
+hierba_2               104        0.806     0.400     0.725        7280
+hierba_3               104        0.895     0.400     0.721        7280
+
+vado_arboles.glb · 9 piezas · 960240 bytes
+Nodo                  Tris       X (m)     Y (m)     Z (m)   Geom. (B)
+pino_01               1092        2.020     8.000     2.050       66840
+pino_02               1092        1.897     9.500     1.925       66840
+pino_03               1092        2.070     7.200     2.391       66840
+pino_04               1092        2.430    10.500     2.806       66840
+roble_01              1092        3.761     7.200     4.343       66840
+roble_02              1092        5.468     8.600     4.916       66840
+roble_03              1092        3.945     6.400     3.359       66840
+arbol_muerto_01        891        3.133     5.118     3.151       88482
+arbol_muerto_02        891        3.332     5.118     3.247       88482
+
+vado_rocas.glb · 19 piezas · 643280 bytes
+Nodo                  Tris       X (m)     Y (m)     Z (m)   Geom. (B)
+roca_01                120        0.660     0.350     0.660       10768
+roca_02                192        1.912     0.650     1.912       17024
+roca_03                192        3.173     1.050     4.104       17024
+roca_04                192        5.304     1.600     5.061       17024
+roca_05                192        5.146     2.250     4.223       17024
+roca_06                120        1.865     3.200     1.784       10768
+arbusto_01             306        1.215     0.750     1.215       26316
+arbusto_02             270        1.849     1.200     1.658       23796
+arbusto_03             306        1.755     1.050     1.755       26316
+arbusto_04             270        3.371     1.400     3.892       23796
+juncos_01              131        1.320     1.405     1.317        9330
+juncos_02              131        1.514     1.631     1.510        9330
+juncos_03              131        1.707     1.402     1.702        9330
+piedra_vado_01         180        0.920     0.205     0.740       16504
+piedra_vado_02         180        1.040     0.230     0.830       16504
+piedra_vado_03         180        1.160     0.255     0.920       16504
+piedra_vado_04         180        1.280     0.280     1.010       16504
+piedra_vado_05         180        1.400     0.305     1.100       16504
+piedra_vado_06         180        1.520     0.330     1.190       16504

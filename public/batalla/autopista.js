@@ -179,7 +179,7 @@ function plantaBosque(al, planta, enBase) {
     }
     const isen = ladoDe({x: px, z: pz}) > 0, r = al();
     const n = isen ? (r < 0.3 ? 'arbol_muerto_0' + (1 + (r < 0.12 ? 1 : 0)) : 'pino_0' + (1 + Math.floor(al() * 4))) : (r < 0.45 ? 'roble_0' + (1 + Math.floor(al() * 3)) : 'pino_0' + (1 + Math.floor(al() * 4)));
-    const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 1.05 : jO ? 0.75 : 1), juego && !muro); if (juego && muro) ponArbolChoque(px, pz, 1.3);
+    const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 1.4 : jO ? 0.85 : 1), juego && !muro); if (juego && muro) ponArbolChoque(px, pz, 1.3);
   }
 }
 function lineaLibre(a, b) {const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
