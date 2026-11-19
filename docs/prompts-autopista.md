@@ -543,3 +543,20 @@ Reglas (es para móvil, no puede dar lag):
 3. Árboles como mucho 1.200 triángulos, arbustos y rocas 400, hierba y juncos 150. Cada archivo menos de 1,5 MB.
 4. Colores naturales: verdes oliva y apagados, troncos marrón rojizo, roca gris caliza, hierba amarillenta de secano.
 Devuélveme un zip con los 3 `.glb` (mismos nombres) y un `LEEME.txt` con triángulos y tamaño de cada pieza.
+
+## 19/11 · Pack Autopista 56 WORK — carrera de Fu con la Universal Animation Library de Quaternius (CC0) — METIDO 19/11
+## 19/11 · Pack Autopista 57 WORK — lo mismo para los otros 7 héroes — adjuntar Pack57_heroes.zip
+WORK · Pack Autopista 57 · Carreras de verdad para 7 héroes (A-6, juego móvil 3D tipo League of Legends: Wild Rift; three.js). Te adjunto sus 7 .glb y, como referencia de cómo tiene que quedar, REFERENCIA_ap_fu_ya_hecho.glb (Fu, ya hecho por ti con este mismo método: perfecto).
+Ahora corren como monigotes (piernas rígidas, brazos colgando, sin peso).
+1. Usa la «Universal Animation Library» de Quaternius (CC0, https://quaternius.itch.io/universal-animation-library, archivo UAL1_Standard.glb) como con Fu: para cada héroe una carrera (Sprint_Loop o la que mejor le vaya), un andar y una espera con peso, de su estilo.
+2. Pásalas (retarget) a SU esqueleto: los mismos 41 huesos con los mismos nombres, misma escala, mirando a +Z, pies en y = 0, sin que los pies resbalen ni atraviesen el suelo. Corrige brazos y muñecas para que el arma no atraviese el cuerpo.
+3. Sustituye SOLO correr (~0,7 s), andar (~1 s) y quieto, con esos nombres. El resto de clips se quedan tal cual. 30 fps, sin pistas de huesos quietos. No cambies malla, textura ni materiales.
+Por héroe:
+- ap_brask.glb (Dalinar, caballero enorme con espadón a dos manos): carrera pesada pero erguida, espadón en diagonal delante del cuerpo; espera con el espadón apoyado.
+- ap_vael.glb (mago de fuego con bastón-maza en una mano): carrera con el bastón en la mano y el otro brazo libre; espera de mago.
+- ap_grub.glb (criatura bajita con túnica enorme y espada de energía): carrera a zancadas cortas y rápidas; que la túnica no atraviese las piernas.
+- ap_ata.glb (francotiradora): carrera con el rifle a dos manos pegado al pecho, cañón hacia abajo; espera con el rifle preparado.
+- ap_birdie.glb (golfista): carrera con el palo en una mano apoyado en el hombro; espera relajada.
+- ap_moha.glb (guerrero del desierto con chilaba y gumía): carrera ligera, gumía baja en la mano derecha; que la chilaba no atraviese las piernas.
+- ap_visor.glb (chaqueta de cuero y visera, sin arma): carrera normal con los dos brazos balanceándose; espera con los brazos sueltos.
+Devuélveme un zip con los 7 .glb (mismos nombres) y un LEEME.txt con, por héroe, de qué animaciones sale cada clip y la velocidad de referencia de correr y andar a timeScale = 1 (como hiciste con Fu).

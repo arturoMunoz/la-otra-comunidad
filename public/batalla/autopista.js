@@ -2029,7 +2029,7 @@ function dibuja(dt) {
         const vel = o.lx === undefined ? 0 : Math.hypot(x - o.lx, z - o.lz) / Math.max(dt, 0.001); o.lx = x; o.lz = z; o.vel = (o.vel || 0) + (Math.min(vel, 12) - (o.vel || 0)) * Math.min(1, dt * 10);
         const corre = v.mueve || o.vel > 0.6;
         if (o.ocup <= 0) pon(o, v.flags & 2 ? 'aturdido' : corre ? 'correr' : 'quieto');
-        if (o.clips.correr) o.clips.correr.timeScale = Math.max(0.6, Math.min(1.7, o.vel / (v.k === 'h' ? 4.2 : v.k === 'j' ? 4 : 2.9)));
+        if (o.clips.correr) o.clips.correr.timeScale = Math.max(0.45, Math.min(1.7, o.vel / (v.k === 'h' ? (v.tipo === 'gollum' ? 5.8 : 4.2) : v.k === 'j' ? 4 : 2.9)));
       }
       /* los que están lejos de la cámara se animan a saltos (ahorra en peleas grandes) */
       o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0;}

@@ -1,0 +1,26 @@
+A-6 · Pack Autopista 56 · Fu
+
+Base: ap_fu.glb del Pack Autopista 53. Los 41 huesos, la escala, la malla,
+los pesos de piel, los materiales y la textura se conservan. Frente: +Z.
+La hoz sigue en la mano derecha y la cadena enrollada en la izquierda.
+
+Clip      Animación de origen    Duración del ciclo     Intervalos a 30 fps
+correr    Sprint_Loop            0,700 s                21
+andar     Walk_Loop              1,000 s                30
+quieto    Sword_Idle             1,667 s                50
+
+Los tres clips se reproducen en bucle y en el sitio. Se ha adaptado el
+movimiento al cuerpo de Fu, con corrección de apoyos, muñecas y brazos.
+En correr hay fase aérea entre apoyos. Para sincronizar los pies con el
+avance en Three.js, las velocidades de referencia a timeScale = 1 son
+4,52 m/s en correr y 0,70 m/s en andar. Si el juego mueve a Fu a otra
+velocidad, usa timeScale = velocidad real / velocidad de referencia.
+
+Se conservan íntegros atacar, atacar_2, atacar_3, esquivar, celebrar y morir.
+
+Fuente de las tres animaciones: Quaternius, Universal Animation Library,
+edición Standard, archivo Unreal-Godot/UAL1_Standard.glb.
+Descarga del autor: https://quaternius.itch.io/universal-animation-library
+Licencia de las animaciones de origen: CC0 1.0 Universal (dominio público),
+según License.txt de la distribución.
+https://creativecommons.org/publicdomain/zero/1.0/

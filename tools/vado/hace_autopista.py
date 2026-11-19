@@ -2044,6 +2044,11 @@ js = sub(js, "if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e
 js = sub(js, "const dl = {hobbit: 0.27, elfo: 0.12}[o.tipo] || 0", "const dl = {hobbit: 0.32, elfo: 0.15}[o.tipo] || 0")
 js = sub(js, " if (v.tipo === 'visor' && v.k === 'h') brazosVisor(o);", "")
 
+# ---------- PACK 56 WORK (19/11): carrera de Fu sacada de la Universal Animation Library de Quaternius (CC0) ----------
+# Su carrera va a 4,52 m/s con timeScale 1 y el héroe se ve a ×1,28 (ESC_H): referencia 5,8 m/s para que los pies no resbalen.
+js = sub(js, "o.clips.correr.timeScale = Math.max(0.6, Math.min(1.7, o.vel / (v.k === 'h' ? 4.2 :",
+             "o.clips.correr.timeScale = Math.max(0.45, Math.min(1.7, o.vel / (v.k === 'h' ? (v.tipo === 'gollum' ? 5.8 : 4.2) :")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))
