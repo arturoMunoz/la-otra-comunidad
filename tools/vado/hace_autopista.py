@@ -1989,6 +1989,43 @@ js = sub(js, "  for (const im of BOSQUE) {const m = im.material; if (vistos.has(
              "  for (const im of BOSQUE) {const m = im.material; if (vistos.has(m)) continue; vistos.add(m); const antes = m.onBeforeCompile;\n    m.onBeforeCompile = (sh, rr) => {if (antes) antes.call(m, sh, rr); sh.uniforms.uT = UT;")
 js = sub(js, "    m.customProgramCacheKey = () => 'mecer'; m.needsUpdate = true;}", "    m.customProgramCacheKey = () => 'mecer' + (m.userData.tapa ? '+tapa' : ''); m.needsUpdate = true;}")
 
+# ---------- TODO DENTRO DE SU RECUADRO (19/11, Henar: «que cuadre todo dentro») ----------
+# (1) las barras de vida de torres, núcleos, fuentes y soldados se colaban por los huecos de los aros de las habilidades («un recuadrito
+# en la habilidad del medio que desaparece al pulsar el básico»: al pulsar, la cámara se mueve): si caen encima de un botón de los mandos
+# no se pintan; las de los héroes se quedan pero muy tenues. Los círculos de los botones se miden cada segundo (`HUD_CIRC`).
+js = sub(js, "    if (b._vis !== vis) {b._vis = vis; b.style.display = vis ? 'flex' : 'none';}\n    if (v.k === 't' || v.k === 'n')",
+"""    let tapada = false;
+    if (vis) {const bx = (_p.x + 1) / 2 * VW, by = (1 - _p.y) / 2 * VH - 4; tapada = bajoHud(bx, by);}
+    const visF = vis && !(tapada && v.k !== 'h');
+    if (b._vis !== visF) {b._vis = visF; b.style.display = visF ? 'flex' : 'none';}
+    const opB = tapada && v.k === 'h' ? '0.3' : ''; if (b._op !== opB) {b._op = opB; b.style.opacity = opB;}
+    if (v.k === 't' || v.k === 'n')""")
+js = sub(js, "      b.style.transform = 'translate3d(' + ((_p.x + 1) / 2 * VW).toFixed(1) + 'px,' + ((1 - _p.y) / 2 * VH).toFixed(1) + 'px,0) translate(-50%,-100%)';\n      const w = Math.max(0, v.vida / v.max * 100)",
+"""      if (!visF) {} else b.style.transform = 'translate3d(' + ((_p.x + 1) / 2 * VW).toFixed(1) + 'px,' + ((1 - _p.y) / 2 * VH).toFixed(1) + 'px,0) translate(-50%,-100%)';
+      const w = Math.max(0, v.vida / v.max * 100)""")
+js = sub(js, "const PX = (e) =>", """let HUD_CIRC = [], HUD_T = 0;
+function bajoHud(x, y) {
+  const t = performance.now(); if (t - HUD_T > 1000) {HUD_T = t; HUD_CIRC = [];
+    for (const el of document.querySelectorAll('#mandos button, #bD, #bF, #bEnc, #bAlm, #bBase, #bTienda, #bZoom')) {if (!el.offsetParent) continue; const r = el.getBoundingClientRect(); if (!r.width) continue;
+      const c = GIRO ? {x: r.top + r.height / 2, y: VH - (r.left + r.width / 2)} : {x: r.left + r.width / 2, y: r.top + r.height / 2}; HUD_CIRC.push([c.x, c.y, r.width * 0.62 + 10]);}}
+  for (const [cx, cy, rr] of HUD_CIRC) if (Math.hypot(x - cx, y - cy) < rr) return true; return false;}
+const PX = (e) =>""")
+
+# (2) los puntos de rango de cada habilidad iban montados encima del borde inferior del aro: ahora debajo del aro, centrados y algo más
+# pequeños; (3) el número de cargas de la baliza quedaba debajo de su aro: encima y dentro de la pantalla.
+html = sub(html, '</body>', """<style>
+.hb[data-k] .pip{bottom:-15px !important;left:50% !important;right:auto !important;transform:translateX(-50%);z-index:4 !important;pointer-events:none}
+#bR .pip{bottom:auto !important;top:-15px !important}
+.pip i{width:11px !important;height:6px !important}
+#bAlm .almN{z-index:5;right:-3px;bottom:-3px;box-shadow:0 0 0 2px #000,0 2px 4px #000a}
+/* (4) consejos y avisos en una caja que no se mete bajo el minimapa ni ocupa media pantalla */
+#aviso{top:21% !important;width:auto !important;max-width:46% !important;font:800 13.5px/1.25 system-ui,'Segoe UI',Roboto,sans-serif !important;color:#ffe08a;background:linear-gradient(#0b1a2acc,#06101ccc);border:1px solid #2fd6ff66;border-radius:10px;padding:6px 12px;box-shadow:0 4px 14px #000a;text-shadow:0 1px 2px #000 !important}
+/* (5) elegir héroe: nombre centrado y el papel dentro del marco del retrato */
+#elige.e2 .eNom{bottom:22px !important;display:flex;flex-direction:column;align-items:center;gap:4px}
+#elige.e2 .eNom b{max-width:none !important;text-align:center}
+#elige.e2 .eNom em{display:inline-block;background:#000a}
+</style></body>""", donde='html')
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

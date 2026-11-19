@@ -475,3 +475,21 @@ Estilo común (añadir al final de cada prompt): `game sound effect, mobile MOBA
 | rafaga_viento | 0,5 s | fast air whoosh, something swinging past quickly |
 | ap_cadena | 0,8 s | heavy metal chain thrown and snapping tight with a hook |
 | ap_plasma | 1 s | plasma cannon shot from a turret, deep thump with an electric crackle |
+
+## 19/11 · Pack Autopista 51 ART — botones de ATAQUE BÁSICO nuevos, uno por héroe (adjuntar Pack51_basicos.zip)
+Henar: «el básico se ve difuminado dentro; que molen más». Los de ahora son recortes de 256 px de una hoja. 8 imágenes, UNA POR MENSAJE, en el mismo chat y en este orden.
+
+Primer mensaje (con el zip):
+ART · Pack Autopista 51 · BOTÓN DE ATAQUE BÁSICO de A-6, un juego móvil de peleas 2 contra 2 al estilo League of Legends: Wild Rift, ambientado en una autopista española de noche con lluvia; estética cyberpunk seria, metal oscuro y neón, colores vivos y saturados, ilustración pintada de alta calidad tipo icono de habilidad de Wild Rift. Te adjunto un zip: por cada héroe su retrato (`N_nombre_retrato.png`, para que el arma y los colores sean los suyos), el aro que va alrededor del botón (`N_nombre_aro.png`, el dibujo va DENTRO de su hueco) y el botón actual (`N_nombre_boton_actual.png`, que se ve borroso y soso).
+Quiero 8 imágenes, una por mensaje (te las iré pidiendo). Cada una: 1024x1024, un CÍRCULO que llena todo el lienzo (de borde a borde) con el arma del héroe en pleno golpe, grande, en diagonal, con movimiento: estela del golpe, chispas, energía o partículas de su color, fondo oscuro dentro del círculo con un halo de su color detrás del arma. Nítido, contornos limpios, mucho contraste, que se lea perfecto a 80 píxeles. Fuera del círculo, magenta liso #FF00FF. Sin aro ni marco (el aro ya lo tengo), sin texto, sin letras, sin personajes (solo el arma y el efecto), nada pegado al borde del círculo.
+Imagen 1: Dalinar, Caballero de Luz: su espadón de acero con gemas azules, la hoja envuelta en luz azul eléctrica, tajo descendente con un arco de luz azul y relámpagos.
+
+Mensajes siguientes (uno cada vez, «Igual que la anterior, ahora…»):
+2. Vael, el Mago de fuego: su mano o bastón lanzando una bola de fuego y lava que estalla, llamas naranjas y brasas.
+3. Grub, el Maestro: su espada de energía VERDE (hoja de luz) en un tajo horizontal, estela verde ácido y chispas.
+4. Ata, la francotiradora: su rifle de precisión disparando, fogonazo en la boca del cañón, bala trazadora ROJA dejando estela, casquillo saltando.
+5. Birdie, el golfista: palo de golf en pleno swing golpeando la bola, que sale disparada con estela verde césped y trozos de hierba.
+6. Fu: su cadena con hoz al final, lanzada en espiral con estela MORADA y eslabones brillando.
+7. Moha, el Halcón del Atlas: su gumía (daga curva marroquí con funda de plata) en un tajo rápido, remolino de arena DORADA y chispas.
+8. El Visor: su visera metálica con un rayo láser CIAN muy intenso saliendo en diagonal, chispas y onda de energía.
+Al llegar: recortar el círculo, quitar el magenta, `ui/ap_at_<clave>.webp` a 512 px (antes 256) y comprobar que encaja en el hueco de `ap_aro_at_<clave>`.

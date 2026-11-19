@@ -280,6 +280,12 @@ function giraPantalla() {
 }
 giraPantalla();
 /* coordenadas de un dedo en el juego (con la página girada, el eje X de la pantalla es el Y del juego) */
+let HUD_CIRC = [], HUD_T = 0;
+function bajoHud(x, y) {
+  const t = performance.now(); if (t - HUD_T > 1000) {HUD_T = t; HUD_CIRC = [];
+    for (const el of document.querySelectorAll('#mandos button, #bD, #bF, #bEnc, #bAlm, #bBase, #bTienda, #bZoom')) {if (!el.offsetParent) continue; const r = el.getBoundingClientRect(); if (!r.width) continue;
+      const c = GIRO ? {x: r.top + r.height / 2, y: VH - (r.left + r.width / 2)} : {x: r.left + r.width / 2, y: r.top + r.height / 2}; HUD_CIRC.push([c.x, c.y, r.width * 0.62 + 10]);}}
+  for (const [cx, cy, rr] of HUD_CIRC) if (Math.hypot(x - cx, y - cy) < rr) return true; return false;}
 const PX = (e) => GIRO ? e.clientY : e.clientX, PY = (e) => GIRO ? innerWidth - e.clientX : e.clientY;
 const topC = (el) => {const r = el.getBoundingClientRect(); return GIRO ? innerWidth - r.right : r.top;};
 
@@ -2060,10 +2066,14 @@ function dibuja(dt) {
     /* barras: solo se toca el DOM cuando algo cambia, y se mueven con transform (no recalcula la página entera en cada fotograma) */
     if (!b._u) {b._s = b.querySelector('s'); b._u = b.querySelector('u'); b._i = b.querySelector('i'); b._b = b.querySelector('b');}
     if (v.k === 'h') estadosBarra(b, v);
-    if (b._vis !== vis) {b._vis = vis; b.style.display = vis ? 'flex' : 'none';}
+    let tapada = false;
+    if (vis) {const bx = (_p.x + 1) / 2 * VW, by = (1 - _p.y) / 2 * VH - 4; tapada = bajoHud(bx, by);}
+    const visF = vis && !(tapada && v.k !== 'h');
+    if (b._vis !== visF) {b._vis = visF; b.style.display = visF ? 'flex' : 'none';}
+    const opB = tapada && v.k === 'h' ? '0.3' : ''; if (b._op !== opB) {b._op = opB; b.style.opacity = opB;}
     if (v.k === 't' || v.k === 'n') {const hk = String(v.hk); if (b._hk !== hk) {b._hk = hk; b.classList.toggle('prot', hk.includes('P')); b.classList.toggle('inh', hk.includes('I')); b.classList.toggle('placas', hk.includes('L'));}}
     if (vis) {
-      b.style.transform = 'translate3d(' + ((_p.x + 1) / 2 * VW).toFixed(1) + 'px,' + ((1 - _p.y) / 2 * VH).toFixed(1) + 'px,0) translate(-50%,-100%)';
+      if (!visF) {} else b.style.transform = 'translate3d(' + ((_p.x + 1) / 2 * VW).toFixed(1) + 'px,' + ((1 - _p.y) / 2 * VH).toFixed(1) + 'px,0) translate(-50%,-100%)';
       const w = Math.max(0, v.vida / v.max * 100).toFixed(1); if (b._w !== w) {b._w = w; b._u.style.width = w + '%'; b._s.style.width = w + '%';} /* la parte clara se queda atrás un momento: se ve cuánto ha quitado el golpe */
       /* ayuda para rematar (como en el LoL / Wild Rift): la barra del súbdito enemigo se pone blanca si tu golpe básico lo mata */
       if (v.k === 's' && v.eq !== MI_EQ) {const rm = v.vida <= miDano(); if (b._rm !== rm) {b._rm = rm; b.classList.toggle('remata', rm);}}
