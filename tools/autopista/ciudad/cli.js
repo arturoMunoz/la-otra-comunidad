@@ -147,7 +147,15 @@ function edificiosCiudad(al) {
   const I = infoCiudad(), lista = {}, pon = (n, x, z, ry, s, y = 0.32, sx = s, sy = s, sz = s) => {const k = I[n], c = Math.cos(ry), sn = Math.sin(ry), ox = k.cx * sx * c + k.cz * sz * sn, oz = -k.cx * sx * sn + k.cz * sz * c; (lista[n] = lista[n] || []).push({x: x - ox, z: z - oz, y: y - k.y0 * sy, ry, s, sx, sy, sz});};
   /* cuánto puede medir un edificio en (x, z): la cámara mira desde arriba a ~51°; junto a las autopistas y en el barrio, bajos */
   const tope = (x, z) => {const dc = distCarril(x, z); if (Math.abs(x) < 14 && Math.abs(z) < 37) return 5.4; return dc < 9 ? 5 : Math.min(26, 5 + (dc - 9) * 1.15);};
-  for (const r of RECTS) {
+  /* manzanas de fuera: una franja de 2,4 m mirando a la autopista con árboles y coches aparcados; los edificios, detrás */
+  const verde = {}, coches = [];
+  for (const r0 of RECTS) {
+    let r = r0;
+    if (Math.abs(r0[0] + r0[2]) / 2 > 20 && r0[2] - r0[0] > 8) {
+      const este = r0[0] > 0, xb = este ? r0[0] + 1.2 : r0[2] - 1.2; r = este ? [r0[0] + 2.4, r0[1], r0[2], r0[3]] : [r0[0], r0[1], r0[2] - 2.4, r0[3]];
+      for (let z = r0[1] + 2.5; z < r0[3] - 1.5; z += 4.6) {const n = al() < 0.55 ? 'eucalipto_' + (1 + Math.floor(al() * 2)) : 'pino_' + (1 + Math.floor(al() * 3)); (verde[n] = verde[n] || []).push({x: xb + (al() - 0.5) * 0.4, z: z + (al() - 0.5), y: 0.32, ry: al() * 6.28, s: 0.6 + al() * 0.2});
+        if (al() < 0.45) coches.push({x: xb + (este ? 0.15 : -0.15), z: z + 2.3, ry: Math.PI / 2 * (al() < 0.5 ? 1 : -1) + Math.PI / 2});}
+    }
     const w = r[2] - r[0] - 0.4, d = r[3] - r[1] - 0.4, largoX = w >= d, L = largoX ? w : d, corto = largoX ? d : w;
     /* manzanas grandes: se parten en filas a lo ancho */
     const filas = Math.max(1, Math.round(corto / 9)), cf = corto / filas;
@@ -181,6 +189,8 @@ function edificiosCiudad(al) {
     const sy = s * (0.7 + Math.min(1.5, lejos / 22) + al() * 0.5), trozo = (x < -20 ? 0 : x > 20 ? 1 : 2) * 2 + (z < 0 ? 0 : 1), k = n0 + '|' + trozo;
     (fondo[k] = fondo[k] || []).push({x: x + (al() - 0.5) * 2, z: z + (al() - 0.5) * 2, ry: Math.floor(al() * 4) * Math.PI / 2, s, sy});
   }
+  for (const n in verde) {const n0 = BOSQUE.length; instancias('ap_vegetacion', n, verde[n], true); for (const im of BOSQUE.slice(n0)) im.userData.ciudad = true;}
+  const CO = ['ap_coche_1', 'ap_coche_2', 'ap_coche_3']; coches.forEach((c, i) => {const n = CO[i % 3]; if (!M[n]) return; const o = M[n].scene.clone(true); o.position.set(c.x, 0.32, c.z); o.rotation.y = c.ry; o.scale.setScalar(0.62); o.traverse((q) => {if (q.isMesh) {q.castShadow = false; q.receiveShadow = true;}}); MAPA_G.add(o);});
   for (const n in lista) {const n0 = BOSQUE.length; instancias('ap_ciudad', n, lista[n], true); for (const im of BOSQUE.slice(n0)) {im.userData.ciudad = true; im.userData.fijo = true;}}
   /* el fondo no se recorta por distancia (se ve desde lejos) ni hace sombra */
   for (const k in fondo) {const n = k.split('|')[0], n0 = BOSQUE.length; instancias('ap_ciudad', n, fondo[k].map((c) => ({x: c.x, z: c.z, ry: c.ry, s: c.s, sx: c.s, sy: c.sy, sz: c.s})), false);
