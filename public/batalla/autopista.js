@@ -262,11 +262,11 @@ const NEUTRO = {
   crebain: {nombre: 'Buitre', vida: 300, dano: 16, alcance: 1.6, vatq: 1.1, vel: 5, oro: 22, xp: 28, modelo: 'ap_buitre', alto: 0.3},
   sapo: {nombre: 'Jabalí', vida: 1300, dano: 38, alcance: 2.2, vatq: 0.7, vel: 3.4, oro: 80, xp: 110, modelo: 'ap_jabali', alto: 1.4},
   huorn: {nombre: 'Coloso del desguace', vida: 1900, dano: 46, alcance: 2.8, vatq: 0.6, vel: 3.2, oro: 110, xp: 180, modelo: 'ap_coloso', alto: 3.5, buff: 'huorn', grande: true},
-  draco: {nombre: 'Lagarto de la central', vida: 4200, dano: 85, alcance: 3.2, vatq: 0.6, vel: 3.6, oro: 150, xp: 260, modelo: 'ap_lagarto', alto: 2.1, grande: true, draco: true},
+  draco: {nombre: 'Lagarto de la central', vida: 4200, dano: 85, alcance: 3.2, vatq: 0.6, vel: 3.6, oro: 150, xp: 260, modelo: 'ap_lagarto', alto: 2.6, grande: true, draco: true},
   nutria: {nombre: 'Rata de alcantarilla', vida: 900, dano: 0, alcance: 0, vatq: 1, vel: 3.2, oro: 70, xp: 90, modelo: 'ap_rata', alto: 0.6, pasiva: true},
   alfa: {nombre: 'Perro jefe', vida: 1800, dano: 50, alcance: 2.2, vatq: 0.8, vel: 5, oro: 110, xp: 180, modelo: 'ap_perro_jefe', alto: 2.0, buff: 'alfa', grande: true},
   /* el «Barón» del Vado: un uruk enorme y azulado en el centro; da la Furia del Uruk a todo el equipo */
-  uruk: {nombre: 'Nasor', vida: 6500, dano: 130, alcance: 3.2, vatq: 0.5, vel: 3.4, oro: 250, xp: 400, modelo: 'ap_nasor', alto: 4.5, buff: 'uruk', grande: true, jefe: true},
+  uruk: {nombre: 'Nasor', vida: 6500, dano: 130, alcance: 3.2, vatq: 0.5, vel: 3.4, oro: 250, xp: 400, modelo: 'ap_nasor', alto: 5.6, buff: 'uruk', grande: true, jefe: true},
 };
 for (const k in NEUTRO) {const n = NEUTRO[k]; if (n.jefe || n.draco) {n.oro = Math.round(n.oro * 1.3); continue;} if (n.pasiva) {n.oro = Math.round(n.oro * 1.4); n.xp = Math.round(n.xp * 1.3); continue;}
   n.vida = Math.round(n.vida * 0.7); n.dano = Math.round(n.dano * 0.65); n.oro = Math.round(n.oro * 1.4); n.xp = Math.round(n.xp * 1.3);}
@@ -1139,10 +1139,14 @@ function fusiona(raiz, quitaSombraPeq = true) {
 }
 /* fuegos: solo 4 luces de verdad que se colocan en los fuegos más cercanos a la cámara (en el móvil, muchas luces lo hunden) */
 function luzFuego(x, z) {FUEGOS.push({x, z});}
+const LUZ_FUEGO = new THREE.Color('#ff9a4a');
 function luces() {
   if (!LUCES.length) for (let i = 0; i < 4; i++) {const l = new THREE.PointLight('#ff9a4a', 12, 12, 1.6); l.position.set(0, -50, 0); scene.add(l); LUCES.push(l);}
-  const cerca = FUEGOS.map((f) => [Math.hypot(f.x - camM.x, f.z - camM.z), f]).sort((a, b) => a[0] - b[0]).slice(0, 4);
-  LUCES.forEach((l, i) => {const f = cerca[i]; if (f && f[0] < 30) l.position.set(f[1].x, 2, f[1].z); else l.position.set(0, -50, 0);});
+  const cand = FUEGOS.map((f) => [Math.hypot(f.x - camM.x, f.z - camM.z), f]);
+  /* JEFES QUE SE VEN (22/11): Nasor y el lagarto se quedan una de las luces (con preferencia) y les ilumina el foso de su color */
+  for (const [, o] of VIS) if (o.jefe && o.aro && o.aro.visible) {const p = o.raiz.position; cand.push([Math.hypot(p.x - camM.x, p.z - camM.z) - 14, {x: p.x, z: p.z, y: 3.4, c: o.jefe.c, i: 42, d: 18}]);}
+  const cerca = cand.sort((a, b) => a[0] - b[0]).slice(0, 4);
+  LUCES.forEach((l, i) => {const f = cerca[i]; if (f && f[0] < 30) {const q = f[1]; l.position.set(q.x, q.y || 2, q.z); l.color.copy(q.c || LUZ_FUEGO); l.intensity = q.i || 12; l.distance = q.d || 12;} else l.position.set(0, -50, 0);});
 }
 
 /* ---------- la partida (estado) ---------- */
@@ -1549,7 +1553,7 @@ function paso(dt) {
     if (c.vivos > 0 || S.t < c.resp) return;
     const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;
     if (nd.draco) {c.elem = S.dracoSig; ev(['jefe', 'lsale', c.x, c.z, 0, c.elem === 'f' ? 1 : 0]);}
-    for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, elem: c.elem, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.jefe ? 1.5 : nd.grande ? 1.1 : 0.6});
+    for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, elem: c.elem, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6});
     if (nd.jefe) ev(['jefe', 'sale', c.x, c.z]);
   });
   for (const u of S.u) {
@@ -2012,7 +2016,7 @@ function creaVis(v) {
     tiñe(o.raiz, col, v.hk === 'F' ? 1 : 0.12);
     o.aro = aro(col, (v.tipo === 'a' || v.tipo === 'x' ? 0.8 : 0.5) / IND_R.aro); o.aro.material.opacity = 0.95; scene.add(o.aro);
   }
-  else if (v.k === 'j') {o = montar(NEUTRO[v.tipo].modelo, NEUTRO[v.tipo].alto); if (NEUTRO[v.tipo].azul) tiñe(o.raiz, '#4a7dff', 0.9); if (NEUTRO[v.tipo].draco) o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.name === 'brillo') {q.material = q.material.clone(); q.material.emissive.set(v.hk === 'h' ? '#00ddff' : '#ff7000'); q.material.emissiveIntensity = 2.5;}}); /* Pack 13: huorn, draco y Uruk Azul con modelo propio */}
+  else if (v.k === 'j') {o = montar(NEUTRO[v.tipo].modelo, NEUTRO[v.tipo].alto); if (NEUTRO[v.tipo].azul) tiñe(o.raiz, '#4a7dff', 0.9); if (NEUTRO[v.tipo].draco) o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.name === 'brillo') {q.material = q.material.clone(); q.material.emissive.set(v.hk === 'h' ? '#00ddff' : '#ff7000'); q.material.emissiveIntensity = 2.5;}}); if (NEUTRO[v.tipo].jefe || NEUTRO[v.tipo].draco) jefeVivo(o, v); /* Pack 13: huorn, draco y Uruk Azul con modelo propio */}
   else if (v.k === 't') {
     const g = new THREE.Group(), lado = v.eq === MI_EQ ? 'azul' : 'roja', est = [1, 2, 3].map((n) => {const p = pieza('ap_estructuras', 'torre_' + lado + '_' + n); fusiona(p); p.visible = n === 1; g.add(p); return p;});
     g.rotation.y = v.eq ? 0 : Math.PI; g.scale.setScalar(1);
@@ -2025,6 +2029,24 @@ function creaVis(v) {
   o.raiz.position.set(v.x, 0, v.z); scene.add(o.raiz); o.ac = v.ac; o.hc = v.hc;
   if (o.clips) pon(o, 'quieto');
   VIS.set(v.id, o); return o;
+}
+/* JEFES QUE SE VEN (22/11): [cuerpo, partes de energía] */
+const JEFE_COL = {uruk: ['#b030ff', '#ff7bff', 2.2, 1], fuego: ['#ff4a00', '#ffd23a', 2.2, 1], hielo: ['#00c4ff', '#e8fdff', 1.35, 0.75]}; /* [cuerpo, energía, cuánto se aclara, cuánto brilla] */
+function jefeVivo(o, v) {
+  const [cc, cl, ka, kb] = NEUTRO[v.tipo].jefe ? JEFE_COL.uruk : v.hk === 'h' ? JEFE_COL.hielo : JEFE_COL.fuego, c = new THREE.Color(cc);
+  o.jefe = {cuerpo: [], luz: [], c, kb, t0: Math.random() * 6};
+  o.raiz.traverse((q) => {if (!q.isMesh || !q.material) return; for (const m of [].concat(q.material)) {if (!m.emissive) continue;
+    if (m.name === 'energia' || m.name === 'brillo') {m.color.set(cl); m.emissive.set(cl); m.emissiveIntensity = 4; o.jefe.luz.push(m);}
+    else {m.color.lerp(c, 0.85).multiplyScalar(ka); m.emissive.copy(c); m.emissiveIntensity = 0.55 * kb; o.jefe.cuerpo.push(m);}}});
+  const r = radioVis(v); /* el aro mide su cuerpo (lo mismo que usa la simulación para darle) */
+  o.aro = aro(cc, r / IND_R.aro); o.aro.material.opacity = 1; scene.add(o.aro); /* normal, no sumado: sobre el suelo claro de la central el sumado se perdía */
+  const ola = aro(cl, r / IND_R.aro); ola.material.blending = THREE.AdditiveBlending; ola.material.opacity = 0; ola.position.y = 0.01; o.aro.add(ola); o.jefe.ola = ola;
+}
+function animaJefes() {
+  const t = performance.now() / 1000;
+  for (const [, o] of VIS) {const j = o.jefe; if (!j) continue; const k = 0.5 + 0.5 * Math.sin((t + j.t0) * 3);
+    if (!o.flashOn && !o.doradoOn) {for (const m of j.cuerpo) m.emissiveIntensity = (0.42 + 0.3 * k) * j.kb; for (const m of j.luz) m.emissiveIntensity = 3 + 2.5 * k;}
+    const f = ((t + j.t0) % 1.8) / 1.8; j.ola.scale.setScalar(1 + 0.9 * f); j.ola.material.opacity = 0.85 * (1 - f) * (1 - f); o.aro.material.opacity = 0.75 + 0.25 * k;}
 }
 function materiales(o) {if (!o.mats) {o.mats = []; o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.emissive) o.mats.push({m: q.material, e: q.material.emissive.clone(), i: q.material.emissiveIntensity});});} return o.mats;}
 let tiemblaCam = 0;
@@ -2327,7 +2349,7 @@ function estadosBarra(b, v) {
   let d = b._estD; if (!d) {d = b._estD = document.createElement('div'); d.className = 'est'; b.appendChild(d);}
   d.innerHTML = l.map((n) => '<img src="ui/ap_est_' + n + '.webp" alt="">').join('');
 }
-function quitaVis(id) {const o = VIS.get(id); if (!o) return; scene.remove(o.raiz); o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.dispose) q.material.dispose(); if (q.isSkinnedMesh && q.skeleton) q.skeleton.dispose(); /* 18/11: la textura de huesos de cada súbdito no se borraba nunca (~1 textura nueva por segundo en la gráfica, toda la partida) */}); if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} VIS.delete(id); const b = BARRAS.get(id); if (b) {b.remove(); BARRAS.delete(id);}}
+function quitaVis(id) {const o = VIS.get(id); if (!o) return; scene.remove(o.raiz); o.raiz.traverse((q) => {if (q.isMesh && q.material && q.material.dispose) q.material.dispose(); if (q.isSkinnedMesh && q.skeleton) q.skeleton.dispose(); /* 18/11: la textura de huesos de cada súbdito no se borraba nunca (~1 textura nueva por segundo en la gráfica, toda la partida) */}); if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} if (o.jefe) {o.jefe.ola.geometry.dispose(); o.jefe.ola.material.dispose();} VIS.delete(id); const b = BARRAS.get(id); if (b) {b.remove(); BARRAS.delete(id);}}
 const BARRAS = new Map();
 let MD_F = -1, MD_V = 0;
 /* daño de tu golpe básico (lo mismo que suma stats(), sin las bendiciones: mejor quedarse corto que fallar el remate) */
@@ -2763,6 +2785,7 @@ function apuntaCam(R, F, hw, hh) {
 }
 function camara(dt) {
   try {animaRim();} catch (e) {}
+  try {animaJefes();} catch (e) {}
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
   const {F, R} = ejes(); let x = v.xi ?? v.x, z = v.zi ?? v.z;
   if (!CAM_FIN && S && v.x0 !== undefined) {x = v.x0 + (v.x - v.x0) * ALFA; z = v.z0 + (v.z - v.z0) * ALFA;}  /* donde se va a pintar ESTE fotograma */
@@ -2895,7 +2918,7 @@ const MIRA_H = {};
 const IND_BANDA = {"ap_ind_elfo_basico": 0.5, "ap_ind_elfo_e": 0.39, "ap_ind_elfo_q": 0.203, "ap_ind_enano_basico": 0.534, "ap_ind_gandalf_basico": 0.431, "ap_ind_gandalf_q": 0.659, "ap_ind_gandalf_r": 0.757, "ap_ind_gollum_basico": 0.469, "ap_ind_gollum_e": 0.673, "ap_ind_hobbit_basico": 0.526, "ap_ind_hobbit_q": 0.777, "ap_ind_orco_basico": 0.526, "ap_ind_orco_e": 0.459, "ap_ind_rohan_basico": 0.435, "ap_ind_rohan_q": 0.828, "ap_ind_rohan_r": 0.652};
 const COLOR_FL = {visor: '#5ff4ff', enano: '#9bdcff', gandalf: '#ff8a3a', orco: '#7dff5a', elfo: '#ff5a4a', hobbit: '#c4ff6a', gollum: '#c88bff', rohan: '#ffcf7a'};
 const FL = {};
-const radioVis = (q) => q.k === 's' && (q.tipo === 'a' || q.tipo === 'x') ? 0.8 : q.k === 'h' ? 0.75 : q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.5 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
+const radioVis = (q) => q.k === 's' && (q.tipo === 'a' || q.tipo === 'x') ? 0.8 : q.k === 'h' ? 0.75 : q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
 function primeroEnLinea(x, z, wx, wz, alc, H, arrastra) {
   const r = {iman: false, wx, wz, q: null, t: 0}, vivos = [...VISTA.values()].filter((q) => q.eq !== MI_EQ && q.vida > 0 && q.k !== 'n' && q.k !== 't' && !(q.k === 'h' && (q.muerto >= 0 || q.escondido)) && !((q.k === 's' || q.k === 'j') && q.muerto === 0));
   if (arrastra) {let mejor = null, ma = 0.2; for (const q of vivos) {if (q.k !== 'h') continue; const qx = (q.xi ?? q.x) - x, qz = (q.zi ?? q.z) - z, d = Math.hypot(qx, qz); if (d < 0.5 || d > alc + 0.5) continue; const t0 = qx * wx + qz * wz, per = Math.abs(qx * wz - qz * wx); if (t0 <= 0 || per > H.ancho + radioVis(q) + 0.9) continue; const a = Math.acos(Math.min(1, t0 / d)); if (a < ma) {ma = a; mejor = {qx, qz, d};}}
@@ -3159,7 +3182,7 @@ function acercaAtaque(px, pz) {
     if (q.eq === MI_EQ || q.vida <= 0) continue;
     if (modo === 't' ? !(q.k === 't' || q.k === 'n') : modo === 's' ? !(q.k === 's' || q.k === 'j') : false) continue;
     if (q.k === 'h' ? q.muerto >= 0 || q.escondido : q.k === 's' || q.k === 'j' ? q.muerto === 0 : false) continue;
-    const r = q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.5 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
+    const r = q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
     const d = Math.hypot(q.x - px, q.z - pz) - r; if (d <= alc) {enAlcance = true; break;}
     const peso = d + (!modo && (q.k === 't' || q.k === 'n') ? 3 : 0) - (!modo && q.k === 'h' ? 2 : 0); /* sin nadie a tiro, va antes a por el héroe */ if (d < alc + (modo ? 9 : 5) && peso < md) {md = peso; mejor = q;}
   }

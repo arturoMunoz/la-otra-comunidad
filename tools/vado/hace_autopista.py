@@ -1083,8 +1083,8 @@ js = sub(js, "['draco', 'huorn', 'crebain', 'nutria', 'sapo', 'uruk_azul'].inclu
 # las bestias (mismos números; alto = lo que miden los modelos, para que salgan a escala 1)
 for k, nom, mod, alto_ in [('warg', 'Perro asilvestrado', 'ap_perro', 1.2), ('orco', 'Perro asilvestrado', 'ap_perro', 1.2), ('troll', 'Toro negro', 'ap_toro', 2.86),
                            ('crebain', 'Buitre', 'ap_buitre', 0.3), ('sapo', 'Jabalí', 'ap_jabali', 1.4), ('huorn', 'Coloso del desguace', 'ap_coloso', 3.5),
-                           ('draco', 'Lagarto de la central', 'ap_lagarto', 2.1), ('nutria', 'Rata de alcantarilla', 'ap_rata', 0.6),
-                           ('alfa', 'Perro jefe', 'ap_perro_jefe', 2.0), ('uruk', 'Nasor', 'ap_nasor', 4.5)]:
+                           ('draco', 'Lagarto de la central', 'ap_lagarto', 2.6), ('nutria', 'Rata de alcantarilla', 'ap_rata', 0.6),
+                           ('alfa', 'Perro jefe', 'ap_perro_jefe', 2.0), ('uruk', 'Nasor', 'ap_nasor', 5.6)]:  # Nasor y lagarto ×1,25 (22/11, JEFES QUE SE VEN)
     i0 = js.index('const NEUTRO = {'); i1 = js.index('\n};', i0)
     trozo, c = re.subn(r"(\n  " + k + r": \{nombre: ')[^']*('[^\n]*?modelo: ')[^']*(', alto: )[0-9.]+", lambda m: m.group(1) + nom + m.group(2) + mod + m.group(3) + str(alto_), js[i0:i1], count=1)
     js = js[:i0] + trozo + js[i1:]
@@ -2383,6 +2383,46 @@ function dibuja(dt) {
   const ahora = performance.now(); camera.updateMatrixWorld(); FRU.setFromProjectionMatrix(_mFru.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));""")
 js = sub(js, "o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0;}",
   "o.mdt = (o.mdt || 0) + dt; const enP = v.id === YO || enPantalla(x, z, v.k === 'j' && NEUTRO[v.tipo] && NEUTRO[v.tipo].jefe ? 8 : 5); o.raiz.matrixWorldAutoUpdate = enP; if (enP && (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1)) {o.mixer.update(Math.min(o.mdt, 0.5)); o.mdt = 0;} else if (!enP) o.mdt = Math.min(o.mdt, 0.5);")
+# ---------- JEFES QUE SE VEN (22/11, Henar: «avisas del Nasor y los lagartos pero no salen en partida, ponles colores chillones y
+# brillantes»). Sí salían (comprobado con /tmp/t_jefes.py), pero eran casi negros sobre el suelo oscuro del colector y de la central y,
+# vistos desde arriba, del tamaño de un héroe: no se distinguían. Ahora: (1) cuerpo de color vivo que brilla y late (Nasor morado neón;
+# el lagarto naranja si es de fuego y cian si es de hielo) y sus partes de energía encendidas; (2) un 25 % más grandes (Nasor 5,6 m,
+# lagarto 2,6 m de alto y 6 de largo) con el golpe a su tamaño (radio 1,9 y 1,4: la regla de los ataques, el aro de debajo = su cuerpo);
+# (3) aro de su color bajo el cuerpo y una onda que sale cada 1,8 s; (4) una de las 4 luces de verdad le ilumina el foso de su color
+# (cambiar el color de una luz no recompila nada; añadir luces sí). Prueba: tools/pruebas/t_jefes.py y t_jefes_lado.py.
+js = sub(js, "rad: nd.jefe ? 1.5 : nd.grande ? 1.1 : 0.6}", "rad: nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6}")
+js = sub(js, "(NEUTRO[q.tipo].jefe ? 1.5 : NEUTRO[q.tipo].grande ? 1.1 : 0.6)", "(NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6)", n=2)
+js = sub(js, " /* Pack 13: huorn, draco y Uruk Azul con modelo propio */}", " if (NEUTRO[v.tipo].jefe || NEUTRO[v.tipo].draco) jefeVivo(o, v); /* Pack 13: huorn, draco y Uruk Azul con modelo propio */}")
+js = sub(js, "if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} VIS.delete(id);",
+  "if (o.aro) {scene.remove(o.aro); o.aro.geometry.dispose(); o.aro.material.dispose();} if (o.jefe) {o.jefe.ola.geometry.dispose(); o.jefe.ola.material.dispose();} VIS.delete(id);")
+js = sub(js, "function materiales(o) {", r"""/* JEFES QUE SE VEN (22/11): [cuerpo, partes de energía] */
+const JEFE_COL = {uruk: ['#b030ff', '#ff7bff', 2.2, 1], fuego: ['#ff4a00', '#ffd23a', 2.2, 1], hielo: ['#00c4ff', '#e8fdff', 1.35, 0.75]}; /* [cuerpo, energía, cuánto se aclara, cuánto brilla] */
+function jefeVivo(o, v) {
+  const [cc, cl, ka, kb] = NEUTRO[v.tipo].jefe ? JEFE_COL.uruk : v.hk === 'h' ? JEFE_COL.hielo : JEFE_COL.fuego, c = new THREE.Color(cc);
+  o.jefe = {cuerpo: [], luz: [], c, kb, t0: Math.random() * 6};
+  o.raiz.traverse((q) => {if (!q.isMesh || !q.material) return; for (const m of [].concat(q.material)) {if (!m.emissive) continue;
+    if (m.name === 'energia' || m.name === 'brillo') {m.color.set(cl); m.emissive.set(cl); m.emissiveIntensity = 4; o.jefe.luz.push(m);}
+    else {m.color.lerp(c, 0.85).multiplyScalar(ka); m.emissive.copy(c); m.emissiveIntensity = 0.55 * kb; o.jefe.cuerpo.push(m);}}});
+  const r = radioVis(v); /* el aro mide su cuerpo (lo mismo que usa la simulación para darle) */
+  o.aro = aro(cc, r / IND_R.aro); o.aro.material.opacity = 1; scene.add(o.aro); /* normal, no sumado: sobre el suelo claro de la central el sumado se perdía */
+  const ola = aro(cl, r / IND_R.aro); ola.material.blending = THREE.AdditiveBlending; ola.material.opacity = 0; ola.position.y = 0.01; o.aro.add(ola); o.jefe.ola = ola;
+}
+function animaJefes() {
+  const t = performance.now() / 1000;
+  for (const [, o] of VIS) {const j = o.jefe; if (!j) continue; const k = 0.5 + 0.5 * Math.sin((t + j.t0) * 3);
+    if (!o.flashOn && !o.doradoOn) {for (const m of j.cuerpo) m.emissiveIntensity = (0.42 + 0.3 * k) * j.kb; for (const m of j.luz) m.emissiveIntensity = 3 + 2.5 * k;}
+    const f = ((t + j.t0) % 1.8) / 1.8; j.ola.scale.setScalar(1 + 0.9 * f); j.ola.material.opacity = 0.85 * (1 - f) * (1 - f); o.aro.material.opacity = 0.75 + 0.25 * k;}
+}
+function materiales(o) {""")
+js = sub(js, "  try {animaRim();} catch (e) {}", "  try {animaRim();} catch (e) {}\n  try {animaJefes();} catch (e) {}")
+js = sub(js, """  const cerca = FUEGOS.map((f) => [Math.hypot(f.x - camM.x, f.z - camM.z), f]).sort((a, b) => a[0] - b[0]).slice(0, 4);
+  LUCES.forEach((l, i) => {const f = cerca[i]; if (f && f[0] < 30) l.position.set(f[1].x, 2, f[1].z); else l.position.set(0, -50, 0);});""",
+"""  const cand = FUEGOS.map((f) => [Math.hypot(f.x - camM.x, f.z - camM.z), f]);
+  /* JEFES QUE SE VEN (22/11): Nasor y el lagarto se quedan una de las luces (con preferencia) y les ilumina el foso de su color */
+  for (const [, o] of VIS) if (o.jefe && o.aro && o.aro.visible) {const p = o.raiz.position; cand.push([Math.hypot(p.x - camM.x, p.z - camM.z) - 14, {x: p.x, z: p.z, y: 3.4, c: o.jefe.c, i: 42, d: 18}]);}
+  const cerca = cand.sort((a, b) => a[0] - b[0]).slice(0, 4);
+  LUCES.forEach((l, i) => {const f = cerca[i]; if (f && f[0] < 30) {const q = f[1]; l.position.set(q.x, q.y || 2, q.z); l.color.copy(q.c || LUZ_FUEGO); l.intensity = q.i || 12; l.distance = q.d || 12;} else l.position.set(0, -50, 0);});""")
+js = sub(js, "function luces() {", "const LUZ_FUEGO = new THREE.Color('#ff9a4a');\nfunction luces() {")
 js = sub(js, "get ESTADO() {return ESTADO;}};", "get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};")
 
 if fallos:
