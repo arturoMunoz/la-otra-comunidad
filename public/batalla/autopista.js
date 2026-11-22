@@ -557,6 +557,7 @@ let AMB0 = null;
    brillante donde está el sol y dos de relleno, y three.js la convierte en mapa de reflejos (PMREM). Es luz, no un dibujo. */
 const ENT = {rt: null, k: ''};
 function entornoAP(ciudad) {
+  if (GRAF.cal !== 'alta') return; /* 22/11: los reflejos (PMREM) tumbaban el visor en algún Android: solo en Alta */
   const k = ciudad ? 'ciudad' : 'dia'; if (ENT.k === k) return; ENT.k = k;
   const C = ciudad ? {arriba: '#6f86c4', horiz: '#ffb98a', suelo: '#3b2f3a', sol: '#ffd1a0', relleno: '#8fb0ff'} : {arriba: '#7fb2ec', horiz: '#e9f1f6', suelo: '#5d6157', sol: '#fff1d8', relleno: '#cfe2ff'};
   const sc = new THREE.Scene(), g = new THREE.SphereGeometry(40, 32, 16), col = [], a = new THREE.Color(C.arriba), h = new THREE.Color(C.horiz), s = new THREE.Color(C.suelo), t = new THREE.Color();

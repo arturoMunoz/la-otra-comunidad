@@ -2481,6 +2481,8 @@ js = sub(js, "function ia(h, dt, st) {", r"""function esquivaBot(h) {
     h.esq = {t: S.t + 0.38, x: dz * sg, z: -dx * sg}; h.mx = h.esq.x; h.mz = h.esq.z; return;}
 }
 function ia(h, dt, st) {""")
+# ERRORES A LA VISTA (22/11): si algo falla al arrancar, se ve en la pantalla (para hacer captura)
+html = sub(html, '<head>', """<head><script>(function(){var n=0;function p(t){if(n++>4)return;var d=document.getElementById('errVis');if(!d){d=document.createElement('div');d.id='errVis';d.style.cssText='position:fixed;left:6px;right:6px;bottom:6px;z-index:99999;background:#300;color:#fbb;font:12px monospace;padding:6px;border:1px solid #f55;white-space:pre-wrap;max-height:40%;overflow:auto';(document.body||document.documentElement).appendChild(d);}d.textContent+=t+'\\n';}addEventListener('error',function(e){p('⚠ '+(e.message||e)+' '+(e.filename||'').split('/').pop()+':'+(e.lineno||''));});addEventListener('unhandledrejection',function(e){p('⚠ '+(e.reason&&(e.reason.stack||e.reason.message)||e.reason));});})();</script>""", donde='html')
 js = sub(js, "get ESTADO() {return ESTADO;}};", "get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};")
 
 if fallos:
