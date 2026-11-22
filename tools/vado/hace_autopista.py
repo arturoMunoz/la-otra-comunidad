@@ -2448,6 +2448,30 @@ js = sub(js, "import {mergeGeometries} from 'three/addons/utils/BufferGeometryUt
 js = sub(js, "SOL_C.forzar = false; renderer.render(scene, camera);}", "SOL_C.forzar = false; const P = postAP(); if (P) P.comp.render(); else renderer.render(scene, camera);}")
 js = sub(js, "    renderer.compile(scene, camera);\n    /* y la variante transparente", "    {const P = postAP(); if (P) {const prev = renderer.getRenderTarget(); renderer.setRenderTarget(P.comp.renderTarget1); renderer.compile(scene, camera); renderer.setRenderTarget(prev);} else renderer.compile(scene, camera);} /* con el brillo (Alta) se pinta en una imagen intermedia: otra variante de cada sombreador */\n    /* y la variante transparente")
 js = sub(js, "function ambienteMapa(ciudad) {ambienteMapa0(ciudad);", (RAIZ / 'tools/autopista/alma/post.js').read_text() + "function ambienteMapa(ciudad) {ambienteMapa0(ciudad);")
+# ---------- PROGRESO (22/11, Henar: «dale otra vuelta a todo»). Código en tools/autopista/progreso (prog.js y prog.css).
+# Nivel de cuenta, maestría por héroe, logros de partida, historial y pantalla final nueva (MVP, daño a héroes, valor, barras que se llenan).
+# La simulación cuenta el daño a héroes (`dH`, 5.º número de `kda`); lo demás va en este móvil (localStorage 'auto.perfil').
+js = sub(js, "  d.vida -= n; ev(['num', d.x, d.z, Math.round(n),", "  if (o && o.k === 'h' && d.k === 'h' && o.eq !== d.eq) o.dH = (o.dH || 0) + Math.max(0, Math.min(n, d.vida)); /* PROGRESO: daño a héroes */\n  d.vida -= n; ev(['num', d.x, d.z, Math.round(n),")
+js = sub(js, "[q.kills, q.muertes, q.asist, q.cs].join('/')", "[q.kills, q.muertes, q.asist, q.cs, Math.round(q.dH || 0)].join('/')")
+js = sub(js, "function efectoLocal(e) {\n  const t = e[0]; try {almaEfecto(e);}", (RAIZ / 'tools/autopista/progreso/prog.js').read_text() + "function efectoLocal(e) {\n  const t = e[0]; try {progEfecto(e);} catch (er) {} try {almaEfecto(e);}")
+js = sub(js, "  $('bOtra').onclick = () => location.reload();", "  try {finNuevo(f, ganador);} catch (er) {console.warn('fin', er);}\n  $('bOtra').onclick = () => location.reload();")
+js = sub(js, "function pintaMenu() {", "function pintaMenu() {try {pintaPerfilChip();} catch (e) {}")
+js = sub(js, "'\" data-h=\"' + k + '\"><img src=\"ui/ap_splash_' + k + '.webp\" alt=\"\"></button>').join('')", "'\" data-h=\"' + k + '\"><img src=\"ui/ap_splash_' + k + '.webp\" alt=\"\">' + maeBadge(k) + '</button>').join('')")
+js = sub(js, "  try {animaAlma(dt);} catch (e) {}\n", "  try {animaAlma(dt);} catch (e) {}\n  try {progTick();} catch (e) {}\n")
+html = sub(html, '</head>', '<style>\n' + (RAIZ / 'tools/autopista/progreso/prog.css').read_text() + '</style>\n</head>', donde='html')
+# ---------- BOTS QUE ESQUIVAN (22/11): la máquina ve venir tus habilidades en línea y, a veces (55 %), se aparta de lado. Reacción humana:
+# solo si el disparo ya ha recorrido 1,5 m (lo que sale a bocajarro no da tiempo) y le va a llegar en menos de 0,6 s. Dentro de la simulación.
+js = sub(js, "    if (h.bot) ia(h, dt, st);\n", "    if (h.bot) {ia(h, dt, st); esquivaBot(h);}\n")
+js = sub(js, "function ia(h, dt, st) {", r"""function esquivaBot(h) {
+  if (h.esq && h.esq.t > S.t) {h.mx = h.esq.x; h.mz = h.esq.z; return;} h.esq = null; if (!S.tirosH || h.muerto) return;
+  for (const p of S.tirosH) {if (p.eq === h.eq || p.rec < 1.5) continue; const l = Math.hypot(p.dx, p.dz) || 1, dx = p.dx / l, dz = p.dz / l;
+    const al = (h.x - p.x) * dx + (h.z - p.z) * dz, lat = (h.x - p.x) * dz - (h.z - p.z) * dx, r = p.H.ancho + radio(h) + 0.3;
+    if (al < 0 || al > Math.min(p.alc - p.rec + 2, 26 * 0.6) || Math.abs(lat) > r) continue;
+    const vistos = h.vistos || (h.vistos = new Set()); if (vistos.has(p.pid)) continue; vistos.add(p.pid); if (vistos.size > 40) vistos.clear();
+    if (Math.random() > 0.55) continue; const sg = Math.abs(lat) > 0.15 ? Math.sign(lat) : (Math.random() < 0.5 ? -1 : 1);
+    h.esq = {t: S.t + 0.38, x: dz * sg, z: -dx * sg}; h.mx = h.esq.x; h.mz = h.esq.z; return;}
+}
+function ia(h, dt, st) {""")
 js = sub(js, "get ESTADO() {return ESTADO;}};", "get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};")
 
 if fallos:
