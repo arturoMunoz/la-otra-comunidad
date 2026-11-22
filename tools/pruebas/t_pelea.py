@@ -9,7 +9,7 @@ async def main():
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
         await pg.add_init_script("localStorage.setItem('vado.nombre','Henar');localStorage.setItem('loc.auth',JSON.stringify({at:'x',rt:'x',exp:9e15}));localStorage.setItem('auto.heroe','%s');localStorage.setItem('auto.cal','media');localStorage.setItem('auto.modo','%s')" % (H, MODO))
         await pg.goto('http://localhost:8799/batalla/autopista.html'); await pg.wait_for_timeout(2500)
-        await pg.click('#bBots'); await pg.wait_for_timeout(800); await pg.click('#eOk')
+        await pg.click('#bBots'); await pg.wait_for_timeout(800); await pg.evaluate("setTimeout(()=>document.getElementById('eOk').click(),10)")
         for i in range(90):
             await pg.wait_for_timeout(1000)
             if await pg.evaluate("window._vado && window._vado.ESTADO") == 'juego': break

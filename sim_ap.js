@@ -627,12 +627,12 @@ function paso(dt) {
     if (h.tipo === 'enano' && S.t - (h.golpeT ?? -99) > 10 && !(h.granito > 0)) {h.granito = st.vida * 0.1; ev(['num', h.x, h.z, '🛡 granito', 'y']);}
     if (h.tipo === 'hobbit') {h.quieto = h.mueve ? 0 : (h.quieto || 0) + dt; if (h.quieto > 1.5) {if (!(h.buf.escond > 0)) ev(['num', h.x, h.z, '…', 'y']); h.buf.escond = 0.2; h.buf.invis = 0.2;}}
     h.hierba = enHierba(h);
-    const enFuente = dist(h, BASES[h.eq].fuente) < 8;
+    const enFuente = dist(h, BASES[h.eq].fuente) < 8; if (h.ultCompra && !h.muerto && !enFuente) h.ultCompra = null;
     h.vida = Math.min(st.vida, h.vida + (st.regen + (enFuente ? st.vida * 0.12 : 0)) * dt);
     h.mana = Math.min(st.mana, h.mana + (st.rmana + (enFuente ? st.mana * 0.12 : 0)) * dt); /* maná: se recupera solo y deprisa en la fuente */
     if (h.bot) ia(h, dt, st);
     if (h.dash) {
-      const d = h.dash; d.t -= dt; h.x += d.vx * dt; h.z += d.vz * dt; limita(h);
+      const d = h.dash, pt = Math.min(dt, Math.max(0, d.t)); d.t -= dt; h.x += d.vx * pt; h.z += d.vz * pt; limita(h);
       if (d.n) for (const e of enemigosDe(h.eq)) if (!d.toc.has(e.id) && e.k !== 'n' && (e.k !== 't') && dist(h, e) < 1.6 + radio(e)) {d.toc.add(e.id); dana(h, e, d.n, 'hab'); if (d.aturde && e.k !== 't') {e.aturd = S.t + d.aturde;}}
       if (d.t <= 0) {if (d.cae) {for (const e of enemigosDe(h.eq)) if (e.k !== 't' && e.k !== 'n' && dist(e, h) < d.cae.r + radio(e)) {dana(h, e, d.cae.n, 'hab'); e.buf ? (e.buf.lento = d.cae.dur, e.buf.lentoV = d.cae.l) : (e.lento = S.t + d.cae.dur);} ev(['fx', 'onda', h.x, h.z, d.cae.r * 1.6]);} h.dash = null;}
     } else if (h.buf.estasis > 0) {h.mueve = false;
@@ -738,7 +738,7 @@ function paso(dt) {
   for (const t of S.u) {
     if (t.k === 't' && t.vida <= 0 && t.respInh && S.t >= t.respInh && S.modo !== '1v1') {t.vida = t.max; t.inhib = true; t.respInh = 0; ev(['aviso', 0, 'La torre de la base de ' + (t.eq ? 'los rojos' : 'los azules') + ' se ha alzado de nuevo (sin disparar)']);}
     if (t.k !== 't' || t.vida <= 0 || t.inhib) continue; t.cd = Math.max(0, t.cd - dt);
-    const en = (EN_T[t.eq] || (EN_T[t.eq] = enemigosDe(t.eq))).filter((e) => e.eq !== 2 && e.k !== 't' && e.k !== 'n' && e.vida > 0 && !e.muerto && dist(t, e) < 9.5);
+    const en = (EN_T[t.eq] || (EN_T[t.eq] = enemigosDe(t.eq))).filter((e) => e.eq !== 2 && e.k !== 't' && e.k !== 'n' && e.vida > 0 && !e.muerto && dist(t, e) - radio(e) < 8.75);
     /* como en el Wild Rift: la torre sigue con su objetivo hasta que muere o sale; si un héroe enemigo pega a un héroe aliado dentro del alcance, va a por él */
     let obj = en.find((e) => {if (e.k !== 'h' || !(e.atacaT > S.t)) return false; const v = S.porId.get(e.atacaA); return v && v.k === 'h' && v.eq === t.eq && dist(v, t) < 10.5;});
     if (!obj && t.obj) obj = en.find((e) => e.id === t.obj);
@@ -771,11 +771,17 @@ function avanzaTiroH(p, dt) {/* true = se acaba */
   for (const e of enemigosDe(p.eq)) {
     if (e.k === 'n' || (e.k === 't' && !atacable(e)) || e.vida <= 0 || e.muerto || p.toc.includes(e.id)) continue;
     const t = Math.max(0, Math.min(d, (e.x - p.x) * p.dx + (e.z - p.z) * p.dz));
-    if (Math.hypot(p.x + p.dx * t - e.x, p.z + p.dz * t - e.z) < H.ancho + radio(e)) {p.toc.push(e.id); golpeLinea(h, e, H, p.n, p.T); if (!H.perfora) return true;}
+    if (Math.hypot(p.x + p.dx * t - e.x, p.z + p.dz * t - e.z) < H.ancho + radio(e)) {p.toc.push(e.id); golpeLinea(h, e, H, p.n, p.T); if (!H.perfora) {const pr = (e.x - p.x) * p.dx + (e.z - p.z) * p.dz, pe = Math.abs((e.x - p.x) * p.dz - (e.z - p.z) * p.dx), rr = H.ancho + radio(e), tc = Math.max(0, Math.min(d, pr - Math.sqrt(Math.max(0, rr * rr - pe * pe)))); ev(['tfin', p.pid, +(p.x + p.dx * tc).toFixed(2), +(p.z + p.dz * tc).toFixed(2), p.o]); return true;}}
   }
   p.x += p.dx * d; p.z += p.dz * d; p.rec += d; return p.rec >= p.alc - 1e-3;
 }
 function mueveTirosH(dt) {if (S.tirosH) for (let i = S.tirosH.length - 1; i >= 0; i--) if (avanzaTiroH(S.tirosH[i], dt)) S.tirosH.splice(i, 1);}
+function enCono(ex, ez, dx, dz, R, A, r) {
+  const d0 = Math.hypot(ex, ez); if (d0 > R + r) return false; if (d0 < r) return true;
+  if ((ex * dx + ez * dz) / d0 >= Math.cos(A)) return true;
+  for (const s of [1, -1]) {const ux = dx * Math.cos(A) - s * dz * Math.sin(A), uz = s * dx * Math.sin(A) + dz * Math.cos(A), t = ex * ux + ez * uz; if (t >= 0 && t <= R && Math.abs(ex * uz - ez * ux) < r) return true;}
+  return false;
+}
 function usaHab(h, k, dx, dz, px, pz) {
   if (!h || h.muerto || h.aturd > S.t || h.cd[k] > 0 || !(h.rk[k] > 0)) return false;
   const H = HEROES[h.tipo].hab[k], cm = costeMn(h.tipo, k, h.rk[k]); if (h.mana < cm) return false; /* sin maná no se lanza */
@@ -791,17 +797,16 @@ function usaHab(h, k, dx, dz, px, pz) {
   if (H.tipo === 'invis') h.buf.invis = H.dur;
   if (H.tipo === 'suerte') {h.buf.suerte = H.dur; h.vida = Math.min(st.vida, h.vida + st.vida * H.cura); ev(['fx', 'onda', h.x, h.z, 3]);}
   if (H.tipo === 'area') {for (const e of en()) if (dist(e, h) < H.radio + radio(e)) {dana(h, e, n, T); if (H.curaH && e.k === 'h') {const mx = st.vida, c = (mx - h.vida) * H.curaH + 15; h.vida = Math.min(mx, h.vida + c); ev(['num', h.x, h.z, '+' + Math.round(c), 'v']);} if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) {if (e.buf) {e.buf.lento = H.durL; e.buf.lentoV = H.lento;} else e.lento = S.t + H.durL;}} ev(['fx', 'onda', h.x, h.z, H.radio * 1.8]); ev(['fx', 'explosion', h.x, h.z, H.radio * 0.6]);}
-  if (H.tipo === 'cono') {for (const e of en()) {const ex = e.x - h.x, ez = e.z - h.z, d0 = Math.hypot(ex, ez); if (d0 < H.alc + radio(e) && (ex * dx + ez * dz) / (d0 || 1) > Math.cos(H.ang / 2)) {dana(h, e, n, T); if (H.lento) frena(e, H.lento, H.durL);}} ev(['fx', 'tajo', h.x + dx * 1.8, h.z + dz * 1.8, H.alc]);}
+  if (H.tipo === 'cono') {for (const e of en()) {const ex = e.x - h.x, ez = e.z - h.z, d0 = Math.hypot(ex, ez); if (enCono(ex, ez, dx, dz, H.alc, H.ang / 2, radio(e))) {dana(h, e, n, T); if (H.lento) frena(e, H.lento, H.durL);}} ev(['fx', 'tajo', h.x + dx * 1.8, h.z + dz * 1.8, H.alc]);}
   if (H.tipo === 'linea') {
-{const p = {o: h.id, eq: h.eq, x: h.x - dx * 0.5, z: h.z - dz * 0.5, dx, dz, rec: -0.5, alc: H.alc, n, T, H, toc: []}; if (!(h.lat > 0 && avanzaTiroH(p, h.lat))) (S.tirosH = S.tirosH || []).push(p);} if (0) {const e = null; (() => {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}})}
-    ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26, H.ancho || 0.5]);
+{const p = {o: h.id, eq: h.eq, x: h.x - dx * 0.5, z: h.z - dz * 0.5, dx, dz, rec: -0.5, alc: H.alc, n, T, H, toc: [], pid: (S.pidT = (S.pidT || 0) + 1)}; ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26, H.ancho || 0.5, p.pid, h.id]); if (!(h.lat > 0 && avanzaTiroH(p, h.lat))) (S.tirosH = S.tirosH || []).push(p);} if (0) {const e = null; (() => {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}})}
   }
   if (H.tipo === 'ejecuta') {/* la Guillotina de Darius: daño más el que le falta; si derriba, se recarga */
     const t = masCercano(h, en().filter((e) => e.k === 'h'), H.alc + 0.6); if (!t) {h.cd[k] = 0; h.hc--; h.mana += cm; return false;}
     h.rot = Math.atan2(t.x - h.x, t.z - h.z); {const l0 = dist(h, t); if (l0 > 2.2) {h.x = t.x - (t.x - h.x) / l0 * 1.8; h.z = t.z - (t.z - h.z) / l0 * 1.8; limita(h); ev(['fx', 'polvo', h.x, h.z, 2]);}} /* salta hacia él como Darius */ const mx = stats(t).vida; luego(0.35, () => {if (t.vida <= 0 || h.muerto) return; dana(h, t, n + (mx - t.vida) * H.falta, T); if (t.vida <= 0 || t.muerto) {h.cd[k] = 0; ev(['num', h.x, h.z, '¡Otra vez!', 'v']);} ev(['fx', 'explosion', t.x, t.z, 1.6]);});
   }
   ev(['hb', h.id, k, +dx.toFixed(2), +dz.toFixed(2), +(px || 0).toFixed(1), +(pz || 0).toFixed(1)]);
-  if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - h.x, pz - h.z)), x = h.x + dx * d0, z = h.z + dz * d0; S.zonas.push({x, z, r: H.radio, t: H.dur, tick: 0, dps: H.dps * escala, mag: H.mag, l: H.lento, eq: h.eq, o: h}); ev(['zona', x, z, H.radio, H.dur]);}
+  if (H.tipo === 'zona') {const d0 = Math.min(H.alc, Math.hypot(px - h.x, pz - h.z)), x = h.x + dx * d0, z = h.z + dz * d0; S.zonas.push({x, z, r: H.radio, t: H.dur, tick: 0, dps: H.dps * escala, mag: H.mag, l: H.lento, eq: h.eq, o: h}); ev(['zona', x, z, H.radio, H.dur, h.id]);}
   return true;
 }
 
@@ -954,11 +959,24 @@ function puedeComprar(h) {return h.muerto || dist(h, BASES[h.eq].fuente) < 9;}
 /* precio de verdad como en el Wild Rift: un legendario se compra de golpe pagando también los básicos que te falten */
 function precio(inv, id) {const o = OBJ[id]; return o.c + falta({inv}, id).reduce((a, f) => a + OBJ[f].c, 0);}
 function falta(h, id) {const o = OBJ[id]; if (!o.rec) return []; const q = [...h.inv], f = []; for (const r of o.rec) {const k = q.indexOf(r); if (k >= 0) q.splice(k, 1); else f.push(r);} return f;}
+/* 22/11 (TALLER NUEVO): vender al 70 % de lo que vale entero (como en el LoL) y deshacer la última compra o venta mientras sigas en la fuente */
+function valorObj(id) {const o = OBJ[id]; return o ? o.c + (o.rec || []).reduce((a, r) => a + valorObj(r), 0) : 0;}
+function fotoCompra(h) {h.ultCompra = {inv: [...h.inv], oro: h.oro, enc: h.enc};}
+function vende(h, id) {
+  if (!puedeComprar(h)) return 'Solo se vende en tu fuente';
+  const i = h.inv.lastIndexOf(id); if (i < 0) return 'No lo llevas';
+  fotoCompra(h); h.inv.splice(i, 1); const p = Math.floor(valorObj(id) * 0.7); h.oro += p; const st = stats(h); h.vida = Math.min(h.vida, st.vida); h.mana = Math.min(h.mana, st.mana);
+  ev(['num', h.x, h.z, '+' + p, 'o', h.id]); return '';
+}
+function deshaz(h) {
+  const u = h.ultCompra; if (!u || !puedeComprar(h)) return 'No hay nada que deshacer';
+  h.inv = u.inv; h.oro = u.oro; h.enc = u.enc; h.ultCompra = null; const st = stats(h); h.vida = Math.min(h.vida, st.vida); h.mana = Math.min(h.mana, st.mana); return '';
+}
 function compra(h, id) {
   if (ENC[id]) {
     const e = ENC[id]; if (!puedeComprar(h)) return 'Solo se compra en tu fuente (o mientras esperas a volver)';
     if (!tieneBotas(h.inv)) return 'Antes necesitas unas botas'; if (h.enc === id) return 'Ya lo tienes';
-    if (h.oro < e.c) return 'Te falta oro'; h.oro -= e.c; h.enc = id; h.cd.enc = Math.max(h.cd.enc || 0, 10); return '';
+    if (h.oro < e.c) return 'Te falta oro'; fotoCompra(h); h.oro -= e.c; h.enc = id; h.cd.enc = Math.max(h.cd.enc || 0, 10); return '';
   }
   const o = OBJ[id]; if (!o) return 'No existe';
   if (!puedeComprar(h)) return 'Solo se compra en tu fuente (o mientras esperas a volver)';
@@ -967,7 +985,7 @@ function compra(h, id) {
   /* se gastan los básicos que tengas de la receta; los que faltan van incluidos en el precio */
   const tengo = [...h.inv], gasto = []; if (o.rec) for (const r of o.rec) {const k = tengo.indexOf(r); if (k >= 0) {tengo.splice(k, 1); gasto.push(r);}}
   if (h.inv.length - gasto.length >= 6) return 'No caben más objetos';
-  const v0 = stats(h).vida; h.oro -= pr; for (const u of gasto) h.inv.splice(h.inv.indexOf(u), 1); h.inv.push(id);
+  fotoCompra(h); const v0 = stats(h).vida; h.oro -= pr; for (const u of gasto) h.inv.splice(h.inv.indexOf(u), 1); h.inv.push(id);
   h.vida += Math.max(0, stats(h).vida - v0); return '';
 }
 
@@ -978,6 +996,8 @@ function aplicaMando(h, o) {
     if (o.t === 'in') {if (o.tc !== undefined) h.tcIn = o.tc; h.lat = Math.min(0.5, (o.rt || 0) / 1000 + (+o.ip || INTERP_MS) / 1000 + 1 / 30); /* 17/11: antes en el servidor se usaba media ida y vuelta y los golpes del invitado se quedaban cortos */ /* rt = ida y vuelta del invitado al servidor ≈ invitado→servidor→anfitrión */ if (!h.muerto && !h.dash && !(h.aturd > S.t)) {h.x = o.x; h.z = o.z; h.rot = o.rot; h.mueve = o.m;} h.ataca = o.a; h.prioHeroe = true; h.modoAt = o.mo || ''; h.fijo = o.fi || 0; if ((o.g || 0) > (h.gVisto || 0)) {h.gVisto = o.g; h.tap = S.t + 1.5;}}
     if (o.t === 'hab') {h.x = o.x; h.z = o.z; rebobinado(h, () => usaHab(h, o.k, o.dx, o.dz, o.px, o.pz));}
     if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
+    if (o.t === 'vende') {const r = vende(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}
+    if (o.t === 'deshaz') {const r = deshaz(h); if (r) S.ev.push(['aviso', h.id, r]);}
     if (o.t === 'sube') subeHab(h, o.k);
     if (o.t === 'rinde') rinde(h, !!o.si);
     if (o.t === 'enc') usaEnc(h);

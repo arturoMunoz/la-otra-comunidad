@@ -560,3 +560,24 @@ Por héroe:
 - ap_moha.glb (guerrero del desierto con chilaba y gumía): carrera ligera, gumía baja en la mano derecha; que la chilaba no atraviese las piernas.
 - ap_visor.glb (chaqueta de cuero y visera, sin arma): carrera normal con los dos brazos balanceándose; espera con los brazos sueltos.
 Devuélveme un zip con los 7 .glb (mismos nombres) y un LEEME.txt con, por héroe, de qué animaciones sale cada clip y la velocidad de referencia de correr y andar a timeScale = 1 (como hiciste con Fu).
+
+## 22/11 · Pack Autopista 58 ART — Taller: icono de Magia, Vender, Deshacer, marcos de tarjeta y botón de vender (adjuntar Pack58_referencia.zip; 2 imágenes, una por mensaje)
+
+Imagen 1:
+```
+ART · Pack Autopista 58 · imagen 1 de 2 · Iconos del TALLER (la tienda) de A-6, un juego móvil tipo Wild Rift ambientado en una autopista española (HUD cyberpunk serio: metal oscuro, neón y colores vivos). Te adjunto en el zip los iconos de las pestañas que ya tengo (ap_tab_*.png: medallón redondo con fondo de color radial y un objeto en 3D) y una captura del taller: los nuevos tienen que ser del MISMO estilo, tamaño y encuadre. 3 iconos redondos de 512x512, sin texto, sobre fondo magenta liso #FF00FF, separados, en una imagen de 1536x512:
+ 1) MAGIA (pestaña de los objetos de poder mágico): medallón AZUL-VIOLETA eléctrico con una esfera de plasma brillante llena de rayos (tipo bola de plasma de feria), chispas alrededor.
+ 2) VENDER: medallón NARANJA-ROJO con una moneda de oro y una flecha curva que sale de ella (devolver dinero).
+ 3) DESHACER: medallón GRIS-AZULADO acero con una flecha gruesa curvada hacia atrás (↶), filo de neón cian.
+```
+
+Imagen 2:
+```
+ART · Pack Autopista 58 · imagen 2 de 2 · Marcos de TARJETA de objeto y botón VENDER para el taller de A-6 (mismo juego y estilo que la imagen 1; en el zip va el botón «Comprar» amarillo que ya tengo, ap_m_jugar.png). Todo sin texto, sobre fondo magenta liso #FF00FF, en una imagen de 1536x1024:
+ Arriba, 3 marcos rectangulares verticales de 320x380 con las esquinas cortadas en chaflán, borde de unos 18 px y el CENTRO VACÍO relleno de magenta (ahí va el icono del objeto, su nombre y su precio):
+  a) COMÚN: acero oscuro con remaches pequeños y un filo fino gris-azulado.
+  b) LEGENDARIO: acero oscuro con el filo DORADO brillante y pequeños destellos en las esquinas.
+  c) ELEGIDO: el mismo marco con un filo de neón CIAN intenso que brilla hacia fuera.
+  Los tres con la misma forma exterior y el mismo grosor, para cambiarlos sin mover nada; las esquinas decoradas y los lados rectos (se estiran).
+ Abajo, 1 botón VENDER de 900x300 (proporción 3:1) del mismo estilo y forma que el «Comprar» amarillo del zip pero en ROJO-NARANJA con franjas de peligro negras, superficie lisa en el centro para poner el texto.
+```

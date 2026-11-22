@@ -2205,6 +2205,186 @@ js = sub(js, "  if (h.buf.azogue > 0) ve += 0.5;", "  if (h.buf.azogue > 0) ve +
 js = sub(js, "(q.buf.azogue > 0 || q.buf.alfa > 0 ? 32 : 0)", "(q.buf.azogue > 0 || q.buf.alfa > 0 || q.buf.casa > 0 ? 32 : 0)")
 js = sub(js, "  if (!d || d.vida <= 0 || d.muerto) return;\n  if (S.facil", "  if (!d || d.vida <= 0 || d.muerto) return;\n  if (d.buf && d.buf.casa) d.buf.casa = 0; if (o && o.buf && o.buf.casa && d.k !== 's' && d.k !== 'j') o.buf.casa = 0;\n  if (S.facil")
 
+# ---------- ATAQUES COMO SE VEN (22/11, Henar: «que un ataque de área se vea exactamente lo mismo que el píxel al que apunta la animación»;
+# también «mejora los controles y las hitboxes»). Medidas de cada dibujo en tools/autopista/ataques (LEEME). Regla: la marca de apuntar,
+# el dibujo del efecto, el aviso en rojo al rival y el daño de la simulación son la MISMA zona, y una zona da a quien la toca con su cuerpo
+# (el aro de debajo de cada uno mide justo su cuerpo). Antes: marcas circulares un 15-20 % más pequeñas que la zona (se medía al borde de la
+# imagen, no a la línea de neón), conos con la abertura a ojo, ondas de área un 10-50 % más grandes, el aro de los héroes de 1 m con un
+# cuerpo de 0,75, disparos que seguían de largo después de dar y saltos y cargas que llegaban un 4-7 % más lejos de lo apuntado.
+ATQ_CLI = (RAIZ / 'tools/autopista/ataques/cli.js').read_text()
+js = sub(js, "function muestraMira(k, dx, dy) {", "function muestraMiraVieja(k, dx, dy) {")
+js = sub(js, "function telegrafo(H, x, z, dx, dz, px, pz) {", "function telegrafoViejo(H, x, z, dx, dz, px, pz) {")
+js = sub(js, "function miraAtaque() {", "function miraAtaqueVieja() {")
+js = sub(js, "function ocultaMira() {", ATQ_CLI + "function ocultaMira() {")
+js = sub(js, "scene.remove(T.m); T.m.geometry.dispose(); T.m.material.dispose();", "scene.remove(T.m); if (!T.m.userData.geoFija) T.m.geometry.dispose(); T.m.material.dispose();")
+# eventos: zonas donde las pone la simulación, disparos que se paran al dar, y el tajo suelto de los conos fuera (lo pinta habVisual)
+js = sub(js, "  if (t === 'zona') {const a = aro('#ffd9a0', e[3]); a.userData.tira = 1; a.position.set(e[1], 0.08, e[2]); scene.add(a); FXP.push({o: a, t: 0, dur: e[4], op: 0.9}); for (let i = 0; i < 8; i++) setTimeout(() => flip('impacto', e[1] + rnd(-e[3], e[3]) * 0.7, e[2] + rnd(-e[3], e[3]) * 0.7, 1.2), i * 350); suena('arco', 0.5);}\n",
+  "  if (t === 'zona') zonaVisual(e);\n  if (t === 'tfin') tiroFin(e);\n")
+js = sub(js, "FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0});",
+  "FXP.push({tipo: 'tiro', k: e[1], o, x: e[2], z: e[3], tx: e[4], tz: e[5], dur: Math.hypot(e[4] - e[2], e[5] - e[3]) / e[6], t: 0, pid: e[8], vel: e[6]});")
+js = sub(js, "else flip(e[1], e[2], e[3], e[4], e[1] === 'tajo');", "else if (e[1] !== 'tajo') flip(e[1], e[2], e[3], e[4]);")
+# simulación (sim_ap.js regenerado): la zona dice quién la lanza; el disparo en línea lleva número y avisa de dónde se para
+js = sub(js, "ev(['zona', x, z, H.radio, H.dur]);", "ev(['zona', x, z, H.radio, H.dur, h.id]);")
+js = sub(js, "{const p = {o: h.id, eq: h.eq, x: h.x - dx * 0.5, z: h.z - dz * 0.5, dx, dz, rec: -0.5, alc: H.alc, n, T, H, toc: []}; if (",
+  "{const p = {o: h.id, eq: h.eq, x: h.x - dx * 0.5, z: h.z - dz * 0.5, dx, dz, rec: -0.5, alc: H.alc, n, T, H, toc: [], pid: (S.pidT = (S.pidT || 0) + 1)}; ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26, H.ancho || 0.5, p.pid, h.id]); if (")
+js = sub(js, "    ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26, H.ancho || 0.5]);\n", "")
+js = sub(js, "{p.toc.push(e.id); golpeLinea(h, e, H, p.n, p.T); if (!H.perfora) return true;}",
+  "{p.toc.push(e.id); golpeLinea(h, e, H, p.n, p.T); if (!H.perfora) {const pr = (e.x - p.x) * p.dx + (e.z - p.z) * p.dz, pe = Math.abs((e.x - p.x) * p.dz - (e.z - p.z) * p.dx), rr = H.ancho + radio(e), tc = Math.max(0, Math.min(d, pr - Math.sqrt(Math.max(0, rr * rr - pe * pe)))); ev(['tfin', p.pid, +(p.x + p.dx * tc).toFixed(2), +(p.z + p.dz * tc).toFixed(2), p.o]); return true;}}")
+#     conos: da a quien TOCA el cono con su cuerpo (antes solo si su centro estaba dentro del ángulo: de cerca, alguien medio dentro no recibía)
+js = sub(js, "if (d0 < H.alc + radio(e) && (ex * dx + ez * dz) / (d0 || 1) > Math.cos(H.ang / 2)) {dana(h, e, n, T);",
+  "if (enCono(ex, ez, dx, dz, H.alc, H.ang / 2, radio(e))) {dana(h, e, n, T);")
+js = sub(js, "function usaHab(h, k, dx, dz, px, pz) {", """function enCono(ex, ez, dx, dz, R, A, r) {
+  const d0 = Math.hypot(ex, ez); if (d0 > R + r) return false; if (d0 < r) return true;
+  if ((ex * dx + ez * dz) / d0 >= Math.cos(A)) return true;
+  for (const s of [1, -1]) {const ux = dx * Math.cos(A) - s * dz * Math.sin(A), uz = s * dx * Math.sin(A) + dz * Math.cos(A), t = ex * ux + ez * uz; if (t >= 0 && t <= R && Math.abs(ex * uz - ez * ux) < r) return true;}
+  return false;
+}
+function usaHab(h, k, dx, dz, px, pz) {""")
+#     saltos y cargas: el último paso se pasaba (9 pasos de 1/30 para 0,28 s): llegaban un 4-7 % más lejos de lo que marcaba la mira
+js = sub(js, "      const d = h.dash; d.t -= dt; h.x += d.vx * dt; h.z += d.vz * dt; limita(h);", "      const d = h.dash, pt = Math.min(dt, Math.max(0, d.t)); d.t -= dt; h.x += d.vx * pt; h.z += d.vz * pt; limita(h);")
+js = sub(js, "  if (MIO.dash) {MIO.x += MIO.dash.vx * dt; MIO.z += MIO.dash.vz * dt; MIO.dash.t -= dt;", "  if (MIO.dash) {const pt = Math.min(dt, Math.max(0, MIO.dash.t)); MIO.x += MIO.dash.vx * pt; MIO.z += MIO.dash.vz * pt; MIO.dash.t -= dt;")
+#     torres: alcance al borde del cuerpo (8,75 + cuerpo; para un héroe es lo mismo que antes, 9,5) y su aro rojo justo ahí
+js = sub(js, "e.vida > 0 && !e.muerto && dist(t, e) < 9.5);", "e.vida > 0 && !e.muerto && dist(t, e) - radio(e) < 8.75);")
+js = sub(js, "a.borde.scale.setScalar(2 * 9.5 * 256 / 235); a.zona.scale.setScalar(2 * 9.5 * 256 / 231);", "a.borde.scale.setScalar(2 * 8.75 / IND_R.ind_alcance); a.zona.scale.setScalar(2 * 8.75 / IND_R.ap_zona_torre);")
+#     la Guillotina de Grub: a tiro si el cuerpo del rival toca su aro (como la simulación)
+js = sub(js, "Math.hypot((q.xi ?? q.x) - x, (q.zi ?? q.z) - z) < H.alc + 0.6) hay = true;", "Math.hypot((q.xi ?? q.x) - x, (q.zi ?? q.z) - z) - radioVis(q) < H.alc + 0.6) hay = true;")
+# aros del cuerpo: héroes 0,75 m (antes se pintaban a 1 m), soldados 0,5 y los grandes 0,8; el aro del golpe básico, a su alcance de verdad
+js = sub(js, "o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.95 * ESC_H);", "o.aro = aro(v.eq === MI_EQ ? '#6fc8ff' : '#ff5a4a', 0.75 / IND_R.aro);")
+js = sub(js, "o.aro = aro(col, v.tipo === 'a' ? 1 : v.tipo === 'x' ? 1.25 : 0.62);", "o.aro = aro(col, (v.tipo === 'a' || v.tipo === 'x' ? 0.8 : 0.5) / IND_R.aro);")
+js = sub(js, "const radioVis = (q) => q.k === 'h' ? 0.75 :", "const radioVis = (q) => q.k === 's' && (q.tipo === 'a' || q.tipo === 'x') ? 0.8 : q.k === 'h' ? 0.75 :")
+js = sub(js, "const on = atacando() && v.muerto < 0 && !MIRA_ACT, alc = (HEROES[v.tipo].alcance || 2) + 0.6;", "const on = atacando() && v.muerto < 0 && !MIRA_ACT, alc = alcBasico(v);")
+js = sub(js, "aroAt.scale.setScalar(2 * alc * 256 / 235);", "aroAt.scale.setScalar(2 * alc / IND_R.ind_alcance);")
+# efectos de habilidad al tamaño de su zona (habVisual / fxAP / basicoFx)
+js = sub(js, "if (H.tipo !== 'area') flip('ondaC', x, z, 7, true);", "if (H.tipo !== 'area') flipR('ondaC', x, z, 1.4);")
+js = sub(js, "o.estela = {t: H.dist / 18 + 0.15, cada: 0, fx: k === 'r' ? 'ap_rohan_arena' : 'polvo', tam: k === 'r' ? 2.4 : 1.5};",
+  "o.estela = {t: H.dist / 18 + 0.15, cada: 0, fx: k === 'r' ? 'ap_rohan_arena' : 'polvo', tam: tamR(k === 'r' ? 'ap_rohan_arena' : 'polvo', H.dano ? 1.6 : 0.7)};")
+js = sub(js, "flip('ap_rohan_tajo', x + dx * f, z + dz * f, 4.6, true, rs + (i % 2 ? 0 : Math.PI)); flip('ap_rohan_arena', x + dx * f + rnd(-1, 1), z + dz * f + rnd(-1, 1), 2.4, true);",
+  "flipR('ap_rohan_tajo', x + dx * f, z + dz * f, 1.6, true, rs + (i % 2 ? 0 : Math.PI)); flipR('ap_rohan_arena', x + dx * f + rnd(-0.4, 0.4), z + dz * f + rnd(-0.4, 0.4), 1.1);")
+js = sub(js, "flip('grietas', p.x, p.z, 7, true); flip('ondaC', p.x, p.z, 8, true); flip('polvoA', p.x, p.z, 7, true); flip('explosion', p.x, p.z, 3.2);",
+  "flipR('grietas', p.x, p.z, 1.5); flipR('ondaC', p.x, p.z, 1.6); flipR('polvoA', p.x, p.z, 1.6); flip('explosion', p.x, p.z, 2.4);")
+js = sub(js, "flip('ondaC', sx, sz, o.salto.r * 2.8, true); flip('grietas', sx, sz, o.salto.r * 2.2, true); flip('polvoA', sx, sz, o.salto.r * 2.8, true);",
+  "flipR('ondaC', sx, sz, o.salto.r); flipR('grietas', sx, sz, o.salto.r * 0.85); flipR('polvoA', sx, sz, o.salto.r * 0.95);")
+js = sub(js, """  if (H.tipo === 'cono') {
+    const fx = v.tipo === 'enano' ? 'tajoFuego' : 'polvo', tam = H.alc * 2.2;
+    if (fx === 'polvo') {for (let i = 0; i < 5; i++) {const a = rot + (i - 2) * H.ang / 5; flip('polvo', x + Math.sin(a) * H.alc * 0.6, z + Math.cos(a) * H.alc * 0.6, 1.8);}}
+    else {flip('tFuego', x + dx * 0.6, z + dz * 0.6, H.alc * 2.5, true, rs); flip('tArco', x + dx * H.alc * 0.35, z + dz * H.alc * 0.35, H.alc * 1.7, true, rs, 0.16);}
+    for (let i = 0; i < 3; i++) {const a = rot + (i - 1) * H.ang / 3; flip('impacto', x + Math.sin(a) * H.alc * 0.8, z + Math.cos(a) * H.alc * 0.8, 2.2);}
+    flip('explosion', x + dx * H.alc * 0.55, z + dz * H.alc * 0.55, 2.4, false, undefined, 1);
+    suena('espada', 0.7, x, z); temb(0.18);
+  }
+""", """  if (H.tipo === 'cono') {/* la onda recortada en abanico: su borde va justo por el arco y los lados del cono */
+    abanicoR('ondaC', x, z, rot, H.alc, H.ang); abanicoR('polvoA', x, z, rot, H.alc * 0.95, H.ang, 0.8);
+    for (let i = 0; i < 3; i++) {const a = rot + (i - 1) * H.ang / 3.4, d = H.alc - 0.55; flip('impacto', x + Math.sin(a) * d, z + Math.cos(a) * d, tamR('impacto', 0.55));}
+    suena('espada', 0.7, x, z); temb(0.18);
+  }
+""")
+js = sub(js, "flip('ondaC', x, z, H.radio * 2 + 1, true); flip('polvoA', x, z, H.radio * 2 + 0.6, true);", "flipR('ondaC', x, z, H.radio); flipR('polvoA', x, z, H.radio * 0.95);")
+js = sub(js, "  if (H.tipo === 'zona' && v.tipo === 'gandalf') {const d0 = Math.min(H.alc, Math.hypot(px - x, pz - z)), cx = x + dx * d0, cz = z + dz * d0; flip('ondaC', cx, cz, H.radio * 2.6, true); flip('suerte', cx, cz, H.radio * 2.2, true); flip('estrellas', cx, cz, H.radio * 2, true); luego2(H.dur * 1000, () => {flip('explosion', cx, cz, H.radio * 1.2); flip('ondaC', cx, cz, H.radio * 3, true);}); temb(0.2);}\n",
+  "  if (H.tipo === 'zona' && v.tipo === 'gandalf') temb(0.2); /* la zona la pinta zonaVisual donde la pone la simulación */\n")
+#     el rayo de Vael: como mucho tan ancho como lo que golpea (antes 2,5 veces) y sin la onda gigante del final (no hace daño ahí)
+js = sub(js, "const capas = [capa(ancho * 0.18, '#fff3d0', 1), capa(ancho * 0.45, '#ffb347', 0.6), capa(ancho * 0.9, '#ff4a12', 0.3)];",
+  "const capas = [capa(ancho * 0.13, '#fff3d0', 1), capa(ancho * 0.32, '#ffb347', 0.6), capa(ancho * 0.71, '#ff4a12', 0.3)];")
+js = sub(js, "flip('ondaC', x + dx * f, z + dz * f, ancho * 3.2, true);", "flipR('ondaC', x + dx * f, z + dz * f, ancho);")
+js = sub(js, "flip('explosion', x + dx * alc, z + dz * alc, 4, false, undefined, 1.4); flip('ondaC', x + dx * alc, z + dz * alc, 9, true); flip('grietas', x + dx * alc, z + dz * alc, 6, true, rot);",
+  "flip('explosion', x + dx * alc, z + dz * alc, tamR('explosion', ancho), false, undefined, 1.4); flipR('ondaC', x + dx * alc, z + dz * alc, ancho); flipR('grietas', x + dx * alc, z + dz * alc, ancho, true, rot);")
+js = sub(js, "  flip('ondaC', x, z, 8, true); flip('explosion', x + dx, z + dz, 3, false, undefined, 1.6);\n}", "  flipR('ondaC', x, z, 1.4); flip('explosion', x + dx, z + dz, 2.2, false, undefined, 1.6);\n}")
+#     el Visor: abanico deformado a su cono de verdad y rayo de la R tan ancho como lo que golpea (la imagen ocupa el 48 % de su alto)
+js = sub(js, "flip('ap_visor_abanico', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, H.alc * 1.2, true, rot + Math.PI);", "abanicoR('ap_visor_abanico', x, z, rot, H.alc, H.ang);")
+js = sub(js, "rayoVisor(p.x + dx * 0.8, p.z + dz * 0.8, dx, dz, H.alc, H.ancho * 2.4, 1.0);", "rayoVisor(p.x + dx * 0.8, p.z + dz * 0.8, dx, dz, H.alc - 0.8 + H.ancho, H.ancho * 2 / (0.48 * 1.1), 1.0);")
+#     Birdie, Ata y Grub: lo que sale al lanzar no se sale de su zona
+js = sub(js, "if (k === 'q') {flip('ondaC', x + dx * 1.2, z + dz * 1.2, 2.4, true); temb(0.12);}", "if (k === 'q') {flipR('ondaC', x + dx * 1.2, z + dz * 1.2, 0.8); temb(0.12);}")
+js = sub(js, "abre: H.ang * 1.15, dist: H.alc, cada: 30,", "abre: H.ang * 0.9, dist: H.alc - 0.95, cada: 30,")
+js = sub(js, "flip('ondaC', x + dx, z + dz, 2.2, true); temb(0.15);}", "flipR('ondaC', x + dx, z + dz, 0.8); temb(0.15);}")
+js = sub(js, "    if (k === 'r') {const [cx, cz] = lejos(); let n = 0; const tira = () => {if (n++ > H.dur / 0.09 || VIS.get(v.id) !== o) return; const p = o.raiz.position, a = Math.random() * 6.28, r = Math.sqrt(Math.random()) * H.radio, tx = cx + Math.cos(a) * r, tz = cz + Math.sin(a) * r, l = Math.hypot(tx - p.x, tz - p.z) || 1; rafaga({x: p.x, z: p.z, ang: Math.atan2(tx - p.x, tz - p.z), dist: l, varia: 0, kind: 'bala', vel: 45, y: 1.3}); if (n % 3 === 0) suena('arco', 0.3, cx, cz); setTimeout(tira, 90);}; tira();}\n", "")
+js = sub(js, "if (k === 'q') {flip('ap_orco_remolino', x, z, H.radio * 2, true, rot); rafaga({n: 10, x, z, ang: 0, abre: Math.PI * 2, dist: H.radio, varia: 0.1,",
+  "if (k === 'q') {flipR('ap_orco_remolino', x, z, H.radio, true, rot); rafaga({n: 10, x, z, ang: 0, abre: Math.PI * 2, dist: H.radio - 0.35, varia: 0.1,")
+js = sub(js, "if (k === 'w') {flip('ap_orco_tajo', x + dx * H.alc * 0.45, z + dz * H.alc * 0.45, H.alc * 1.6, true, rs); rafaga({n: 5, x, z, ang: rot, abre: H.ang, dist: H.alc,",
+  "if (k === 'w') {flipR('ap_orco_tajo', x + dx * H.alc * 0.5, z + dz * H.alc * 0.5, H.alc * 0.45, true, rs); rafaga({n: 5, x, z, ang: rot, abre: H.ang * 0.9, dist: H.alc - 0.35,")
+js = sub(js, "if (k === 'e') flip('ondaC', x + dx, z + dz, 2.2, true);", "if (k === 'e') flipR('ondaC', x + dx, z + dz, 0.8);")
+js = sub(js, "o.salto = {t: 0, dur: 0.38, alto: 2.2, cx: px, cz: pz, r: 2.2}; luego2(380, () => {const p = o.raiz.position; flip('ap_orco_tajo', p.x, p.z, 5, true, rs); flip('ap_orco_remolino', p.x, p.z, 4, true); rafaga({n: 12, x: p.x, z: p.z, ang: 0, abre: Math.PI * 2, dist: 3, kind: 'energia', vel: 18, y: 1.2});",
+  "o.salto = {t: 0, dur: 0.38, alto: 2.2, cx: px, cz: pz, r: 0.8}; luego2(380, () => {const p = o.raiz.position, tx = p.x + dx * 1.8, tz = p.z + dz * 1.8; flipR('ap_orco_tajo', tx, tz, 1.2, true, rs); flipR('ap_orco_remolino', tx, tz, 1); rafaga({n: 8, x: tx, z: tz, ang: 0, abre: Math.PI * 2, dist: 1.1, kind: 'energia', vel: 14, y: 1.2});")
+js = sub(js, "    if (k === 'e') {const [cx, cz] = lejos(); flip('ap_gandalf_ceniza', cx, cz, H.radio * 2, true, rot, 0.13, H.dur + 0.4); for (let i = 0; i < 4; i++) {const a = i / 8 * Math.PI * 2; flip('fuego', cx + Math.cos(a) * H.radio * 0.8, cz + Math.sin(a) * H.radio * 0.8, 2);} luego2(500, () => {for (let i = 0; i < 5; i++) flip('fuego', cx + rnd(-H.radio, H.radio) * 0.6, cz + rnd(-H.radio, H.radio) * 0.6, 1.8);});}\n", "")
+js = sub(js, "const d = H.dist || 5; flip('ap_rohan_tajo', x + dx * d * 0.5, z + dz * d * 0.5, k === 'r' ? 4.4 : 3, true, rs); luego2(k === 'r' ? 350 : 220, () => {const p = o.raiz.position; flip('ap_rohan_tajo', p.x, p.z, k === 'r' ? 4 : 2.6, true, rs + 1.2);});",
+  "const d = H.dist || 5; flipR('ap_rohan_tajo', x + dx * d * 0.5, z + dz * d * 0.5, 1.6, true, rs); luego2(k === 'r' ? 350 : 220, () => {const p = o.raiz.position; flipR('ap_rohan_tajo', p.x, p.z, 1.6, true, rs + 1.2);});")
+js = sub(js, "flip('ap_rohan_arena', x, z, H.radio * 2, true, rot);", "flipR('ap_rohan_arena', x, z, H.radio, true, rot);")
+js = sub(js, "if (k === 'q') {abanico('ap_enano_tajo', x + dx * 0.5, z + dz * 0.5, rot, (H.alc || 4) + 0.4, 1.1); abanico('ap_enano_tajo', x + dx * 0.5, z + dz * 0.5, rot, (H.alc || 4) * 0.8, 0.12);}",
+  "if (k === 'q') abanicoR('ap_enano_tajo', x, z, rot, H.alc, H.ang);")
+js = sub(js, "flip('ap_enano_estallido', x, z, H.radio * 2, true); flip('ap_enano_estallido', x, z, H.radio * 1.4, false, undefined, 1.4);",
+  "flipR('ap_enano_estallido', x, z, H.radio); flip('ap_enano_estallido', x, z, H.radio * 1.1, false, undefined, 1.4);")
+js = sub(js, "flip('ondaC', x, z, H.radio * 2 + 1, true); luego2(180, () => flip('ondaC', x, z, H.radio * 2 + 1.4, true));", "flipR('ondaC', x, z, H.radio); luego2(180, () => flipR('ondaC', x, z, H.radio));")
+#     golpes básicos cuerpo a cuerpo: el tajo llega justo a su alcance (antes los de 5-6 m de ancho se salían el doble)
+js = sub(js, "abanico('ap_enano_tajo', p.x + dx * 0.45, p.z + dz * 0.45, r + lado * 0.18, H.alcance + 1.2, 1.15); abanico('ap_enano_tajo', p.x + dx * 0.45, p.z + dz * 0.45, r - lado * 0.18, H.alcance + 0.6, 0.12);",
+  "abanicoR('ap_enano_tajo', p.x, p.z, r + lado * 0.15, alcBasico(v), 1.1, 1, 0.4);")
+js = sub(js, "{const d = Math.min(H.alcance, 2.4) * 0.8; flip(TAJO_B[v.tipo], p.x + dx * d * 0.6, p.z + dz * d * 0.6, 3.4 + H.alcance * 0.7, true, r - Math.PI / 2 + lado * 0.35); flip(TAJO_B[v.tipo], p.x + dx * (d + 0.3), p.z + dz * (d + 0.3), 2.4 + H.alcance * 0.4, false, undefined, 1.15);}",
+  "{const R0 = alcBasico(v); flipR(TAJO_B[v.tipo], p.x + dx * R0 * 0.5, p.z + dz * R0 * 0.5, R0 * 0.5, true, r - Math.PI / 2 + lado * 0.35); flip(TAJO_B[v.tipo], p.x + dx * R0 * 0.55, p.z + dz * R0 * 0.55, tamR(TAJO_B[v.tipo], R0 * 0.38), false, undefined, 1.15);}")
+#     saltos: el golpe de la caída sale en el punto exacto donde cae (calculado como la simulación), no donde iba el dibujo en ese momento
+js = sub(js, "if (H.tipo === 'salto') {const dist0 = Math.min(H.dist, Math.hypot(px - x, pz - z) || H.dist); o.salto = {t: 0, dur: 0.45, alto: 2.2 + dist0 * 0.12, cx: x + dx * dist0, cz: z + dz * dist0, r: H.radio}; flip('polvoA', x, z, 3.2, true);",
+  "if (H.tipo === 'salto') {const dist0 = Math.min(H.dist, Math.hypot(px - x, pz - z) || H.dist), cae = destinoMov(x, z, dx, dz, dist0, 0.45); o.salto = {t: 0, dur: 0.45, alto: 2.2 + dist0 * 0.12, cx: cae.x, cz: cae.z, r: H.radio}; flipR('polvoA', x, z, 1.2);")
+js = sub(js, "if (k >= 1) {const sx = o.raiz.position.x, sz = o.raiz.position.z;", "if (k >= 1) {const sx = o.salto.cx ?? o.raiz.position.x, sz = o.salto.cz ?? o.raiz.position.z;")
+js = sub(js, "cx: px, cz: pz, r: 0.8}", "r: 0.8}")
+js = sub(js, "flip('polvoA', x, z, 3.4, true); suena('viento', 0.5, x, z);", "flipR('polvoA', x, z, 1.2); suena('viento', 0.5, x, z);")
+js = sub(js, "if (v.tipo === 'elfo') flip('polvoA', x, z, 3.2, true);", "if (v.tipo === 'elfo') flipR('polvoA', x, z, 1);")
+js = sub(js, "if (k === 'q') {flip('ap_gollum_humo', x, z, 2.6, true); luego2(300, () => {const p = o.raiz.position; flip('ap_gollum_tajo', p.x, p.z, 3, true, rs);});}",
+  "if (k === 'q') {flipR('ap_gollum_humo', x, z, 1.2); luego2(400, () => {if (o.salto) flipR('ap_gollum_tajo', o.salto.cx, o.salto.cz, H.radio * 0.8, true, rs);});}")
+js = sub(js, "if (k === 'e') flip('ap_gollum_tajo', x + dx * 1.2, z + dz * 1.2, 2.2, true, rs);", "if (k === 'e') flipR('ap_gollum_tajo', x + dx * 1.2, z + dz * 1.2, H.ancho, true, rs);")
+js = sub(js, "flip('ap_visor_carga', x, z, 3.4, true);", "flipR('ap_visor_carga', x, z, 1.4);")
+# ---------- CONTROLES (22/11, Henar: «mejora los controles»): joystick como el del Wild Rift ----------
+# (1) si el dedo se pasa del borde, la base le sigue (antes había que volver hasta el centro para cambiar de sentido: medio segundo de héroe
+#     andando al revés); (2) velocidad completa en cuanto sales de la zona muerta (8 px): antes, con el dedo a medio camino, el héroe andaba
+#     a media velocidad sin que se notara por qué (en los MOBA se anda siempre a tope).
+js = sub(js, "    if (e.pointerId !== joy.id) return; let dx = (PX(e) - joy.x0) / 50, dy = (PY(e) - joy.y0) / 50; const l = Math.hypot(dx, dy); if (l > 1) {dx /= l; dy /= l;}",
+  """    if (e.pointerId !== joy.id) return; let px = PX(e) - joy.x0, py = PY(e) - joy.y0; const lp = Math.hypot(px, py);
+    if (lp > 62) {joy.x0 = PX(e) - px / lp * 62; joy.y0 = PY(e) - py / lp * 62; px = px / lp * 62; py = py / lp * 62; bola.style.left = joy.x0 + 'px'; bola.style.top = (joy.y0 - topC(J)) + 'px';} /* la base sigue al dedo */
+    let dx = px / 50, dy = py / 50; const l = Math.hypot(dx, dy); if (l > 1) {dx /= l; dy /= l;}
+    if (lp < 8) {dedo.style.transform = 'translate(' + dx * 35 + 'px,' + dy * 35 + 'px)'; MANDO.mx = 0; MANDO.mz = 0; return;} /* zona muerta */""")
+js = sub(js, "    dedo.style.transform = 'translate(' + dx * 35 + 'px,' + dy * 35 + 'px)'; const {F, R} = ejes(); MANDO.mx = dx * R.x - dy * F.x; MANDO.mz = dx * R.z - dy * F.z;",
+  "    dedo.style.transform = 'translate(' + dx * 35 + 'px,' + dy * 35 + 'px)'; const {F, R} = ejes(), lu = Math.hypot(dx, dy) || 1; MANDO.mx = (dx * R.x - dy * F.x) / lu; MANDO.mz = (dx * R.z - dy * F.z) / lu; /* siempre a tope */")
+# ---------- TALLER NUEVO (22/11, Henar: «mejora la tienda y pide el arte que necesites»). Código en tools/autopista/taller (cli.js y taller.css).
+# Pestañas que caben sin desplazar en el móvil de Henar (antes la 5.ª quedaba cortada), Ataque y Magia por separado, nombre debajo de cada
+# objeto, «Para ti» = siguiente compra + ruta del héroe con lo que ya tienes marcado (antes repetía las listas enteras y había que desplazar),
+# VENDER (70 % de lo que vale entero, como en el LoL) y DESHACER la última compra o venta mientras sigas en la fuente (dentro de la simulación:
+# sims regenerados). Pack Autopista 58 ART pedido (icono de Magia, marcos de tarjeta, Vender y Deshacer): hasta que llegue, Magia lleva la bobina.
+TALLER_CLI = (RAIZ / 'tools/autopista/taller/cli.js').read_text()
+TALLER_CSS = (RAIZ / 'tools/autopista/taller/taller.css').read_text()
+js = sub(js, "const T_CATS = [['rec', 'Recomendado', 'obj_07'], ['atq', 'Ataque', 'obj_01'], ['def', 'Defensa', 'obj_03'], ['mov', 'Movilidad', 'obj_05'], ['enc', 'Encantamientos', null]];",
+  "const T_CATS = [['rec', 'Para ti'], ['atq', 'Ataque'], ['mag', 'Magia'], ['def', 'Defensa'], ['mov', 'Movilidad'], ['enc', 'Encantar']];")
+js = sub(js, "const CAT_OBJ = {atq: ['hoja', 'daga', 'herugrim', 'guthwine', 'hacha', 'tomo', 'baculo', 'narya'], def:", "const CAT_OBJ = {atq: ['hoja', 'daga', 'herugrim', 'guthwine', 'hacha'], mag: ['tomo', 'baculo', 'narya'], def:")
+js = sub(js, "function pintaTienda() {", "function pintaTiendaVieja() {")
+js = sub(js, "function abreTienda() {", TALLER_CLI + "function abreTienda() {")
+js = sub(js, "function compra(h, id) {", """/* 22/11 (TALLER NUEVO): vender al 70 % de lo que vale entero (como en el LoL) y deshacer la última compra o venta mientras sigas en la fuente */
+function valorObj(id) {const o = OBJ[id]; return o ? o.c + (o.rec || []).reduce((a, r) => a + valorObj(r), 0) : 0;}
+function fotoCompra(h) {h.ultCompra = {inv: [...h.inv], oro: h.oro, enc: h.enc};}
+function vende(h, id) {
+  if (!puedeComprar(h)) return 'Solo se vende en tu fuente';
+  const i = h.inv.lastIndexOf(id); if (i < 0) return 'No lo llevas';
+  fotoCompra(h); h.inv.splice(i, 1); const p = Math.floor(valorObj(id) * 0.7); h.oro += p; const st = stats(h); h.vida = Math.min(h.vida, st.vida); h.mana = Math.min(h.mana, st.mana);
+  ev(['num', h.x, h.z, '+' + p, 'o', h.id]); return '';
+}
+function deshaz(h) {
+  const u = h.ultCompra; if (!u || !puedeComprar(h)) return 'No hay nada que deshacer';
+  h.inv = u.inv; h.oro = u.oro; h.enc = u.enc; h.ultCompra = null; const st = stats(h); h.vida = Math.min(h.vida, st.vida); h.mana = Math.min(h.mana, st.mana); return '';
+}
+function compra(h, id) {""")
+js = sub(js, "    if (h.oro < e.c) return 'Te falta oro'; h.oro -= e.c; h.enc = id;", "    if (h.oro < e.c) return 'Te falta oro'; fotoCompra(h); h.oro -= e.c; h.enc = id;")
+js = sub(js, "  const v0 = stats(h).vida; h.oro -= pr; for (const u of gasto) h.inv.splice(h.inv.indexOf(u), 1); h.inv.push(id);", "  fotoCompra(h); const v0 = stats(h).vida; h.oro -= pr; for (const u of gasto) h.inv.splice(h.inv.indexOf(u), 1); h.inv.push(id);")
+js = sub(js, "    if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}",
+  "    if (o.t === 'compra') {const r = compra(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}\n    if (o.t === 'vende') {const r = vende(h, o.id); if (r) S.ev.push(['aviso', h.id, r]);}\n    if (o.t === 'deshaz') {const r = deshaz(h); if (r) S.ev.push(['aviso', h.id, r]);}")
+#     al salir de la fuente ya no se puede deshacer (como en el LoL)
+js = sub(js, "    const enFuente = dist(h, BASES[h.eq].fuente) < 8;", "    const enFuente = dist(h, BASES[h.eq].fuente) < 8; if (h.ultCompra && !h.muerto && !enFuente) h.ultCompra = null;")
+html = sub(html, '</head>', '<style>\n' + TALLER_CSS + '</style>\n</head>', donde='html')
+# ---------- LAG A LO LARGO DE LA PARTIDA (22/11, Henar: «mejora el lag a lo largo de la partida»). Medido con tools/pruebas/t_largo.py
+# (GEO=1: geometrías quitadas de la escena sin borrar → ninguna; las texturas suben y bajan con el número de unidades: no se pierde nada) y
+# t_prof.py con MODO=2v2 ADELANTO=600: a los 10 min de una Batalla entre bots hay ~100 unidades (78 soldados, las oleadas se acumulan), cada
+# soldado son ~45 objetos (41 huesos) y three.js recalculaba cada fotograma la posición de TODOS los huesos de todos, se vieran o no
+# (~4.000 matrices por fotograma). Ahora los que están fuera de la pantalla (con 5 m de margen) no se animan ni se recalculan.
+js = sub(js, "function dibuja(dt) {\n  const ahora = performance.now();", """const FRU = new THREE.Frustum(), _mFru = new THREE.Matrix4(), _sFru = new THREE.Sphere();
+function enPantalla(x, z, r = 5) {_sFru.center.set(x, 1, z); _sFru.radius = r; return FRU.intersectsSphere(_sFru);}
+function dibuja(dt) {
+  const ahora = performance.now(); camera.updateMatrixWorld(); FRU.setFromProjectionMatrix(_mFru.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));""")
+js = sub(js, "o.mdt = (o.mdt || 0) + dt; if (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1) {o.mixer.update(o.mdt); o.mdt = 0;}",
+  "o.mdt = (o.mdt || 0) + dt; const enP = v.id === YO || enPantalla(x, z, v.k === 'j' && NEUTRO[v.tipo] && NEUTRO[v.tipo].jefe ? 8 : 5); o.raiz.matrixWorldAutoUpdate = enP; if (enP && (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1)) {o.mixer.update(Math.min(o.mdt, 0.5)); o.mdt = 0;} else if (!enP) o.mdt = Math.min(o.mdt, 0.5);")
+js = sub(js, "get ESTADO() {return ESTADO;}};", "get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

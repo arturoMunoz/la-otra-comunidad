@@ -1,0 +1,37 @@
+/* TALLER NUEVO (22/11): pestañas que caben, nombre debajo de cada objeto, ruta del héroe, vender y deshacer */
+#tienda .tCuerpo{grid-template-columns:88px minmax(0,1fr) minmax(220px,35%) !important;gap:7px}
+#tienda .tCats{gap:4px !important;overflow:hidden !important}
+#tienda .tCats button{flex:1 1 0;min-height:0;padding:2px 2px 3px !important;gap:0 !important;font:700 10px/1.05 system-ui,'Segoe UI',Roboto,sans-serif !important;justify-content:center}
+#tienda .tCats button img{width:clamp(20px,calc(var(--vh) * 6.2),34px) !important;height:clamp(20px,calc(var(--vh) * 6.2),34px) !important}
+#tienda .tCats button span{white-space:nowrap}
+#tienda .tRej{grid-template-columns:repeat(auto-fill,minmax(76px,1fr)) !important;gap:7px !important}
+#tienda .tI{aspect-ratio:auto !important;padding:4px 2px 3px !important;gap:1px;justify-content:flex-start !important}
+#tienda .tI img{width:52px !important;height:52px;flex:0 0 auto}
+#tienda .tI em{display:block;width:100%;font:650 10.5px/1.1 system-ui,'Segoe UI',Roboto,sans-serif;font-style:normal;color:#d6e4f4;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 2px}
+#tienda .tI b{font-size:11.5px !important;margin-top:auto}
+#tienda .tI.sel,#tienda .tPaso.sel,#tienda .tSig.sel,#tienda .tHueco.sel{border-color:#3ad8ff !important;box-shadow:0 0 0 1px #3ad8ff,0 0 12px #3ad8ff88 !important}
+#tienda .tI.bloq{opacity:.55}
+#tienda .tI.mio{border-color:#7dff6a}
+#tienda .tSig{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-bottom:8px;padding:6px 10px;border-radius:12px;border:2px solid #e0a91c;background:linear-gradient(90deg,#2a1d06e6,#0c1724cc);color:#fff1c9}
+#tienda .tSig img{width:52px;height:52px;flex:0 0 auto}
+#tienda .tSig div{flex:1;min-width:0}
+#tienda .tSig b{display:block;font:800 14px 'Arial Black','Segoe UI Black',system-ui,sans-serif}
+#tienda .tSig span{display:block;font:600 11px system-ui,'Segoe UI',Roboto,sans-serif;color:#b6ff9a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tienda .tSig u{text-decoration:none;font:800 14px system-ui,'Segoe UI',Roboto,sans-serif;color:#ffd24a;flex:0 0 auto}
+#tienda .tRuta2{display:flex;align-items:stretch;gap:3px;padding:6px;border-radius:12px;background:linear-gradient(90deg,#0c1724cc,#0c172455);border:1px solid #3c4a5e}
+#tienda .tPaso{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px;border-radius:10px;border:1.5px solid #3c4a5e;background:#0008;color:#d6e4f4}
+#tienda .tPaso img{width:40px;height:40px}
+#tienda .tPaso em{font:650 9.5px/1.1 system-ui,'Segoe UI',Roboto,sans-serif;font-style:normal;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#tienda .tPaso small{font:700 9.5px system-ui,'Segoe UI',Roboto,sans-serif;color:#ffd24a;white-space:nowrap}
+#tienda .tPaso.ya{border-color:#4fbf3f;background:#12301280}
+#tienda .tPaso.ya small{color:#9dff8a}
+#tienda .tFl{align-self:center;color:#5a6b82;font-size:16px}
+#tienda .tInv{gap:4px !important}
+#tienda button.tHueco{padding:0;cursor:pointer}
+#tienda .tDesh{flex:0 0 auto;height:32px;padding:0 10px;border-radius:16px;border:1.5px solid #ff8a5a;background:#2a0e06cc;color:#ffd0b8;font:800 12px system-ui,'Segoe UI',Roboto,sans-serif}
+#tienda .tBots{display:flex;gap:6px;margin-top:auto;align-items:stretch}
+#tienda .tBots .tBuy{margin-top:0 !important;flex:1 1 auto;min-width:0}
+#tienda .tSell{flex:0 0 auto;min-height:54px;padding:0 12px;border:0;background:url(ui/ap_m_secundario.webp) center/100% 100% no-repeat;color:#ffd0b8;font:900 12.5px system-ui,'Segoe UI',Roboto,sans-serif;text-shadow:0 2px 0 #000;line-height:1.05}
+#tienda .tSell b{display:block;color:#ffd24a;font-size:13px}
+#tienda .tLista{overflow-y:auto}
+@media (max-height:380px){#tienda .tI img{width:38px !important;height:38px}#tienda .tSig img{width:44px;height:44px}#tienda .tPaso img{width:34px;height:34px}}
