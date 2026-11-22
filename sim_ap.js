@@ -388,6 +388,8 @@ function ganaXp(h, n) {
   while (h.nivel < NIVEL_MAX && h.xp >= xpNivel(h.nivel)) {h.xp -= xpNivel(h.nivel); const v0 = stats(h).vida; h.nivel++; h.pts++; const v1 = stats(h).vida; h.vida += v1 - v0; h.mana += HEROES[h.tipo].crecM; ev(['fx', 'onda', h.x, h.z, 3]); if (h.nivel === NIVEL_R) ev(['aviso', h.id, '¡Habilidad definitiva lista!']);}
 }
 function ev(e) {S.ev.push(e); efectoLocal(e);}
+/* ALMA (22/11): emoticono de un héroe (uno cada 3 s) */
+function emote(h, k) {if (!h || !['hola', 'risa', 'burla', 'gg'].includes(k) || (h.emoT || 0) > S.t) return; h.emoT = S.t + 3; ev(['emo', h.id, k]);}
 
 /* ---------- simulación (anfitrión) ---------- */
 function oculto(u, quien) {if (u.k !== 'h' || u.hierba < 0 || u.revela > S.t) return false; return !(quien && (dist(quien, u) < 3.2 || quien.hierba === u.hierba));}
@@ -1003,6 +1005,7 @@ function aplicaMando(h, o) {
     if (o.t === 'enc') usaEnc(h);
     if (o.t === 'hech1') h.hf = o.v === 'c' ? 'c' : 'f';
     if (o.t === 'avisoEq') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; ev(e);}
+    if (o.t === 'emo') emote(h, o.k);
     if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
     if (o.t === 'alm') {h.x = o.x; h.z = o.z; ponAlmenara(h, o.px, o.pz);}
     if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; h.buf.casa = 8;}}

@@ -6,6 +6,11 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 /*SIM{*/ /* entre estas marcas va la simulación que también corre en el servidor (tools/vado/hace_sim.mjs → sim_vado.js) */
 
 const $ = (id) => document.getElementById(id);
@@ -389,6 +394,7 @@ const scene = new THREE.Scene(); scene.background = new THREE.Color('#9fc3dc'); 
 const camera = new THREE.PerspectiveCamera(42, VW / VH, 0.5, 200);
 addEventListener('resize', () => {giraPantalla(); renderer.setSize(VW, VH); camera.aspect = VW / VH; camera.updateProjectionMatrix(); APAI = VW > VH;});
 scene.add(new THREE.HemisphereLight('#d6e2ff', '#20364a', 1.85));
+setTimeout(() => {try {entornoAP(true);} catch (e) {}}, 0);
 const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30, 10); sol.castShadow = GRAF.cal !== 'baja';
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
@@ -546,7 +552,43 @@ function otraVez(a, k) {const n = a.clips[k]; if (!n) return; n.reset().play(); 
 const CIU_SKY = [];
 /* luz de atardecer en la ciudad (sol bajo y anaranjado, cielo azulado, bruma cálida que funde los rascacielos); el Duelo vuelve a la de día */
 let AMB0 = null;
-function ambienteMapa(ciudad) {
+/* ALMA (22/11): ENTORNO PARA LOS REFLEJOS. Sin él, todo lo metálico (torres, núcleos, armaduras, coches) salía casi negro: un metal sin
+   nada que reflejar no tiene color. Se hace una vez por mapa: una cúpula con el degradado del cielo (arriba, horizonte, suelo), un panel
+   brillante donde está el sol y dos de relleno, y three.js la convierte en mapa de reflejos (PMREM). Es luz, no un dibujo. */
+const ENT = {rt: null, k: ''};
+function entornoAP(ciudad) {
+  const k = ciudad ? 'ciudad' : 'dia'; if (ENT.k === k) return; ENT.k = k;
+  const C = ciudad ? {arriba: '#6f86c4', horiz: '#ffb98a', suelo: '#3b2f3a', sol: '#ffd1a0', relleno: '#8fb0ff'} : {arriba: '#7fb2ec', horiz: '#e9f1f6', suelo: '#5d6157', sol: '#fff1d8', relleno: '#cfe2ff'};
+  const sc = new THREE.Scene(), g = new THREE.SphereGeometry(40, 32, 16), col = [], a = new THREE.Color(C.arriba), h = new THREE.Color(C.horiz), s = new THREE.Color(C.suelo), t = new THREE.Color();
+  const pos = g.attributes.position; for (let i = 0; i < pos.count; i++) {const y = pos.getY(i) / 40; if (y >= 0) t.copy(h).lerp(a, Math.pow(y, 0.6)); else t.copy(h).lerp(s, Math.min(1, -y * 3)); col.push(t.r, t.g, t.b);}
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); sc.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({vertexColors: true, side: THREE.BackSide})));
+  const panel = (c, k_, w, hh, x, y, z) => {const m = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), new THREE.MeshBasicMaterial({color: new THREE.Color(c).multiplyScalar(k_), side: THREE.DoubleSide})); m.position.set(x, y, z); m.lookAt(0, 0, 0); sc.add(m);};
+  const d = new THREE.Vector3(12, 30, 10).normalize().multiplyScalar(30); panel(C.sol, ciudad ? 7 : 8, 9, 9, d.x, d.y, d.z);
+  panel(C.relleno, 1.6, 26, 12, -d.x, 14, -d.z); panel(C.horiz, 1.3, 30, 8, d.z, 6, -d.x);
+  const pm = new THREE.PMREMGenerator(renderer), rt = pm.fromScene(sc, 0.04); pm.dispose(); sc.traverse((q) => {if (q.geometry) q.geometry.dispose(); if (q.material) q.material.dispose();});
+  if (ENT.rt) ENT.rt.dispose(); ENT.rt = rt; scene.environment = rt.texture; scene.environmentIntensity = ciudad ? 0.55 : 0.5;
+}
+/* ALMA (22/11): BRILLO (bloom) Y COLOR, solo en calidad Alta. La escena se pinta en una imagen intermedia (con suavizado de bordes),
+   lo que pasa de cierto brillo —neones, ventanas, jefes, efectos, plasma— se expande en un halo, y al final un toque de color
+   (algo más de saturación y contraste y un viñeteado suave). En Baja y Media se pinta como siempre (no cuesta nada). */
+const GRADO = {uniforms: {tDiffuse: {value: null}}, vertexShader: 'varying vec2 vUv; void main() {vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);}',
+  fragmentShader: 'uniform sampler2D tDiffuse; varying vec2 vUv; void main() {vec4 c = texture2D(tDiffuse, vUv); float l = dot(c.rgb, vec3(0.299, 0.587, 0.114)); c.rgb = mix(vec3(l), c.rgb, 1.14); c.rgb = (c.rgb - 0.5) * 1.06 + 0.5; float d = distance(vUv, vec2(0.5)); c.rgb *= mix(1.0, 0.8, smoothstep(0.42, 0.9, d)); gl_FragColor = c;}'};
+let POST = null;
+function postAP() {
+  if (GRAF.cal !== 'alta') {if (POST) {POST.comp.dispose(); POST = null;} return null;}
+  if (!POST) {
+    const rt = new THREE.WebGLRenderTarget(1, 1, {type: THREE.HalfFloatType, samples: 4});
+    const comp = new EffectComposer(renderer, rt), bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.55, 0.5, 0.9);
+    comp.addPass(new RenderPass(scene, camera)); comp.addPass(bloom); comp.addPass(new OutputPass()); comp.addPass(new ShaderPass(GRADO));
+    POST = {comp, bloom, w: 0, h: 0, pr: 0};
+  }
+  const pr = renderer.getPixelRatio();
+  if (POST.w !== VW || POST.h !== VH || POST.pr !== pr) {POST.w = VW; POST.h = VH; POST.pr = pr; POST.comp.setPixelRatio(pr); POST.comp.setSize(VW, VH);}
+  return POST;
+}
+function ambienteMapa(ciudad) {ambienteMapa0(ciudad); entornoAP(ciudad); const hemi = scene.children.find((q) => q.isHemisphereLight); hemi.intensity *= HEMI_K;}
+const HEMI_K = 0.72;
+function ambienteMapa0(ciudad) {
   const hemi = scene.children.find((q) => q.isHemisphereLight);
   if (!AMB0) AMB0 = {bg: scene.background.clone(), fc: scene.fog.color.clone(), fn: scene.fog.near, ff: scene.fog.far, sc: sol.color.clone(), si: sol.intensity, hs: hemi.color.clone(), hg: hemi.groundColor.clone(), hi: hemi.intensity};
   if (!ciudad) {scene.background.copy(AMB0.bg); scene.fog.color.copy(AMB0.fc); scene.fog.near = AMB0.fn; scene.fog.far = AMB0.ff; sol.color.copy(AMB0.sc); sol.intensity = AMB0.si; hemi.color.copy(AMB0.hs); hemi.groundColor.copy(AMB0.hg); hemi.intensity = AMB0.hi; return;}
@@ -1240,6 +1282,8 @@ function ganaXp(h, n) {
   while (h.nivel < NIVEL_MAX && h.xp >= xpNivel(h.nivel)) {h.xp -= xpNivel(h.nivel); const v0 = stats(h).vida; h.nivel++; h.pts++; const v1 = stats(h).vida; h.vida += v1 - v0; h.mana += HEROES[h.tipo].crecM; ev(['fx', 'onda', h.x, h.z, 3]); if (h.nivel === NIVEL_R) ev(['aviso', h.id, '¡Habilidad definitiva lista!']);}
 }
 function ev(e) {S.ev.push(e); efectoLocal(e);}
+/* ALMA (22/11): emoticono de un héroe (uno cada 3 s) */
+function emote(h, k) {if (!h || !['hola', 'risa', 'burla', 'gg'].includes(k) || (h.emoT || 0) > S.t) return; h.emoT = S.t + 3; ev(['emo', h.id, k]);}
 
 /* ---------- simulación (anfitrión) ---------- */
 function oculto(u, quien) {if (u.k !== 'h' || u.hierba < 0 || u.revela > S.t) return false; return !(quien && (dist(quien, u) < 3.2 || quien.hierba === u.hierba));}
@@ -1855,6 +1899,7 @@ function aplicaMando(h, o) {
     if (o.t === 'enc') usaEnc(h);
     if (o.t === 'hech1') h.hf = o.v === 'c' ? 'c' : 'f';
     if (o.t === 'avisoEq') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; ev(e);}
+    if (o.t === 'emo') emote(h, o.k);
     if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
     if (o.t === 'alm') {h.x = o.x; h.z = o.z; ponAlmenara(h, o.px, o.pz);}
     if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; h.buf.casa = 8;}}
@@ -2326,7 +2371,7 @@ function golpeVisual(id, de, fuerte) {
   /* que se note el golpe sin parar la pantalla: el que recibe recula un palmo y vuelve, y el que pega se echa hacia delante */
   {const va = VISTA.get(de); if (va) {const dx = (v.xi ?? v.x) - (va.xi ?? va.x), dz = (v.zi ?? v.z) - (va.zi ?? va.z), l = Math.hypot(dx, dz) || 1, f = v.k === 't' || v.k === 'n' ? 0 : (fuerte ? 0.55 : 0.32) * (v.k === 'h' ? 1 : 1.3);
     if (f) o.kb = {x: dx / l * f, z: dz / l * f, t: 0.17, d: 0.17}; const oa = VIS.get(de); if (oa && va.k === 'h' && !(HEROES[va.tipo] || {}).proy) oa.kb = {x: dx / l * 0.22, z: dz / l * 0.22, t: 0.12, d: 0.12};}}
-  const yoPego = de === YO, meDan = id === YO;
+  const yoPego = de === YO, meDan = id === YO; if (fuerte && (yoPego || meDan)) parónGolpe(id, de); /* ALMA: micro-parón */
   const ahora = performance.now(); /* como mucho una chispa cada 0,18 s por personaje: en una pelea grande eran decenas a la vez */
   if ((yoPego || meDan || v.k === 'h') && (fuerte || yoPego || !(ahora - (o.ultImp || 0) < 180))) {o.ultImp = ahora; {const va = VISTA.get(de), deH = va && va.k === 'h'; flip(fuerte ? 'critico' : 'chispa', (v.xi ?? v.x) + rnd(-0.3, 0.3), (v.zi ?? v.z) + rnd(-0.3, 0.3), fuerte ? 2.4 : deH ? 1.9 : 1.3, false, undefined, deH ? 1.3 : undefined);} {const va2 = VISTA.get(de), deSold = va2 && va2.k === 's'; if (!deSold || meDan) suena(fuerte ? 'espada' : deSold ? 'simp' : v.k === 'h' ? 'golpeH' : 'golpe', deSold ? 0.15 : yoPego || meDan ? 0.6 : 0.35, v.xi ?? v.x, v.zi ?? v.z);}}
   if (meDan) tiemblaCam = Math.max(tiemblaCam, fuerte ? 0.35 : 0.18);
@@ -2395,7 +2440,7 @@ function dibuja(dt) {
         else if (v.ac !== o.ac) {o.ac = v.ac; if (v.k === 'j' && NEUTRO[v.tipo].jefe && v.ac % 3 === 0 && o.todos && o.todos.pisoton) {o.ocup = animaClip(o, 'pisoton', 1.6); suena('grito', 0.7, v.x, v.z); setTimeout(() => {tiemblaCam = Math.max(tiemblaCam, 0.35); suena('explosion', 0.8, v.x, v.z); flip('grietas', v.xi ?? v.x, v.zi ?? v.z, 8, true);}, 650);} else if (v.k === 'h' && BASICOS[v.tipo] && o.todos) {const lista = BASICOS[v.tipo], n = lista[v.ac % lista.length], H = HEROES[v.tipo]; o.ocup = animaClip(o, n, Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9; basicoFx(v, o, v.ac);} else otraVez(o, 'atacar'); o.ocup = o.ocup || 0.35; if (v.k === 'h') {o.sqA = 0.1; o.sqT = o.sqD = 0.22;} if (v.id === YO && !HEROES[v.tipo].proy) suena('espada', 0.25);}
         o.ocup = (o.ocup || 0) - dt;
         const vel = o.lx === undefined ? 0 : Math.hypot(x - o.lx, z - o.lz) / Math.max(dt, 0.001); o.lx = x; o.lz = z; o.vel = (o.vel || 0) + (Math.min(vel, 12) - (o.vel || 0)) * Math.min(1, dt * 10);
-        const corre = v.mueve || o.vel > 0.6;
+        const corre = v.mueve || o.vel > 0.6; if (o.celeb && corre) {o.celeb = 0; o.ocup = 0;} /* ALMA: si echa a andar, deja de celebrar */
         if (o.ocup <= 0) pon(o, v.flags & 2 ? 'aturdido' : corre ? 'correr' : 'quieto');
         if (o.clips.correr) o.clips.correr.timeScale = Math.max(0.45, Math.min(1.7, o.vel / (v.k === 'h' ? (v.tipo === 'gollum' ? 5.8 : 4.2) : v.k === 'j' ? 4 : 2.9)));
       }
@@ -2633,8 +2678,75 @@ function monedaVuela(x, z) {
   setTimeout(() => {m.remove(); oro.classList.remove('cobra'); void oro.offsetWidth; oro.classList.add('cobra');}, 560);
 }
 function numero(x, z, txt, cls) {if (cls === 'v') cls = 'cur'; if (NUMS.length > 24) {NUMS[0].el.remove(); NUMS.shift();}const el = document.createElement('div'); el.className = 'num ' + (cls || ''); el.textContent = txt; $('barras').appendChild(el); NUMS.push({el, x: x + rnd(-0.3, 0.3), z, t: 0});}
-function efectoLocal(e) {
+/* ALMA (22/11): frases de cada héroe en un bocadillo sobre la cabeza (al derribar, al lanzar la definitiva, al volver a la vida) y emoticonos.
+   Textos propios, sin citas. hola/risa/burla/gg = los 4 emoticonos del botón; mata/ulti/vuelve = automáticas. */
+const FRASES = {
+  enano: {hola: ['Que la luz te guarde.'], risa: ['¡Ja! Ni un rasguño.'], burla: ['¿Eso era un golpe?'], gg: ['Buena pelea. De verdad.'],
+    mata: ['La luz no se apaga.', 'Uno menos en la carretera.', 'Al suelo, y a pensar.'], ulti: ['¡QUE BRILLE!', '¡De rodillas!'], vuelve: ['Otra vez en pie.', 'La armadura aguanta.']},
+  gandalf: {hola: ['Hace calor, ¿eh?'], risa: ['¡Jajaja! Chamuscado.'], burla: ['Te veo un poco tostado.'], gg: ['Partida ardiente.'],
+    mata: ['Ceniza.', '¡Achicharrado!', 'Vuelta y vuelta.'], ulti: ['¡ARDE!', '¡Todo en llamas!'], vuelve: ['Las brasas nunca se apagan.']},
+  orco: {hola: ['Grub saluda. Grub es educado.'], risa: ['¡Jo, jo! ¡Grub se ríe!'], burla: ['Grub bajito. Tú más.'], gg: ['Grub respeta.'],
+    mata: ['Lección aprendida.', 'Grub enseña, tú aprendes.', 'Clase terminada.'], ulti: ['¡HOJA VERDE!', '¡Grub corta!'], vuelve: ['El maestro vuelve.']},
+  elfo: {hola: ['Te tengo en la mira.'], risa: ['Ni te has enterado.'], burla: ['Quietecito, que no te veo.'], gg: ['Buen tiro. El mío, digo.'],
+    mata: ['Un disparo, una baja.', 'Blanco abatido.', 'Demasiado fácil.'], ulti: ['Respira… ¡ya!', '¡Fuego a discreción!'], vuelve: ['Recargando.']},
+  hobbit: {hola: ['¡Fore!'], risa: ['¡Jaja! ¡Hoyo en uno!'], burla: ['Tu swing da pena.'], gg: ['Bonito recorrido.'],
+    mata: ['¡Bajo par!', '¡Al green!', 'Eagle. Para mí.'], ulti: ['¡FOOORE!', '¡Drive largo!'], vuelve: ['Saco otra vez desde el tee.']},
+  gollum: {hola: ['Ni me has oído llegar.'], risa: ['Je.'], burla: ['Demasiado lento.'], gg: ['Respeto, guerrero.'],
+    mata: ['Silencio.', 'Ni lo viste venir.', 'Sombra y filo.'], ulti: ['Sombras…', '¡Ahora!'], vuelve: ['La sombra vuelve.']},
+  visor: {hola: ['Escaneando… hola.'], risa: ['Ja. Ja. Calculado.'], burla: ['Objetivo: predecible.'], gg: ['Partida registrada: buena.'],
+    mata: ['Objetivo eliminado.', 'Lectura completa.', 'Error en tu sistema.'], ulti: ['¡RAYO MÁXIMO!', 'Fijado. Disparo.'], vuelve: ['Sistema reiniciado.']},
+  rohan: {hola: ['El viento me trae.'], risa: ['¡Te ha comido la arena!'], burla: ['Te pierdes en un oasis.'], gg: ['Buena caza, amigo.'],
+    mata: ['El halcón no falla.', 'Polvo eres.', 'Arena en los ojos.'], ulti: ['¡TORMENTA DE ARENA!', '¡Desde el cielo!'], vuelve: ['El halcón vuelve a volar.']},
+};
+const EMO = {hola: '👋', risa: '😂', burla: '😜', gg: '👍'};
+const BURB = new Map(); /* id → {el, hasta, auto} */
+function burbuja(id, k, emo) {
+  const v = VISTA.get(id); if (!v || v.k !== 'h') return; const F = FRASES[v.tipo] || FRASES.enano, L = F[k]; if (!L) return;
+  const ahora = performance.now(), prev = BURB.get(id);
+  if (!emo && prev && ahora < prev.hasta + 4500) return; /* las automáticas, como mucho una cada ~7 s por héroe */
+  const b = BARRAS.get(id); if (!b) return;
+  if (prev && prev.el.parentNode) prev.el.remove();
+  const el = document.createElement('div'), dur = emo ? 2600 : 2200;
+  el.className = 'burb ' + (id === YO ? 'yo' : v.eq === MI_EQ ? 'az' : 'ro'); el.style.setProperty('--d', dur + 'ms');
+  el.innerHTML = (emo ? '<i>' + EMO[k] + '</i>' : '') + L[Math.floor(Math.random() * L.length)];
+  b.appendChild(el); BURB.set(id, {el, hasta: ahora + dur});
+  /* el héroe celebra (su animación «celebrar») si está quieto: con los emoticonos y al derribar; si echa a andar, se corta */
+  const o = VIS.get(id); if (o && (emo ? k !== 'hola' : k === 'mata') && (o.vel || 0) < 0.6 && o.todos && o.todos.celebrar && !(v.muerto >= 0)) {o.ocup = Math.min(2.4, animaClip(o, 'celebrar')); o.celeb = 1;}
+  setTimeout(() => {if (el.parentNode) el.remove();}, dur);
+}
+/* emoticono propio: en la partida contra la máquina va directo; en línea, por la simulación para que lo vean todos */
+let emoMioT = 0;
+function emoteMio(k) {
+  const ahora = performance.now(); if (ahora < emoMioT) return; emoMioT = ahora + 3000;
+  if (S) {const h = S.u.find((q) => q.id === YO); if (h) emote(h, k);} else NET.manda({t: 'emo', k});
+}
+/* lo que pasa en la partida que da pie a una frase, y el golpe de gracia cuando derribas a un héroe (temblor, monedas, onda y el cartel en oro) */
+function almaEfecto(e) {
   const t = e[0];
+  if (t === 'emo') {burbuja(e[1], e[2], true); if (e[1] === YO || (VISTA.get(e[1]) || {}).eq === MI_EQ) suena('gema', 0.25);}
+  if (t === 'hb' && e[2] === 'r') burbuja(e[1], 'ulti');
+  if (t === 'vive') burbuja(e[1], 'vuelve');
+  if (t === 'baja') {const va = VISTA.get(e[1]), vd = VISTA.get(e[2]); $('anuncio').classList.toggle('tuyo', e[1] === YO && !!vd && vd.k === 'h'); /* el cartel brilla en oro si el derribo es tuyo */
+    if (!va || !vd || va.k !== 'h' || vd.k !== 'h') return;
+    setTimeout(() => burbuja(e[1], 'mata'), 350);
+    if (e[1] === YO) {const x = vd.xi ?? vd.x, z = vd.zi ?? vd.z; tiemblaCam = Math.max(tiemblaCam, 0.55); camGolpe = Math.max(camGolpe, 0.8);
+      flip('monedas', x, z, 3.4, false, 0, 1.4); flip('ondaC', x, z, 5, true); flip('critico', x, z, 3.2, false, undefined, 1.4);
+      try {navigator.vibrate && navigator.vibrate([40, 30, 90]);} catch (er) {}}}
+}
+/* micro-parón en los golpes fuertes tuyos o que te dan: atacante y víctima se quedan congelados 70 ms (solo su animación; el juego sigue) */
+function parónGolpe(id, de) {for (const q of [id, de]) {const o = VIS.get(q); if (o && o.mixer) {o.mixer.timeScale = 0.04; o.hsT = 0.07;}}}
+/* al empezar, cada héroe saluda con su frase */
+function saludosInicio() {let i = 0; for (const [id, v] of VISTA) if (v.k === 'h') setTimeout(() => burbuja(id, id === YO ? 'hola' : ['hola', 'burla'][i % 2], false), 1800 + 900 * i++);}
+/* vapor de las alcantarillas en las calles del barrio (solo la Batalla): un soplo de vez en cuando en los cruces cerca de la cámara */
+const VAPOR = {p: null, t: 0};
+function animaAlma(dt) {
+  for (const [, o] of VIS) if (o.hsT > 0) {o.hsT -= dt; if (o.hsT <= 0 && o.mixer) o.mixer.timeScale = 1;}
+  if (TIPO_MAPA !== 'ojo' || !NAV || ESTADO !== 'juego') return;
+  if (!VAPOR.p) VAPOR.p = NAV.nodos.filter((n, i) => i % 3 === 1 && Math.abs(n.z) < 36 && Math.abs(Math.abs(n.x) - 17) > 5).map((n) => ({x: n.x + 1.3, z: n.z - 0.9, t: Math.random() * 4}));
+  for (const q of VAPOR.p) {q.t -= dt; if (q.t > 0) continue; q.t = 3 + Math.random() * 3.5; if (Math.hypot(q.x - camM.x, q.z - camM.z) < 22) flip('humo', q.x, q.z, 2.4 + Math.random(), false, undefined, 0.4);}
+}
+function efectoLocal(e) {
+  const t = e[0]; try {almaEfecto(e);} catch (er) {console.warn('alma', er);}
   if (t === 'num') {if (e[4] === 'o' && e[5] !== YO) return; if ((e[4] === '' || e[4] === 'c') && e[6] !== undefined && e[5] !== YO && e[6] !== YO) return; /* como en el Wild Rift: solo los números de tus golpes y de los que te dan */ if (e[6] === YO && e[4] !== 'c') e[4] = 'r'; numero(e[1], e[2], e[3], e[4]); if (e[4] === 'o') {suena('moneda', 0.3); flip('monedas', e[1], e[2], 1.8, false, 0, 1.4); monedaVuela(e[1], e[2]);}}
   if (t === 'fx') {if (e[1] === 'onda') flip('onda', e[2], e[3], e[4], true); else if (e[1] !== 'tajo') flip(e[1], e[2], e[3], e[4]); if (e[1] === 'explosion') suena('explosion', 0.6, e[2], e[3]); if (e[1] === 'onda') suena('viento', 0.4, e[2], e[3]);}
   if (t === 'proy') {const o = PROY_AP[e[1]] ? proyAP(e[1], 0.7) : modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(e[6] || 1); scene.add(o); const pr = {tipo: 'proy', k: e[1], o, x: e[2], z: e[3], y: e[7] || 1.2, d: e[4], v: e[5], t: 0};
@@ -2786,6 +2898,7 @@ function apuntaCam(R, F, hw, hh) {
 function camara(dt) {
   try {animaRim();} catch (e) {}
   try {animaJefes();} catch (e) {}
+  try {animaAlma(dt);} catch (e) {}
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
   const {F, R} = ejes(); let x = v.xi ?? v.x, z = v.zi ?? v.z;
   if (!CAM_FIN && S && v.x0 !== undefined) {x = v.x0 + (v.x - v.x0) * ALFA; z = v.z0 + (v.z - v.z0) * ALFA;}  /* donde se va a pintar ESTE fotograma */
@@ -2886,6 +2999,8 @@ function preparaMandos() {
   });
   for (const b of document.querySelectorAll('#pings button[data-p]')) toca(b, () => {$('pings').classList.remove('abierto'); const v = VISTA.get(YO); if (!v) return; const k = b.dataset.p; if (S) {S.ev.push(['ping', MI_EQ, YO, k, v.x, v.z]); efectoLocal(['ping', MI_EQ, YO, k, v.x, v.z]);} else NET.manda({t: 'avisoEq', k, x: v.x, z: v.z});});
   toca($('bPing'), () => $('pings').classList.toggle('abierto'));
+  toca($('bEmo'), () => $('emo').classList.toggle('abierto'));
+  for (const b of document.querySelectorAll('#emo button[data-e]')) toca(b, () => {$('emo').classList.remove('abierto'); emoteMio(b.dataset.e);});
   toca($('compraRapida'), () => {const id = $('compraRapida').dataset.id; if (id) compraMia(id);});
   $('marcador').onclick = () => {$('tabla').classList.toggle('hidden'); pintaTabla();};
   $('tabla').onclick = () => $('tabla').classList.add('hidden');
@@ -3258,7 +3373,7 @@ let fotoT = 0, inT = 0, pingT = 0, reloj0 = 0;
 let MODO = '1v1';
 function empieza(jugadores, modo, simulo) {
   MODO = modo; if (ponMapa(modo)) construyeMapa();
-  precargaVoces(); musica('batalla'); colorFuentes(); document.body.classList.add('jugando'); ESTADO = 'juego'; guardaAtras(); precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo', 'vital'].forEach((i) => $(i).classList.remove('hidden')); if (HAY_BOTELLA && !$('vital').classList.contains('conBotella')) {$('vital').classList.add('conBotella'); $('vVac').src = 'ui/ap_mana_vacia.webp'; $('vLle').src = 'ui/ap_mana_llena.webp';}
+  precargaVoces(); musica('batalla'); colorFuentes(); document.body.classList.add('jugando'); ESTADO = 'juego'; setTimeout(saludosInicio, 1500); guardaAtras(); precargaVoces(); $('menu').classList.add('hidden'); ['hud', 'joy', 'mandos', 'bTienda', 'bBase', 'bZoom', 'bAjustes', 'mini', 'objetivo', 'vital'].forEach((i) => $(i).classList.remove('hidden')); if (HAY_BOTELLA && !$('vital').classList.contains('conBotella')) {$('vital').classList.add('conBotella'); $('vVac').src = 'ui/ap_mana_vacia.webp'; $('vLle').src = 'ui/ap_mana_llena.webp';}
   VISTA = new Map(); for (const id of [...VIS.keys()]) quitaVis(id);
   const yo = jugadores.find((j) => j.slot === NET.soy) || jugadores[0]; MI_EQ = yo.slot % 2;
   if (simulo) {nuevaPartida(jugadores, modo); const h = S.u.find((q) => q.k === 'h' && q.slot === yo.slot); h.local = true; YO = h.id; h.hf = hechElegido; recibeFoto(foto());}
@@ -3303,7 +3418,7 @@ function pantallaVS(jugadores, modo) {
     for (const n of ['flecha_orca', 'flecha_elfica', 'piedra', 'flecha_clavada']) {try {const q = modeloProy(n); if (q) {q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);}} catch (e) {}}
     if (M.brasero) {const q = M.brasero.scene.clone(true); q.position.set(0, -60, 0); scene.add(q); tmp.push(q); subeTexturas(q);} /* las balizas */
     try {for (const tp of ['baya', 'flor', 'seta']) {const q = plantaA6({tipo: tp, x: 0, z: 0}); if (q) {(q.isObject3D ? q : q.g || q.raiz) && ((q.isObject3D ? q : q.g || q.raiz).position.y = -60); const oq = q.isObject3D ? q : q.g || q.raiz; if (oq) {if (!oq.parent) scene.add(oq); tmp.push(oq); subeTexturas(oq);}}}} catch (e) {}
-    renderer.compile(scene, camera);
+    {const P = postAP(); if (P) {const prev = renderer.getRenderTarget(); renderer.setRenderTarget(P.comp.renderTarget1); renderer.compile(scene, camera); renderer.setRenderTarget(prev);} else renderer.compile(scene, camera);} /* con el brillo (Alta) se pinta en una imagen intermedia: otra variante de cada sombreador */
     /* y la variante transparente de los héroes (dentro de la hierba) */
     try {const vuelve = []; for (const o of tmp) o.traverse((q) => {if (q.isMesh && q.material && q.material.customProgramCacheKey && q.material.customProgramCacheKey() === 'rimA6' && !q.material.transparent) {q.material.transparent = true; vuelve.push(q.material);}}); if (vuelve.length) {renderer.compile(scene, camera); vuelve.forEach((m) => {m.transparent = false;});}} catch (e) {}
     setTimeout(() => tmp.forEach((o) => scene.remove(o)), 400); /* sin dispose: si se tirara el material, el sombreador compilado se borraría y volvería el tirón */
@@ -3531,7 +3646,7 @@ function bucle() {
       UT.value += dt; animaPalantir(); const t1 = performance.now(); camara(dt); cullBosque(camM.x, camM.z); dibuja(dt); if (MIRA_ACT) muestraMira(MIRA_ACT.k, MIRA_ACT.dx, MIRA_ACT.dy); else if (MIRA_AT) miraAtaque(); pintaAroAtaque(dt); animaHabilidades(dt); const t2 = performance.now(); hud(); PERF.dib += t2 - t1; PERF.hud += performance.now() - t2;
     }
   } catch (err) {console.error(err); if (!window._errVisto) {window._errVisto = 1; aviso('⚠ ' + String(err.message || err).slice(0, 80));}}
-  const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') {renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true; SOL_C.forzar = false; renderer.render(scene, camera);} /* 17/11: la sombra se repinta un fotograma sí y otro no (es otra pasada entera de la escena; a 60 fps no se nota) */ /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
+  const t3 = performance.now(); if (ESTADO === 'juego' || ESTADO === 'fin') {renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true; SOL_C.forzar = false; const P = postAP(); if (P) P.comp.render(); else renderer.render(scene, camera);} /* 17/11: la sombra se repinta un fotograma sí y otro no (es otra pasada entera de la escena; a 60 fps no se nota) */ /* en el menú no se dibuja el mapa: lo tapa el menú y solo calentaba el móvil */ PERF.ren += performance.now() - t3; PERF.n++; PERF.tot += performance.now() - t0b; PERF.max = Math.max(PERF.max, performance.now() - t0b);
 }
 /* el anfitrión dibuja de su propio estado: los avisos ya los pinta al crearlos; los que se mandan, se guardan */
 const ENVIAR = [];
@@ -3912,4 +4027,4 @@ bucle();
 /* primero que se vea el menú (retrato, fondo y letras) y después, los modelos: si no, los 16 MB se comen la conexión y el retrato tarda */
 {const img = $('mSplash'); const listo = () => new Promise((r) => {if (img.complete && img.naturalWidth) r(); else {img.addEventListener('load', r, {once: true}); img.addEventListener('error', r, {once: true});}});
  Promise.race([Promise.all([listo(), document.fonts ? document.fonts.ready : 0]), new Promise((r) => setTimeout(r, 2500))]).then(() => cargaTodo());}
-window._vado = {efecto: (e) => efectoLocal(e), get MIO() {return MIO;}, MANDO, PRED, CONEX, get INTERP() {return INTERP_MS;}, MIRA_H, get MIRA_ACT() {return MIRA_ACT;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};
+window._vado = {alma: {burbuja, BURB, almaEfecto}, efecto: (e) => efectoLocal(e), get MIO() {return MIO;}, MANDO, PRED, CONEX, get INTERP() {return INTERP_MS;}, MIRA_H, get MIRA_ACT() {return MIRA_ACT;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};

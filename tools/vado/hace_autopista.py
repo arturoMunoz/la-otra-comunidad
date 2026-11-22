@@ -2423,6 +2423,31 @@ js = sub(js, """  const cerca = FUEGOS.map((f) => [Math.hypot(f.x - camM.x, f.z 
   const cerca = cand.sort((a, b) => a[0] - b[0]).slice(0, 4);
   LUCES.forEach((l, i) => {const f = cerca[i]; if (f && f[0] < 30) {const q = f[1]; l.position.set(q.x, q.y || 2, q.z); l.color.copy(q.c || LUZ_FUEGO); l.intensity = q.i || 12; l.distance = q.d || 12;} else l.position.set(0, -50, 0);});""")
 js = sub(js, "function luces() {", "const LUZ_FUEGO = new THREE.Color('#ff9a4a');\nfunction luces() {")
+# ---------- ALMA (22/11, Henar: «mejora el juego como tú creas… dale alma al game»). Código en tools/autopista/alma.
+# (1) Cada héroe habla: un bocadillo sobre la cabeza con una frase suya al derribar a un héroe, al lanzar la definitiva y al volver a la vida
+#     (como mucho una cada ~7 s por héroe; textos propios en FRASES). (2) Emoticonos como los del Wild Rift: botón 😀 bajo ⚙ con 4
+#     (saludo, risa, burla, «bien jugado»), cada héroe con su frase; los ven todos (mensaje `emo` → evento `emo` de la simulación, uno cada 3 s).
+# (3) Golpe de gracia al derribar a un héroe tú: «¡DERRIBADO!» grande, monedas, onda, temblor y vibración.
+js = sub(js, "function ev(e) {S.ev.push(e); efectoLocal(e);}", "function ev(e) {S.ev.push(e); efectoLocal(e);}\n/* ALMA (22/11): emoticono de un héroe (uno cada 3 s) */\nfunction emote(h, k) {if (!h || !['hola', 'risa', 'burla', 'gg'].includes(k) || (h.emoT || 0) > S.t) return; h.emoT = S.t + 3; ev(['emo', h.id, k]);}")
+js = sub(js, "if (o.t === 'avisoEq') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; ev(e);}", "if (o.t === 'avisoEq') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; ev(e);}\n    if (o.t === 'emo') emote(h, o.k);")
+js = sub(js, "function efectoLocal(e) {\n  const t = e[0];", (RAIZ / 'tools/autopista/alma/frases.js').read_text() + "function efectoLocal(e) {\n  const t = e[0]; try {almaEfecto(e);} catch (er) {console.warn('alma', er);}")
+js = sub(js, "  toca($('bPing'), () => $('pings').classList.toggle('abierto'));", "  toca($('bPing'), () => $('pings').classList.toggle('abierto'));\n  toca($('bEmo'), () => $('emo').classList.toggle('abierto'));\n  for (const b of document.querySelectorAll('#emo button[data-e]')) toca(b, () => {$('emo').classList.remove('abierto'); emoteMio(b.dataset.e);});")
+js = sub(js, "        const corre = v.mueve || o.vel > 0.6;\n", "        const corre = v.mueve || o.vel > 0.6; if (o.celeb && corre) {o.celeb = 0; o.ocup = 0;} /* ALMA: si echa a andar, deja de celebrar */\n")
+js = sub(js, "  const yoPego = de === YO, meDan = id === YO;\n", "  const yoPego = de === YO, meDan = id === YO; if (fuerte && (yoPego || meDan)) parónGolpe(id, de); /* ALMA: micro-parón */\n")
+js = sub(js, "  try {animaJefes();} catch (e) {}\n", "  try {animaJefes();} catch (e) {}\n  try {animaAlma(dt);} catch (e) {}\n")
+js = sub(js, "document.body.classList.add('jugando'); ESTADO = 'juego';", "document.body.classList.add('jugando'); ESTADO = 'juego'; setTimeout(saludosInicio, 1500);")
+js = sub(js, "window._vado = {efecto: (e) => efectoLocal(e),", "window._vado = {alma: {burbuja, BURB, almaEfecto}, efecto: (e) => efectoLocal(e),")
+html = sub(html, '<div id="pings" class="hidden">', '<div id="emo"><button id="bEmo" aria-label="Emoticonos">😀</button><div class="eOp"><button data-e="hola" aria-label="Saludo">👋</button><button data-e="risa" aria-label="Risa">😂</button><button data-e="burla" aria-label="Burla">😜</button><button data-e="gg" aria-label="Bien jugado">👍</button></div></div><div id="pings" class="hidden">', donde='html')
+html = sub(html, '</head>', '<style>\n' + (RAIZ / 'tools/autopista/alma/alma.css').read_text() + '</style>\n</head>', donde='html')
+# ALMA · ENTORNO (22/11): mapa de reflejos para que lo metálico tenga color (las torres salían negras). tools/autopista/alma/entorno.js.
+# Se pone ya al arrancar (los sombreadores se compilan con él en la pantalla VS) y se rehace al cambiar de mapa; la luz de la cúpula y del cielo se baja un poco para compensar.
+js = sub(js, "function ambienteMapa(ciudad) {", (RAIZ / 'tools/autopista/alma/entorno.js').read_text() + "function ambienteMapa(ciudad) {ambienteMapa0(ciudad); entornoAP(ciudad); const hemi = scene.children.find((q) => q.isHemisphereLight); hemi.intensity *= HEMI_K;}\nconst HEMI_K = 0.72;\nfunction ambienteMapa0(ciudad) {")
+js = sub(js, "const sol = new THREE.DirectionalLight('#ffe2b8', 2.2);", "setTimeout(() => {try {entornoAP(true);} catch (e) {}}, 0);\nconst sol = new THREE.DirectionalLight('#ffe2b8', 2.2);")
+# ALMA · BRILLO (22/11): bloom + color en calidad Alta (tools/autopista/alma/post.js). En Baja y Media, igual que antes.
+js = sub(js, "import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';", "import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';\nimport {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';\nimport {RenderPass} from 'three/addons/postprocessing/RenderPass.js';\nimport {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';\nimport {OutputPass} from 'three/addons/postprocessing/OutputPass.js';\nimport {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';")
+js = sub(js, "SOL_C.forzar = false; renderer.render(scene, camera);}", "SOL_C.forzar = false; const P = postAP(); if (P) P.comp.render(); else renderer.render(scene, camera);}")
+js = sub(js, "    renderer.compile(scene, camera);\n    /* y la variante transparente", "    {const P = postAP(); if (P) {const prev = renderer.getRenderTarget(); renderer.setRenderTarget(P.comp.renderTarget1); renderer.compile(scene, camera); renderer.setRenderTarget(prev);} else renderer.compile(scene, camera);} /* con el brillo (Alta) se pinta en una imagen intermedia: otra variante de cada sombreador */\n    /* y la variante transparente")
+js = sub(js, "function ambienteMapa(ciudad) {ambienteMapa0(ciudad);", (RAIZ / 'tools/autopista/alma/post.js').read_text() + "function ambienteMapa(ciudad) {ambienteMapa0(ciudad);")
 js = sub(js, "get ESTADO() {return ESTADO;}};", "get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};")
 
 if fallos:
