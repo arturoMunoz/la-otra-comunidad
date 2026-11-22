@@ -3,16 +3,20 @@
    (algo más de saturación y contraste y un viñeteado suave). En Baja y Media se pinta como siempre (no cuesta nada). */
 const GRADO = {uniforms: {tDiffuse: {value: null}}, vertexShader: 'varying vec2 vUv; void main() {vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);}',
   fragmentShader: 'uniform sampler2D tDiffuse; varying vec2 vUv; void main() {vec4 c = texture2D(tDiffuse, vUv); float l = dot(c.rgb, vec3(0.299, 0.587, 0.114)); c.rgb = mix(vec3(l), c.rgb, 1.14); c.rgb = (c.rgb - 0.5) * 1.06 + 0.5; float d = distance(vUv, vec2(0.5)); c.rgb *= mix(1.0, 0.8, smoothstep(0.42, 0.9, d)); gl_FragColor = c;}'};
-let POST = null;
+let POST = null, POST_ROTO = false; /* si el brillo falla en un móvil, se apaga y se pinta como en Media (nunca deja la pantalla en negro) */
 function postAP() {
-  if (GRAF.cal !== 'alta') {if (POST) {POST.comp.dispose(); POST = null;} return null;}
-  if (!POST) {
+  if (GRAF.cal !== 'alta' || POST_ROTO) {if (POST) {POST.comp.dispose(); POST = null;} return null;}
+  if (!POST) try {
     const rt = new THREE.WebGLRenderTarget(1, 1, {type: THREE.HalfFloatType, samples: 4});
     const comp = new EffectComposer(renderer, rt), bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.55, 0.5, 0.9);
     comp.addPass(new RenderPass(scene, camera)); comp.addPass(bloom); comp.addPass(new OutputPass()); comp.addPass(new ShaderPass(GRADO));
+    const orig = comp.render.bind(comp);
+    comp.render = (d) => {try {orig(d);} catch (e) {console.error('brillo', e); POST_ROTO = true; try {comp.dispose();} catch (x) {} POST = null; renderer.setRenderTarget(null); renderer.render(scene, camera);}};
     POST = {comp, bloom, w: 0, h: 0, pr: 0};
-  }
+  } catch (e) {console.error('brillo', e); POST_ROTO = true; POST = null; return null;}
+  try {
   const pr = renderer.getPixelRatio();
   if (POST.w !== VW || POST.h !== VH || POST.pr !== pr) {POST.w = VW; POST.h = VH; POST.pr = pr; POST.comp.setPixelRatio(pr); POST.comp.setSize(VW, VH);}
+  } catch (e) {console.error('brillo', e); POST_ROTO = true; POST = null; return null;}
   return POST;
 }
