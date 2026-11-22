@@ -12,7 +12,7 @@ for (const [a,b,c,d] of [['elfo','hobbit','orco','enano'],['gandalf','rohan','go
       if (u.k !== 'h' || u.muerto > 0 || u.vida <= 0) continue;
       const p = last[u.id]; last[u.id] = [u.x, u.z];
       if (p && Math.hypot(u.x-p[0], u.z-p[1]) < 0.002 && !(u.at > 0)) quieto[u.id] = (quieto[u.id]||0)+1; else quieto[u.id] = 0;
-      if (quieto[u.id] === 150 && Math.min(Math.hypot(u.x-29,u.z+50.5),Math.hypot(u.x+29,u.z-50.5)) > 12) {tot.atasco++; (tot.donde = tot.donde || []).push(u.tipo+'@'+u.x.toFixed(0)+','+u.z.toFixed(0)+' t'+Math.round(sim.S.t));}
+      if (quieto[u.id] === 150 && Math.min(Math.hypot(u.x,u.z+54),Math.hypot(u.x,u.z-54)) > 12) {tot.atasco++; (tot.donde = tot.donde || []).push(u.tipo+'@'+u.x.toFixed(0)+','+u.z.toFixed(0)+' t'+Math.round(sim.S.t));}
       tot.pasos++;
     }
   }

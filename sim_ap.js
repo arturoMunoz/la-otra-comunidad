@@ -116,22 +116,81 @@ function dentroOjo(x, z) {if (!OJO) return Math.abs(x) < MAPA.ancho && Math.abs(
 const ladoDe = (p) => p.x * EJE.x + p.z * EJE.z;        /* < 0 lado de Rohan, > 0 lado de Isengard */
 const TORRE_F = 0.27;                                   /* las torres de camino, al 27 % desde su base */
 const enHierba = (u) => HIERBAS.findIndex((b) => Math.hypot(u.x - b.x, u.z - b.z) < b.r);
+/* ---------- LA CIUDAD (22/11, Henar: «un mapa de autopistas sin ríos, del que sentirme orgulloso»): la Batalla 2 contra 2 de A-6 ----------
+   Dos autopistas casi paralelas (34 m de una a otra) de peaje a peaje; entre ellas el barrio (la jungla): manzanas de edificios con calles,
+   solares y plazas donde viven las bestias; una avenida cruza por la mitad con una glorieta (la rata). Fuera de las autopistas, el colector
+   de Nasor (oeste) y la central del lagarto (este), cada uno con una sola boca a su autopista. Simétrico girando 180°.
+   Los edificios son rectángulos sólidos (RECTS): choque exacto, sin las paredes a trompicones de los árboles. */
+let RECTS = [];
+const CIU = {
+  carril: [{x: 0, z: 46}, {x: -9, z: 39}, {x: -17, z: 28}, {x: -17, z: 0}, {x: -17, z: -28}, {x: -9, z: -39}, {x: 0, z: -46}],
+  base: {fuente: {x: 0, z: 56}, nexo: {x: 0, z: 51}, torre: {x: 0, z: 42.5}},
+  /* manzanas del lado azul [x0, z0, x1, z1]; las del rojo salen girando */
+  bloques: [[-12, 3, -8.5, 10], [-12, 14.5, -8.5, 23.5], [-8.5, 3, -3, 6.5], [-8.5, 17, -2.5, 21], [-8.5, 28.5, -3.5, 31.5], [-5.5, 31.5, -3, 35.5],
+    [8.5, 3, 12, 6.5], [8.5, 10.5, 12, 17.5], [8.5, 22, 12, 26.5], [2.5, 13, 8.5, 17], [3.5, 27, 8.5, 31], [3, 31, 5.5, 35.5],
+    [-34, 8, -22, 40], [-24, 3, -22, 8], [22, 12, 34, 40], [22, 7, 24, 12], [-34, 40, -14.5, 60], [14.5, 40, 34, 60]],
+  campos: [{x: -5.5, z: 12, tipo: 'huorn', n: 1}, {x: -5.5, z: 25, tipo: 'warg', n: 2}, {x: 5.5, z: 9, tipo: 'crebain', n: 4}, {x: 5.5, z: 22, tipo: 'troll', n: 1}, {x: 0, z: 31, tipo: 'sapo', n: 1}],
+  plantas: [{x: 5.5, z: 4.6, tipo: 'baya'}, {x: -1, z: 24.5, tipo: 'flor'}, {x: -5.5, z: 16, tipo: 'seta'}],
+  hierbas: [{x: -10.3, z: 12.25, r: 2.4}, {x: -10.3, z: 26, r: 2.4}, {x: 10.3, z: 8.5, r: 2.4}, {x: 10.3, z: 19.75, r: 2.4}, {x: -9, z: 1.3, r: 2.4}, {x: 0, z: 18, r: 2.2}],
+  /* calles para los bots (del lado azul; 'L' = a la autopista más cercana) */
+  nodos: {rot: {x: 0, z: 0}, avO: {x: -9, z: 0}, c6: {x: 0, z: 6.5}, c12: {x: 0, z: 12}, c19: {x: 0, z: 18.5}, c25: {x: 0, z: 24.5}, pO1: {x: -10.3, z: 12.25}, pO2: {x: -10.3, z: 26}, pE1: {x: 10.3, z: 8.5}, pE2: {x: 10.3, z: 19.75}, bC: {x: 0, z: 37.5}},
+  calles: [['rot', 'avO'], ['avO', 'L'], ['rot', 'c6'], ['c6', 'c12'], ['c12', 'c19'], ['c19', 'c25'], ['c25', 'sapo'], ['sapo', 'bC'], ['bC', 'L'],
+    ['huorn', 'c12'], ['huorn', 'pO1'], ['pO1', 'L'], ['warg', 'c25'], ['warg', 'pO2'], ['pO2', 'L'], ['crebain', 'c6'], ['crebain', 'pE1'], ['crebain', 'rot'], ['pE1', 'L'], ['troll', 'c19'], ['troll', 'pE2'], ['pE2', 'L']],
+};
+function ponCiudad() {
+  MAPA = {ancho: 34, largo: 58}; SIM = gira; EJE = {x: 0, z: -1}; PIT = {x: -28, z: -2}; PIT2 = gira(PIT);
+  const A = CIU.carril; CARRILES = [A, A.map(gira).reverse()];
+  const R = CIU.base; BASES = [R, {fuente: gira(R.fuente), nexo: gira(R.nexo), torre: gira(R.torre)}];
+  const C = CIU.campos; CAMPOS = [...C, ...C.map((c) => ({...c, ...gira(c)})), {x: PIT.x, z: PIT.z, tipo: 'uruk', n: 1}, {x: PIT2.x, z: PIT2.z, tipo: 'draco', n: 1}, {x: 0, z: 0, tipo: 'nutria', n: 1}];
+  PLANTAS = [...CIU.plantas, ...CIU.plantas.map((q) => ({...q, ...gira(q)}))];
+  ORILLA = [];
+  RECTS = [...CIU.bloques, ...CIU.bloques.map((b) => [-b[2], -b[3], -b[0], -b[1]])];
+}
+/* empuja fuera de las manzanas (por el lado más corto) */
+function chocaRects(u, m) {
+  for (let i = 0; i < RECTS.length; i++) {const r = RECTS[i];
+    if (u.x <= r[0] - m || u.x >= r[2] + m || u.z <= r[1] - m || u.z >= r[3] + m) continue;
+    const a = u.x - (r[0] - m), b = r[2] + m - u.x, c = u.z - (r[1] - m), d = r[3] + m - u.z, k = Math.min(a, b, c, d);
+    if (k === a) u.x = r[0] - m; else if (k === b) u.x = r[2] + m; else if (k === c) u.z = r[1] - m; else u.z = r[3] + m;}
+}
+/* ¿cruza una manzana el segmento a-b? (con margen) — también los núcleos y las torres de las bases, que están en medio del paso */
+function cortaRects(a, b, m) {
+  for (const B of BASES) for (const [q, r] of [[B.nexo, 2.4], [B.torre, 1.9]]) if (distSeg(q.x, q.z, a, b) < r + m + 0.2 && Math.hypot(a.x - q.x, a.z - q.z) > r + 0.3) return true;
+  for (let i = 0; i < RECTS.length; i++) {const r = RECTS[i]; let t0 = 0, t1 = 1; const dx = b.x - a.x, dz = b.z - a.z;
+    const ej = [[-dx, a.x - (r[0] - m)], [dx, r[2] + m - a.x], [-dz, a.z - (r[1] - m)], [dz, r[3] + m - a.z]]; let fuera = false;
+    for (const [p, q] of ej) {if (p === 0) {if (q < 0) {fuera = true; break;}} else {const t = q / p; if (p < 0) {if (t > t1) {fuera = true; break;} if (t > t0) t0 = t;} else {if (t < t0) {fuera = true; break;} if (t < t1) t1 = t;}}}
+    if (!fuera && t0 <= t1) return true;}
+  return false;
+}
+function navCiudad() {
+  const nodos = [], aristas = [], idx = new Map(), add = (p, extra) => {nodos.push({x: p.x, z: p.z, ...extra}); return nodos.length - 1;};
+  const ruta = CARRILES.map(() => []);
+  CARRILES.forEach((L, l) => L.forEach((p, i) => {const k = p.x + ',' + p.z; if (!idx.has(k)) idx.set(k, add(p, {carril: true})); ruta[l].push(idx.get(k));}));
+  for (const r of ruta) for (let i = 1; i < r.length; i++) aristas.push([r[i - 1], r[i]]);
+  const camp = CAMPOS.map((c) => add(c, {campo: true}));
+  const d = (a, b) => Math.hypot(nodos[a].x - nodos[b].x, nodos[a].z - nodos[b].z);
+  /* puerta a la autopista: el punto más cercano del carril, metido en él */
+  const aLinea = (c) => {let m = null; CARRILES.forEach((L) => {for (let i = 1; i < L.length; i++) {const a = L[i - 1], b = L[i], vx = b.x - a.x, vz = b.z - a.z, t = Math.max(0, Math.min(1, ((nodos[c].x - a.x) * vx + (nodos[c].z - a.z) * vz) / (vx * vx + vz * vz))), x = a.x + vx * t, z = a.z + vz * t, dd = Math.hypot(nodos[c].x - x, nodos[c].z - z); if (!m || dd < m.d) m = {d: dd, x, z, a: idx.get(a.x + ',' + a.z), b: idx.get(b.x + ',' + b.z)};}}); const n = add({x: m.x, z: m.z}, {carril: true, puerta: true}); aristas.push([m.a, n], [n, m.b], [c, n]);};
+  for (const s of [0, 1]) {
+    const T = s ? gira : (p) => p, mio = new Map();
+    for (const k in CIU.nodos) {const p = T(CIU.nodos[k]), key = p.x + ',' + p.z; if (!idx.has(key)) idx.set(key, add(p, {})); mio.set(k, idx.get(key));}
+    CIU.campos.forEach((c, i) => mio.set(c.tipo, camp[i + s * CIU.campos.length]));
+    for (const [a, b] of CIU.calles) {const ia = mio.get(a); if (b === 'L') {aLinea(ia); continue;} const ib = mio.get(b); if (!aristas.some(([x, y]) => (x === ia && y === ib) || (x === ib && y === ia))) aristas.push([ia, ib]);}
+  }
+  const iU = camp[CAMPOS.findIndex((c) => c.tipo === 'uruk')], iD = camp[CAMPOS.findIndex((c) => c.tipo === 'draco')], iN = camp[CAMPOS.findIndex((c) => c.tipo === 'nutria')];
+  aLinea(iU); aLinea(iD); aristas.push([iN, idx.get('0,0')]);
+  /* de la fuente a la autopista rodeando el núcleo (está en medio): dos pasos a los lados */
+  for (const b of BASES) {const p = CARRILES[0][b === BASES[0] ? 0 : CARRILES[0].length - 1], f = add(b.fuente, {}), n = idx.get(p.x + ',' + p.z);
+    for (const sg of [1, -1]) {const l = add({x: b.nexo.x + sg * 4.3, z: b.nexo.z}, {}); aristas.push([f, l], [l, n]);}}
+  const vec = nodos.map(() => []); for (const [a, b] of aristas) {vec[a].push(b); vec[b].push(a);}
+  return {nodos, aristas, vec, d};
+}
+
 function ponHechC(tipo) {Object.assign(HECHIZOS.c, tipo === 'ojo' ? {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'} : {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_ignicion.webp'});}
 function ponMapa(modo) {
   const tipo = modo === '2v2' ? 'ojo' : 'linea'; ponHechC(tipo); if (tipo === TIPO_MAPA) return false; TIPO_MAPA = tipo;
   if (tipo === 'ojo') {
-    MAPA = {ancho: 33, largo: 58}; SIM = gira; EJE = {x: 0.423, z: -0.906}; PIT = {x: 0, z: 0};
-    const A = [{x: -21, z: 45}, {x: -27, z: 28}, {x: -27, z: 8}, {x: -21, z: -14}, {x: -9, z: -33}, {x: 6, z: -44}, {x: 21, z: -45}];
-    CARRILES = [A, A.map(gira).reverse()];
-    const R = {fuente: {x: -29, z: 53}, nexo: {x: -24.5, z: 48.5}, torre: {x: -17, z: 40.5}};
-    BASES = [R, {fuente: gira(R.fuente), nexo: gira(R.nexo), torre: gira(R.torre)}];
-    /* como la jungla del LoL: roja (troll) y azul (Huorn), lobos (huargos), rapaces (crebain), Gromp (sapo); el Uruk (Barón) y el draco (dragón) en dos fosos a orillas del río, uno a cada lado, y la nutria (cangrejo) por el río */
-    PIT = {x: 11.8, z: 5.5}; PIT2 = {x: -11.8, z: -5.5};
-    const C = [{x: -13, z: 18, tipo: 'crebain', n: 4}, {x: 3, z: 25, tipo: 'warg', n: 2}, {x: -6, z: 35, tipo: 'sapo', n: 1}, {x: -16, z: 4, tipo: 'troll', n: 1}, {x: 9, z: 13, tipo: 'huorn', n: 1}];
-    CAMPOS = [...C, ...C.map((c) => ({...c, ...gira(c)})), {x: PIT.x, z: PIT.z, tipo: 'uruk', n: 1}, {x: PIT2.x, z: PIT2.z, tipo: 'draco', n: 1}, {x: 0, z: 0, tipo: 'nutria', n: 1}];
-    const PL = [{x: -10, z: 26, tipo: 'seta'}, {x: -19.5, z: 13, tipo: 'baya'}, {x: 2, z: 17, tipo: 'flor'}];
-    PLANTAS = [...PL, ...PL.map((q) => ({...q, ...gira(q)}))];
-    ORILLA = [{x: 7, z: 3.2}, {x: -7, z: -3.2}];
+    ponCiudad();
   } else {
     /* 1 contra 1 en «el Abismo», como el Abismo de los Lamentos del ARAM (donde el Wild Rift juega su Duelo):
        un único puente recto, sin espesura ni bestias, matorrales a los lados y 4 reliquias de vida */
@@ -142,7 +201,7 @@ function ponMapa(modo) {
     BASES = [R, {fuente: refleja(R.fuente), nexo: refleja(R.nexo), torre: refleja(R.torre)}];
     const C = [{x: -12, z: 18, tipo: 'warg', n: 2}, {x: 12, z: 26, tipo: 'warg', n: 2}, {x: -13, z: 35, tipo: 'orco', n: 3}, {x: 14, z: 13, tipo: 'troll', n: 1}, {x: -15, z: 7, tipo: 'alfa', n: 1}];
     CAMPOS = [];
-    ORILLA = [];
+    ORILLA = []; RECTS = [];
   }
   LARGOS = CARRILES.map((L) => {const c = [0]; for (let i = 1; i < L.length; i++) c.push(c[i - 1] + Math.hypot(L[i].x - L[i - 1].x, L[i].z - L[i - 1].z)); return c;});
   OJO = tipo === 'ojo' ? [...CARRILES[0], ...CARRILES[1].slice().reverse()] : null;
@@ -153,6 +212,7 @@ function ponMapa(modo) {
     const haciaDentro = Math.sign((PIT.x - p.x) * nx + (PIT.z - p.z) * nz) || 1, s2 = sgn || lado * haciaDentro, d = tipo === 'ojo' ? (lado > 0 ? 6.2 : 5.6) : 7.2;
     HIERBAS.push({x: p.x + nx * s2 * d, z: p.z + nz * s2 * d, r: 2.4});
   }
+  if (tipo === 'ojo') HIERBAS = [...CIU.hierbas, ...CIU.hierbas.map((h) => ({...h, ...gira(h)}))];
   for (const q of ORILLA) HIERBAS.push({...q, r: 2.4});
   /* reliquias de vida del ARAM: dos por lado, una delante de la torre de camino y otra detrás; salen a 1:45 y 2:30 y vuelven 90 s después de cogerlas */
   RELIQ = [];
@@ -165,6 +225,7 @@ const ARB = new Map(); const FUEGOS = [], LUCES = []; let NAV = null; const arbK
 function ponArbolChoque(x, z, r) {const k = arbKey(x, z); if (!ARB.has(k)) ARB.set(k, []); ARB.get(k).push({x, z, r});}
 /* el bosque: lo mismo en el móvil (para dibujarlo) y en el servidor (para los choques) */
 function plantaBosque(al, planta, enBase) {
+  if (TIPO_MAPA === 'ojo') return;  /* la ciudad no tiene bosque: sus manzanas son RECTS */
   const sendas = NAV.aristas.filter(([a, b]) => !(NAV.nodos[a].carril && NAV.nodos[b].carril)).map(([a, b]) => [NAV.nodos[a], NAV.nodos[b]]);
   enBase = enBase || ((x, z) => BASES.some((b) => Math.hypot(b.fuente.x - x, b.fuente.z - z) < 10 || Math.hypot(b.nexo.x - x, b.nexo.z - z) < 9 || Math.hypot(b.torre.x - x, b.torre.z - z) < 6));
   for (let x = -58; x <= 58; x += 2.6) for (let z = -84; z <= 84; z += 2.6) {
@@ -180,7 +241,7 @@ function plantaBosque(al, planta, enBase) {
     const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 1.4 : jO ? 0.85 : 1), juego && !muro); if (juego && muro) ponArbolChoque(px, pz, 1.3);
   }
 }
-function lineaLibre(a, b) {const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
+function lineaLibre(a, b) {if (RECTS.length && cortaRects(a, b, 0.25)) return false; const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
 const NEUTRO = {
   warg: {nombre: 'Perro asilvestrado', vida: 560, dano: 26, alcance: 1.9, vatq: 0.9, vel: 5, oro: 45, xp: 55, modelo: 'ap_perro', alto: 1.2},
   orco: {nombre: 'Perro asilvestrado', vida: 430, dano: 22, alcance: 1.8, vatq: 1, vel: 4.4, oro: 35, xp: 40, modelo: 'ap_perro', alto: 1.2},
@@ -200,6 +261,7 @@ for (const k in NEUTRO) {const n = NEUTRO[k]; if (n.jefe || n.draco) {n.oro = Ma
 const BUFF_TXT = {troll: 'Brasa del toro: tus golpes queman y frenan durante 2 min', huorn: 'Turbo del coloso: habilidades un 20 % más rápidas y más regeneración durante 2 min', alfa: 'Aullido del alfa: corres más y te curas deprisa durante 2 min', uruk: 'Furia de Nasor: todo el equipo pega más, se cura más y sus soldados salen más fuertes durante 3 min'};
 /* red de caminos para los bots: puntos de los dos caminos, cubiles y fuentes; los árboles nunca se ponen encima de estas sendas */
 function haceNav() {
+  if (TIPO_MAPA === 'ojo') return navCiudad();
   const nodos = [], aristas = [], idx = new Map(), add = (p, extra) => {nodos.push({x: p.x, z: p.z, ...extra}); return nodos.length - 1;};
   const ruta = CARRILES.map(() => []);
   CARRILES.forEach((L, l) => L.forEach((p, i) => {const k = p.x + ',' + p.z; if (!idx.has(k)) idx.set(k, add(p, {carril: true})); ruta[l].push(idx.get(k));}));
@@ -384,15 +446,15 @@ function muere(d, o) {
     const eq = o && o.k === 'h' ? o.eq : null;
     if (o && o.k === 'h') {const stJ = stats(o); o.vida = Math.min(stJ.vida, o.vida + stJ.vida * (nd.grande ? 0.1 : 0.04)); o.mana = Math.min(stJ.mana, o.mana + stJ.mana * 0.05); o.oro += nd.oro; o.cs++; ev(['num', d.x, d.z, '+' + nd.oro, 'o', o.id]);}
     if (eq !== null) for (const h of heroes()) if (h.eq === eq && !h.muerto && (h === o || dist(h, d) < 14)) ganaXp(h, nd.xp);
-    if (nd.buff === 'uruk' && eq !== null) {S.bufEq[eq].uruk = S.t + 180; for (const h of heroes()) if (h.eq === eq) h.oro += 150; ev(['fx', 'onda', d.x, d.z, 9]); ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' derriba a Nasor']); ev(['aviso', 0, BUFF_TXT.uruk]);}
+    if (nd.buff === 'uruk' && eq !== null) {S.bufEq[eq].uruk = S.t + 180; for (const h of heroes()) if (h.eq === eq) h.oro += 150; ev(['fx', 'onda', d.x, d.z, 9]); ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' derriba a Nasor']); ev(['jefe', 'cae', d.x, d.z, eq]);}
     else if (nd.draco && eq !== null) {
       const be = S.bufEq[eq]; be.drF = be.drF || 0; be.drH = be.drH || 0; if (d.elem === 'f') be.drF++; else be.drH++;
       S.dracoSig = S.dracoSig === 'f' ? 'h' : 'f'; ev(['fx', 'onda', d.x, d.z, 9]);
       ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + (d.elem === 'f' ? ' caza al lagarto de fuego' : ' caza al lagarto de hielo')]);
-      if (be.drF + be.drH >= 3 && !be.alma) {be.alma = 1; ev(['aviso', 0, '🐉 ' + (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' consigue el ALMA DEL LAGARTO']); for (const q of S.campos) if (NEUTRO[q.tipo].draco) q.resp = 1e9;}
-      else ev(['aviso', 0, d.elem === 'f' ? 'Aliento de fuego: el equipo pega un 6 % más' : 'Aliento helado: el equipo tiene un 6 % más de vida']);
+      if (be.drF + be.drH >= 3 && !be.alma) {be.alma = 1; ev(['jefe', 'lcae', d.x, d.z, eq, d.elem === 'f' ? 1 : 0, 1]); for (const q of S.campos) if (NEUTRO[q.tipo].draco) q.resp = 1e9;}
+      else ev(['jefe', 'lcae', d.x, d.z, eq, d.elem === 'f' ? 1 : 0, 0]);
     }
-    else if (nd.pasiva && eq !== null) {S.santuarios.push({x: d.x, z: d.z, r: 7, eq, hasta: S.t + 90}); ev(['aviso', 0, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' caza a la rata: santuario de velocidad y vista en el río']); ev(['fx', 'onda', d.x, d.z, 7]);}
+    else if (nd.pasiva && eq !== null) {S.santuarios.push({x: d.x, z: d.z, r: 7, eq, hasta: S.t + 90}); ev(['aviso', 0, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' caza a la rata: santuario de velocidad y vista en la glorieta']); ev(['fx', 'onda', d.x, d.z, 7]);}
     else if (nd.buff && o && o.k === 'h') {o.buf[nd.buff] = 120; ev(['fx', 'onda', d.x, d.z, 5]); ev(['aviso', o.id, BUFF_TXT[nd.buff]]);}
   }
   if (d.k === 'h') {
@@ -480,13 +542,14 @@ function limita(u) {u.x = Math.max(-MAPA.ancho, Math.min(MAPA.ancho, u.x)); u.z 
 let ESTR = [];
 function estructuras(lista) {ESTR = []; if (window._sinEstr) return; for (const q of lista) if ((q.k === 't' || q.k === 'n') && q.vida > 0) ESTR.push({x: q.x, z: q.z, r: (q.k === 'n' ? 2.4 : 1.9)});}
 function choca(u) {
+  if (RECTS.length) chocaRects(u, u.k === 'h' ? 0.45 : 0.3);
   for (const a of ESTR) {const dx = u.x - a.x, dz = u.z - a.z, d = Math.hypot(dx, dz), m = a.r + (u.rad && u.k !== 'h' ? 0.3 : 0.45); if (d < m) {if (d < 0.001) {u.x = a.x + m; continue;} u.x = a.x + dx / d * m; u.z = a.z + dz / d * m;}}
   for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {const l = ARB.get((Math.floor(u.x / 4) + i) + ',' + (Math.floor(u.z / 4) + j)); if (l) for (const a of l) {const dx = u.x - a.x, dz = u.z - a.z, d = Math.hypot(dx, dz), m = a.r + 0.45; if (d < m && d > 0.001) {u.x = a.x + dx / d * m; u.z = a.z + dz / d * m;}}}
 }
 /* rumbo de un bot: recto si no hay árboles en medio; si los hay, por la red de sendas */
 function rumbo(u, tx, tz) {
   const t = {x: tx, z: tz};
-  if (Math.hypot(tx - u.x, tz - u.z) < 4 || lineaLibre(u, t)) {u.ruta = null; return [tx - u.x, tz - u.z];}
+  if ((Math.hypot(tx - u.x, tz - u.z) < 4 && !(RECTS.length && cortaRects(u, t, 0.2))) || lineaLibre(u, t)) {u.ruta = null; return [tx - u.x, tz - u.z];}
   if (!u.ruta || u.rutaT < S.t || Math.hypot(u.rutaD.x - tx, u.rutaD.z - tz) > 4) {u.ruta = camino(u, t); u.rutaT = S.t + 1.5; u.rutaD = t;}
   /* el punto más lejano de la ruta al que ya se ve recto */
   let obj = null; for (let i = u.ruta.length - 1; i >= 0; i--) if (lineaLibre(u, u.ruta[i])) {obj = u.ruta[i]; break;}
@@ -619,17 +682,18 @@ function paso(dt) {
   }
   /* la espesura: campamentos que reaparecen y bestias que vuelven a su sitio si te alejas */
   S.campos.forEach((c, ci) => {
+    if (c.vivos === 0 && (NEUTRO[c.tipo].jefe || NEUTRO[c.tipo].draco) && c.avJ !== c.resp && S.t > c.resp - 30 && S.t < c.resp && c.resp < 1e8) {c.avJ = c.resp; ev(['jefe', NEUTRO[c.tipo].jefe ? 'pronto' : 'lpronto', c.x, c.z, Math.round(c.resp - S.t), S.dracoSig === 'f' ? 1 : 0]);}
     if (c.vivos > 0 || S.t < c.resp) return;
     const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;
-    if (nd.draco) {c.elem = S.dracoSig; ev(['aviso', 0, c.elem === 'f' ? '🔥 Ha salido un lagarto de fuego en la central' : '❄ Ha salido un lagarto de hielo en la central']);}
+    if (nd.draco) {c.elem = S.dracoSig; ev(['jefe', 'lsale', c.x, c.z, 0, c.elem === 'f' ? 1 : 0]);}
     for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, elem: c.elem, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.jefe ? 1.5 : nd.grande ? 1.1 : 0.6});
-    if (nd.jefe) {ev(['aviso', 0, '¡Nasor ha salido del colector junto al río!']); ev(['voz', 'uruk_despierta']);}
+    if (nd.jefe) ev(['jefe', 'sale', c.x, c.z]);
   });
   for (const u of S.u) {
     if (u.k !== 'j' || u.muerto) continue;
     const nd = NEUTRO[u.tipo]; u.cd = Math.max(0, u.cd - dt);
     if (nd.pasiva) {
-      const t = (u.ruta = u.ruta ?? 1), R = 9, dx = 0.906 * R * t, dz = 0.423 * R * t, huye = u.agro && S.t < u.agroT;
+      const t = (u.ruta = u.ruta ?? 1), R = 8.5, dx = R * t, dz = 0, huye = u.agro && S.t < u.agroT;
       u.mueve = mueveHacia(u, dx, dz, nd.vel * (huye ? 1.6 : 0.8), dt); if (!u.mueve) u.ruta = -t;
       continue;
     }

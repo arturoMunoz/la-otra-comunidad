@@ -14,8 +14,8 @@ async def main():
         await pg.screenshot(path='/home/claude/pruebas/2v2_menu.png')
         await pg.click('#bBots'); await pg.wait_for_timeout(800)
         await pg.screenshot(path='/home/claude/pruebas/2v2_elige.png')
-        await pg.click('#eOk')
-        for i in range(90):
+        await pg.evaluate("setTimeout(() => document.getElementById('eOk').click(), 10)")
+        for i in range(200):
             await pg.wait_for_timeout(1000)
             if await pg.evaluate("window._vado && window._vado.ESTADO") == 'juego': break
         await pg.evaluate("() => {const V = window._vado; for (let i = 0; i < 30*400; i++) V.paso(1/30);}")

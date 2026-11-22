@@ -8,12 +8,12 @@ async def main():
         pg = await b.new_page(viewport={'width': 900, 'height': 900}); pg.on('console', lambda m: m.type in ('error','warning') and print('C', m.text[:300]))
         await pg.add_init_script("localStorage.setItem('vado.nombre','Henar');localStorage.setItem('loc.auth',JSON.stringify({at:'x',rt:'x',exp:9e15}));localStorage.setItem('auto.heroe','enano');localStorage.setItem('auto.modo','2v2');localStorage.setItem('auto.cal','alta')")
         await pg.goto('http://localhost:8799/batalla/autopista.html'); await pg.wait_for_timeout(2500)
-        await pg.click('#bBots'); await pg.wait_for_timeout(800); await pg.click('#eOk')
-        for i in range(90):
+        await pg.click('#bBots'); await pg.wait_for_timeout(800); await pg.evaluate("setTimeout(() => document.getElementById('eOk').click(), 10)")
+        for i in range(240):
             await pg.wait_for_timeout(1000)
             if await pg.evaluate("window._vado && window._vado.ESTADO") == 'juego': break
         await pg.wait_for_timeout(6000); print(await pg.evaluate('window._errs||0'))
-        url = await pg.evaluate("""() => {const V = window._vado, T = V.THREE, c = new T.OrthographicCamera(-40, 40, 70, -70, 1, 400);
+        url = await pg.evaluate("""() => {const V = window._vado, T = V.THREE, c = new T.OrthographicCamera(-42, 42, 66, -66, 1, 400);
           c.position.set(0, 150, 0); c.up.set(0, 0, -1); c.lookAt(0, 0, 0); c.updateMatrixWorld(); c.updateProjectionMatrix();
           V.scene.fog = null; V.scene.traverse((im) => {const c = im.userData && im.userData.cull; if (!c) return; im.instanceMatrix.array.set(c.todo.subarray(0, c.xs.length * 16)); im.count = c.xs.length; im.visible = true; im.instanceMatrix.clearUpdateRanges(); im.instanceMatrix.needsUpdate = true;});
           const r = V.renderer; r.setSize(480, 840, false); r.render(V.scene, c); return r.domElement.toDataURL('image/png');}""")

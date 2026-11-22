@@ -2049,6 +2049,113 @@ js = sub(js, " if (v.tipo === 'visor' && v.k === 'h') brazosVisor(o);", "")
 js = sub(js, "o.clips.correr.timeScale = Math.max(0.6, Math.min(1.7, o.vel / (v.k === 'h' ? 4.2 :",
              "o.clips.correr.timeScale = Math.max(0.45, Math.min(1.7, o.vel / (v.k === 'h' ? (v.tipo === 'gollum' ? 5.8 : 4.2) :")
 
+# ---------- NASOR SE ANUNCIA (19/11, Henar: «que se anuncie el Nasor en partida») ----------
+# simulación: aviso 30 s antes, al salir y al caer (evento 'jefe'); cliente: cartel grande, latido en el minimapa, cuerno y temblor
+js = sub(js, "    if (c.vivos > 0 || S.t < c.resp) return;\n    const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;",
+  "    if (c.vivos === 0 && NEUTRO[c.tipo].jefe && c.avJ !== c.resp && S.t > c.resp - 30 && S.t < c.resp) {c.avJ = c.resp; ev(['jefe', 'pronto', c.x, c.z, Math.round(c.resp - S.t)]);}\n    if (c.vivos > 0 || S.t < c.resp) return;\n    const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;")
+js = sub(js, "if (nd.jefe) {ev(['aviso', 0, '¡Nasor ha salido del colector junto al río!']); ev(['voz', 'uruk_despierta']);}",
+  "if (nd.jefe) ev(['jefe', 'sale', c.x, c.z]);")
+js = sub(js, "' derriba a Nasor']); ev(['aviso', 0, BUFF_TXT.uruk]);}", "' derriba a Nasor']); ev(['jefe', 'cae', d.x, d.z, eq]);}")
+js = sub(js, "  if (t === 'baja') anuncio(e[1], e[2], e[3]);",
+  "  if (t === 'baja') {if (/Nasor/.test(e[3] || '')) return; anuncio(e[1], e[2], e[3]);}\n  if (t === 'jefe') cartelJefe(e);")
+js = sub(js, "function aviso(txt) {", r"""let jefeT = 0;
+function cartelJefe(e) {
+  const [, q, x, z, n] = e, el = $('jefe'); if (!el) return;
+  const nuestro = q === 'cae' && n === MI_EQ, suyo = q === 'cae' && n !== MI_EQ;
+  const tit = q === 'pronto' ? 'NASOR DESPIERTA EN ' + n + ' s' : q === 'sale' ? '¡NASOR HA SALIDO!' : nuestro ? '¡HABÉIS DERRIBADO A NASOR!' : '¡EL RIVAL HA DERRIBADO A NASOR!';
+  const sub = q === 'pronto' ? 'En el colector, junto a una autopista: mira el minimapa' : q === 'sale' ? 'En el colector (mira el minimapa) · su furia da +30 % de daño a todo el equipo' : nuestro ? 'Furia de Nasor 3 min: +30 % daño, más regeneración y soldados más fuertes. ¡A por las torres!' : 'Tienen la Furia de Nasor 3 min: defended y no peleéis en desventaja';
+  el.className = 'jefe ' + (q === 'pronto' ? 'pr' : q === 'sale' ? 'sa' : nuestro ? 'az' : 'ro');
+  el.innerHTML = '<img src="ui/ap_mm_uruk.webp" alt=""><div><b>' + tit + '</b><span>' + sub + '</span></div>';
+  void el.offsetWidth; el.classList.add('ver'); clearTimeout(jefeT); jefeT = setTimeout(() => el.classList.remove('ver'), q === 'pronto' ? 3800 : 5200);
+  PINGS.push({x, z, t: performance.now(), k: 'jefe'}); if (q !== 'pronto') PINGS.push({x, z, t: performance.now() + 900, k: 'jefe'});
+  suena(q === 'cae' ? 'derrumbe' : 'cuerno', q === 'pronto' ? 0.5 : 0.9); if (q === 'sale') suena('grito', 0.7);
+  if (q !== 'pronto') tiemblaCam = Math.max(tiemblaCam, 0.35);
+  if (q !== 'pronto') try {navigator.vibrate && navigator.vibrate(q === 'cae' ? [60, 40, 120] : 90);} catch (er) {}
+}
+function aviso(txt) {""")
+js = sub(js, "g.strokeStyle = p.k === 'retira' || p.k === 'cuidado' ? '#ffcf3a' : '#ff5a3a'; g.lineWidth = 2;",
+  "if (k < 0) continue; g.strokeStyle = p.k === 'jefe' ? '#c46bff' : p.k === 'retira' || p.k === 'cuidado' ? '#ffcf3a' : '#ff5a3a'; g.lineWidth = p.k === 'jefe' ? 3 : 2;")
+js = sub(js, 'window._vado = {', 'window._vado = {efecto: (e) => efectoLocal(e), ')
+html = sub(html, '<div id="aviso"></div>', '<div id="aviso"></div><div id="jefe" class="jefe"></div>', donde='html')
+html = sub(html, '</body>', """<style>
+#jefe{position:fixed;left:50%;top:13%;z-index:12;display:flex;align-items:center;gap:12px;max-width:62%;padding:9px 20px 9px 10px;transform:translate(-50%,-14px) scale(.92);opacity:0;pointer-events:none;transition:opacity .25s,transform .35s cubic-bezier(.2,1.6,.4,1);
+ background:linear-gradient(90deg,#140a22ee,#2a0f3ee6 60%,#140a22cc);border:2px solid #c46bff;border-radius:10px;box-shadow:0 0 22px #a24dffaa,inset 0 0 18px #a24dff44;font-family:system-ui,'Segoe UI',Roboto,sans-serif}
+#jefe.ver{opacity:1;transform:translate(-50%,0) scale(1)}
+#jefe img{width:54px;height:54px;border-radius:50%;flex:none;box-shadow:0 0 14px #c46bff;animation:jefeLat .9s ease-in-out infinite}
+#jefe b{display:block;font:900 19px/1.1 'Arial Black','Segoe UI Black',system-ui,sans-serif;color:#f3dcff;letter-spacing:.5px;text-shadow:0 2px 0 #000,0 0 12px #c46bff}
+#jefe span{display:block;margin-top:3px;font-size:12.5px;line-height:1.25;color:#e6d4f5}
+#jefe.pr{border-color:#ffcf3a;box-shadow:0 0 18px #ffb02a88}#jefe.pr b{text-shadow:0 2px 0 #000,0 0 10px #ffb02a}
+#jefe.az{border-color:#3ad1ff;box-shadow:0 0 24px #3ad1ffaa}#jefe.az b{color:#dff7ff;text-shadow:0 2px 0 #000,0 0 12px #3ad1ff}
+#jefe.ro{border-color:#ff4a5a;box-shadow:0 0 24px #ff4a5aaa}#jefe.ro b{color:#ffe0e3;text-shadow:0 2px 0 #000,0 0 12px #ff4a5a}
+@keyframes jefeLat{50%{transform:scale(1.1)}}
+</style></body>""", donde='html')
+
+# ---------- LA CIUDAD (22/11, Henar: «haz un mapa de tipo autopistas sin ríos ni nada del que sentirme orgulloso… cambia lo que necesites
+# y mejora la jugabilidad»): la Batalla 2v2 pasa a ser un barrio entre dos autopistas casi paralelas (34 m de una a otra: los gankeos tienen
+# sentido), manzanas de edificios con choque exacto (RECTS), solares para las bestias, una avenida con glorieta en vez del río y el colector
+# de Nasor y la central del lagarto fuera de las autopistas. Código en tools/autopista/ciudad/{sim,cli}.js; edificios CC0 de Kenney en
+# modelos/ap_ciudad.glb (tools/autopista/ciudad/junta.py). La simulación cambia: VOLVER A GENERAR sim_ap.js. ----------
+CIU_SIM = (RAIZ / 'tools/autopista/ciudad/sim.js').read_text()
+CIU_CLI = (RAIZ / 'tools/autopista/ciudad/cli.js').read_text()
+js = sub(js, "function ponHechC(tipo) {", CIU_SIM + "\nfunction ponHechC(tipo) {")
+i0 = js.find("  if (tipo === 'ojo') {\n    MAPA = {ancho: 33, largo: 58};"); i1 = js.find("    ORILLA = [{x: 7, z: 3.2}, {x: -7, z: -3.2}];\n", i0)
+if i0 < 0 or i1 < 0: fallos.append('[js] rama ojo de ponMapa no encontrada')
+else: js = js[:i0] + "  if (tipo === 'ojo') {\n    ponCiudad();\n" + js[i1 + len("    ORILLA = [{x: 7, z: 3.2}, {x: -7, z: -3.2}];\n"):]
+js = sub(js, "    ORILLA = [];\n  }", "    ORILLA = []; RECTS = [];\n  }")
+js = sub(js, "  for (const q of ORILLA) HIERBAS.push({...q, r: 2.4});", "  if (tipo === 'ojo') HIERBAS = [...CIU.hierbas, ...CIU.hierbas.map((h) => ({...h, ...gira(h)}))];\n  for (const q of ORILLA) HIERBAS.push({...q, r: 2.4});")
+js = sub(js, "function plantaBosque(al, planta, enBase) {\n", "function plantaBosque(al, planta, enBase) {\n  if (TIPO_MAPA === 'ojo') return;  /* la ciudad no tiene bosque: sus manzanas son RECTS */\n")
+js = sub(js, "function haceNav() {\n", "function haceNav() {\n  if (TIPO_MAPA === 'ojo') return navCiudad();\n")
+js = sub(js, "function choca(u) {\n", "function choca(u) {\n  if (RECTS.length) chocaRects(u, u.k === 'h' ? 0.45 : 0.3);\n")
+js = sub(js, "function lineaLibre(a, b) {", "function lineaLibre(a, b) {if (RECTS.length && cortaRects(a, b, 0.25)) return false; ")
+js = sub(js, "  if (Math.hypot(tx - u.x, tz - u.z) < 4 || lineaLibre(u, t)) {u.ruta = null; return [tx - u.x, tz - u.z];}", "  if ((Math.hypot(tx - u.x, tz - u.z) < 4 && !(RECTS.length && cortaRects(u, t, 0.2))) || lineaLibre(u, t)) {u.ruta = null; return [tx - u.x, tz - u.z];}")
+js = sub(js, "R = 9, dx = 0.906 * R * t, dz = 0.423 * R * t", "R = 8.5, dx = R * t, dz = 0")
+js = sub(js, "' caza a la rata: santuario de velocidad y vista en el río'", "' caza a la rata: santuario de velocidad y vista en la glorieta'")
+# cliente
+js = sub(js, "const scene_ = MAPA_G; BOSQUE.length = 0; bosqueEn = null;\n", "const scene_ = MAPA_G; BOSQUE.length = 0; bosqueEn = null; CIU_SKY.length = 0;\n  ambienteMapa(TIPO_MAPA === 'ojo'); if (TIPO_MAPA === 'ojo') {construyeCiudad(scene_); return;}\n")
+js = sub(js, "let MAPA_G = null, SUELO_RT = null;", CIU_CLI + "\nlet MAPA_G = null, SUELO_RT = null;")
+js = sub(js, "  for (const im of BOSQUE) {const m = im.material; if (vistos.has(m)) continue;", "  for (const im of BOSQUE) {if (im.userData.fijo) continue; const m = im.material; if (vistos.has(m)) continue;")
+js = sub(js, "if (TIPO_MAPA === 'ojo') g.add(ag);", "if (0) g.add(ag);")
+js = sub(js, "e.setScalar(c.s || 1)", "e.set(c.sx || c.s || 1, c.sy || c.s || 1, c.sz || c.s || 1)")
+js = sub(js, "const JUNGLA = ['ap_nasor',", "const JUNGLA = ['ap_ciudad', 'ap_nasor',")
+js = sub(js, "const VADO = ['ap_farola',", "const VADO = ['ap_ciudad', 'ap_farola',")
+js = sub(js, """  if (Math.abs(l) < 4.5) return ['El río', 'bajo la autopista'];
+  const dc = distCarril(x, z);
+  if (dc < 5) return l < 0 ? ['Calzada azul', ''] : ['Calzada roja', ''];
+  return l < 0 ? ['El pinar', 'lado azul'] : ['El descampado', 'lado rojo'];""", """  const dc = distCarril(x, z);
+  if (dc < 5) return x < 0 ? ['Autopista oeste', l < 0 ? 'sentido norte' : 'sentido sur'] : ['Autopista este', l < 0 ? 'sentido norte' : 'sentido sur'];
+  if (Math.hypot(x, z) < 6.5) return ['La glorieta', 'donde corre la rata'];
+  if (Math.abs(z) < 3.5 && Math.abs(x) < 13) return ['La avenida', 'cruza de autopista a autopista'];
+  if (Math.abs(x) > 21) return ['Las afueras', l < 0 ? 'lado azul' : 'lado rojo'];
+  return l < 0 ? ['El barrio', 'lado azul'] : ['El polígono', 'lado rojo'];""")
+# minimapa: manzanas en vez del río
+js = sub(js, "g.strokeStyle = '#2b4a5a'; g.lineWidth = 5; if (TIPO_MAPA === 'ojo') {g.beginPath(); g.moveTo(px(-40 * 0.906), pz(-40 * 0.423)); g.lineTo(px(40 * 0.906), pz(40 * 0.423)); g.stroke();}",
+  "if (TIPO_MAPA === 'ojo') {g.fillStyle = '#1d222a'; g.fillRect(0, 0, W, H); g.fillStyle = '#3a404b'; for (const r of RECTS) {const a = px(r[0]), b = px(r[2]), c = pz(r[1]), d = pz(r[3]); g.fillRect(Math.min(a, b), Math.min(c, d), Math.abs(b - a), Math.abs(d - c));} g.fillStyle = '#2c323b'; g.fillRect(px(-12), pz(-2.5), px(12) - px(-12), pz(2.5) - pz(-2.5));}")
+
+# ---------- OBJETIVOS ANUNCIADOS (22/11): el lagarto se anuncia igual que Nasor (30 s antes, al salir y al caer), con su cartel ----------
+js = sub(js, "if (c.vivos === 0 && NEUTRO[c.tipo].jefe && c.avJ !== c.resp && S.t > c.resp - 30 && S.t < c.resp) {c.avJ = c.resp; ev(['jefe', 'pronto', c.x, c.z, Math.round(c.resp - S.t)]);}",
+  "if (c.vivos === 0 && (NEUTRO[c.tipo].jefe || NEUTRO[c.tipo].draco) && c.avJ !== c.resp && S.t > c.resp - 30 && S.t < c.resp && c.resp < 1e8) {c.avJ = c.resp; ev(['jefe', NEUTRO[c.tipo].jefe ? 'pronto' : 'lpronto', c.x, c.z, Math.round(c.resp - S.t), S.dracoSig === 'f' ? 1 : 0]);}")
+js = sub(js, "ev(['aviso', 0, c.elem === 'f' ? '🔥 Ha salido un lagarto de fuego en la central' : '❄ Ha salido un lagarto de hielo en la central']);", "ev(['jefe', 'lsale', c.x, c.z, 0, c.elem === 'f' ? 1 : 0]);")
+js = sub(js, """      if (be.drF + be.drH >= 3 && !be.alma) {be.alma = 1; ev(['aviso', 0, '🐉 ' + (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' consigue el ALMA DEL LAGARTO']); for (const q of S.campos) if (NEUTRO[q.tipo].draco) q.resp = 1e9;}
+      else ev(['aviso', 0, d.elem === 'f' ? 'Aliento de fuego: el equipo pega un 6 % más' : 'Aliento helado: el equipo tiene un 6 % más de vida']);""",
+"""      if (be.drF + be.drH >= 3 && !be.alma) {be.alma = 1; ev(['jefe', 'lcae', d.x, d.z, eq, d.elem === 'f' ? 1 : 0, 1]); for (const q of S.campos) if (NEUTRO[q.tipo].draco) q.resp = 1e9;}
+      else ev(['jefe', 'lcae', d.x, d.z, eq, d.elem === 'f' ? 1 : 0, 0]);""")
+js = sub(js, "  if (t === 'baja') {if (/Nasor/.test(e[3] || '')) return; anuncio(e[1], e[2], e[3]);}", "  if (t === 'baja') {if (/Nasor|lagarto/.test(e[3] || '')) return; anuncio(e[1], e[2], e[3]);}")
+js = sub(js, """  const [, q, x, z, n] = e, el = $('jefe'); if (!el) return;""", """  const [, q, x, z, n] = e, el = $('jefe'); if (!el) return;
+  if (q[0] === 'l') return cartelLagarto(e, el);""")
+js = sub(js, "let jefeT = 0;\nfunction cartelJefe(e) {", r"""let jefeT = 0;
+function cartelLagarto(e, el) {
+  const [, q, x, z, eq, fuego, alma] = e, nuestro = q === 'lcae' && eq === MI_EQ, ft = fuego ? 'de fuego' : 'de hielo';
+  const tit = q === 'lpronto' ? 'EL LAGARTO ' + ft.toUpperCase() + ' SALE EN ' + eq + ' s' : q === 'lsale' ? '¡LAGARTO ' + ft.toUpperCase() + ' EN LA CENTRAL!' : alma ? (nuestro ? '¡ALMA DEL LAGARTO PARA VOSOTROS!' : '¡EL RIVAL TIENE EL ALMA DEL LAGARTO!') : nuestro ? '¡HABÉIS CAZADO AL LAGARTO!' : '¡EL RIVAL CAZA AL LAGARTO!';
+  const sub = q === 'lpronto' ? 'En la central eléctrica: mira el minimapa' : q === 'lsale' ? (fuego ? 'Quien lo cace: +6 % de daño para todo el equipo' : 'Quien lo cace: +6 % de vida para todo el equipo') : alma ? '+10 % de daño y de vida el resto de la partida' : (fuego ? 'Aliento de fuego: +6 % de daño' : 'Aliento helado: +6 % de vida') + (nuestro ? ' para tu equipo' : ' para ellos');
+  el.className = 'jefe ' + (q === 'lpronto' ? 'pr' : q === 'lsale' ? (fuego ? 'lf' : 'lh') : nuestro ? 'az' : 'ro');
+  el.innerHTML = '<img src="ui/ap_mm_draco.webp" alt=""><div><b>' + tit + '</b><span>' + sub + '</span></div>';
+  void el.offsetWidth; el.classList.add('ver'); clearTimeout(jefeT); jefeT = setTimeout(() => el.classList.remove('ver'), q === 'lpronto' ? 3600 : 4800);
+  PINGS.push({x, z, t: performance.now(), k: 'jefe'}); suena(q === 'lcae' ? 'derrumbe' : 'cuerno', q === 'lpronto' ? 0.45 : 0.8);
+  if (q === 'lcae') tiemblaCam = Math.max(tiemblaCam, 0.3);
+}
+function cartelJefe(e) {""")
+html = sub(html, "@keyframes jefeLat{50%{transform:scale(1.1)}}", "#jefe.lf{border-color:#ff8a2a;box-shadow:0 0 24px #ff6a1aaa}#jefe.lf b{color:#ffe6d0;text-shadow:0 2px 0 #000,0 0 12px #ff6a1a}#jefe.lh{border-color:#6fe0ff;box-shadow:0 0 24px #4fd0ffaa}#jefe.lh b{color:#e0f8ff;text-shadow:0 2px 0 #000,0 0 12px #4fd0ff}\n@keyframes jefeLat{50%{transform:scale(1.1)}}", donde='html')
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

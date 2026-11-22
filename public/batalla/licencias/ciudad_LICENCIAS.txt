@@ -1,0 +1,9 @@
+LA CIUDAD (mapa de la Batalla 2 contra 2 de A-6, 22/11/2026) — modelos/ap_ciudad.glb
+
+Edificios, chimeneas y depósitos de:
+  · City Kit (Commercial) 2.1 — Kenney (www.kenney.nl) — licencia CC0 1.0 (dominio público)
+  · City Kit (Industrial) 1.0 — Kenney (www.kenney.nl) — licencia CC0 1.0 (dominio público)
+Copiados de un repositorio público de GitHub que los incluye sin cambios (Rbitah/BRace-game, carpeta assets/env).
+Cambios hechos aquí (tools/autopista/ciudad/): juntados en un solo .glb, textura de colores graduada (grises más neutros,
+colores algo menos saturados) y una segunda textura con las ventanas encendidas (luz cálida) sacada de los azules de la original.
+CC0 no obliga a dar crédito; se deja por cortesía: gracias, Kenney.

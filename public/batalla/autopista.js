@@ -118,22 +118,81 @@ function dentroOjo(x, z) {if (!OJO) return Math.abs(x) < MAPA.ancho && Math.abs(
 const ladoDe = (p) => p.x * EJE.x + p.z * EJE.z;        /* < 0 lado de Rohan, > 0 lado de Isengard */
 const TORRE_F = 0.27;                                   /* las torres de camino, al 27 % desde su base */
 const enHierba = (u) => HIERBAS.findIndex((b) => Math.hypot(u.x - b.x, u.z - b.z) < b.r);
+/* ---------- LA CIUDAD (22/11, Henar: «un mapa de autopistas sin ríos, del que sentirme orgulloso»): la Batalla 2 contra 2 de A-6 ----------
+   Dos autopistas casi paralelas (34 m de una a otra) de peaje a peaje; entre ellas el barrio (la jungla): manzanas de edificios con calles,
+   solares y plazas donde viven las bestias; una avenida cruza por la mitad con una glorieta (la rata). Fuera de las autopistas, el colector
+   de Nasor (oeste) y la central del lagarto (este), cada uno con una sola boca a su autopista. Simétrico girando 180°.
+   Los edificios son rectángulos sólidos (RECTS): choque exacto, sin las paredes a trompicones de los árboles. */
+let RECTS = [];
+const CIU = {
+  carril: [{x: 0, z: 46}, {x: -9, z: 39}, {x: -17, z: 28}, {x: -17, z: 0}, {x: -17, z: -28}, {x: -9, z: -39}, {x: 0, z: -46}],
+  base: {fuente: {x: 0, z: 56}, nexo: {x: 0, z: 51}, torre: {x: 0, z: 42.5}},
+  /* manzanas del lado azul [x0, z0, x1, z1]; las del rojo salen girando */
+  bloques: [[-12, 3, -8.5, 10], [-12, 14.5, -8.5, 23.5], [-8.5, 3, -3, 6.5], [-8.5, 17, -2.5, 21], [-8.5, 28.5, -3.5, 31.5], [-5.5, 31.5, -3, 35.5],
+    [8.5, 3, 12, 6.5], [8.5, 10.5, 12, 17.5], [8.5, 22, 12, 26.5], [2.5, 13, 8.5, 17], [3.5, 27, 8.5, 31], [3, 31, 5.5, 35.5],
+    [-34, 8, -22, 40], [-24, 3, -22, 8], [22, 12, 34, 40], [22, 7, 24, 12], [-34, 40, -14.5, 60], [14.5, 40, 34, 60]],
+  campos: [{x: -5.5, z: 12, tipo: 'huorn', n: 1}, {x: -5.5, z: 25, tipo: 'warg', n: 2}, {x: 5.5, z: 9, tipo: 'crebain', n: 4}, {x: 5.5, z: 22, tipo: 'troll', n: 1}, {x: 0, z: 31, tipo: 'sapo', n: 1}],
+  plantas: [{x: 5.5, z: 4.6, tipo: 'baya'}, {x: -1, z: 24.5, tipo: 'flor'}, {x: -5.5, z: 16, tipo: 'seta'}],
+  hierbas: [{x: -10.3, z: 12.25, r: 2.4}, {x: -10.3, z: 26, r: 2.4}, {x: 10.3, z: 8.5, r: 2.4}, {x: 10.3, z: 19.75, r: 2.4}, {x: -9, z: 1.3, r: 2.4}, {x: 0, z: 18, r: 2.2}],
+  /* calles para los bots (del lado azul; 'L' = a la autopista más cercana) */
+  nodos: {rot: {x: 0, z: 0}, avO: {x: -9, z: 0}, c6: {x: 0, z: 6.5}, c12: {x: 0, z: 12}, c19: {x: 0, z: 18.5}, c25: {x: 0, z: 24.5}, pO1: {x: -10.3, z: 12.25}, pO2: {x: -10.3, z: 26}, pE1: {x: 10.3, z: 8.5}, pE2: {x: 10.3, z: 19.75}, bC: {x: 0, z: 37.5}},
+  calles: [['rot', 'avO'], ['avO', 'L'], ['rot', 'c6'], ['c6', 'c12'], ['c12', 'c19'], ['c19', 'c25'], ['c25', 'sapo'], ['sapo', 'bC'], ['bC', 'L'],
+    ['huorn', 'c12'], ['huorn', 'pO1'], ['pO1', 'L'], ['warg', 'c25'], ['warg', 'pO2'], ['pO2', 'L'], ['crebain', 'c6'], ['crebain', 'pE1'], ['crebain', 'rot'], ['pE1', 'L'], ['troll', 'c19'], ['troll', 'pE2'], ['pE2', 'L']],
+};
+function ponCiudad() {
+  MAPA = {ancho: 34, largo: 58}; SIM = gira; EJE = {x: 0, z: -1}; PIT = {x: -28, z: -2}; PIT2 = gira(PIT);
+  const A = CIU.carril; CARRILES = [A, A.map(gira).reverse()];
+  const R = CIU.base; BASES = [R, {fuente: gira(R.fuente), nexo: gira(R.nexo), torre: gira(R.torre)}];
+  const C = CIU.campos; CAMPOS = [...C, ...C.map((c) => ({...c, ...gira(c)})), {x: PIT.x, z: PIT.z, tipo: 'uruk', n: 1}, {x: PIT2.x, z: PIT2.z, tipo: 'draco', n: 1}, {x: 0, z: 0, tipo: 'nutria', n: 1}];
+  PLANTAS = [...CIU.plantas, ...CIU.plantas.map((q) => ({...q, ...gira(q)}))];
+  ORILLA = [];
+  RECTS = [...CIU.bloques, ...CIU.bloques.map((b) => [-b[2], -b[3], -b[0], -b[1]])];
+}
+/* empuja fuera de las manzanas (por el lado más corto) */
+function chocaRects(u, m) {
+  for (let i = 0; i < RECTS.length; i++) {const r = RECTS[i];
+    if (u.x <= r[0] - m || u.x >= r[2] + m || u.z <= r[1] - m || u.z >= r[3] + m) continue;
+    const a = u.x - (r[0] - m), b = r[2] + m - u.x, c = u.z - (r[1] - m), d = r[3] + m - u.z, k = Math.min(a, b, c, d);
+    if (k === a) u.x = r[0] - m; else if (k === b) u.x = r[2] + m; else if (k === c) u.z = r[1] - m; else u.z = r[3] + m;}
+}
+/* ¿cruza una manzana el segmento a-b? (con margen) — también los núcleos y las torres de las bases, que están en medio del paso */
+function cortaRects(a, b, m) {
+  for (const B of BASES) for (const [q, r] of [[B.nexo, 2.4], [B.torre, 1.9]]) if (distSeg(q.x, q.z, a, b) < r + m + 0.2 && Math.hypot(a.x - q.x, a.z - q.z) > r + 0.3) return true;
+  for (let i = 0; i < RECTS.length; i++) {const r = RECTS[i]; let t0 = 0, t1 = 1; const dx = b.x - a.x, dz = b.z - a.z;
+    const ej = [[-dx, a.x - (r[0] - m)], [dx, r[2] + m - a.x], [-dz, a.z - (r[1] - m)], [dz, r[3] + m - a.z]]; let fuera = false;
+    for (const [p, q] of ej) {if (p === 0) {if (q < 0) {fuera = true; break;}} else {const t = q / p; if (p < 0) {if (t > t1) {fuera = true; break;} if (t > t0) t0 = t;} else {if (t < t0) {fuera = true; break;} if (t < t1) t1 = t;}}}
+    if (!fuera && t0 <= t1) return true;}
+  return false;
+}
+function navCiudad() {
+  const nodos = [], aristas = [], idx = new Map(), add = (p, extra) => {nodos.push({x: p.x, z: p.z, ...extra}); return nodos.length - 1;};
+  const ruta = CARRILES.map(() => []);
+  CARRILES.forEach((L, l) => L.forEach((p, i) => {const k = p.x + ',' + p.z; if (!idx.has(k)) idx.set(k, add(p, {carril: true})); ruta[l].push(idx.get(k));}));
+  for (const r of ruta) for (let i = 1; i < r.length; i++) aristas.push([r[i - 1], r[i]]);
+  const camp = CAMPOS.map((c) => add(c, {campo: true}));
+  const d = (a, b) => Math.hypot(nodos[a].x - nodos[b].x, nodos[a].z - nodos[b].z);
+  /* puerta a la autopista: el punto más cercano del carril, metido en él */
+  const aLinea = (c) => {let m = null; CARRILES.forEach((L) => {for (let i = 1; i < L.length; i++) {const a = L[i - 1], b = L[i], vx = b.x - a.x, vz = b.z - a.z, t = Math.max(0, Math.min(1, ((nodos[c].x - a.x) * vx + (nodos[c].z - a.z) * vz) / (vx * vx + vz * vz))), x = a.x + vx * t, z = a.z + vz * t, dd = Math.hypot(nodos[c].x - x, nodos[c].z - z); if (!m || dd < m.d) m = {d: dd, x, z, a: idx.get(a.x + ',' + a.z), b: idx.get(b.x + ',' + b.z)};}}); const n = add({x: m.x, z: m.z}, {carril: true, puerta: true}); aristas.push([m.a, n], [n, m.b], [c, n]);};
+  for (const s of [0, 1]) {
+    const T = s ? gira : (p) => p, mio = new Map();
+    for (const k in CIU.nodos) {const p = T(CIU.nodos[k]), key = p.x + ',' + p.z; if (!idx.has(key)) idx.set(key, add(p, {})); mio.set(k, idx.get(key));}
+    CIU.campos.forEach((c, i) => mio.set(c.tipo, camp[i + s * CIU.campos.length]));
+    for (const [a, b] of CIU.calles) {const ia = mio.get(a); if (b === 'L') {aLinea(ia); continue;} const ib = mio.get(b); if (!aristas.some(([x, y]) => (x === ia && y === ib) || (x === ib && y === ia))) aristas.push([ia, ib]);}
+  }
+  const iU = camp[CAMPOS.findIndex((c) => c.tipo === 'uruk')], iD = camp[CAMPOS.findIndex((c) => c.tipo === 'draco')], iN = camp[CAMPOS.findIndex((c) => c.tipo === 'nutria')];
+  aLinea(iU); aLinea(iD); aristas.push([iN, idx.get('0,0')]);
+  /* de la fuente a la autopista rodeando el núcleo (está en medio): dos pasos a los lados */
+  for (const b of BASES) {const p = CARRILES[0][b === BASES[0] ? 0 : CARRILES[0].length - 1], f = add(b.fuente, {}), n = idx.get(p.x + ',' + p.z);
+    for (const sg of [1, -1]) {const l = add({x: b.nexo.x + sg * 4.3, z: b.nexo.z}, {}); aristas.push([f, l], [l, n]);}}
+  const vec = nodos.map(() => []); for (const [a, b] of aristas) {vec[a].push(b); vec[b].push(a);}
+  return {nodos, aristas, vec, d};
+}
+
 function ponHechC(tipo) {Object.assign(HECHIZOS.c, tipo === 'ojo' ? {n: 'Castigo', cd: 60, icono: 'ui/ap_hz_castigo.webp'} : {n: 'Ignición', cd: 90, icono: 'ui/ap_hz_ignicion.webp'});}
 function ponMapa(modo) {
   const tipo = modo === '2v2' ? 'ojo' : 'linea'; ponHechC(tipo); if (tipo === TIPO_MAPA) return false; TIPO_MAPA = tipo;
   if (tipo === 'ojo') {
-    MAPA = {ancho: 33, largo: 58}; SIM = gira; EJE = {x: 0.423, z: -0.906}; PIT = {x: 0, z: 0};
-    const A = [{x: -21, z: 45}, {x: -27, z: 28}, {x: -27, z: 8}, {x: -21, z: -14}, {x: -9, z: -33}, {x: 6, z: -44}, {x: 21, z: -45}];
-    CARRILES = [A, A.map(gira).reverse()];
-    const R = {fuente: {x: -29, z: 53}, nexo: {x: -24.5, z: 48.5}, torre: {x: -17, z: 40.5}};
-    BASES = [R, {fuente: gira(R.fuente), nexo: gira(R.nexo), torre: gira(R.torre)}];
-    /* como la jungla del LoL: roja (troll) y azul (Huorn), lobos (huargos), rapaces (crebain), Gromp (sapo); el Uruk (Barón) y el draco (dragón) en dos fosos a orillas del río, uno a cada lado, y la nutria (cangrejo) por el río */
-    PIT = {x: 11.8, z: 5.5}; PIT2 = {x: -11.8, z: -5.5};
-    const C = [{x: -13, z: 18, tipo: 'crebain', n: 4}, {x: 3, z: 25, tipo: 'warg', n: 2}, {x: -6, z: 35, tipo: 'sapo', n: 1}, {x: -16, z: 4, tipo: 'troll', n: 1}, {x: 9, z: 13, tipo: 'huorn', n: 1}];
-    CAMPOS = [...C, ...C.map((c) => ({...c, ...gira(c)})), {x: PIT.x, z: PIT.z, tipo: 'uruk', n: 1}, {x: PIT2.x, z: PIT2.z, tipo: 'draco', n: 1}, {x: 0, z: 0, tipo: 'nutria', n: 1}];
-    const PL = [{x: -10, z: 26, tipo: 'seta'}, {x: -19.5, z: 13, tipo: 'baya'}, {x: 2, z: 17, tipo: 'flor'}];
-    PLANTAS = [...PL, ...PL.map((q) => ({...q, ...gira(q)}))];
-    ORILLA = [{x: 7, z: 3.2}, {x: -7, z: -3.2}];
+    ponCiudad();
   } else {
     /* 1 contra 1 en «el Abismo», como el Abismo de los Lamentos del ARAM (donde el Wild Rift juega su Duelo):
        un único puente recto, sin espesura ni bestias, matorrales a los lados y 4 reliquias de vida */
@@ -144,7 +203,7 @@ function ponMapa(modo) {
     BASES = [R, {fuente: refleja(R.fuente), nexo: refleja(R.nexo), torre: refleja(R.torre)}];
     const C = [{x: -12, z: 18, tipo: 'warg', n: 2}, {x: 12, z: 26, tipo: 'warg', n: 2}, {x: -13, z: 35, tipo: 'orco', n: 3}, {x: 14, z: 13, tipo: 'troll', n: 1}, {x: -15, z: 7, tipo: 'alfa', n: 1}];
     CAMPOS = [];
-    ORILLA = [];
+    ORILLA = []; RECTS = [];
   }
   LARGOS = CARRILES.map((L) => {const c = [0]; for (let i = 1; i < L.length; i++) c.push(c[i - 1] + Math.hypot(L[i].x - L[i - 1].x, L[i].z - L[i - 1].z)); return c;});
   OJO = tipo === 'ojo' ? [...CARRILES[0], ...CARRILES[1].slice().reverse()] : null;
@@ -155,6 +214,7 @@ function ponMapa(modo) {
     const haciaDentro = Math.sign((PIT.x - p.x) * nx + (PIT.z - p.z) * nz) || 1, s2 = sgn || lado * haciaDentro, d = tipo === 'ojo' ? (lado > 0 ? 6.2 : 5.6) : 7.2;
     HIERBAS.push({x: p.x + nx * s2 * d, z: p.z + nz * s2 * d, r: 2.4});
   }
+  if (tipo === 'ojo') HIERBAS = [...CIU.hierbas, ...CIU.hierbas.map((h) => ({...h, ...gira(h)}))];
   for (const q of ORILLA) HIERBAS.push({...q, r: 2.4});
   /* reliquias de vida del ARAM: dos por lado, una delante de la torre de camino y otra detrás; salen a 1:45 y 2:30 y vuelven 90 s después de cogerlas */
   RELIQ = [];
@@ -167,6 +227,7 @@ const ARB = new Map(); const FUEGOS = [], LUCES = []; let NAV = null; const arbK
 function ponArbolChoque(x, z, r) {const k = arbKey(x, z); if (!ARB.has(k)) ARB.set(k, []); ARB.get(k).push({x, z, r});}
 /* el bosque: lo mismo en el móvil (para dibujarlo) y en el servidor (para los choques) */
 function plantaBosque(al, planta, enBase) {
+  if (TIPO_MAPA === 'ojo') return;  /* la ciudad no tiene bosque: sus manzanas son RECTS */
   const sendas = NAV.aristas.filter(([a, b]) => !(NAV.nodos[a].carril && NAV.nodos[b].carril)).map(([a, b]) => [NAV.nodos[a], NAV.nodos[b]]);
   enBase = enBase || ((x, z) => BASES.some((b) => Math.hypot(b.fuente.x - x, b.fuente.z - z) < 10 || Math.hypot(b.nexo.x - x, b.nexo.z - z) < 9 || Math.hypot(b.torre.x - x, b.torre.z - z) < 6));
   for (let x = -58; x <= 58; x += 2.6) for (let z = -84; z <= 84; z += 2.6) {
@@ -182,7 +243,7 @@ function plantaBosque(al, planta, enBase) {
     const jO = juego && TIPO_MAPA === 'ojo', dO = jO && dentroOjo(px, pz), nJ = dO ? 'roble_0' + (1 + Math.floor(r * 9) % 3) : n; planta(nJ, px, pz, ((nJ.startsWith('roble') ? 0.6 : 0.8) + al() * 0.35) * (dO ? 1.4 : jO ? 0.85 : 1), juego && !muro); if (juego && muro) ponArbolChoque(px, pz, 1.3);
   }
 }
-function lineaLibre(a, b) {const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
+function lineaLibre(a, b) {if (RECTS.length && cortaRects(a, b, 0.25)) return false; const d = Math.hypot(b.x - a.x, b.z - a.z), n = Math.ceil(d / 1.2); for (let i = 1; i < n; i++) {const x = a.x + (b.x - a.x) * i / n, z = a.z + (b.z - a.z) * i / n, l = ARB.get(arbKey(x, z)); if (l) for (const t of l) if (Math.hypot(t.x - x, t.z - z) < t.r + 0.6) return false;} return true;}
 const NEUTRO = {
   warg: {nombre: 'Perro asilvestrado', vida: 560, dano: 26, alcance: 1.9, vatq: 0.9, vel: 5, oro: 45, xp: 55, modelo: 'ap_perro', alto: 1.2},
   orco: {nombre: 'Perro asilvestrado', vida: 430, dano: 22, alcance: 1.8, vatq: 1, vel: 4.4, oro: 35, xp: 40, modelo: 'ap_perro', alto: 1.2},
@@ -202,6 +263,7 @@ for (const k in NEUTRO) {const n = NEUTRO[k]; if (n.jefe || n.draco) {n.oro = Ma
 const BUFF_TXT = {troll: 'Brasa del toro: tus golpes queman y frenan durante 2 min', huorn: 'Turbo del coloso: habilidades un 20 % más rápidas y más regeneración durante 2 min', alfa: 'Aullido del alfa: corres más y te curas deprisa durante 2 min', uruk: 'Furia de Nasor: todo el equipo pega más, se cura más y sus soldados salen más fuertes durante 3 min'};
 /* red de caminos para los bots: puntos de los dos caminos, cubiles y fuentes; los árboles nunca se ponen encima de estas sendas */
 function haceNav() {
+  if (TIPO_MAPA === 'ojo') return navCiudad();
   const nodos = [], aristas = [], idx = new Map(), add = (p, extra) => {nodos.push({x: p.x, z: p.z, ...extra}); return nodos.length - 1;};
   const ruta = CARRILES.map(() => []);
   CARRILES.forEach((L, l) => L.forEach((p, i) => {const k = p.x + ',' + p.z; if (!idx.has(k)) idx.set(k, add(p, {carril: true})); ruta[l].push(idx.get(k));}));
@@ -321,10 +383,10 @@ const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30,
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'ap_visor', 'vado_arboles', 'vado_rocas', 'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
+const VADO = ['ap_ciudad', 'ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'ap_visor', 'vado_arboles', 'vado_rocas', 'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
 /* modelos: los de la jungla solo hacen falta en la Batalla (2 contra 2) y se bajan después; los que no se usaban (capitán, estandartes, barriles…: casi 3 MB) ya no se bajan.
    Los del Abismo van adelgazados en modelos_l/ (sin los clips que aquí no se usan y con las texturas en WebP: tools/vado/adelgaza.py). */
-const JUNGLA = ['ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla'];
+const JUNGLA = ['ap_ciudad', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla'];
 const LIGEROS = ['warg', 'huargo_alfa', 'troll', 'orco', 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'brasero', 'tienda'];
 const NOMBRES = [...VADO.filter((n) => !JUNGLA.includes(n) && n !== 'palantir'), 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'proyectiles', 'brasero', 'tienda'];
 async function cargaModelo(n) {
@@ -355,7 +417,7 @@ function instancias(archivo, nombre, lista, sombra = true) {
   }
   unidas.forEach((malla) => {
     const rel = new THREE.Matrix4().multiplyMatrices(inv, malla.matrixWorld), im = new THREE.InstancedMesh(malla.geometry, lambert(malla.material), lista.length);
-    lista.forEach((c, i) => {q.setFromAxisAngle(up, c.ry || 0); p.set(c.x, c.y || 0, c.z); e.setScalar(c.s || 1); m4.compose(p, q, e).multiply(rel); im.setMatrixAt(i, m4);});
+    lista.forEach((c, i) => {q.setFromAxisAngle(up, c.ry || 0); p.set(c.x, c.y || 0, c.z); e.set(c.sx || c.s || 1, c.sy || c.s || 1, c.sz || c.s || 1); m4.compose(p, q, e).multiply(rel); im.setMatrixAt(i, m4);});
     im.castShadow = sombra; im.receiveShadow = true; im.computeBoundingSphere(); (MAPA_G || scene).add(im);
     /* el bosque son ~1.500 árboles (270.000 triángulos, el doble con la sombra): solo se dibujan los que hay cerca de la cámara */
     const arr = im.instanceMatrix.array, n = lista.length, xs = new Float32Array(n), zs = new Float32Array(n);
@@ -465,10 +527,240 @@ function pon(a, k, f = 0.15) {const n = a.clips[k]; if (!n || a.actual === n) re
 function otraVez(a, k) {const n = a.clips[k]; if (!n) return; n.reset().play(); if (a.actual && a.actual !== n) a.actual.crossFadeTo(n, 0.08, false); a.actual = n;}
 
 /* ---------- el mapa ---------- */
+/* ---------- LA CIUDAD: cómo se dibuja (22/11) ----------
+   Suelo horneado con calles, aceras, autopistas, solares de las bestias, la glorieta, el colector de Nasor y la central del lagarto.
+   Edificios CC0 de Kenney (City Kit Commercial 2.1 e Industrial 1.0, juntos en modelos/ap_ciudad.glb): cada manzana se llena de edificios
+   del tamaño justo, bajos cerca de las autopistas y dentro del barrio (la cámara mira desde arriba: nada debe tapar la pelea) y más altos
+   cuanto más lejos; alrededor, rascacielos de fondo. Todo en InstancedMesh (pocas llamadas de dibujo) y con el tramado que deshace lo que
+   tapa a tu héroe. */
+const CIU_SKY = [];
+/* luz de atardecer en la ciudad (sol bajo y anaranjado, cielo azulado, bruma cálida que funde los rascacielos); el Duelo vuelve a la de día */
+let AMB0 = null;
+function ambienteMapa(ciudad) {
+  const hemi = scene.children.find((q) => q.isHemisphereLight);
+  if (!AMB0) AMB0 = {bg: scene.background.clone(), fc: scene.fog.color.clone(), fn: scene.fog.near, ff: scene.fog.far, sc: sol.color.clone(), si: sol.intensity, hs: hemi.color.clone(), hg: hemi.groundColor.clone(), hi: hemi.intensity};
+  if (!ciudad) {scene.background.copy(AMB0.bg); scene.fog.color.copy(AMB0.fc); scene.fog.near = AMB0.fn; scene.fog.far = AMB0.ff; sol.color.copy(AMB0.sc); sol.intensity = AMB0.si; hemi.color.copy(AMB0.hs); hemi.groundColor.copy(AMB0.hg); hemi.intensity = AMB0.hi; return;}
+  scene.background.set('#c9a890'); scene.fog.color.set('#c9a890'); scene.fog.near = 55; scene.fog.far = 165;
+  sol.color.set('#ffc98a'); sol.intensity = 2.45; hemi.color.set('#a9bde6'); hemi.groundColor.set('#3a3040'); hemi.intensity = 1.55;
+}
+function construyeCiudad(scene_) {
+  const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);
+  const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
+  const BX = MAPA.ancho + 14, BZ = MAPA.largo + 12;
+  const R4 = RECTS.map((r) => new THREE.Vector4(r[0], r[1], r[2], r[3])); while (R4.length < 40) R4.push(new THREE.Vector4(999, 999, 999, 999));
+  const C3 = CAMPOS.filter((c) => !NEUTRO[c.tipo].pasiva && !NEUTRO[c.tipo].jefe && !NEUTRO[c.tipo].draco).map((c) => new THREE.Vector3(c.x, c.z, NEUTRO[c.tipo].grande ? 3.9 : 3.1)); while (C3.length < 12) C3.push(new THREE.Vector3(999, 999, 0));
+  const bakeU = {tH: {value: tH}, tB: {value: tB}, tC: {value: tC}, uA: {value: v2(CARRILES[0])}, uB: {value: v2(CARRILES[1])}, uR: {value: R4}, uC: {value: C3},
+    uPit: {value: new THREE.Vector2(PIT.x, PIT.z)}, uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)},
+    uF: {value: [new THREE.Vector2(BASES[0].nexo.x, BASES[0].nexo.z), new THREE.Vector2(BASES[1].nexo.x, BASES[1].nexo.z)]}};
+  const bakeM = new THREE.ShaderMaterial({uniforms: bakeU, depthTest: false, depthWrite: false,
+    vertexShader: `varying vec3 vWP; void main(){vWP=(modelMatrix*vec4(position,1.)).xyz; gl_Position=vec4(uv*2.-1.,0.,1.);}`,
+    fragmentShader: `varying vec3 vWP;
+      uniform sampler2D tH,tB,tC; uniform vec2 uA[7]; uniform vec2 uB[7]; uniform vec2 uF[2]; uniform vec4 uR[40]; uniform vec3 uC[12]; uniform vec2 uPit, uPit2;
+      ${GLSL_RUIDO}
+      float dSeg(vec2 p,vec2 a,vec2 b){vec2 v=b-a;float t=clamp(dot(p-a,v)/dot(v,v),0.,1.);return length(p-a-v*t);}
+      float dCar(vec2 p){float d=1e3;for(int i=0;i<6;i++){d=min(d,dSeg(p,uA[i],uA[i+1]));d=min(d,dSeg(p,uB[i],uB[i+1]));}return d;}
+      float dRect(vec2 p,vec4 r){vec2 q=max(r.xy-p,p-r.zw);return length(max(q,0.))+min(max(q.x,q.y),0.);}
+      void main(){
+      vec2 w=vWP.xz; vec2 rw=mat2(.8,-.6,.6,.8)*w;
+      float n1=fbm(w*.08+3.), n2=fbm(w*.6), gast=.55+.45*smoothstep(.25,.6,fbm(w*1.3));
+      vec3 asf=mix(texture2D(tB,w*.09).rgb,texture2D(tB,rw*.041+.5).rgb,.45);
+      vec3 hor=mix(texture2D(tC,w*.16).rgb,texture2D(tC,rw*.07+.3).rgb,.4);
+      float dR=1e3; for(int i=0;i<40;i++) dR=min(dR,dRect(w,uR[i]));
+      float dc=dCar(w);
+      /* calles del barrio: asfalto gastado, con manchas y parches */
+      vec3 col=asf*mix(.74,.92,n1)*vec3(.97,.98,1.02);
+      col=mix(col,col*.82,smoothstep(.62,.8,fbm(w*.35+11.))*.7);
+      /* aceras: 1,5 m de baldosa alrededor de cada manzana y bordillo */
+      float acera=1.-smoothstep(1.35,1.5,dR);
+      vec2 bq=abs(fract(w*.9)-.5);
+      vec3 bald=hor*1.08*(1.-.16*step(.46,max(bq.x,bq.y)));
+      col=mix(col,bald,acera);
+      col=mix(col,vec3(.8,.79,.75),(1.-smoothstep(.0,.13,abs(dR-1.45)))*.85);
+      /* la avenida: discontinua blanca en el centro */
+      col=mix(col,vec3(.88,.87,.82),(1.-smoothstep(.05,.1,abs(w.y)))*step(.5,fract(w.x/3.))*step(abs(w.x),11.)*step(6.,length(w))*gast);
+      /* solares de las bestias: tierra pisada y hierba seca */
+      for(int i=0;i<12;i++){vec3 c=uC[i]; vec2 q=abs(w-c.xy); float d=length(max(q-vec2(c.z-1.2),0.))-1.2+min(max(q.x-c.z+1.2,q.y-c.z+1.2),0.);
+        float k=1.-smoothstep(-.06,.06,d);
+        float gr=vn(w*7.)*.5+vn(w*17.)*.5;
+        vec3 tierra=mix(vec3(.25,.22,.18),vec3(.34,.3,.24),fbm(w*.35))*(.8+.32*gr);
+        vec3 hs=texture2D(tH,w*.16).rgb*vec3(.62,.66,.45);
+        vec3 sol=mix(tierra,hs,smoothstep(.55,.75,fbm(w*.3+7.))*.6);
+        /* los grandes (toro y coloso) en un aparcamiento: asfalto con sus plazas pintadas y manchas de aceite */
+        if(c.z>3.5){vec2 pq=w-c.xy; float pl=(1.-smoothstep(.04,.08,abs(fract(pq.x/2.5+.5)-.5)*2.5))*step(1.3,abs(pq.y))*step(abs(pq.y),c.z-.4);
+          vec3 ap=asf*mix(.82,.95,n2); ap=mix(ap,ap*.55,smoothstep(.7,.85,fbm(w*.8+4.))*.7); sol=mix(ap,vec3(.85,.85,.8),pl*gast);}
+        col=mix(col,sol,k); col=mix(col,vec3(.62,.61,.57),(1.-smoothstep(.0,.14,abs(d)))*.9);}
+      /* la glorieta: isleta de césped con bordillo y su línea */
+      float dg=length(w);
+      col=mix(col,texture2D(tH,w*.2).rgb*vec3(1.05,1.3,.8),1.-smoothstep(2.3,2.45,dg));
+      col=mix(col,vec3(.8,.79,.74),(1.-smoothstep(2.45,2.8,dg))*smoothstep(2.3,2.45,dg));
+      col=mix(col,vec3(.88,.87,.82),(1.-smoothstep(.06,.12,abs(dg-5.4)))*.75*step(.4,fract(atan(w.y,w.x)*2.5))*gast);
+      /* autopistas: calzada de 8 m, bordillo, líneas y pasos de cebra donde cruza la avenida */
+      float roadO=1.-smoothstep(4.,4.2,dc), arc=1.-smoothstep(4.2,4.55,dc);
+      vec3 asfA=mix(texture2D(tB,w*.075).rgb,texture2D(tB,rw*.037+.5).rgb,.4)*1.05;
+      col=mix(col,vec3(.8,.79,.75)*mix(.85,1.,n2),arc*(1.-roadO)); col=mix(col,asfA,roadO);
+      col=mix(col,vec3(.88,.87,.82),(1.-smoothstep(.07,.13,abs(dc-3.55)))*roadO*gast);
+      col=mix(col,vec3(.9,.68,.16),(1.-smoothstep(.05,.09,abs(dc-.16)))*roadO*gast);
+      col=mix(col,vec3(.88,.87,.82),(1.-smoothstep(.05,.09,abs(dc-1.85)))*step(.5,fract(w.y/5.))*roadO*gast*step(5.,abs(w.y)));
+      float zeb=step(2.4,abs(w.y))*(1.-step(4.2,abs(w.y)))*step(.5,fract(w.x*1.15))*roadO;
+      col=mix(col,vec3(.9,.9,.86),zeb*gast*.92);
+      /* bases: plaza de hormigón */
+      /* bases: la plaza del peaje, de hormigón en losas grandes, con bordillo (entre las dos autopistas que llegan) */
+      {vec2 q=vec2(abs(w.x),abs(w.y)); float dB=max(q.x-14.,40.6-q.y); float k=1.-smoothstep(-.05,.05,dB);
+       vec2 lq=abs(fract(w/2.4)-.5); vec3 losa=hor*.86*(1.-.1*step(.47,max(lq.x,lq.y)));
+       col=mix(col,losa,k*(1.-roadO)); col=mix(col,vec3(.8,.79,.75),(1.-smoothstep(.0,.14,abs(dB)))*(1.-roadO)*.85);}
+      /* el colector de Nasor: hormigón oscuro y mojado con rejillas; la central: hormigón con banda amarilla y negra */
+      /* el colector de Nasor: explanada de hormigón mojado, canal central hasta la boca del tubo y rejilla grande */
+      {vec2 p=w-uPit; float dB=max(abs(p.y)-5.,max(-p.x-6.4,p.x-5.6)); float k=1.-smoothstep(-.05,.05,dB);
+       vec3 moj=hor*vec3(.42,.47,.5); moj=mix(moj,moj*.62,smoothstep(.45,.75,fbm(w*.35+2.)));
+       col=mix(col,moj,k);
+       float canal=(1.-smoothstep(.65,.75,abs(p.y)))*step(-6.4,p.x)*step(p.x,-1.2);
+       col=mix(col,vec3(.1,.17,.2),canal*k);
+       vec2 g=abs(p); float rej=step(max(g.x,g.y),1.9)*max(step(fract(p.x*2.5),.22),step(fract(p.y*2.5),.22));
+       col=mix(col,vec3(.04,.05,.06),rej); col=mix(col,vec3(.62,.64,.66),(1.-smoothstep(.0,.12,abs(max(g.x,g.y)-1.95)))*.9);
+       col=mix(col,vec3(.8,.79,.75),(1.-smoothstep(.0,.14,abs(dB)))*.8);}
+      /* la central del lagarto: hormigón industrial con la banda amarilla y negra de peligro */
+      {vec2 p=w-uPit2; float dB=max(abs(p.y)-5.,max(p.x-6.4,-p.x-5.6)); float k=1.-smoothstep(-.05,.05,dB);
+       col=mix(col,hor*vec3(.66,.64,.58),k);
+       float an=(1.-smoothstep(.0,.05,abs(dB+.45)-.35));
+       col=mix(col,mix(vec3(.07,.07,.07),vec3(.95,.72,.08),step(.5,fract((w.x+w.y)*.7))),an*k);}
+      gl_FragColor=vec4(col,1.);
+      #include <colorspace_fragment>
+      }`});
+  const gB = new THREE.PlaneGeometry(BX * 2, BZ * 2, 1, 1); gB.rotateX(-Math.PI / 2);
+  const listoTex = () => [tH, tB, tC].every((t) => t.image && t.image.complete !== false && t.image.width);
+  const RES = 2048, rt = new THREE.WebGLRenderTarget(RES, RES, {colorSpace: THREE.SRGBColorSpace, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter, anisotropy: 4});
+  if (SUELO_RT) SUELO_RT.dispose(); SUELO_RT = rt;
+  const hornea = () => {const sc = new THREE.Scene(), q = new THREE.Mesh(gB, bakeM); sc.add(q); const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); const prev = renderer.getRenderTarget(); renderer.setRenderTarget(rt); renderer.render(sc, cam); renderer.setRenderTarget(prev); bakeM.dispose();};
+  (function espera() {if (listoTex()) hornea(); else setTimeout(espera, 60);})();
+  const m = new THREE.MeshLambertMaterial({map: rt.texture});
+  m.onBeforeCompile = (sh) => {sh.uniforms.tB = {value: tB}; sh.uniforms.tNie = {value: NIEBLA_TEX};
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWD=(modelMatrix*vec4(transformed,1.)).xz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vWD; uniform sampler2D tB,tNie;').replace('#include <map_fragment>', '#include <map_fragment>\nvec3 dt=texture2D(tB,vWD*.5).rgb; diffuseColor.rgb*=clamp(.78+dot(dt,vec3(.3,.6,.1))*.5,.9,1.08); diffuseColor.rgb*=1.-.58*texture2D(tNie,vec2((vWD.x+32.)/64.,1.-(vWD.y+70.)/140.)).a;');};
+  const suelo = new THREE.Mesh(gB, m); suelo.receiveShadow = true; scene_.add(suelo);
+  /* fuera de la zona horneada: hormigón oscuro bajo los rascacielos */
+  const g = new THREE.PlaneGeometry(260, 300, 1, 1); g.rotateX(-Math.PI / 2);
+  const tF = tC.clone(); tF.source = tC.source; tF.repeat.set(40, 46); tF.wrapS = tF.wrapT = THREE.RepeatWrapping;
+  const fuera_ = new THREE.Mesh(g, new THREE.MeshLambertMaterial({map: tF, color: '#7d828a'})); fuera_.position.y = -0.03; fuera_.receiveShadow = true; scene_.add(fuera_);
+  const semilla = {v: 11}; const al = () => {semilla.v = (semilla.v * 16807) % 2147483647; return semilla.v / 2147483647;};
+  /* zócalo de hormigón de cada manzana: se lee como sólida aunque entre dos edificios quede un hueco */
+  const tZ = tC.clone(); tZ.source = tC.source; tZ.repeat.set(1, 1); tZ.wrapS = tZ.wrapT = THREE.RepeatWrapping;
+  const mZ = new THREE.MeshLambertMaterial({map: tZ, color: '#9aa0a8'}); 
+  for (const r of RECTS) {const w = r[2] - r[0], d = r[3] - r[1]; if (Math.abs(r[0]) > 60) continue; const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.32, d), mZ); b.position.set((r[0] + r[2]) / 2, 0.16, (r[1] + r[3]) / 2); b.receiveShadow = true; b.castShadow = false;
+    const uv = b.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 3, uv.getY(i) * d / 3); scene_.add(b);}
+  /* matorrales (la hierba alta de las calles: zarzas que han crecido entre el asfalto) */
+  const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
+  for (const b of HIERBAS) for (let i = 0; i < 8; i++) {const a = al() * 6.28, d = Math.sqrt(al()) * b.r * 0.8; mata(['adelfa_1', 'adelfa_2'][i % 2], b.x + Math.cos(a) * d, b.z + Math.sin(a) * d, 1.05 + al() * 0.35);}
+  for (const n in matas) instancias('ap_vegetacion', n, matas[n], true);
+  for (const eq of [0, 1]) {const b = BASES[eq], s = signo(eq); for (const [dx, dz] of [[4, -4], [-4, -4]]) luzFuego(b.fuente.x + dx * s, b.fuente.z + dz * s);}
+  edificiosCiudad(al);
+  decoradoCiudad(al);
+  {const bb = new THREE.Box3(); MAPA_G.updateMatrixWorld(true); MAPA_G.traverse((q) => {if (!q.isMesh || q.isInstancedMesh || q.isSkinnedMesh || !q.castShadow) return; bb.setFromObject(q); if (bb.max.y - Math.max(0, bb.min.y) < 2.2) q.castShadow = false;});}
+  fusiona(MAPA_G);
+  tapaArboles();
+  vidaMapa(scene_);
+}
+/* lo que mide cada edificio del kit (sin escalar) */
+let CIU_INFO = null;
+function infoCiudad() {
+  if (CIU_INFO) return CIU_INFO; CIU_INFO = {}; const raiz = M.ap_ciudad.scene; raiz.updateMatrixWorld(true);
+  for (const o of raiz.children) {const b = new THREE.Box3().setFromObject(o); CIU_INFO[o.name] = {w: b.max.x - b.min.x, d: b.max.z - b.min.z, h: b.max.y - b.min.y, cx: (b.max.x + b.min.x) / 2 - o.position.x, cz: (b.max.z + b.min.z) / 2 - o.position.z, y0: b.min.y - o.position.y};}
+  return CIU_INFO;
+}
+const CIU_BAJOS = ['i_h', 'i_i', 'i_j', 'i_k', 'i_o', 'i_p', 'i_q', 'i_s', 'c_c', 'c_e', 'i_t', 'i_g', 'i_d', 'c_k'];
+const CIU_MEDIOS = ['c_a', 'c_b', 'c_d', 'c_h', 'c_j', 'i_a', 'i_b', 'i_c', 'i_e', 'i_l', 'i_r', 'c_i', 'c_f', 'c_g', 'i_f', 'i_m', 'i_n', 'c_l', 'c_n', 'c_m'];
+const CIU_ALTOS = ['c_skyscraper_a', 'c_skyscraper_b', 'c_skyscraper_c', 'c_skyscraper_d', 'c_skyscraper_e', 'c_l', 'c_m', 'c_n'];
+const CIU_FONDO = ['c_ld_a', 'c_ld_b', 'c_ld_c', 'c_ld_d', 'c_ld_e', 'c_ld_f', 'c_ld_g', 'c_ld_h', 'c_ld_i', 'c_ld_j', 'c_ld_k', 'c_ld_l', 'c_ld_m', 'c_ld_wide_a', 'c_ld_wide_b', 'c_skyscraper_b', 'c_skyscraper_d'];
+function edificiosCiudad(al) {
+  const G = MAPA_G;
+  if (!M.ap_ciudad) {const t = setInterval(() => {if (MAPA_G !== G) clearInterval(t); else if (M.ap_ciudad) {clearInterval(t); edificiosCiudad(al); tapaArboles(); for (const im of BOSQUE) if (im.userData.ciudad) im.visible = true; cullBosque(camM.x, camM.z, true);}}, 300); return;}
+  const I = infoCiudad(), lista = {}, pon = (n, x, z, ry, s, y = 0.32, sx = s, sy = s, sz = s) => {const k = I[n], c = Math.cos(ry), sn = Math.sin(ry), ox = k.cx * sx * c + k.cz * sz * sn, oz = -k.cx * sx * sn + k.cz * sz * c; (lista[n] = lista[n] || []).push({x: x - ox, z: z - oz, y: y - k.y0 * sy, ry, s, sx, sy, sz});};
+  /* cuánto puede medir un edificio en (x, z): la cámara mira desde arriba a ~51°; junto a las autopistas y en el barrio, bajos */
+  const tope = (x, z) => {const dc = distCarril(x, z); if (Math.abs(x) < 14 && Math.abs(z) < 37) return 5.4; return dc < 9 ? 5 : Math.min(26, 5 + (dc - 9) * 1.15);};
+  for (const r of RECTS) {
+    const w = r[2] - r[0] - 0.4, d = r[3] - r[1] - 0.4, largoX = w >= d, L = largoX ? w : d, corto = largoX ? d : w;
+    /* manzanas grandes: se parten en filas a lo ancho */
+    const filas = Math.max(1, Math.round(corto / 9)), cf = corto / filas;
+    for (let f = 0; f < filas; f++) {
+      const tl0 = Math.max(3.2, Math.min(9, cf * 1.25)), n = Math.max(1, Math.round(L / tl0)), tl = L / n;
+      for (let i = 0; i < n; i++) {
+        const a = -L / 2 + tl * (i + 0.5), b = -corto / 2 + cf * (f + 0.5), x = (r[0] + r[2]) / 2 + (largoX ? a : b), z = (r[1] + r[3]) / 2 + (largoX ? b : a), cap = tope(x, z);
+        const cands = cap < 6 ? CIU_BAJOS : cap < 12 ? [...CIU_BAJOS, ...CIU_MEDIOS] : [...CIU_MEDIOS, ...CIU_ALTOS];
+        let mejor = null;
+        for (let k = 0; k < 7; k++) {
+          const n0 = cands[Math.floor(al() * cands.length)], q = I[n0]; if (!q) continue;
+          for (const rot of [0, 1]) {
+            /* rot 0: el x del modelo va a lo largo de la fila */
+            const fa = rot ? q.d : q.w, fb = rot ? q.w : q.d, sa0 = (tl - 0.15) / fa, sb0 = (cf - 0.15) / fb, s = Math.min(sa0, sb0), sa = Math.min(sa0, s * 1.35), sb = Math.min(sb0, s * 1.35);
+            const h = q.h * s, lleno = (fa * fb * sa * sb) / (tl * cf), val = lleno * 2 - Math.max(0, h - cap) * 0.6 + Math.min(h, cap) / cap * 0.9 + al() * 0.15;
+            if (!mejor || val > mejor.val) mejor = {n: n0, s, sa, sb, sy: h > cap * 1.05 ? cap * 1.05 / q.h : s, rot, val};
+          }
+        }
+        if (!mejor) continue;
+        const giro = (largoX ? 0 : Math.PI / 2) + (mejor.rot ? Math.PI / 2 : 0) + (al() < 0.5 ? Math.PI : 0);
+        /* el x del modelo va a lo largo de la fila si (largoX y rot 0) o (no largoX y rot 0 girado 90°): en coordenadas del modelo, sx = a lo largo */
+        pon(mejor.n, x, z, giro, mejor.s, 0.32, mejor.rot ? mejor.sb : mejor.sa, mejor.sy, mejor.rot ? mejor.sa : mejor.sb);
+      }
+    }
+  }
+  /* rascacielos de fondo, fuera del mapa: solo los de poco detalle (100-250 triángulos), en 6 trozos para que la cámara descarte los que no ve */
+  const fondo = {}, FONDO = ['c_ld_a', 'c_ld_c', 'c_ld_f', 'c_ld_h', 'c_ld_j', 'c_ld_wide_a'];
+  for (let x = -80; x <= 80; x += 10.5) for (let z = -104; z <= 104; z += 10.5) {
+    if (Math.abs(x) < 39 && Math.abs(z) < 65) continue; if (al() < 0.15) continue;
+    const n0 = FONDO[Math.floor(al() * FONDO.length)], q = I[n0]; if (!q) continue; const s = (6.5 + al() * 3) / Math.max(q.w, q.d), lejos = Math.max(Math.abs(x) - 39, Math.abs(z) - 65);
+    const sy = s * (0.7 + Math.min(1.5, lejos / 22) + al() * 0.5), trozo = (x < -20 ? 0 : x > 20 ? 1 : 2) * 2 + (z < 0 ? 0 : 1), k = n0 + '|' + trozo;
+    (fondo[k] = fondo[k] || []).push({x: x + (al() - 0.5) * 2, z: z + (al() - 0.5) * 2, ry: Math.floor(al() * 4) * Math.PI / 2, s, sy});
+  }
+  for (const n in lista) {const n0 = BOSQUE.length; instancias('ap_ciudad', n, lista[n], true); for (const im of BOSQUE.slice(n0)) {im.userData.ciudad = true; im.userData.fijo = true;}}
+  /* el fondo no se recorta por distancia (se ve desde lejos) ni hace sombra */
+  for (const k in fondo) {const n = k.split('|')[0], n0 = BOSQUE.length; instancias('ap_ciudad', n, fondo[k].map((c) => ({x: c.x, z: c.z, ry: c.ry, s: c.s, sx: c.s, sy: c.sy, sz: c.s})), false);
+    const ims = BOSQUE.splice(n0); for (const im of ims) {im.computeBoundingSphere(); im.frustumCulled = true; im.userData.cull = null; CIU_SKY.push(im);}}
+}
+/* farolas, vallas publicitarias, la glorieta, el colector, la central y los pasos elevados de los extremos */
+function decoradoCiudad(al) {
+  const G = MAPA_G, pon2 = (n, x, z, ry = 0, e = 1) => {if (!M[n]) return null; const o = M[n].scene.clone(true); o.position.set(x, 0, z); o.rotation.y = ry; o.scale.setScalar(e); o.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); G.add(o); return o;};
+  /* farolas a los dos lados de cada autopista, cada ~13 m */
+  for (const l of [0, 1]) for (let f = 0.12; f < 0.9; f += 0.125) {
+    const p = puntoCarril(l, f), q = puntoCarril(l, f + 0.01), dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz) || 1, nx = dz / d, nz = -dx / d;
+    for (const sg of [1, -1]) {const x = p.x + nx * 4.75 * sg, z = p.z + nz * 4.75 * sg; if (Math.abs(z) < 5 || BASES.some((b) => Math.hypot(b.torre.x - x, b.torre.z - z) < 6) || distCarril(x, z) < 4.5 || Math.hypot(x - PIT.x, z - PIT.z) < 8 || Math.hypot(x - PIT2.x, z - PIT2.z) < 8) continue;
+      const o = pon2('ap_farola', x, z, Math.atan2(-nx * sg, -nz * sg) + Math.PI / 2, 1); if (o) o.traverse((q) => {if (q.isMesh && q.material.emissive) q.material.emissiveIntensity = 2;});
+      if ((Math.round(f * 8) + l + (sg > 0 ? 0 : 1)) % 2 === 0) luzFuego(x - nx * sg * 1.2, z - nz * sg * 1.2);}
+  }
+  /* la glorieta: una palmera y matas */
+  if (M.ap_vegetacion) {instancias('ap_vegetacion', 'palmera_1', [{x: 0.3, z: -0.2, ry: 0.4, s: 1.05}], true); instancias('ap_vegetacion', 'adelfa_1', [{x: 1.3, z: 0.9, ry: 1, s: 0.9}, {x: -1.2, z: -1, ry: 2, s: 0.8}, {x: -0.9, z: 1.3, ry: 3, s: 0.85}], false);}
+  /* vallas publicitarias sobre las manzanas de fuera, lejos de las autopistas (son altas) */
+  if (M.ap_borde) for (const s of [1, -1]) for (const z of [20, 33]) {const o = pieza('ap_borde', 'valla_publicitaria'); o.position.set(-s * 30.5, 0.32, s * z); o.rotation.y = Math.PI / 2 * s; G.add(o);}
+  /* pasos elevados al fondo, detrás de cada base */
+  if (M.ap_borde) for (const s of [1, -1]) {const o = pieza('ap_borde', 'paso_elevado'); o.position.set(0, 0, s * 70); G.add(o); const o2 = pieza('ap_borde', 'paso_elevado'); o2.position.set(s * 30, 0, s * 70); G.add(o2);}
+  /* el colector de Nasor (oeste) y la central eléctrica del lagarto (este): chimeneas y depósitos al fondo de cada boca */
+  const I = M.ap_ciudad ? infoCiudad() : null, ind = {};
+  const mete = (n, x, z, s, ry = 0) => {if (!I || !I[n]) return; const k = I[n]; (ind[n] = ind[n] || []).push({x: x - k.cx * s, z: z - k.cz * s, y: 0.32 - k.y0 * s, ry, s});};
+  if (I) {
+    const P2 = PIT2; mete('i_chimney_large', P2.x + 4.2, P2.z - 4.6, 3.2); mete('i_chimney_large', P2.x + 4.4, P2.z + 4.8, 3.2); mete('i_chimney_medium', P2.x + 5.5, P2.z + 0.2, 4.5);
+    mete('i_detail_tank', P2.x + 2.2, P2.z + 5.4, 3.4, Math.PI / 2); mete('i_detail_tank', P2.x + 2.2, P2.z - 5.3, 3.4, Math.PI / 2);
+    
+    for (const n in ind) {const n0 = BOSQUE.length; instancias('ap_ciudad', n, ind[n], true); for (const im of BOSQUE.slice(n0)) {im.userData.ciudad = true; im.userData.fijo = true;}}
+  }
+  colector(G);
+}
+/* el colector de Nasor: muro de hormigón al fondo con la boca de un tubo enorme (oscura por dentro), dos tubos pequeños y un hilo de agua */
+function colector(G) {
+  const P = PIT, tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true), t = tC.clone(); t.source = tC.source; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 1);
+  const mH = new THREE.MeshLambertMaterial({map: t, color: '#8b9097'}), mN = new THREE.MeshBasicMaterial({color: '#07090b'});
+  const muro = new THREE.Mesh(new THREE.BoxGeometry(1.2, 3.6, 11.5), mH); muro.position.set(-34.6, 1.8, P.z); muro.castShadow = true; muro.receiveShadow = true; G.add(muro);
+  const tubo = (r, z, y, l) => {const g = new THREE.Group(); const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, l, 28, 1, true), new THREE.MeshLambertMaterial({map: t, color: '#7c8188', side: THREE.DoubleSide})); c.rotation.z = Math.PI / 2; g.add(c);
+    const anillo = new THREE.Mesh(new THREE.TorusGeometry(r, 0.18, 8, 28), mH); anillo.rotation.y = Math.PI / 2; anillo.position.x = l / 2; g.add(anillo);
+    const fondo = new THREE.Mesh(new THREE.CircleGeometry(r * 0.98, 28), mN); fondo.rotation.y = Math.PI / 2; fondo.position.x = -l / 2 + 0.3; g.add(fondo);
+    g.position.set(-34.2, y, z); g.traverse((q) => {if (q.isMesh) {q.castShadow = true; q.receiveShadow = true;}}); G.add(g);};
+  tubo(2.1, P.z, 2.1, 2.6); tubo(0.75, P.z + 4, 0.9, 1.6); tubo(0.75, P.z - 4, 0.9, 1.6);
+  const agua = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 1.4), new THREE.MeshStandardMaterial({color: '#1d3540', roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.85}));
+  agua.rotation.x = -Math.PI / 2; agua.position.set(-31.4, 0.035, P.z); agua.receiveShadow = true; G.add(agua);
+}
+
 let MAPA_G = null, SUELO_RT = null;
 function construyeMapa() {
   if (MAPA_G) {scene.remove(MAPA_G); MAPA_G.traverse((q) => {if (q.isInstancedMesh) q.dispose();});}
-  MAPA_G = new THREE.Group(); scene.add(MAPA_G); const scene_ = MAPA_G; BOSQUE.length = 0; bosqueEn = null;
+  MAPA_G = new THREE.Group(); scene.add(MAPA_G); const scene_ = MAPA_G; BOSQUE.length = 0; bosqueEn = null; CIU_SKY.length = 0;
+  ambienteMapa(TIPO_MAPA === 'ojo'); if (TIPO_MAPA === 'ojo') {construyeCiudad(scene_); return;}
   /* SUELO HORNEADO (16/11): el sombreador del suelo (ruido, caminos, río, bases…) se pinta UNA vez en una textura al montar el mapa;
      en partida el suelo es una textura y luz sencilla. Antes cada píxel de la pantalla calculaba ~50 ruidos en cada fotograma (lo que más calienta el móvil). */
   const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);
@@ -770,7 +1062,7 @@ function vidaMapa(g) {
         gl_FragColor=vec4(col,clamp(rio*1.4,0.,.9));
         #include <fog_fragment>
       }`});
-  const ag = new THREE.Mesh(geo, agua); ag.position.y = 0.06; ag.rotation.y = -Math.atan2(pe.y, pe.x); ag.renderOrder = 1; ag.userData.vivo = 1; if (TIPO_MAPA === 'ojo') g.add(ag);
+  const ag = new THREE.Mesh(geo, agua); ag.position.y = 0.06; ag.rotation.y = -Math.atan2(pe.y, pe.x); ag.renderOrder = 1; ag.userData.vivo = 1; if (0) g.add(ag);
   /* aro de luz de cada fuente con el color del bando (como el pozo de curación del Wild Rift) */
   for (const eq of [0, 1]) {const f = BASES[eq].fuente, a = indicador('ind_alcance', eq === MI_EQ ? '#4fb6ff' : '#ff5a4a'); a.visible = true; a.material.opacity = 0.7; a.position.set(f.x, 0.07, f.z); a.scale.setScalar(2 * 7 * 256 / 235); a.userData.vivo = 1; a.userData.eq = eq; FUENTE_AROS.push(a); scene.remove(a); g.add(a);}
   /* luciérnagas (lado de Rohan) y pavesas (lado de Isengard) que flotan cerca de la cámara */
@@ -787,7 +1079,7 @@ function vidaMapa(g) {
   const pts = new THREE.Points(pg, pm); pts.frustumCulled = false; pts.renderOrder = 6; pts.userData.vivo = 1; pts.name = 'luciernagas'; pts.visible = GRAF.cal !== 'baja'; LUCES_AIRE = pts; g.add(pts);
   /* los árboles se mecen con el viento (solo en el sombreador: no cuesta nada al procesador) */
   const vistos = new Set();
-  for (const im of BOSQUE) {const m = im.material; if (vistos.has(m)) continue; vistos.add(m); const antes = m.onBeforeCompile;
+  for (const im of BOSQUE) {if (im.userData.fijo) continue; const m = im.material; if (vistos.has(m)) continue; vistos.add(m); const antes = m.onBeforeCompile;
     m.onBeforeCompile = (sh, rr) => {if (antes) antes.call(m, sh, rr); sh.uniforms.uT = UT; sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uT;').replace('#include <begin_vertex>', `#include <begin_vertex>
       #ifdef USE_INSTANCING
       vec2 ip=instanceMatrix[3].xz; float hb=max(0.,position.y); transformed.x+=sin(uT*1.4+ip.x*.3+ip.y*.2)*.012*hb*hb; transformed.z+=cos(uT*1.1+ip.x*.2)*.008*hb*hb;
@@ -992,15 +1284,15 @@ function muere(d, o) {
     const eq = o && o.k === 'h' ? o.eq : null;
     if (o && o.k === 'h') {const stJ = stats(o); o.vida = Math.min(stJ.vida, o.vida + stJ.vida * (nd.grande ? 0.1 : 0.04)); o.mana = Math.min(stJ.mana, o.mana + stJ.mana * 0.05); o.oro += nd.oro; o.cs++; ev(['num', d.x, d.z, '+' + nd.oro, 'o', o.id]);}
     if (eq !== null) for (const h of heroes()) if (h.eq === eq && !h.muerto && (h === o || dist(h, d) < 14)) ganaXp(h, nd.xp);
-    if (nd.buff === 'uruk' && eq !== null) {S.bufEq[eq].uruk = S.t + 180; for (const h of heroes()) if (h.eq === eq) h.oro += 150; ev(['fx', 'onda', d.x, d.z, 9]); ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' derriba a Nasor']); ev(['aviso', 0, BUFF_TXT.uruk]);}
+    if (nd.buff === 'uruk' && eq !== null) {S.bufEq[eq].uruk = S.t + 180; for (const h of heroes()) if (h.eq === eq) h.oro += 150; ev(['fx', 'onda', d.x, d.z, 9]); ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' derriba a Nasor']); ev(['jefe', 'cae', d.x, d.z, eq]);}
     else if (nd.draco && eq !== null) {
       const be = S.bufEq[eq]; be.drF = be.drF || 0; be.drH = be.drH || 0; if (d.elem === 'f') be.drF++; else be.drH++;
       S.dracoSig = S.dracoSig === 'f' ? 'h' : 'f'; ev(['fx', 'onda', d.x, d.z, 9]);
       ev(['baja', o.id, d.id, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + (d.elem === 'f' ? ' caza al lagarto de fuego' : ' caza al lagarto de hielo')]);
-      if (be.drF + be.drH >= 3 && !be.alma) {be.alma = 1; ev(['aviso', 0, '🐉 ' + (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' consigue el ALMA DEL LAGARTO']); for (const q of S.campos) if (NEUTRO[q.tipo].draco) q.resp = 1e9;}
-      else ev(['aviso', 0, d.elem === 'f' ? 'Aliento de fuego: el equipo pega un 6 % más' : 'Aliento helado: el equipo tiene un 6 % más de vida']);
+      if (be.drF + be.drH >= 3 && !be.alma) {be.alma = 1; ev(['jefe', 'lcae', d.x, d.z, eq, d.elem === 'f' ? 1 : 0, 1]); for (const q of S.campos) if (NEUTRO[q.tipo].draco) q.resp = 1e9;}
+      else ev(['jefe', 'lcae', d.x, d.z, eq, d.elem === 'f' ? 1 : 0, 0]);
     }
-    else if (nd.pasiva && eq !== null) {S.santuarios.push({x: d.x, z: d.z, r: 7, eq, hasta: S.t + 90}); ev(['aviso', 0, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' caza a la rata: santuario de velocidad y vista en el río']); ev(['fx', 'onda', d.x, d.z, 7]);}
+    else if (nd.pasiva && eq !== null) {S.santuarios.push({x: d.x, z: d.z, r: 7, eq, hasta: S.t + 90}); ev(['aviso', 0, (eq === 0 ? 'El equipo azul' : 'El equipo rojo') + ' caza a la rata: santuario de velocidad y vista en la glorieta']); ev(['fx', 'onda', d.x, d.z, 7]);}
     else if (nd.buff && o && o.k === 'h') {o.buf[nd.buff] = 120; ev(['fx', 'onda', d.x, d.z, 5]); ev(['aviso', o.id, BUFF_TXT[nd.buff]]);}
   }
   if (d.k === 'h') {
@@ -1088,13 +1380,14 @@ function limita(u) {u.x = Math.max(-MAPA.ancho, Math.min(MAPA.ancho, u.x)); u.z 
 let ESTR = [];
 function estructuras(lista) {ESTR = []; if (window._sinEstr) return; for (const q of lista) if ((q.k === 't' || q.k === 'n') && q.vida > 0) ESTR.push({x: q.x, z: q.z, r: (q.k === 'n' ? 2.4 : 1.9)});}
 function choca(u) {
+  if (RECTS.length) chocaRects(u, u.k === 'h' ? 0.45 : 0.3);
   for (const a of ESTR) {const dx = u.x - a.x, dz = u.z - a.z, d = Math.hypot(dx, dz), m = a.r + (u.rad && u.k !== 'h' ? 0.3 : 0.45); if (d < m) {if (d < 0.001) {u.x = a.x + m; continue;} u.x = a.x + dx / d * m; u.z = a.z + dz / d * m;}}
   for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {const l = ARB.get((Math.floor(u.x / 4) + i) + ',' + (Math.floor(u.z / 4) + j)); if (l) for (const a of l) {const dx = u.x - a.x, dz = u.z - a.z, d = Math.hypot(dx, dz), m = a.r + 0.45; if (d < m && d > 0.001) {u.x = a.x + dx / d * m; u.z = a.z + dz / d * m;}}}
 }
 /* rumbo de un bot: recto si no hay árboles en medio; si los hay, por la red de sendas */
 function rumbo(u, tx, tz) {
   const t = {x: tx, z: tz};
-  if (Math.hypot(tx - u.x, tz - u.z) < 4 || lineaLibre(u, t)) {u.ruta = null; return [tx - u.x, tz - u.z];}
+  if ((Math.hypot(tx - u.x, tz - u.z) < 4 && !(RECTS.length && cortaRects(u, t, 0.2))) || lineaLibre(u, t)) {u.ruta = null; return [tx - u.x, tz - u.z];}
   if (!u.ruta || u.rutaT < S.t || Math.hypot(u.rutaD.x - tx, u.rutaD.z - tz) > 4) {u.ruta = camino(u, t); u.rutaT = S.t + 1.5; u.rutaD = t;}
   /* el punto más lejano de la ruta al que ya se ve recto */
   let obj = null; for (let i = u.ruta.length - 1; i >= 0; i--) if (lineaLibre(u, u.ruta[i])) {obj = u.ruta[i]; break;}
@@ -1227,17 +1520,18 @@ function paso(dt) {
   }
   /* la espesura: campamentos que reaparecen y bestias que vuelven a su sitio si te alejas */
   S.campos.forEach((c, ci) => {
+    if (c.vivos === 0 && (NEUTRO[c.tipo].jefe || NEUTRO[c.tipo].draco) && c.avJ !== c.resp && S.t > c.resp - 30 && S.t < c.resp && c.resp < 1e8) {c.avJ = c.resp; ev(['jefe', NEUTRO[c.tipo].jefe ? 'pronto' : 'lpronto', c.x, c.z, Math.round(c.resp - S.t), S.dracoSig === 'f' ? 1 : 0]);}
     if (c.vivos > 0 || S.t < c.resp) return;
     const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;
-    if (nd.draco) {c.elem = S.dracoSig; ev(['aviso', 0, c.elem === 'f' ? '🔥 Ha salido un lagarto de fuego en la central' : '❄ Ha salido un lagarto de hielo en la central']);}
+    if (nd.draco) {c.elem = S.dracoSig; ev(['jefe', 'lsale', c.x, c.z, 0, c.elem === 'f' ? 1 : 0]);}
     for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, elem: c.elem, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.jefe ? 1.5 : nd.grande ? 1.1 : 0.6});
-    if (nd.jefe) {ev(['aviso', 0, '¡Nasor ha salido del colector junto al río!']); ev(['voz', 'uruk_despierta']);}
+    if (nd.jefe) ev(['jefe', 'sale', c.x, c.z]);
   });
   for (const u of S.u) {
     if (u.k !== 'j' || u.muerto) continue;
     const nd = NEUTRO[u.tipo]; u.cd = Math.max(0, u.cd - dt);
     if (nd.pasiva) {
-      const t = (u.ruta = u.ruta ?? 1), R = 9, dx = 0.906 * R * t, dz = 0.423 * R * t, huye = u.agro && S.t < u.agroT;
+      const t = (u.ruta = u.ruta ?? 1), R = 8.5, dx = R * t, dz = 0, huye = u.agro && S.t < u.agroT;
       u.mueve = mueveHacia(u, dx, dz, nd.vel * (huye ? 1.6 : 0.8), dt); if (!u.mueve) u.ruta = -t;
       continue;
     }
@@ -2295,7 +2589,8 @@ function efectoLocal(e) {
   if (t === 'ping' && e[1] === MI_EQ) {const q = VISTA.get(e[2]), txt = {ataca: '⚔ ¡Atacad!', retira: '🛡 ¡Retirada!', voy: '🏃 ¡Voy!', cuidado: '⚠ ¡Cuidado!'}[e[3]]; aviso((q && q.id !== YO ? q.nombre + ': ' : '') + txt); PINGS.push({x: e[4], z: e[5], t: performance.now(), k: e[3]}); flip('onda', e[4], e[5], 4, true); suena('cuerno', 0.25);}
   if (t === 'voz') voz(e[1]);
   if (t === 'tp' && e[1] === YO && !S) {MIO.x = e[2]; MIO.z = e[3]; MIO.dash = null;}
-  if (t === 'baja') anuncio(e[1], e[2], e[3]);
+  if (t === 'baja') {if (/Nasor|lagarto/.test(e[3] || '')) return; anuncio(e[1], e[2], e[3]);}
+  if (t === 'jefe') cartelJefe(e);
   if (t === 'aviso' && (e[1] === 0 || e[1] === YO)) aviso(e[2]);
   if (t === 'fin') {guiaAcaba(false); acaba(e[1]);}
   if (t === 'voto' && e[1] === MI_EQ) pintaVoto(e);
@@ -2345,16 +2640,43 @@ function zonaDe(x, z) {
   }
   if (Math.hypot(x - PIT.x, z - PIT.z) < 9) return ['El colector', 'donde duerme Nasor'];
   if (Math.hypot(x - PIT2.x, z - PIT2.z) < 9) return ['La central eléctrica', 'la guarida del lagarto'];
-  if (Math.abs(l) < 4.5) return ['El río', 'bajo la autopista'];
   const dc = distCarril(x, z);
-  if (dc < 5) return l < 0 ? ['Calzada azul', ''] : ['Calzada roja', ''];
-  return l < 0 ? ['El pinar', 'lado azul'] : ['El descampado', 'lado rojo'];
+  if (dc < 5) return x < 0 ? ['Autopista oeste', l < 0 ? 'sentido norte' : 'sentido sur'] : ['Autopista este', l < 0 ? 'sentido norte' : 'sentido sur'];
+  if (Math.hypot(x, z) < 6.5) return ['La glorieta', 'donde corre la rata'];
+  if (Math.abs(z) < 3.5 && Math.abs(x) < 13) return ['La avenida', 'cruza de autopista a autopista'];
+  if (Math.abs(x) > 21) return ['Las afueras', l < 0 ? 'lado azul' : 'lado rojo'];
+  return l < 0 ? ['El barrio', 'lado azul'] : ['El polígono', 'lado rojo'];
 }
 let zonaAct = '', zonaT = 0;
 function rotuloZona(v) {
   const [n, sub] = zonaDe(v.xi ?? v.x, v.zi ?? v.z), ahora = performance.now();
   if (n === zonaAct) return; zonaAct = n; if (ahora - zonaT < 6000) return; zonaT = ahora;
   const r = $('rotulo'); r.innerHTML = '<b>' + n + '</b>' + (sub ? '<span>' + sub + '</span>' : ''); r.classList.remove('ver'); void r.offsetWidth; r.classList.add('ver');
+}
+let jefeT = 0;
+function cartelLagarto(e, el) {
+  const [, q, x, z, eq, fuego, alma] = e, nuestro = q === 'lcae' && eq === MI_EQ, ft = fuego ? 'de fuego' : 'de hielo';
+  const tit = q === 'lpronto' ? 'EL LAGARTO ' + ft.toUpperCase() + ' SALE EN ' + eq + ' s' : q === 'lsale' ? '¡LAGARTO ' + ft.toUpperCase() + ' EN LA CENTRAL!' : alma ? (nuestro ? '¡ALMA DEL LAGARTO PARA VOSOTROS!' : '¡EL RIVAL TIENE EL ALMA DEL LAGARTO!') : nuestro ? '¡HABÉIS CAZADO AL LAGARTO!' : '¡EL RIVAL CAZA AL LAGARTO!';
+  const sub = q === 'lpronto' ? 'En la central eléctrica: mira el minimapa' : q === 'lsale' ? (fuego ? 'Quien lo cace: +6 % de daño para todo el equipo' : 'Quien lo cace: +6 % de vida para todo el equipo') : alma ? '+10 % de daño y de vida el resto de la partida' : (fuego ? 'Aliento de fuego: +6 % de daño' : 'Aliento helado: +6 % de vida') + (nuestro ? ' para tu equipo' : ' para ellos');
+  el.className = 'jefe ' + (q === 'lpronto' ? 'pr' : q === 'lsale' ? (fuego ? 'lf' : 'lh') : nuestro ? 'az' : 'ro');
+  el.innerHTML = '<img src="ui/ap_mm_draco.webp" alt=""><div><b>' + tit + '</b><span>' + sub + '</span></div>';
+  void el.offsetWidth; el.classList.add('ver'); clearTimeout(jefeT); jefeT = setTimeout(() => el.classList.remove('ver'), q === 'lpronto' ? 3600 : 4800);
+  PINGS.push({x, z, t: performance.now(), k: 'jefe'}); suena(q === 'lcae' ? 'derrumbe' : 'cuerno', q === 'lpronto' ? 0.45 : 0.8);
+  if (q === 'lcae') tiemblaCam = Math.max(tiemblaCam, 0.3);
+}
+function cartelJefe(e) {
+  const [, q, x, z, n] = e, el = $('jefe'); if (!el) return;
+  if (q[0] === 'l') return cartelLagarto(e, el);
+  const nuestro = q === 'cae' && n === MI_EQ, suyo = q === 'cae' && n !== MI_EQ;
+  const tit = q === 'pronto' ? 'NASOR DESPIERTA EN ' + n + ' s' : q === 'sale' ? '¡NASOR HA SALIDO!' : nuestro ? '¡HABÉIS DERRIBADO A NASOR!' : '¡EL RIVAL HA DERRIBADO A NASOR!';
+  const sub = q === 'pronto' ? 'En el colector, junto a una autopista: mira el minimapa' : q === 'sale' ? 'En el colector (mira el minimapa) · su furia da +30 % de daño a todo el equipo' : nuestro ? 'Furia de Nasor 3 min: +30 % daño, más regeneración y soldados más fuertes. ¡A por las torres!' : 'Tienen la Furia de Nasor 3 min: defended y no peleéis en desventaja';
+  el.className = 'jefe ' + (q === 'pronto' ? 'pr' : q === 'sale' ? 'sa' : nuestro ? 'az' : 'ro');
+  el.innerHTML = '<img src="ui/ap_mm_uruk.webp" alt=""><div><b>' + tit + '</b><span>' + sub + '</span></div>';
+  void el.offsetWidth; el.classList.add('ver'); clearTimeout(jefeT); jefeT = setTimeout(() => el.classList.remove('ver'), q === 'pronto' ? 3800 : 5200);
+  PINGS.push({x, z, t: performance.now(), k: 'jefe'}); if (q !== 'pronto') PINGS.push({x, z, t: performance.now() + 900, k: 'jefe'});
+  suena(q === 'cae' ? 'derrumbe' : 'cuerno', q === 'pronto' ? 0.5 : 0.9); if (q === 'sale') suena('grito', 0.7);
+  if (q !== 'pronto') tiemblaCam = Math.max(tiemblaCam, 0.35);
+  if (q !== 'pronto') try {navigator.vibrate && navigator.vibrate(q === 'cae' ? [60, 40, 120] : 90);} catch (er) {}
 }
 function aviso(txt) {const a = $('aviso'); a.textContent = txt; a.style.opacity = 1; clearTimeout(avisoT); avisoT = setTimeout(() => {a.style.opacity = 0;}, 2200);}
 
@@ -2832,7 +3154,7 @@ function minimapa() {
   g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); if (APAI) g.setTransform(0, 1, -1, 0, 196, 0);
   const KX = TIPO_MAPA === 'linea' ? 16 : 34, px = (x) => W / 2 + s * x / KX * (W / 2), pz = (z) => H / 2 + s * z / 59 * (H / 2);
   g.clearRect(0, 0, W, H); g.fillStyle = '#16210f'; g.fillRect(0, 0, W, H);
-  g.strokeStyle = '#2b4a5a'; g.lineWidth = 5; if (TIPO_MAPA === 'ojo') {g.beginPath(); g.moveTo(px(-40 * 0.906), pz(-40 * 0.423)); g.lineTo(px(40 * 0.906), pz(40 * 0.423)); g.stroke();}
+  if (TIPO_MAPA === 'ojo') {g.fillStyle = '#1d222a'; g.fillRect(0, 0, W, H); g.fillStyle = '#3a404b'; for (const r of RECTS) {const a = px(r[0]), b = px(r[2]), c = pz(r[1]), d = pz(r[3]); g.fillRect(Math.min(a, b), Math.min(c, d), Math.abs(b - a), Math.abs(d - c));} g.fillStyle = '#2c323b'; g.fillRect(px(-12), pz(-2.5), px(12) - px(-12), pz(2.5) - pz(-2.5));}
   g.strokeStyle = '#5d6674'; g.lineWidth = 6; g.lineCap = g.lineJoin = 'round';
   CARRILES.forEach((L, l) => {g.globalAlpha = MODO === '2v2' || l === 0 ? 1 : 0.3; g.beginPath(); L.forEach((p, i) => i ? g.lineTo(px(p.x), pz(p.z)) : g.moveTo(px(p.x), pz(p.z))); g.stroke();}); g.globalAlpha = 1;
   for (const b of BASES) {g.fillStyle = b === BASES[0] ? '#35552a' : '#20224a'; g.beginPath(); g.arc(px(b.nexo.x), pz(b.nexo.z), 11, 0, 7); g.fill();}
@@ -2863,7 +3185,7 @@ function minimapa() {
     else if (q.k === 'h') {if (q.muerto >= 0 || (!mio && (q.escondido || !vistoMm(q)))) continue; g.fillStyle = q.id === YO ? '#ffd24a' : col; g.beginPath(); g.arc(x, z, q.id === YO ? 5 : 4, 0, 7); g.fill(); g.strokeStyle = '#000'; g.lineWidth = 1.5; g.stroke();}
   }
   /* lo que ve la cámara */
-  const ahoraP = performance.now(); for (let i = PINGS.length - 1; i >= 0; i--) {const p = PINGS[i], k = (ahoraP - p.t) / 3000; if (k > 1) {PINGS.splice(i, 1); continue;} g.strokeStyle = p.k === 'retira' || p.k === 'cuidado' ? '#ffcf3a' : '#ff5a3a'; g.lineWidth = 2; g.beginPath(); g.arc(px(p.x), pz(p.z), 4 + 10 * ((k * 3) % 1), 0, 7); g.stroke();}
+  const ahoraP = performance.now(); for (let i = PINGS.length - 1; i >= 0; i--) {const p = PINGS[i], k = (ahoraP - p.t) / 3000; if (k > 1) {PINGS.splice(i, 1); continue;} if (k < 0) continue; g.strokeStyle = p.k === 'jefe' ? '#c46bff' : p.k === 'retira' || p.k === 'cuidado' ? '#ffcf3a' : '#ff5a3a'; g.lineWidth = p.k === 'jefe' ? 3 : 2; g.beginPath(); g.arc(px(p.x), pz(p.z), 4 + 10 * ((k * 3) % 1), 0, 7); g.stroke();}
   g.setTransform(1, 0, 0, 1, 0, 0); return;
   const vw = ZOOMS[zoomI][0] * 0.5, vh = ZOOMS[zoomI][0] * 0.85; g.strokeStyle = '#ffffffaa'; g.lineWidth = 1; g.strokeRect(Math.min(px(camM.x - vw), px(camM.x + vw)), Math.min(pz(camM.z - vh), pz(camM.z + vh * 0.5)), Math.abs(px(camM.x + vw) - px(camM.x - vw)), Math.abs(pz(camM.z + vh * 0.5) - pz(camM.z - vh)));
 }
@@ -3303,4 +3625,4 @@ bucle();
 /* primero que se vea el menú (retrato, fondo y letras) y después, los modelos: si no, los 16 MB se comen la conexión y el retrato tarda */
 {const img = $('mSplash'); const listo = () => new Promise((r) => {if (img.complete && img.naturalWidth) r(); else {img.addEventListener('load', r, {once: true}); img.addEventListener('error', r, {once: true});}});
  Promise.race([Promise.all([listo(), document.fonts ? document.fonts.ready : 0]), new Promise((r) => setTimeout(r, 2500))]).then(() => cargaTodo());}
-window._vado = {get MIO() {return MIO;}, MANDO, PRED, CONEX, get INTERP() {return INTERP_MS;}, MIRA_H, get MIRA_ACT() {return MIRA_ACT;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
+window._vado = {efecto: (e) => efectoLocal(e), get MIO() {return MIO;}, MANDO, PRED, CONEX, get INTERP() {return INTERP_MS;}, MIRA_H, get MIRA_ACT() {return MIRA_ACT;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}};
