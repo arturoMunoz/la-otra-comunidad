@@ -2485,6 +2485,14 @@ function ia(h, dt, st) {""")
 html = sub(html, '<head>', """<head><script>(function(){var n=0;function p(t){if(n++>4)return;var d=document.getElementById('errVis');if(!d){d=document.createElement('div');d.id='errVis';d.style.cssText='position:fixed;left:6px;right:6px;bottom:6px;z-index:99999;background:#300;color:#fbb;font:12px monospace;padding:6px;border:1px solid #f55;white-space:pre-wrap;max-height:40%;overflow:auto';(document.body||document.documentElement).appendChild(d);}d.textContent+=t+'\\n';}addEventListener('error',function(e){p('⚠ '+(e.message||e)+' '+(e.filename||'').split('/').pop()+':'+(e.lineno||''));});addEventListener('unhandledrejection',function(e){p('⚠ '+(e.reason&&(e.reason.stack||e.reason.message)||e.reason));});})();</script>""", donde='html')
 js = sub(js, "get ESTADO() {return ESTADO;}};", "get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};")
 
+# ---------- PULIDO 23/11: iconos de La Brecha que se colaban en A-6 ----------
+# El cartel de la definitiva y la ficha de estadísticas pedían ui/h_<héroe>_<tecla>.webp: en A-6 salía el icono medieval de La Brecha
+# (y en el Visor, que no existe allí, un 404 y el hueco vacío).
+js = sub(js, "<img src=\"ui/h_' + v.tipo + '_r.webp\" alt=\"\">", "<img src=\"ui/ap_h_' + v.tipo + '_r.webp\" alt=\"\">")
+js = sub(js, "<img src=\"ui/h_' + tipo + '_' + k + '.webp\" alt=\"\">", "<img src=\"ui/ap_h_' + tipo + '_' + k + '.webp\" alt=\"\">")
+
+js = js.replace("'../abismo/iconos/torre.webp'", "'ui/ap_b_torre.webp'")  # icono medieval de torre en el resumen de muerte y los carteles de baja
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

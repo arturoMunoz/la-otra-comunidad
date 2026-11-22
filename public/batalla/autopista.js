@@ -2134,7 +2134,7 @@ let camGolpe = 0;
 function ultiFx(v, H, k, mio, cerca) {
   if (!cerca) return;
   const el = $('ulti'); el.className = (v.eq === MI_EQ ? 'az' : 'ro') + (mio ? ' mia' : '');
-  el.innerHTML = '<div class="uF"><img src="ui/h_' + v.tipo + '_r.webp" alt=""><b>' + H.n + '</b></div>';
+  el.innerHTML = '<div class="uF"><img src="ui/ap_h_' + v.tipo + '_r.webp" alt=""><b>' + H.n + '</b></div>';
   void el.offsetWidth; el.classList.add('va'); clearTimeout(el._t); el._t = setTimeout(() => {el.className = '';}, 1300);
   if (mio) {camGolpe = 1; if (navigator.vibrate) try {navigator.vibrate([30, 40, 60]);} catch (e) {}}
   suena('cuerno', mio ? 0.75 : 0.5);
@@ -2901,7 +2901,7 @@ function recapMuerte(v) {
   const por = new Map(); let tot = 0; for (const [t, de, n] of DANO_R) {if (performance.now() - t > 12000) continue; const q = VISTA.get(de), key = !q ? 'otro' : q.k === 'h' ? de : q.k === 's' ? 'sold' : q.k === 't' || q.k === 'n' ? 'torre' : 'bestia'; por.set(key, (por.get(key) || 0) + n); tot += n;}
   if (!tot) return (RECAP = ' ');
   const filas = [...por.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, n]) => {const q = typeof k === 'number' ? VISTA.get(k) : null, mag = q && q.k === 'h' && typeof esMagico === 'function' && esMagico(q.tipo);
-    const img = q ? RET(q.tipo) : k === 'torre' ? '../abismo/iconos/torre.webp' : k === 'sold' ? 'ui/ap_b_subditos.webp' : 'ui/ap_mm_troll.webp', nom = q ? q.nombre : {torre: 'Torre', sold: 'Soldados', bestia: 'Bestias', otro: 'Otros'}[k];
+    const img = q ? RET(q.tipo) : k === 'torre' ? 'ui/ap_b_torre.webp' : k === 'sold' ? 'ui/ap_b_subditos.webp' : 'ui/ap_mm_troll.webp', nom = q ? q.nombre : {torre: 'Torre', sold: 'Soldados', bestia: 'Bestias', otro: 'Otros'}[k];
     return '<div class="dR"><img src="' + img + '" alt=""><span>' + nom + '<small>' + (q ? (mag ? 'daño mágico' : 'daño físico') : '') + '</small></span><i><u class="' + (mag ? 'mag' : '') + '" style="width:' + Math.round(n / tot * 100) + '%"></u></i><b>' + Math.round(n) + '</b></div>';}).join('');
   return (RECAP = '<div class="dRecap"><div class="dT">Daño recibido · ' + Math.round(tot) + '</div>' + filas + '</div>');
 }
@@ -2953,7 +2953,7 @@ function anuncio(a, d, txt) {
   const el = $('anuncio'), va = VISTA.get(a), vd = VISTA.get(d); if (!vd) return;
   const mio = (q) => q && q.eq === MI_EQ;
   if (vd.k === 't') {suena('derrumbe', 0.9, vd.x, vd.z); tiemblaCam = Math.max(tiemblaCam, Math.hypot(vd.x - camM.x, vd.z - camM.z) < 25 ? 0.45 : 0); flip('polvoA', vd.x, vd.z, 7, true); flip('humo', vd.x, vd.z, 6, false, undefined, 2);} if (vd.k === 't') {el.innerHTML = '<div class="anT ' + (mio(vd) ? 'malo' : 'bueno') + '">' + txt + '</div>';}
-  else el.innerHTML = '<div class="anF' + (mio(va) ? '' : ' malo') + '"><img class="' + (mio(va) ? 'az' : 'ro') + '" src="' + (va ? retratoDe(a) : '../abismo/iconos/torre.webp') + '" alt=""><b>⚔</b><img class="' + (mio(vd) ? 'az' : 'ro') + ' muerto" src="' + retratoDe(d) + '" alt=""></div>' + (txt ? '<div class="anT ' + (mio(va) ? 'bueno' : 'malo') + '">' + txt + '</div>' : '');
+  else el.innerHTML = '<div class="anF' + (mio(va) ? '' : ' malo') + '"><img class="' + (mio(va) ? 'az' : 'ro') + '" src="' + (va ? retratoDe(a) : 'ui/ap_b_torre.webp') + '" alt=""><b>⚔</b><img class="' + (mio(vd) ? 'az' : 'ro') + ' muerto" src="' + retratoDe(d) + '" alt=""></div>' + (txt ? '<div class="anT ' + (mio(va) ? 'bueno' : 'malo') + '">' + txt + '</div>' : '');
   el.classList.remove('hidden'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
   clearTimeout(anuncioT); anuncioT = setTimeout(() => el.classList.add('hidden'), 2600);
   if (txt) {vozDeTexto(txt, vd.k === 't' && mio(vd));}
@@ -3871,7 +3871,7 @@ function fichaHeroeHtml(tipo, actual) {
   const H = HEROES[tipo], s1 = statsDe(tipo, 1), s9 = statsDe(tipo, NIVEL_MAX), mag = esMagico(tipo);
   const mx = {}; for (const k of Object.keys(HEROES)) {const q = statsDe(k, 1); for (const [c] of STAT_INFO) mx[c] = Math.max(mx[c] || 0, q[c]);}
   const filas = STAT_INFO.map(([c, n, f, d]) => '<div class="fF"><div class="fN">' + n + '</div><div class="fV">' + (actual ? '<b>' + f(actual) + '</b>' : f(s1) + (s9[c] !== s1[c] ? ' <span>→ ' + f(s9) + '</span>' : '')) + '</div><i><u style="width:' + Math.round(Math.min(1, (actual || s1)[c] / mx[c]) * 100) + '%"></u></i><p>' + d + '</p></div>').join('');
-  const habs = ['q', 'w', 'e', 'r'].map((k) => {const A = H.hab[k]; return '<div class="fH"><img src="ui/h_' + tipo + '_' + k + '.webp" alt=""><div><b>' + A.n + ' <i>' + (k === 'r' ? 'definitiva' : k.toUpperCase()) + '</i></b><small>' + (A.d || '') + '</small><em>' + habNums(A) + '</em></div></div>';}).join('');
+  const habs = ['q', 'w', 'e', 'r'].map((k) => {const A = H.hab[k]; return '<div class="fH"><img src="ui/ap_h_' + tipo + '_' + k + '.webp" alt=""><div><b>' + A.n + ' <i>' + (k === 'r' ? 'definitiva' : k.toUpperCase()) + '</i></b><small>' + (A.d || '') + '</small><em>' + habNums(A) + '</em></div></div>';}).join('');
   return '<div class="fCab"><img src="' + RET(tipo) + '" alt=""><div><b>' + H.nombre + '</b><span>' + ROL_H[tipo] + ' · ' + (H.alcance < 3.5 ? 'cuerpo a cuerpo' : 'a distancia') + '</span><span>Hace daño: ' + (mag ? '<em class="fis">físico</em> con los golpes y <em class="mag">mágico</em> con las habilidades' : '<em class="fis">físico</em> (golpes y habilidades)') + '</span></div><button class="fX" id="fX">✕</button></div>' +
     '<div class="fTit">' + (actual ? 'Ahora, con tu nivel y tus objetos' : 'Nivel 1 <span>→ nivel ' + NIVEL_MAX + '</span> · la barra lo compara con los demás héroes') + '</div><div class="fRej">' + filas + '</div>' +
     (PASIVA[tipo] ? '<div class="fTit">Pasiva</div><div class="fH"><img src="ui/p_' + tipo + '.webp" alt=""><div><b>' + PASIVA[tipo].n + '</b><small>' + PASIVA[tipo].d + '</small></div></div>' : '') +
