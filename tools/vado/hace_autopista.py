@@ -2047,7 +2047,11 @@ js = sub(js, " if (v.tipo === 'visor' && v.k === 'h') brazosVisor(o);", "")
 # ---------- PACK 56 WORK (19/11): carrera de Fu sacada de la Universal Animation Library de Quaternius (CC0) ----------
 # Su carrera va a 4,52 m/s con timeScale 1 y el héroe se ve a ×1,28 (ESC_H): referencia 5,8 m/s para que los pies no resbalen.
 js = sub(js, "o.clips.correr.timeScale = Math.max(0.6, Math.min(1.7, o.vel / (v.k === 'h' ? 4.2 :",
-             "o.clips.correr.timeScale = Math.max(0.45, Math.min(1.7, o.vel / (v.k === 'h' ? (v.tipo === 'gollum' ? 5.8 : 4.2) :")
+             "o.clips.correr.timeScale = Math.max(0.45, Math.min(v.k === 'h' ? 2.6 : 1.7, o.vel / (v.k === 'h' ? (REF_CARRERA[v.tipo] || 4.2) :")
+# PACK 57 WORK (22/11): carreras de los otros 7 sacadas de la misma biblioteca. Referencia en el juego = la del LEEME (timeScale 1)
+# × la escala a la que se monta cada modelo (medida con /tmp/esc57.py: Dalinar 1,225, Vael 0,803, Grub 0,484, Ata 1,018, Birdie 0,816,
+# Visor 1,018, Moha 0,951) × ESC_H 1,28. Grub, bajito, mueve las piernas más deprisa: tope 2,6 para todos los héroes (antes 1,7).
+js = sub(js, "const ESC_H = 1.28;", "const REF_CARRERA = {enano: 6.38, gandalf: 4.55, orco: 2.06, elfo: 5.91, hobbit: 5.41, visor: 6.01, rohan: 4.87, gollum: 5.8};\nconst ESC_H = 1.28;")
 
 # ---------- NASOR SE ANUNCIA (19/11, Henar: «que se anuncie el Nasor en partida») ----------
 # simulación: aviso 30 s antes, al salir y al caer (evento 'jefe'); cliente: cartel grande, latido en el minimapa, cuerno y temblor
@@ -2438,7 +2442,7 @@ js = sub(js, "  try {animaJefes();} catch (e) {}\n", "  try {animaJefes();} catc
 js = sub(js, "  if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z};", "  if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z}; try {celebraGanadores(ganador);} catch (e) {}")
 js = sub(js, "document.body.classList.add('jugando'); ESTADO = 'juego';", "document.body.classList.add('jugando'); ESTADO = 'juego'; setTimeout(saludosInicio, 1500);")
 js = sub(js, "window._vado = {efecto: (e) => efectoLocal(e),", "window._vado = {alma: {burbuja, BURB, almaEfecto}, dana, efecto: (e) => efectoLocal(e),")
-html = sub(html, '<div id="pings" class="hidden">', '<div id="emo"><button id="bEmo" aria-label="Emoticonos">😀</button><div class="eOp"><button data-e="hola" aria-label="Saludo">👋</button><button data-e="risa" aria-label="Risa">😂</button><button data-e="burla" aria-label="Burla">😜</button><button data-e="gg" aria-label="Bien jugado">👍</button></div></div><div id="pings" class="hidden">', donde='html')
+html = sub(html, '<div id="pings" class="hidden">', '<div id="emo"><button id="bEmo" aria-label="Emoticonos"></button><div class="eOp"><button data-e="hola" aria-label="Saludo"><img src="ui/ap_emo_hola.webp" alt=""></button><button data-e="risa" aria-label="Risa"><img src="ui/ap_emo_risa.webp" alt=""></button><button data-e="burla" aria-label="Burla"><img src="ui/ap_emo_burla.webp" alt=""></button><button data-e="gg" aria-label="Bien jugado"><img src="ui/ap_emo_gg.webp" alt=""></button></div></div><div id="pings" class="hidden">', donde='html')
 html = sub(html, '</head>', '<style>\n' + (RAIZ / 'tools/autopista/alma/alma.css').read_text() + '</style>\n</head>', donde='html')
 # ALMA · ENTORNO (22/11): mapa de reflejos para que lo metálico tenga color (las torres salían negras). tools/autopista/alma/entorno.js.
 # Se pone ya al arrancar (los sombreadores se compilan con él en la pantalla VS) y se rehace al cambiar de mapa; la luz de la cúpula y del cielo se baja un poco para compensar.

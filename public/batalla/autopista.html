@@ -924,13 +924,13 @@ body[data-heroe=visor] #bAt::after{background-image:url(ui/ap_aro_at_visor.webp)
 .burb::after{content:'';position:absolute;left:50%;top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:#3ad1ff}
 .burb.yo{border-color:#ffd24a;box-shadow:0 0 12px #ffd24a88,0 3px 0 #0008}.burb.yo::after{border-top-color:#ffd24a}
 .burb.ro{border-color:#ff4a5e;box-shadow:0 0 12px #ff4a5e88,0 3px 0 #0008}.burb.ro::after{border-top-color:#ff4a5e}
-.burb i{font-style:normal;font-size:17px;margin-right:5px;vertical-align:-2px}
+.burb.conE{margin-bottom:34px}.burb .burbE{position:absolute;left:50%;bottom:calc(100% - 8px);width:54px;height:54px;margin-left:-27px;filter:drop-shadow(0 3px 4px #000a);transform-origin:50% 100%;animation:emoIn .32s cubic-bezier(.3,1.6,.5,1) both}@keyframes emoIn{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
 @keyframes burbIn{from{transform:translateX(-50%) scale(.3);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
 @keyframes burbOut{to{transform:translateX(-50%) translateY(-8px) scale(.9);opacity:0}}
 #emo{position:fixed;right:calc(199px + var(--sar));top:calc(58px + var(--sat));z-index:8;display:flex;flex-direction:row-reverse;gap:6px;align-items:center}
-#bEmo{width:40px;height:40px;border-radius:50%;border:2px solid #3ad1ff;background:radial-gradient(circle at 50% 35%,#1d3050,#0a111e);box-shadow:0 0 10px #3ad1ff66;font-size:20px;line-height:1;padding:0;touch-action:none}
+#bEmo{width:44px;height:44px;border:0;background:url(ui/ap_emo_boton.webp) center/contain no-repeat;padding:0;touch-action:none;filter:drop-shadow(0 0 6px #3ad1ff88)}
 .eOp{display:none;gap:6px}#emo.abierto .eOp{display:flex}
-.eOp button{width:42px;height:42px;border-radius:50%;border:2px solid #ff4ad8;background:#0b1220f0;box-shadow:0 0 10px #ff4ad866;font-size:22px;padding:0;touch-action:none;animation:burbIn .2s ease-out both}
+.eOp button{width:50px;height:50px;border:0;border-radius:50%;background:none;padding:0;touch-action:none;animation:burbIn .2s ease-out both}.eOp button img{width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 2px 3px #000a)}
 #anuncio.tuyo{filter:drop-shadow(0 0 10px #ffb400) drop-shadow(0 0 22px #ff8a00aa)}
 #emo{display:none}body.jugando #emo{display:flex}body.cine #emo{display:none}
 #latido{position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;background:radial-gradient(ellipse at center,#0000 55%,#b0001899 100%);transition:opacity .4s}
@@ -978,8 +978,7 @@ body.cine #latido{display:none}
 #fin .fEq .fFila:nth-child(3){animation-delay:.08s}#fin .fEq.ro .fFila:nth-child(2){animation-delay:.16s}#fin .fEq.ro .fFila:nth-child(3){animation-delay:.24s}
 #fin .fLog:nth-child(2){animation-delay:.1s}#fin .fLog:nth-child(3){animation-delay:.2s}#fin .fLog:nth-child(4){animation-delay:.3s}#fin .fLog:nth-child(5){animation-delay:.4s}
 /* sello de maestría (provisional) */
-.maeB{position:absolute;right:-3px;bottom:-3px;min-width:18px;height:18px;padding:0 3px;border-radius:9px;font:900 10px/18px system-ui;font-style:normal;text-align:center;color:#fff;border:1.5px solid #05080f;z-index:2}
-.maeB.m1{background:#9a6a3a}.maeB.m2{background:#8fa2b8;color:#0b1424}.maeB.m3{background:#e0a91c;color:#2a1600}.maeB.m4{background:linear-gradient(135deg,#3ad1ff,#c43cff)}.maeB.m5{background:linear-gradient(135deg,#ff4ad8,#ffd24a);box-shadow:0 0 8px #ff4ad8}
+.maeB{position:absolute;right:-6px;bottom:-6px;width:26px;height:26px;object-fit:contain;z-index:2;filter:drop-shadow(0 1px 2px #000)}
 #elige .eH{position:relative}
 /* chip del perfil en el menú */
 #perfilChip{position:absolute;left:calc(10px + var(--sal));top:calc(8px + var(--sat));z-index:6;display:flex;align-items:center;gap:7px;padding:3px 12px 3px 3px;border-radius:24px;background:linear-gradient(180deg,#0b1424e8,#05080fe8);border:1.5px solid #3ad1ff;box-shadow:0 0 12px #3ad1ff55;color:#eef3f9;text-align:left;font:800 12px system-ui,'Segoe UI',Roboto,sans-serif}
@@ -997,7 +996,7 @@ body.cine #latido{display:none}
 #perfil .pTabs{display:flex;gap:6px}#perfil .pTabs button{flex:1;padding:5px;border-radius:8px;border:1.5px solid #3ad1ff44;background:#0b1424;color:#9fb3cc;font:800 12px system-ui}#perfil .pTabs button.on{border-color:#3ad1ff;color:#fff;box-shadow:0 0 10px #3ad1ff55}
 #perfil .pCont{flex:1;min-height:0;overflow:auto;display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));align-content:start}#perfil .pCont.oculto{display:none}
 #perfil .pH{position:relative;display:flex;flex-direction:column;gap:2px;padding:6px 8px 6px 52px;min-height:46px;border-radius:9px;background:#0b1424;border:1px solid #ffffff14}
-#perfil .pH img{position:absolute;left:6px;top:7px;width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #3ad1ff}#perfil .pH .maeB{right:auto;left:30px;top:30px;bottom:auto}
+#perfil .pH img{position:absolute;left:6px;top:7px;width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #3ad1ff}#perfil .pH .maeB{right:auto;left:28px;top:26px;bottom:auto;width:28px;height:28px}
 #perfil .pH small{color:#8ea2bb;font-size:10px}#perfil .pH .pBar u{background:linear-gradient(90deg,#c43cff,#ff7bff)}
 #perfil .pL{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px;border-radius:9px;background:#0b1424;border:1px solid #ffffff10;text-align:center;opacity:.45;filter:grayscale(1)}#perfil .pL.on{opacity:1;filter:none;border-color:#ff4ad866}
 #perfil .pL i{font-style:normal;font-size:20px}#perfil .pL small{color:#8ea2bb;font-size:9.5px}
@@ -1005,10 +1004,10 @@ body.cine #latido{display:none}
 #perfil .pR img{position:absolute;left:6px;top:6px;width:30px;height:30px;border-radius:50%;object-fit:cover}#perfil .pR small{color:#8ea2bb;font-size:10px}
 #perfil .pVacio{color:#8ea2bb}
 #elige .eFrase{font-style:italic;font-size:11.5px;color:#d9f6ff;text-shadow:0 1px 3px #000;background:#05080fb0;padding:1px 8px;border-radius:8px}
-#elige .eMae{position:relative;display:inline-flex;align-items:center;gap:5px;font:800 10px system-ui;color:#ffd24a;background:#05080fc0;padding:1px 8px;border-radius:8px}#elige .eMae .maeB{position:static}
+#elige .eMae{position:relative;display:inline-flex;align-items:center;gap:5px;font:800 10px system-ui;color:#ffd24a;background:#05080fc0;padding:1px 8px;border-radius:8px}#elige .eMae .maeB{position:static;width:22px;height:22px}
 /* liga, misiones y resumen de muerte (22/11) — insignias provisionales hasta el Pack 60 ART */
-.rgB{display:inline-flex;align-items:center;justify-content:center;width:20px;height:22px;font:900 11px system-ui;font-style:normal;color:#05080f;background:var(--rc);clip-path:polygon(50% 0,100% 22%,100% 70%,50% 100%,0 70%,0 22%);filter:drop-shadow(0 0 4px var(--rc));flex:0 0 auto}
-.rgB.g{width:34px;height:38px;font-size:16px}
+.rgB{width:30px;height:30px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 1px 2px #000)}
+.rgB.g{width:52px;height:52px}
 #perfilChip .rgB{margin-left:2px}#perfilChip .pcMis{position:absolute;right:-6px;top:-6px;min-width:18px;height:18px;border-radius:9px;background:#ff4a5e;color:#fff;font:900 11px/18px system-ui;font-style:normal;text-align:center;box-shadow:0 0 8px #ff4a5e}
 #perfil .pRg{display:flex;align-items:center;gap:6px;text-align:left}#perfil .pRg b{font-size:13px}
 #perfil .pMis{grid-template-columns:1fr}#perfil .pM{position:relative;display:flex;flex-direction:column;gap:3px;padding:8px 10px 8px 46px;border-radius:9px;background:#0b1424;border:1px solid #ffffff14}
@@ -1020,6 +1019,11 @@ body.cine #latido{display:none}
 #muerto .dR{display:grid;grid-template-columns:26px minmax(0,1fr) 90px 40px;align-items:center;gap:6px;margin:2px 0}#muerto .dR img{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid #ff4a5e}
 #muerto .dR span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}#muerto .dR small{display:block;color:#8ea2bb;font-size:9.5px}
 #muerto .dR i{height:7px;border-radius:4px;background:#0009;overflow:hidden}#muerto .dR u{display:block;height:100%;background:linear-gradient(90deg,#ff8a3a,#ffcf3a)}#muerto .dR u.mag{background:linear-gradient(90deg,#8a5aff,#d07aff)}#muerto .dR b{text-align:right}
+/* Packs Autopista 59 y 60 ART (22/11): emblemas de maestría, insignias MVP/SVP y rangos */
+#fin .fFila .fN img.fMvpI{position:static;height:18px;width:auto;margin:0 0 0 5px;border:0;border-radius:0;object-fit:contain;vertical-align:-4px;filter:drop-shadow(0 0 4px #ffb40088)}
+#fin .fYoMvp{background:none !important;box-shadow:none !important;padding:0 !important;display:flex;flex-direction:column;align-items:center;gap:0}
+#fin .fYoMvp img{width:120px;filter:drop-shadow(0 0 12px #ffb400aa)}#fin .fYoMvp.s img{width:104px;filter:drop-shadow(0 0 10px #8fb0ffaa)}
+#fin .fYoMvp b{margin-top:-6px;font:900 13px system-ui;color:#ffe46a;text-shadow:0 2px 3px #000}#fin .fYoMvp.s b{color:#d9e6ff;font-size:11px}
 </style>
 </head>
 <body>
@@ -1079,7 +1083,7 @@ body.cine #latido{display:none}
 <div id="aviso"></div><div id="jefe" class="jefe"></div>
 <div id="guia" class="hidden"><img class="gCara" src="ui/ap_guia.webp" alt=""><em id="guiaN"></em><p><span id="guiaT"></span> <b id="guiaC"></b></p><button id="guiaX">Saltar</button></div>
 <div id="vs" class="hidden"></div>
-<div id="emo"><button id="bEmo" aria-label="Emoticonos">😀</button><div class="eOp"><button data-e="hola" aria-label="Saludo">👋</button><button data-e="risa" aria-label="Risa">😂</button><button data-e="burla" aria-label="Burla">😜</button><button data-e="gg" aria-label="Bien jugado">👍</button></div></div><div id="pings" class="hidden"><button id="bPing" aria-label="Avisos al equipo">💬</button><div class="pOp"><button data-p="ataca">⚔ Atacad</button><button data-p="retira">🛡 Retirada</button><button data-p="voy">🏃 Voy</button><button data-p="cuidado">⚠ Cuidado</button></div></div>
+<div id="emo"><button id="bEmo" aria-label="Emoticonos"></button><div class="eOp"><button data-e="hola" aria-label="Saludo"><img src="ui/ap_emo_hola.webp" alt=""></button><button data-e="risa" aria-label="Risa"><img src="ui/ap_emo_risa.webp" alt=""></button><button data-e="burla" aria-label="Burla"><img src="ui/ap_emo_burla.webp" alt=""></button><button data-e="gg" aria-label="Bien jugado"><img src="ui/ap_emo_gg.webp" alt=""></button></div></div><div id="pings" class="hidden"><button id="bPing" aria-label="Avisos al equipo">💬</button><div class="pOp"><button data-p="ataca">⚔ Atacad</button><button data-p="retira">🛡 Retirada</button><button data-p="voy">🏃 Voy</button><button data-p="cuidado">⚠ Cuidado</button></div></div>
 <div id="anuncio" class="hidden"></div>
 <button id="compraRapida" class="hidden"></button>
 <div id="tabla" class="hidden"></div>

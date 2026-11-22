@@ -28,7 +28,8 @@ function burbuja(id, k, emo) {
   if (prev && prev.el.parentNode) prev.el.remove();
   const el = document.createElement('div'), dur = emo ? 2600 : 2200;
   el.className = 'burb ' + (id === YO ? 'yo' : v.eq === MI_EQ ? 'az' : 'ro'); el.style.setProperty('--d', dur + 'ms');
-  el.innerHTML = (emo ? '<i>' + EMO[k] + '</i>' : '') + L[Math.floor(Math.random() * L.length)];
+  el.innerHTML = (emo ? '<img class="burbE" src="ui/ap_emo_' + k + '.webp" alt="">' : '') + L[Math.floor(Math.random() * L.length)]; /* pegatina del Pack Autopista 59 ART encima del bocadillo */
+  if (emo) el.classList.add('conE');
   b.appendChild(el); BURB.set(id, {el, hasta: ahora + dur});
   /* el héroe celebra (su animación «celebrar») si está quieto: con los emoticonos y al derribar; si echa a andar, se corta */
   const o = VIS.get(id); if (o && (emo ? k !== 'hola' : k === 'mata') && (o.vel || 0) < 0.6 && o.todos && o.todos.celebrar && !(v.muerto >= 0)) {o.ocup = Math.min(2.4, animaClip(o, 'celebrar')); o.celeb = 1;}

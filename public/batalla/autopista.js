@@ -2452,7 +2452,7 @@ function dibuja(dt) {
         const vel = o.lx === undefined ? 0 : Math.hypot(x - o.lx, z - o.lz) / Math.max(dt, 0.001); o.lx = x; o.lz = z; o.vel = (o.vel || 0) + (Math.min(vel, 12) - (o.vel || 0)) * Math.min(1, dt * 10);
         const corre = v.mueve || o.vel > 0.6; if (o.celeb && corre) {o.celeb = 0; o.ocup = 0;} /* ALMA: si echa a andar, deja de celebrar */
         if (o.ocup <= 0) pon(o, v.flags & 2 ? 'aturdido' : corre ? 'correr' : 'quieto');
-        if (o.clips.correr) o.clips.correr.timeScale = Math.max(0.45, Math.min(1.7, o.vel / (v.k === 'h' ? (v.tipo === 'gollum' ? 5.8 : 4.2) : v.k === 'j' ? 4 : 2.9)));
+        if (o.clips.correr) o.clips.correr.timeScale = Math.max(0.45, Math.min(v.k === 'h' ? 2.6 : 1.7, o.vel / (v.k === 'h' ? (REF_CARRERA[v.tipo] || 4.2) : v.k === 'j' ? 4 : 2.9)));
       }
       /* los que están lejos de la cámara se animan a saltos (ahorra en peleas grandes) */
       o.mdt = (o.mdt || 0) + dt; const enP = v.id === YO || enPantalla(x, z, v.k === 'j' && NEUTRO[v.tipo] && NEUTRO[v.tipo].jefe ? 8 : 5); o.raiz.matrixWorldAutoUpdate = enP; if (enP && (Math.hypot(x - camM.x, z - camM.z) < 28 || o.mdt > 0.1)) {o.mixer.update(Math.min(o.mdt, 0.5)); o.mdt = 0;} else if (!enP) o.mdt = Math.min(o.mdt, 0.5);
@@ -2718,7 +2718,8 @@ function burbuja(id, k, emo) {
   if (prev && prev.el.parentNode) prev.el.remove();
   const el = document.createElement('div'), dur = emo ? 2600 : 2200;
   el.className = 'burb ' + (id === YO ? 'yo' : v.eq === MI_EQ ? 'az' : 'ro'); el.style.setProperty('--d', dur + 'ms');
-  el.innerHTML = (emo ? '<i>' + EMO[k] + '</i>' : '') + L[Math.floor(Math.random() * L.length)];
+  el.innerHTML = (emo ? '<img class="burbE" src="ui/ap_emo_' + k + '.webp" alt="">' : '') + L[Math.floor(Math.random() * L.length)]; /* pegatina del Pack Autopista 59 ART encima del bocadillo */
+  if (emo) el.classList.add('conE');
   b.appendChild(el); BURB.set(id, {el, hasta: ahora + dur});
   /* el héroe celebra (su animación «celebrar») si está quieto: con los emoticonos y al derribar; si echa a andar, se corta */
   const o = VIS.get(id); if (o && (emo ? k !== 'hola' : k === 'mata') && (o.vel || 0) < 0.6 && o.todos && o.todos.celebrar && !(v.muerto >= 0)) {o.ocup = Math.min(2.4, animaClip(o, 'celebrar')); o.celeb = 1;}
@@ -2781,7 +2782,9 @@ const xpSig = (n) => 250 + 60 * (n - 1);
 function nivelCuenta(xp) {let n = 1, r = xp; while (r >= xpSig(n)) {r -= xpSig(n); n++;} return {n, r, sig: xpSig(n)};}
 function nivelMae(pts) {let n = 0; while (n < 5 && pts >= MAE[n + 1]) n++; return {n, r: pts - MAE[n], sig: n < 5 ? MAE[n + 1] - MAE[n] : 1};}
 const romano = (n) => ['', 'I', 'II', 'III', 'IV', 'V'][n] || '';
-function maeBadge(k) {const h = perfil().heroes[k]; const n = h ? nivelMae(h.pts).n : 0; return n ? '<i class="maeB m' + n + '">' + romano(n) + '</i>' : '';}
+/* emblemas del Pack Autopista 59 ART (ui/ap_mae_1..5) */
+const maeImg = (n) => n ? '<img class="maeB" src="ui/ap_mae_' + n + '.webp" alt="' + MAE_N[n] + '">' : '';
+function maeBadge(k) {const h = perfil().heroes[k]; return maeImg(h ? nivelMae(h.pts).n : 0);}
 /* lo que va pasando en la partida (desde efectoLocal) */
 const PART = {logros: new Set(), torres: 0, kMitad: null};
 function progEfecto(e) {
@@ -2814,14 +2817,14 @@ function finNuevo(f, ganador) {
   P.hist.unshift({f: Date.now(), h: hk, g: gana ? 1 : ganador === -1 ? -1 : 0, kda: s.k + '/' + s.d + '/' + s.a, m: MODO, t: Math.round(seg)}); P.hist = P.hist.slice(0, 12);
   guardaPerfil(P);
   /* pintar */
-  const maxD = Math.max(1, ...hs.map((q) => kdaDe(q).dH)), fila = (q) => {const t = kdaDe(q), sello = mvp && q.id === mvp.id ? '<em class="fMvp">MVP</em>' : svp && q.id === svp.id ? '<em class="fSvp">SVP</em>' : '';
+  const maxD = Math.max(1, ...hs.map((q) => kdaDe(q).dH)), fila = (q) => {const t = kdaDe(q), sello = mvp && q.id === mvp.id ? '<img class="fMvpI" src="ui/ap_mvp.webp" alt="MVP">' : svp && q.id === svp.id ? '<img class="fMvpI" src="ui/ap_svp.webp" alt="SVP">' : '';
     return '<div class="fFila ' + (q.eq === MI_EQ ? 'az' : 'ro') + (q.id === YO ? ' yo' : '') + '"><img src="' + RET(q.tipo) + '" alt=""><span class="fN">' + (q.nombre || '') + sello + '<small>' + HEROES[q.tipo].nombre.split(',')[0] + ' · Nv ' + q.nivel + '</small></span><span class="fK">' + t.k + '/' + t.d + '/' + t.a + '</span><span class="fD"><i style="width:' + Math.round(t.dH / maxD * 100) + '%"></i><b>' + t.dH.toLocaleString('es') + '</b></span><span class="fO">💰 ' + (valorDe(q) / 1000).toFixed(1) + 'k</span><span class="fC">🗡 ' + t.cs + '</span></div>';};
   const eqs = [MI_EQ, 1 - MI_EQ].map((eq) => '<div class="fEq ' + (eq === MI_EQ ? 'az' : 'ro') + '"><div class="fEqT">' + (eq === MI_EQ ? 'Tu equipo' : 'Rivales') + (ganador === eq ? ' · ganan' : '') + '</div>' + hs.filter((q) => q.eq === eq).sort((a, b) => nota(b) - nota(a)).map(fila).join('') + '</div>').join('');
   const barra = (cls, tit, a0, a1, sube, txt) => '<div class="fBar ' + cls + '"><div class="fBarT"><b>' + tit + '</b><span>' + txt + '</span></div><div class="fBarI"><i style="width:' + a0 + '%" data-a="' + a1 + '" data-sube="' + (sube ? 1 : 0) + '"></i></div></div>';
   const pc = (r, sig) => Math.round(Math.min(1, r / sig) * 100);
   const logros = [...PART.logros].map((l) => '<span class="fLog" title="' + LOGROS[l][2] + '"><i>' + LOGROS[l][0] + '</i>' + LOGROS[l][1] + '</span>').join('');
   f.innerHTML = '<div class="fin2"><div class="fIzq"><img class="fSpl" src="ui/ap_splash_' + hk + '.webp" alt=""><h2 class="' + (gana ? 'gana' : 'pierde') + '">' + (gana ? '¡VICTORIA!' : ganador === -1 ? 'FIN' : 'DERROTA') + '</h2>' +
-    (mvp && mvp.id === YO ? '<div class="fYoMvp">👑 MVP</div>' : svp && svp.id === YO ? '<div class="fYoMvp s">⭐ Mejor de tu equipo</div>' : '') + '<div class="fDur">' + Math.floor(seg / 60) + ':' + String(Math.floor(seg % 60)).padStart(2, '0') + ' · ' + (MODO === '2v2' ? 'Batalla' : 'Duelo') + '</div></div>' +
+    (mvp && mvp.id === YO ? '<div class="fYoMvp"><img src="ui/ap_mvp.webp" alt=""><b>MVP</b></div>' : svp && svp.id === YO ? '<div class="fYoMvp s"><img src="ui/ap_svp.webp" alt=""><b>Mejor de tu equipo</b></div>' : '') + '<div class="fDur">' + Math.floor(seg / 60) + ':' + String(Math.floor(seg % 60)).padStart(2, '0') + ' · ' + (MODO === '2v2' ? 'Batalla' : 'Duelo') + '</div></div>' +
     '<div class="fDer"><div class="fCab"><span></span><span>K/D/A</span><span>Daño a héroes</span><span>Valor</span><span>Soldados</span></div>' + eqs +
     '<div class="fPremios">' + barra('cuenta', 'Cuenta · Nv ' + c1.n, c1.n > c0.n ? 0 : pc(c0.r, c0.sig), pc(c1.r, c1.sig), c1.n > c0.n, '+' + xp + ' XP' + (c1.n > c0.n ? ' · ¡Subes a nivel ' + c1.n + '!' : '')) +
     barra('mae', HEROES[hk].nombre.split(',')[0] + ' · ' + MAE_N[m1.n], m1.n > m0.n ? 0 : pc(m0.r, m0.sig), m1.n === 5 ? 100 : pc(m1.r, m1.sig), m1.n > m0.n, '+' + pts + ' maestría' + (m1.n > m0.n ? ' · ¡' + MAE_N[m1.n] + '!' : '')) +
@@ -2844,7 +2847,7 @@ function abrePerfil() {
   const P = perfil(), n = nivelCuenta(P.xp); let el = $('perfil'); if (!el) {el = document.createElement('div'); el.id = 'perfil'; document.body.appendChild(el);}
   const pct = (a, b) => b ? Math.round(a / b * 100) + ' %' : '—';
   const heroes = Object.keys(HEROES).map((k) => {const h = P.heroes[k] || {pts: 0, p: 0, v: 0, k: 0, d: 0, a: 0}, m = nivelMae(h.pts);
-    return '<div class="pH"><img src="' + RET(k) + '" alt="">' + (m.n ? '<i class="maeB m' + m.n + '">' + romano(m.n) + '</i>' : '') + '<b>' + HEROES[k].nombre.split(',')[0] + '</b><small>' + MAE_N[m.n] + '</small><span class="pBar"><u style="width:' + (m.n === 5 ? 100 : Math.round(m.r / m.sig * 100)) + '%"></u></span><small>' + h.p + ' partidas · ' + pct(h.v, h.p) + (h.p ? ' · ' + ((h.k + h.a) / Math.max(1, h.d)).toFixed(1) + ' KDA' : '') + '</small></div>';}).join('');
+    return '<div class="pH"><img src="' + RET(k) + '" alt="">' + maeImg(m.n) + '<b>' + HEROES[k].nombre.split(',')[0] + '</b><small>' + MAE_N[m.n] + '</small><span class="pBar"><u style="width:' + (m.n === 5 ? 100 : Math.round(m.r / m.sig * 100)) + '%"></u></span><small>' + h.p + ' partidas · ' + pct(h.v, h.p) + (h.p ? ' · ' + ((h.k + h.a) / Math.max(1, h.d)).toFixed(1) + ' KDA' : '') + '</small></div>';}).join('');
   const logros = Object.entries(LOGROS).map(([k, l]) => '<div class="pL' + (P.logros[k] ? ' on' : '') + '" title="' + l[2] + '"><i>' + l[0] + '</i><b>' + l[1] + '</b><small>' + (P.logros[k] ? '×' + P.logros[k] : l[2]) + '</small></div>').join('');
   const misiones = misionesHoy(P).l.map((m) => {const M_ = MISIONES[m.id]; return '<div class="pM' + (m.ok ? ' ok' : '') + '"><i>' + M_[0] + '</i><b>' + M_[1] + '</b><span class="pBar"><u style="width:' + Math.round(m.n / M_[2] * 100) + '%"></u></span><small>' + (m.ok ? '✅ Hecha · +80 XP' : m.n.toLocaleString('es') + ' / ' + M_[2].toLocaleString('es') + ' · +80 XP') + '</small></div>';}).join('') + '<p class="pVacio">Cambian cada día a medianoche. Liga: +25 PL si ganas (+5 si eres el MVP), −15 si pierdes.</p>'; guardaPerfil(P);
   const hist = P.hist.length ? P.hist.map((q) => '<div class="pR ' + (q.g === 1 ? 'g' : q.g === 0 ? 'p' : '') + '"><img src="' + RET(q.h) + '" alt=""><b>' + (q.g === 1 ? 'Victoria' : q.g === 0 ? 'Derrota' : 'Fin') + '</b><span>' + q.kda + '</span><small>' + (q.m === '2v2' ? 'Batalla' : 'Duelo') + ' · ' + Math.floor(q.t / 60) + ' min</small></div>').join('') : '<p class="pVacio">Aún no has jugado ninguna partida.</p>';
@@ -2857,12 +2860,12 @@ function abrePerfil() {
 /* en elegir héroe: su frase de presentación y tu maestría con él */
 function eligeExtra(k) {
   const F = typeof FRASES !== 'undefined' && FRASES[k], h = perfil().heroes[k], m = h ? nivelMae(h.pts).n : 0;
-  return (F ? '<i class="eFrase">«' + F.hola[0] + '»</i>' : '') + '<small class="eMae">' + (m ? '<i class="maeB m' + m + '">' + romano(m) + '</i>' : '') + MAE_N[m] + (h && h.p ? ' · ' + h.p + ' partidas · ' + Math.round(h.v / h.p * 100) + ' %' : '') + '</small>';
+  return (F ? '<i class="eFrase">«' + F.hola[0] + '»</i>' : '') + '<small class="eMae">' + maeImg(m) + MAE_N[m] + (h && h.p ? ' · ' + h.p + ' partidas · ' + Math.round(h.v / h.p * 100) + ' %' : '') + '</small>';
 }
 /* ---------- LIGA (22/11): puntos de liga (PL) por partida acabada: +25 si ganas (+5 si eres MVP), −15 si pierdes; 7 rangos ---------- */
 const RANGOS = [['Asfalto', 0, '#8a8f98'], ['Bronce', 100, '#c07a3a'], ['Plata', 250, '#c9d4e2'], ['Oro', 450, '#ffcf3a'], ['Platino', 700, '#3ad8c0'], ['Diamante', 1000, '#5aa8ff'], ['Leyenda de la A-6', 1400, '#ff4ad8']];
 function rangoDe(pl) {let i = 0; while (i < RANGOS.length - 1 && pl >= RANGOS[i + 1][1]) i++; const sig = RANGOS[i + 1]; return {i, n: RANGOS[i][0], col: RANGOS[i][2], r: pl - RANGOS[i][1], sig: sig ? sig[1] - RANGOS[i][1] : 0};}
-const rangoBadge = (pl, grande) => {const r = rangoDe(pl); return '<i class="rgB' + (grande ? ' g' : '') + '" style="--rc:' + r.col + '">' + (r.i + 1) + '</i>';};
+const rangoBadge = (pl, grande) => {const r = rangoDe(pl); return '<img class="rgB' + (grande ? ' g' : '') + '" src="ui/ap_rango_' + (r.i + 1) + '.webp" alt="' + r.n + '">';}; /* Pack Autopista 60 ART */
 /* ---------- MISIONES DEL DÍA (22/11): 3 al día (las mismas para todo el día, elegidas con la fecha), +80 XP cada una ---------- */
 const MISIONES = {
   jugar2: ['🎮', 'Juega 2 partidas', 2, (r) => r.acaba], gana1: ['🏆', 'Gana una partida', 1, (r) => r.gana], derr5: ['⚔️', 'Consigue 5 derribos', 5, (r) => r.k],
@@ -3025,6 +3028,7 @@ const camM = new THREE.Vector3();
    F = hacia dónde mira la cámara (arriba en pantalla), R = la derecha de la pantalla, en coordenadas del mundo. */
 let APAI = VW > VH;
 function ejes() {const s = signo(MI_EQ); return APAI ? {F: {x: -s, z: 0}, R: {x: 0, z: -s}} : {F: {x: 0, z: -s}, R: {x: s, z: 0}};}
+const REF_CARRERA = {enano: 6.38, gandalf: 4.55, orco: 2.06, elfo: 5.91, hobbit: 5.41, visor: 6.01, rohan: 4.87, gollum: 5.8};
 const ESC_H = 1.28; const ZOOMS = [[17, 14], [21, 17], [27, 21.5]]; let zoomI = +(localStorage.getItem('auto.zoom') ?? 1);
 let INTERP_MS = 100; const HUECOS_F = [];
 /* 17/11 (Henar: «más fluido en línea, con servidor y con móvil»): cada posición recibida se coloca en el tiempo en que se CALCULÓ (reloj de la

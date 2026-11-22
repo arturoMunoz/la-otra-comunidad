@@ -3,13 +3,13 @@
 .burb::after{content:'';position:absolute;left:50%;top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:#3ad1ff}
 .burb.yo{border-color:#ffd24a;box-shadow:0 0 12px #ffd24a88,0 3px 0 #0008}.burb.yo::after{border-top-color:#ffd24a}
 .burb.ro{border-color:#ff4a5e;box-shadow:0 0 12px #ff4a5e88,0 3px 0 #0008}.burb.ro::after{border-top-color:#ff4a5e}
-.burb i{font-style:normal;font-size:17px;margin-right:5px;vertical-align:-2px}
+.burb.conE{margin-bottom:34px}.burb .burbE{position:absolute;left:50%;bottom:calc(100% - 8px);width:54px;height:54px;margin-left:-27px;filter:drop-shadow(0 3px 4px #000a);transform-origin:50% 100%;animation:emoIn .32s cubic-bezier(.3,1.6,.5,1) both}@keyframes emoIn{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
 @keyframes burbIn{from{transform:translateX(-50%) scale(.3);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
 @keyframes burbOut{to{transform:translateX(-50%) translateY(-8px) scale(.9);opacity:0}}
 #emo{position:fixed;right:calc(199px + var(--sar));top:calc(58px + var(--sat));z-index:8;display:flex;flex-direction:row-reverse;gap:6px;align-items:center}
-#bEmo{width:40px;height:40px;border-radius:50%;border:2px solid #3ad1ff;background:radial-gradient(circle at 50% 35%,#1d3050,#0a111e);box-shadow:0 0 10px #3ad1ff66;font-size:20px;line-height:1;padding:0;touch-action:none}
+#bEmo{width:44px;height:44px;border:0;background:url(ui/ap_emo_boton.webp) center/contain no-repeat;padding:0;touch-action:none;filter:drop-shadow(0 0 6px #3ad1ff88)}
 .eOp{display:none;gap:6px}#emo.abierto .eOp{display:flex}
-.eOp button{width:42px;height:42px;border-radius:50%;border:2px solid #ff4ad8;background:#0b1220f0;box-shadow:0 0 10px #ff4ad866;font-size:22px;padding:0;touch-action:none;animation:burbIn .2s ease-out both}
+.eOp button{width:50px;height:50px;border:0;border-radius:50%;background:none;padding:0;touch-action:none;animation:burbIn .2s ease-out both}.eOp button img{width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 2px 3px #000a)}
 #anuncio.tuyo{filter:drop-shadow(0 0 10px #ffb400) drop-shadow(0 0 22px #ff8a00aa)}
 #emo{display:none}body.jugando #emo{display:flex}body.cine #emo{display:none}
 #latido{position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;background:radial-gradient(ellipse at center,#0000 55%,#b0001899 100%);transition:opacity .4s}

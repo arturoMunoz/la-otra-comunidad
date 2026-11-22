@@ -1,0 +1,50 @@
+A-6 · Pack Autopista 57
+Locomoción de los siete héroes · Three.js
+
+Base de los modelos: versiones de los Packs 52 y 53. Referencia: Fu del Pack 56.
+Animaciones de origen: Quaternius, Universal Animation Library, edición Standard.
+Archivo: Unreal-Godot/UAL1_Standard.glb.
+https://quaternius.itch.io/universal-animation-library
+Licencia de las animaciones de origen: CC0 1.0 Universal (License.txt del pack).
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Los ciclos están animados en el sitio, a 30 fps. El avance lo aplica el juego.
+Las velocidades indicadas corresponden a timeScale = 1, en metros por segundo.
+Para otra velocidad, usa timeScale = velocidad de avance / velocidad de referencia.
+Las duraciones se indican en segundos. Cada ciclo cierra sobre su primera pose.
+
+ap_brask.glb
+  correr   Jog_Fwd_Loop                0.733 s    4.070 m/s
+  andar    Walk_Formal_Loop            1.000 s    0.615 m/s
+  quieto   Sword_Idle                  2.000 s    0 m/s
+
+ap_vael.glb
+  correr   Jog_Fwd_Loop                0.700 s    4.430 m/s
+  andar    Walk_Loop                   1.000 s    0.712 m/s
+  quieto   Spell_Simple_Idle_Loop      2.000 s    0 m/s
+
+ap_grub.glb
+  correr   Jog_Fwd_Loop                0.633 s    3.322 m/s
+  andar    Walk_Loop                   1.000 s    0.424 m/s
+  quieto   Sword_Idle                  2.000 s    0 m/s
+
+ap_ata.glb
+  correr   Sprint_Loop                 0.700 s    4.534 m/s
+  andar    Walk_Loop                   1.000 s    0.709 m/s
+  quieto   Pistol_Idle_Loop            2.000 s    0 m/s
+
+ap_birdie.glb
+  correr   Jog_Fwd_Loop                0.700 s    5.183 m/s
+  andar    Walk_Loop                   1.000 s    0.833 m/s
+  quieto   Idle_Loop                   2.000 s    0 m/s
+
+ap_moha.glb
+  correr   Sprint_Loop                 0.700 s    4.000 m/s
+  andar    Walk_Loop                   1.000 s    0.606 m/s
+  quieto   Idle_Loop                   2.000 s    0 m/s
+
+ap_visor.glb
+  correr   Sprint_Loop                 0.700 s    4.615 m/s
+  andar    Walk_Loop                   1.000 s    0.723 m/s
+  quieto   Idle_Loop                   2.000 s    0 m/s
+

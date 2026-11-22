@@ -1,5 +1,5 @@
 # PROGRESO: pantalla final, chip del menú y perfil. python3 t_fin.py [HEROE] [modo] → fin.png, menu_perfil.png, perfil.png
-import asyncio, sys
+import asyncio, sys, os
 from playwright.async_api import async_playwright
 H = sys.argv[1] if len(sys.argv) > 1 else 'hobbit'; MODO = sys.argv[2] if len(sys.argv) > 2 else '2v2'
 async def main():
@@ -8,6 +8,7 @@ async def main():
         pg = await b.new_page(viewport={'width': 859, 'height': 396})
         errs = []; pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.on('console', lambda m: errs.append(m.text[:200]) if m.type in ('warning', 'error') and 'Failed to load' not in m.text else None)
         await pg.add_init_script("localStorage.setItem('vado.nombre','Henar');localStorage.setItem('loc.auth',JSON.stringify({at:'x',rt:'x',exp:9e15}));localStorage.setItem('auto.heroe','%s');localStorage.setItem('auto.cal','baja');localStorage.setItem('auto.modo','%s')" % (H, MODO))
+        if os.environ.get('PERFIL'): await pg.add_init_script("if (!localStorage.getItem('auto.perfil')) localStorage.setItem('auto.perfil', JSON.stringify({v: 1, xp: 2900, partidas: 40, victorias: 23, pl: 760, heroes: {hobbit: {pts: 3200, p: 14, v: 9, k: 60, d: 40, a: 70}, enano: {pts: 8100, p: 20, v: 12, k: 90, d: 70, a: 120}, elfo: {pts: 700, p: 3, v: 1, k: 9, d: 12, a: 6}, orco: {pts: 1600, p: 5, v: 3, k: 20, d: 18, a: 14}}, logros: {sangre: 3}, hist: []}))")  # PERFIL=1: perfil con maestrías y liga para ver los emblemas
         await pg.goto('http://localhost:8799/batalla/autopista.html'); await pg.wait_for_timeout(2500)
         await pg.click('#bBots'); await pg.wait_for_timeout(800); await pg.evaluate("setTimeout(()=>document.getElementById('eOk').click(),10)")
         for i in range(240):

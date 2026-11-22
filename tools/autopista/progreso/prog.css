@@ -37,8 +37,7 @@
 #fin .fEq .fFila:nth-child(3){animation-delay:.08s}#fin .fEq.ro .fFila:nth-child(2){animation-delay:.16s}#fin .fEq.ro .fFila:nth-child(3){animation-delay:.24s}
 #fin .fLog:nth-child(2){animation-delay:.1s}#fin .fLog:nth-child(3){animation-delay:.2s}#fin .fLog:nth-child(4){animation-delay:.3s}#fin .fLog:nth-child(5){animation-delay:.4s}
 /* sello de maestría (provisional) */
-.maeB{position:absolute;right:-3px;bottom:-3px;min-width:18px;height:18px;padding:0 3px;border-radius:9px;font:900 10px/18px system-ui;font-style:normal;text-align:center;color:#fff;border:1.5px solid #05080f;z-index:2}
-.maeB.m1{background:#9a6a3a}.maeB.m2{background:#8fa2b8;color:#0b1424}.maeB.m3{background:#e0a91c;color:#2a1600}.maeB.m4{background:linear-gradient(135deg,#3ad1ff,#c43cff)}.maeB.m5{background:linear-gradient(135deg,#ff4ad8,#ffd24a);box-shadow:0 0 8px #ff4ad8}
+.maeB{position:absolute;right:-6px;bottom:-6px;width:26px;height:26px;object-fit:contain;z-index:2;filter:drop-shadow(0 1px 2px #000)}
 #elige .eH{position:relative}
 /* chip del perfil en el menú */
 #perfilChip{position:absolute;left:calc(10px + var(--sal));top:calc(8px + var(--sat));z-index:6;display:flex;align-items:center;gap:7px;padding:3px 12px 3px 3px;border-radius:24px;background:linear-gradient(180deg,#0b1424e8,#05080fe8);border:1.5px solid #3ad1ff;box-shadow:0 0 12px #3ad1ff55;color:#eef3f9;text-align:left;font:800 12px system-ui,'Segoe UI',Roboto,sans-serif}
@@ -56,7 +55,7 @@
 #perfil .pTabs{display:flex;gap:6px}#perfil .pTabs button{flex:1;padding:5px;border-radius:8px;border:1.5px solid #3ad1ff44;background:#0b1424;color:#9fb3cc;font:800 12px system-ui}#perfil .pTabs button.on{border-color:#3ad1ff;color:#fff;box-shadow:0 0 10px #3ad1ff55}
 #perfil .pCont{flex:1;min-height:0;overflow:auto;display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));align-content:start}#perfil .pCont.oculto{display:none}
 #perfil .pH{position:relative;display:flex;flex-direction:column;gap:2px;padding:6px 8px 6px 52px;min-height:46px;border-radius:9px;background:#0b1424;border:1px solid #ffffff14}
-#perfil .pH img{position:absolute;left:6px;top:7px;width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #3ad1ff}#perfil .pH .maeB{right:auto;left:30px;top:30px;bottom:auto}
+#perfil .pH img{position:absolute;left:6px;top:7px;width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #3ad1ff}#perfil .pH .maeB{right:auto;left:28px;top:26px;bottom:auto;width:28px;height:28px}
 #perfil .pH small{color:#8ea2bb;font-size:10px}#perfil .pH .pBar u{background:linear-gradient(90deg,#c43cff,#ff7bff)}
 #perfil .pL{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px;border-radius:9px;background:#0b1424;border:1px solid #ffffff10;text-align:center;opacity:.45;filter:grayscale(1)}#perfil .pL.on{opacity:1;filter:none;border-color:#ff4ad866}
 #perfil .pL i{font-style:normal;font-size:20px}#perfil .pL small{color:#8ea2bb;font-size:9.5px}
@@ -64,10 +63,10 @@
 #perfil .pR img{position:absolute;left:6px;top:6px;width:30px;height:30px;border-radius:50%;object-fit:cover}#perfil .pR small{color:#8ea2bb;font-size:10px}
 #perfil .pVacio{color:#8ea2bb}
 #elige .eFrase{font-style:italic;font-size:11.5px;color:#d9f6ff;text-shadow:0 1px 3px #000;background:#05080fb0;padding:1px 8px;border-radius:8px}
-#elige .eMae{position:relative;display:inline-flex;align-items:center;gap:5px;font:800 10px system-ui;color:#ffd24a;background:#05080fc0;padding:1px 8px;border-radius:8px}#elige .eMae .maeB{position:static}
+#elige .eMae{position:relative;display:inline-flex;align-items:center;gap:5px;font:800 10px system-ui;color:#ffd24a;background:#05080fc0;padding:1px 8px;border-radius:8px}#elige .eMae .maeB{position:static;width:22px;height:22px}
 /* liga, misiones y resumen de muerte (22/11) — insignias provisionales hasta el Pack 60 ART */
-.rgB{display:inline-flex;align-items:center;justify-content:center;width:20px;height:22px;font:900 11px system-ui;font-style:normal;color:#05080f;background:var(--rc);clip-path:polygon(50% 0,100% 22%,100% 70%,50% 100%,0 70%,0 22%);filter:drop-shadow(0 0 4px var(--rc));flex:0 0 auto}
-.rgB.g{width:34px;height:38px;font-size:16px}
+.rgB{width:30px;height:30px;object-fit:contain;flex:0 0 auto;filter:drop-shadow(0 1px 2px #000)}
+.rgB.g{width:52px;height:52px}
 #perfilChip .rgB{margin-left:2px}#perfilChip .pcMis{position:absolute;right:-6px;top:-6px;min-width:18px;height:18px;border-radius:9px;background:#ff4a5e;color:#fff;font:900 11px/18px system-ui;font-style:normal;text-align:center;box-shadow:0 0 8px #ff4a5e}
 #perfil .pRg{display:flex;align-items:center;gap:6px;text-align:left}#perfil .pRg b{font-size:13px}
 #perfil .pMis{grid-template-columns:1fr}#perfil .pM{position:relative;display:flex;flex-direction:column;gap:3px;padding:8px 10px 8px 46px;border-radius:9px;background:#0b1424;border:1px solid #ffffff14}
@@ -79,3 +78,8 @@
 #muerto .dR{display:grid;grid-template-columns:26px minmax(0,1fr) 90px 40px;align-items:center;gap:6px;margin:2px 0}#muerto .dR img{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid #ff4a5e}
 #muerto .dR span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}#muerto .dR small{display:block;color:#8ea2bb;font-size:9.5px}
 #muerto .dR i{height:7px;border-radius:4px;background:#0009;overflow:hidden}#muerto .dR u{display:block;height:100%;background:linear-gradient(90deg,#ff8a3a,#ffcf3a)}#muerto .dR u.mag{background:linear-gradient(90deg,#8a5aff,#d07aff)}#muerto .dR b{text-align:right}
+/* Packs Autopista 59 y 60 ART (22/11): emblemas de maestría, insignias MVP/SVP y rangos */
+#fin .fFila .fN img.fMvpI{position:static;height:18px;width:auto;margin:0 0 0 5px;border:0;border-radius:0;object-fit:contain;vertical-align:-4px;filter:drop-shadow(0 0 4px #ffb40088)}
+#fin .fYoMvp{background:none !important;box-shadow:none !important;padding:0 !important;display:flex;flex-direction:column;align-items:center;gap:0}
+#fin .fYoMvp img{width:120px;filter:drop-shadow(0 0 12px #ffb400aa)}#fin .fYoMvp.s img{width:104px;filter:drop-shadow(0 0 10px #8fb0ffaa)}
+#fin .fYoMvp b{margin-top:-6px;font:900 13px system-ui;color:#ffe46a;text-shadow:0 2px 3px #000}#fin .fYoMvp.s b{color:#d9e6ff;font-size:11px}
