@@ -10,7 +10,7 @@ import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 
 const $ = (id) => document.getElementById(id);
 const rnd = (a, b) => a + Math.random() * (b - a);
-const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+const dist = (a, b) => {const dx = a.x - b.x, dz = a.z - b.z; return Math.sqrt(dx * dx + dz * dz);}; /* 22/11: sqrt en vez de hypot (hypot es varias veces más lento y dist es lo que más se llama) */
 const ICO = (n) => n.includes('/') ? n : '../abismo/iconos/' + n + '.webp';
 
 /* ---------- datos ---------- */
@@ -60,7 +60,7 @@ const HEROES = {
 /* PASIVAS (17/11): como en el LoL, cada héroe tiene una que funciona sola; copiadas de su campeón */
 const PASIVA = {
   gandalf: {n: 'Marca de brasas', d: 'Sus hechizos marcan al enemigo; su siguiente golpe básico contra él estalla con daño mágico extra.'},
-  orco: {n: 'Disciplina', d: 'Sus golpes a héroes se acumulan (hasta 5); con 5, +40 % de daño durante 5 s.'},
+  orco: {n: 'Disciplina', d: 'Sus golpes a héroes se acumulan (hasta 5); con 5, +30 % de daño durante 5 s.'},
   gollum: {n: 'Acecho', d: 'Desde la hierba alta, su golpe básico es un salto hasta la presa (hasta 6 m).'},
   rohan: {n: 'Ojo de halcón', d: 'El primer golpe a cada enemigo quita un 8 % de su vida actual; se repite cada 6 s por enemigo.'},
   visor: {n: 'Sobrecarga', d: 'Cada 4.º golpe básico es un rayo cargado: daño mágico extra.'},
@@ -98,7 +98,16 @@ const OBJ = {
   velo: {t: 'Traje aislante', i: 'ui/ap_obj_velo.webp', leg: 1, rec: ['manto', 'cota'], c: 450, st: {vida: 300, rm: 50, regen: 3}, p: 'Mucha resistencia mágica: contra magos.'},
   mithril: {t: 'Armadura de kevlar', i: 'ui/ap_obj_mithril.webp', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 450, arm: 30, rm: 30, regen: 4}, p: 'Ligera y casi irrompible: protege de golpes y de la magia.'},
 };
-const PLAN_BOT = {gandalf: ['tomo', 'tomo', 'baculo', 'botas', 'manto', 'tomo', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'cota', 'manto', 'velo'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};
+for (const k in OBJ) OBJ[k].c = Math.round(OBJ[k].c * 1.75 / 25) * 25;
+{const A = (t, k, o) => Object.assign(k ? HEROES[t].hab[k] : HEROES[t], o); /* equilibrio 22/11 (PULIDO WILD RIFT) */
+ A('hobbit', null, {dano: 56, crecD: 4.5, vida: 585, alcance: 6.8}); A('hobbit', 'q', {dano: 125, cd: 6}); A('hobbit', 'e', {dano: 120, alc: 6});
+ A('orco', 'q', {curaH: 0.07, d: 'Gira la espada de energía: hiere a los de alrededor y se cura un 7 % de la vida que le falta por cada héroe que toca.'});
+ A('rohan', null, {dano: 59}); A('elfo', null, {vida: 555, crecV: 80}); A('elfo', 'q', {dano: 135}); A('gandalf', 'q', {aturde: 1.1, d: 'Lanza un orbe de fuego que atrapa 1,1 s al primero que toca.'}); A('enano', 'q', {dano: 125});} /* 22/11: precios del Wild Rift (ver PULIDO WILD RIFT) */
+const PLAN_BOT = {gandalf: ['tomo', 'tomo', 'baculo', 'botas', 'manto', 'tomo', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'cota', 'manto', 'velo'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'],
+  /* 22/11: Gollum no tenía plan: los bots no compraban NADA con él (por eso perdía todos los duelos) y en la tienda no salía «Recomendado» */
+  gollum: ['hoja', 'daga', 'guthwine', 'botas', 'hoja', 'hoja', 'herugrim', 'amuleto', 'capa', 'hoja', 'amuleto', 'hacha', 'cota', 'yelmo', 'escudo'],
+  visor: ['tomo', 'tomo', 'baculo', 'botas', 'tomo', 'manto', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'manto', 'cota', 'velo']};
+PLAN_BOT.hobbit = ['daga', 'hoja', 'guthwine', 'botas', 'hoja', 'hoja', 'herugrim', 'amuleto', 'capa', 'hoja', 'amuleto', 'hacha', 'cota', 'yelmo', 'escudo']; /* 22/11: Birdie es tirador: velocidad de ataque y críticos (antes robo de vida primero) */
 /* El mapa en «ojo» (dibujo de Arturo, 14/11): dos caminos curvos de la base de Rohan (abajo a la izquierda) a la de Isengard
    (arriba a la derecha), la espesura en medio con el Uruk azul en el centro y el río (el vado) cruzando por la mitad.
    Todo es simétrico girando 180° alrededor del centro. */
@@ -157,10 +166,11 @@ function chocaRects(u, m) {
 }
 /* ¿cruza una manzana el segmento a-b? (con margen) — también los núcleos y las torres de las bases, que están en medio del paso */
 function cortaRects(a, b, m) {
-  for (const B of BASES) for (const [q, r] of [[B.nexo, 2.4], [B.torre, 1.9]]) if (distSeg(q.x, q.z, a, b) < r + m + 0.2 && Math.hypot(a.x - q.x, a.z - q.z) > r + 0.3) return true;
-  for (let i = 0; i < RECTS.length; i++) {const r = RECTS[i]; let t0 = 0, t1 = 1; const dx = b.x - a.x, dz = b.z - a.z;
-    const ej = [[-dx, a.x - (r[0] - m)], [dx, r[2] + m - a.x], [-dz, a.z - (r[1] - m)], [dz, r[3] + m - a.z]]; let fuera = false;
-    for (const [p, q] of ej) {if (p === 0) {if (q < 0) {fuera = true; break;}} else {const t = q / p; if (p < 0) {if (t > t1) {fuera = true; break;} if (t > t0) t0 = t;} else {if (t < t0) {fuera = true; break;} if (t < t1) t1 = t;}}}
+  for (const B of BASES) for (let j = 0; j < 2; j++) {const q = j ? B.torre : B.nexo, r = j ? 1.9 : 2.4; if (distSeg(q.x, q.z, a, b) < r + m + 0.2 && Math.hypot(a.x - q.x, a.z - q.z) > r + 0.3) return true;}
+  const dx = b.x - a.x, dz = b.z - a.z;
+  for (let i = 0; i < RECTS.length; i++) {const r = RECTS[i]; let t0 = 0, t1 = 1, fuera = false;
+    for (let k = 0; k < 4 && !fuera; k++) {const p = k === 0 ? -dx : k === 1 ? dx : k === 2 ? -dz : dz, q = k === 0 ? a.x - (r[0] - m) : k === 1 ? r[2] + m - a.x : k === 2 ? a.z - (r[1] - m) : r[3] + m - a.z;
+      if (p === 0) {if (q < 0) fuera = true;} else {const t = q / p; if (p < 0) {if (t > t1) fuera = true; else if (t > t0) t0 = t;} else {if (t < t0) fuera = true; else if (t < t1) t1 = t;}}}
     if (!fuera && t0 <= t1) return true;}
   return false;
 }
@@ -1182,7 +1192,7 @@ function nuevaPartida(jugadores, modo) {
     const eq = slot % 2, f = BASES[eq].fuente, x = f.x + (slot >= 2 ? 1.5 : -1.5), z0 = f.z - signo(eq) * 2.5;
     const b = HEROES[tipo] || HEROES.rohan;
     S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: esBot, nombre: !esBot ? j.nombre : 'Bot ' + b.nombre.split(/[ ,]/)[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
-      vida: b.vida, max: b.vida, mana: b.mana, nivel: 1, xp: 0, oro: 500, vg: 1, vgT: 210, inv: [], enc: '', hf: j && j.hech === 'c' ? 'c' : 'f', modoAt: '', fijo: 0, cd: {q: 0, w: 0, e: 0, r: 0, a: 0, d: 0, f: 0}, rk: {q: 0, w: 0, e: 0, r: 0}, pts: 1, muertes: 0, asist: 0, cs: 0, racha: 0, hierba: -1, multi: 0, multiT: -99, danos: {}, buf: {}, resp: 0, muerto: false, ac: 0, hc: 0, hk: '', mueve: false, ataca: false, mx: 0, mz: 0, kills: 0, plan: 0});
+      vida: b.vida, max: b.vida, mana: b.mana, nivel: 1, xp: 0, oro: 650, vg: 1, vgT: 210, inv: [], enc: '', hf: j && j.hech === 'c' ? 'c' : 'f', modoAt: '', fijo: 0, cd: {q: 0, w: 0, e: 0, r: 0, a: 0, d: 0, f: 0}, rk: {q: 0, w: 0, e: 0, r: 0}, pts: 1, muertes: 0, asist: 0, cs: 0, racha: 0, hierba: -1, multi: 0, multiT: -99, danos: {}, buf: {}, resp: 0, muerto: false, ac: 0, hc: 0, hk: '', mueve: false, ataca: false, mx: 0, mz: 0, kills: 0, plan: 0});
   }
   for (const eq of [0, 1]) {
     /* «los soles» del dibujo: una torre en cada camino y otra delante del estandarte */
@@ -1208,8 +1218,9 @@ function stats(h) {
   if (h.buf.suerte > 0) {ve += 0.5; st.dano *= 1.35;}
   if (h.buf.invis > 0 && !(h.tipo === 'hobbit' && h.buf.escond > 0)) ve += 0.35;
   if (h.tipo === 'gollum' && h.hierba >= 0) st.alcance = 6;
-  if (h.buf.furiaO > 0) st.dano *= 1.4;
+  if (h.buf.furiaO > 0) st.dano *= 1.3;
   if (h.buf.azogue > 0) ve += 0.5;
+  if (h.buf.casa > 0) ve += 0.4;
   if (h.buf.gargola > 0) st.vida *= 1.4;
   if (h.buf.prisa > 0) ve += 0.3;
   if (h.buf.lento > 0) ve -= h.buf.lentoV || 0.35;
@@ -1218,7 +1229,8 @@ function stats(h) {
   st.reduc = Math.min(0.75, st.reduc);
   return st;
 }
-function xpNivel(n) {return 100 + 60 * (n - 1);}
+function xpNivel(n) {return XP_BASE + XP_SUBE * (n - 1);}
+const XP_BASE = 300, XP_SUBE = 95;
 function ganaXp(h, n) {
   if (h.nivel >= NIVEL_MAX) return; h.xp += n * (S.modo === '1v1' ? DUELO.botin : 1);
   while (h.nivel < NIVEL_MAX && h.xp >= xpNivel(h.nivel)) {h.xp -= xpNivel(h.nivel); const v0 = stats(h).vida; h.nivel++; h.pts++; const v1 = stats(h).vida; h.vida += v1 - v0; h.mana += HEROES[h.tipo].crecM; ev(['fx', 'onda', h.x, h.z, 3]); if (h.nivel === NIVEL_R) ev(['aviso', h.id, '¡Habilidad definitiva lista!']);}
@@ -1250,6 +1262,7 @@ function placaRota(t) {
 }
 function dana(o, d, n, tipo) {
   if (!d || d.vida <= 0 || d.muerto) return;
+  if (d.buf && d.buf.casa) d.buf.casa = 0; if (o && o.buf && o.buf.casa && d.k !== 's' && d.k !== 'j') o.buf.casa = 0;
   if (S.facil && o && o.k === 'h' && o.bot && d.k === 'h') n *= 0.45; /* partida guiada: el héroe de la máquina pega menos de la mitad */
   if (o && o.k === 'h' && o.buf.gargola > 0) n *= 0.4;
   if (d.k === 't' || d.k === 'n') {
@@ -1286,7 +1299,7 @@ function muere(d, o) {
     d.muerto = true; d.quitar = S.t + 1.6; ev(['muere', d.id]);
     const sd = SUBD[d.tipo];
     if (o && o.k === 'h') {const g = Math.round(sd.oro * (S.modo === '1v1' ? DUELO.botin : 1)); o.oro += g; o.cs++; ev(['num', d.x, d.z, '+' + g, 'o', o.id]);}
-    for (const h of heroes()) if (h.eq !== d.eq && !h.muerto && dist(h, d) < 12) ganaXp(h, sd.xp);
+    {const cerca = heroes().filter((h) => h.eq !== d.eq && !h.muerto && dist(h, d) < 12), k = cerca.length > 1 ? 0.65 : 1; for (const h of cerca) ganaXp(h, sd.xp * k);}
   }
   if (d.k === 'j') {
     d.muerto = true; d.quitar = S.t + 2; ev(['muere', d.id]);
@@ -1307,21 +1320,23 @@ function muere(d, o) {
   }
   if (d.k === 'h') {
     d.muerto = true; d.resp = S.t + Math.min(45, 6 + d.nivel * 2 + Math.floor(S.t / 60) * 0.8); /* como en el LoL: cuanto más avanzada la partida, más cuesta morir */ d.buf = {}; ev(['muere', d.id]); S.muertes[1 - d.eq]++;
-    d.muertes++; const rachaVictima = d.racha; d.racha = 0;
+    d.muertes++; const rachaVictima = d.racha; d.racha = 0; const rmAntes = d.rachaM || 0;
     if (DUELO.activo && S.modo === '1v1' && S.fin < 0 && S.muertes[1 - d.eq] >= (S.t >= DUELO.anillo ? 1 : 2) && !S.duelo) {S.duelo = 1; luego(1.2, () => {if (S.fin < 0) {S.fin = 1 - d.eq; ev(['fin', 1 - d.eq]);}});}
     const asesino = o && o.k === 'h' ? o : S.u.find((q) => q.id === d.agresor && d.agresorT > S.t);
     let txt = '';
     if (asesino) {
       asesino.kills++; asesino.racha++; asesino.multi = S.t - asesino.multiT < 10 ? asesino.multi + 1 : 1; asesino.multiT = S.t;
-      let oro = 300 + (rachaVictima >= 3 ? 150 : 0); asesino.oro += oro; ganaXp(asesino, 120 + 25 * d.nivel);
+      const rm = d.rachaM || 0, recomp = rachaVictima >= 3 ? Math.min(700, 150 + 100 * (rachaVictima - 3)) : 0;
+      let oro = [300, 274, 220, 176, 140, 112, 100][Math.min(6, rm)] + recomp; asesino.oro += oro; asesino.rachaM = 0; ganaXp(asesino, 120 + 25 * d.nivel);
+      if (recomp) ev(['aviso', 0, '💰 Racha cortada: +' + recomp + ' de recompensa']);
       if (!S.primera) {S.primera = true; txt = '¡Primera sangre!'; asesino.oro += 100;}
       else if (asesino.multi >= 2) txt = ['', '', '¡Doble derribo!', '¡Triple derribo!', '¡Cuádruple derribo!'][Math.min(4, asesino.multi)];
       else if (rachaVictima >= 3) txt = '¡Racha cortada!';
       else if (asesino.racha >= 3) txt = asesino.racha >= 7 ? '¡Leyenda de la autopista!' : asesino.racha >= 5 ? '¡Imparable!' : '¡En racha!';
-      for (const a of heroes()) if (a.eq === asesino.eq && a !== asesino && d.danos[a.id] > S.t - 8) {a.asist++; a.oro += 120; ganaXp(a, 60);}
+      {const as = heroes().filter((a) => a.eq === asesino.eq && a !== asesino && d.danos[a.id] > S.t - 10); for (const a of as) {a.asist++; a.oro += Math.round(oro * 0.5 / as.length); a.rachaM = 0; ganaXp(a, 60 + 12 * d.nivel);}}
       if (heroes().filter((q) => q.eq === d.eq).every((q) => q.muerto) && heroes().filter((q) => q.eq === d.eq).length > 1) txt = '¡Aniquilación!';
     }
-    d.danos = {};
+    d.danos = {}; d.rachaM = rmAntes + 1;
     ev(['baja', asesino ? asesino.id : 0, d.id, txt]);
   }
   if (d.k === 't') {ev(['fx', 'explosion', d.x, d.z, 5]); ev(['baja', o && o.k === 'h' ? o.id : 0, d.id, d.eq === 0 ? 'Torre de los azules destruida' : 'Torre de los rojos destruida']); for (const h of heroes()) if (h.eq !== d.eq) {h.oro += d.inhib ? 50 : 150; ganaXp(h, 80);}
@@ -1359,7 +1374,7 @@ function golpea(o, d) {
   }
   if (o.k === 's') {o.ac++; const sd = SUBD[o.tipo]; if (o.tipo === 'r') lanzaProy(o, d, o.eq ? 'flecha_orca' : 'flecha_elfica', sd.dano * (o.fuerte ? 1.5 : 1) * (SUBD_X[d.k] || 1) * (d.k === 't' || d.k === 'n' ? asedio() : 1), 'at'); else luego(0.2, () => {if (d.vida > 0 && o.vida > 0) dana(o, d, sd.dano * (o.fuerte ? 1.5 : 1) * ((d.k === 't' || d.k === 'n') ? (sd.muros || SUBD_X.t) * asedio() : (SUBD_X[d.k] || 1)), 'at');}); return;}
   if (o.k === 'j') {o.ac++; const nd = NEUTRO[o.tipo], piso = nd.jefe && o.ac % 3 === 0; luego(piso ? 0.75 : 0.3, () => {if (o.vida <= 0) return; if (piso) {for (const h of heroes()) if (!h.muerto && dist(h, o) < 4.2) dana(o, h, nd.dano * 0.8 * (1 + S.t / 900), 'at'); ev(['fx', 'onda', o.x, o.z, 8]); ev(['fx', 'explosion', o.x, o.z, 3]);} else if (d.vida > 0) {dana(o, d, nd.dano * (1 + S.t / 900), 'at'); if (nd.grande) ev(['fx', 'impacto', d.x, d.z, 2]);}}); return;}
-  if (o.k === 't') {o.ac++; const n = d.k === 'h' ? 130 + 12 * Math.floor(S.t / 60) : 110; const p = lanzaProy(o, d, 'piedra', n, 'at', 2.6, 5); p.area = 2.4; p.v = 13;}
+  if (o.k === 't') {o.ac++; if (d.k === 'h' && o.calorDe === d.id) o.calor = Math.min(3, (o.calor || 0) + 1); else o.calor = 0; o.calorDe = d.k === 'h' ? d.id : 0; const n = d.k === 'h' ? (130 + 12 * Math.floor(S.t / 60)) * (1 + 0.35 * o.calor) : 110; const p = lanzaProy(o, d, 'piedra', n, 'at', 2.6, 5); p.area = 2.4; p.v = 13;}
 }
 function pasivaGolpe(o, d) {
   const t = o.tipo, heroe = d.k === 'h', vivo = () => d.vida > 0 && !d.muerto && !o.muerto;
@@ -1454,9 +1469,9 @@ function paso(dt) {
     for (const k in h.cd) h.cd[k] = Math.max(0, h.cd[k] - dt);
     if (h.vg < 2) {h.vgT -= dt; if (h.vgT <= 0) {h.vg++; h.vgT = recargaAlmenara();}}
     for (const k in h.buf) if (typeof h.buf[k] === 'number' && !k.endsWith('V')) h.buf[k] = Math.max(0, h.buf[k] - dt);
-    if (h.muerto) {if (S.t >= h.resp) {h.muerto = false; const f = BASES[h.eq].fuente; h.x = f.x + (h.slot >= 2 ? 1.5 : -1.5); h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; h.vida = stats(h).vida; h.mana = stats(h).mana; ev(['vive', h.id]);} continue;}
+    if (h.muerto) {if (S.t >= h.resp) {h.muerto = false; const f = BASES[h.eq].fuente; h.x = f.x + (h.slot >= 2 ? 1.5 : -1.5); h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; h.vida = stats(h).vida; h.mana = stats(h).mana; h.buf.casa = 8; ev(['vive', h.id]);} continue;}
     const st = stats(h); h.oro += 2.2 * dt;
-    if (h.sang && h.sang.hasta > S.t) {h.sang.tick -= dt; if (h.sang.tick <= 0) {h.sang.tick = 1; const ob = S.porId.get(h.sang.o); dana(ob || null, h, (4 + 2 * (ob ? ob.nivel : 1)) * h.sang.n, 'pura');}} else h.sang = null;
+    if (h.sang && h.sang.hasta > S.t) {h.sang.tick -= dt; if (h.sang.tick <= 0) {h.sang.tick = 1; const ob = S.porId.get(h.sang.o); dana(ob || null, h, (2 + 0.8 * (ob ? ob.nivel : 1)) * h.sang.n, 'fis');}} else h.sang = null;
     if (h.tipo === 'enano' && S.t - (h.golpeT ?? -99) > 10 && !(h.granito > 0)) {h.granito = st.vida * 0.1; ev(['num', h.x, h.z, '🛡 granito', 'y']);}
     if (h.tipo === 'hobbit') {h.quieto = h.mueve ? 0 : (h.quieto || 0) + dt; if (h.quieto > 1.5) {if (!(h.buf.escond > 0)) ev(['num', h.x, h.z, '…', 'y']); h.buf.escond = 0.2; h.buf.invis = 0.2;}}
     h.hierba = enHierba(h);
@@ -1701,7 +1716,12 @@ function ia(h, dt, st) {
     for (const k of ['r', 'q', 'e', 'w']) {
       const H = HEROES[h.tipo].hab[k]; if (h.cd[k] > 0 || !(h.rk[k] > 0) || h.mana < costeMn(h.tipo, k, h.rk[k])) continue;
       const d0 = dist(h, heroeEn), alc = H.alc || H.dist || H.radio || 4;
-      if (['escudo', 'reduce', 'rafaga', 'suerte', 'invis'].includes(H.tipo)) {if (d0 < 6) {usaHab(h, k, heroeEn.x - h.x, heroeEn.z - h.z, heroeEn.x, heroeEn.z); break;} continue;}
+      /* 22/11: las de uno mismo cuando sirven (antes solo a menos de 6 m: los de lejos no las usaban nunca) — escudo y coraza al recibir,
+         velocidad de ataque al tener a tiro, curación con la vida baja, invisibilidad para entrar si va ganando o para huir */
+      if (['escudo', 'reduce', 'rafaga', 'suerte', 'invis'].includes(H.tipo)) {
+        const aTiro = d0 < st.alcance + 2.5, pe = heroeEn.vida / stats(heroeEn).vida;
+        const sirve = H.tipo === 'rafaga' ? d0 < st.alcance + 1 : H.tipo === 'suerte' ? aTiro && (pv < 0.7 || pe < 0.45) : H.tipo === 'invis' ? (pv < 0.35 && d0 < 8) || (d0 < 10 && pe < pv + 0.1) : aTiro && pv < 0.9;
+        if (sirve) {usaHab(h, k, heroeEn.x - h.x, heroeEn.z - h.z, heroeEn.x, heroeEn.z); break;} continue;}
       if (d0 < alc + 0.5) {usaHab(h, k, heroeEn.x - h.x, heroeEn.z - h.z, heroeEn.x, heroeEn.z); break;}
     }
   }
@@ -1730,7 +1750,12 @@ function ia(h, dt, st) {
   const torreEn = torres.sort((a, b) => dist(h, a) - dist(h, b))[0];
   const enTorre = (p) => S.u.some((t) => t.k === 't' && t.eq !== h.eq && t.vida > 0 && dist(t, p) < 10);
   let objetivo = null;
-  if (heroeEn && dist(h, heroeEn) < st.alcance + 4 && (heroeEn.vida / stats(heroeEn).vida < pv + 0.15) && !enTorre(heroeEn)) objetivo = heroeEn;
+  /* 22/11: los de cuerpo a cuerpo con un salto o una carga lista entran desde más lejos (antes solo a su alcance + 4 m: los de lejos
+     les pegaban sin que se acercaran nunca); los asesinos se atreven antes */
+  let alcEnt = st.alcance + 4;
+  for (const k of ['q', 'w', 'e', 'r']) {const H = HEROES[h.tipo].hab[k]; if (['salto', 'dash', 'ejecuta'].includes(H.tipo) && h.rk[k] > 0 && h.cd[k] <= 0 && h.mana >= costeMn(h.tipo, k, h.rk[k])) alcEnt = Math.max(alcEnt, (H.dist || H.alc || 0) + st.alcance);}
+  const osadia = h.tipo === 'gollum' ? 0.25 : 0.15;
+  if (heroeEn && dist(h, heroeEn) < alcEnt && (heroeEn.vida / stats(heroeEn).vida < pv + osadia) && !enTorre(heroeEn)) objetivo = heroeEn;
   if (!objetivo) {const c = masCercano(h, en.filter((e) => e.k === 's' && !enTorre(e)), st.alcance + 3); if (c) objetivo = c;}
   const nadieDefiende = torreEn && !en.some((e) => e.k === 'h' && dist(e, torreEn) < 14);
   const torreOcupada = torreEn && torreEn.k === 't' && torreEn.obj && (S.porId.get(torreEn.obj) || {}).k === 's';
@@ -1808,11 +1833,11 @@ function aplicaMando(h, o) {
     if (o.t === 'avisoEq') {const e = ['ping', h.eq, h.id, o.k, o.x, o.z]; ev(e);}
     if (o.t === 'hech') {h.x = o.x; h.z = o.z; usaHechizo(h, o.k, o.dx, o.dz);}
     if (o.t === 'alm') {h.x = o.x; h.z = o.z; ponAlmenara(h, o.px, o.pz);}
-    if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined;}}
+    if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; h.buf.casa = 8;}}
   }
 function foto() {
   const u = S.u.map((q) => q.k === 'h'
-    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0) | (q.buf.lento > 0 ? 4 : 0) | (q.quema && q.quema.hasta > S.t ? 8 : 0) | (q.sang && q.sang.hasta > S.t ? 16 : 0) | (q.buf.azogue > 0 || q.buf.alfa > 0 ? 32 : 0) | (q.buf.furiaO > 0 ? 64 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT), Math.round(q.mana), Math.round(stats(q).mana), q.bot ? 0 : (q.tcIn || 0)]
+    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0) | (q.buf.lento > 0 ? 4 : 0) | (q.quema && q.quema.hasta > S.t ? 8 : 0) | (q.sang && q.sang.hasta > S.t ? 16 : 0) | (q.buf.azogue > 0 || q.buf.alfa > 0 || q.buf.casa > 0 ? 32 : 0) | (q.buf.furiaO > 0 ? 64 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT), Math.round(q.mana), Math.round(stats(q).mana), q.bot ? 0 : (q.tcIn || 0), +stats(q).vel.toFixed(2)]
     : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') + (q.k === 't' && q.n === 1 && S.t < PLACAS_FIN && (q.placas ?? 5) > 0 ? 'L' : '') : q.k === 'j' ? q.elem || '' : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
   const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t))), dr = S.bufEq.map((b) => [b.drF || 0, b.drH || 0, b.alma || 0]);
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
@@ -1836,7 +1861,7 @@ function aplicaFila(f, t) {
     else b.push(FOTO_TS || v.t0, x, z, rot);
     if (b.length > 32) b.splice(0, 4);}
   Object.assign(v, {x, z, rot, vida, max, mueve, ac, hc, hk, muerto, tipo, visto: true, llega: performance.now()});
-  if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30], enc: f[31] || '', cdEnc: f[32] || 0, flagsE: f[33] || 0, fijo: f[34] || 0, hf: f[35] || 'f', vg: f[36] ?? 0, vgT: f[37] || 0, mana: f[38] ?? 0, manaMax: f[39] || 1});
+  if (k === 'h') Object.assign(v, {nivel: f[14], oro: f[15], inv: f[16] ? f[16].split(',') : [], cds: f[17].split(',').map(Number), flags: f[18], nombre: f[19], slot: f[20], xpP: f[21], hierba: f[22], rk: String(f[23]).split('').map(Number), pts: f[24], kda: f[25], cdD: f[26], cdF: f[27], bTroll: f[28], bAlfa: f[29], objAt: f[30], enc: f[31] || '', cdEnc: f[32] || 0, flagsE: f[33] || 0, fijo: f[34] || 0, hf: f[35] || 'f', vg: f[36] ?? 0, vgT: f[37] || 0, mana: f[38] ?? 0, manaMax: f[39] || 1, velE: f[41] || 0});
 }
 /* indicador de conexión como el del Wild Rift: ping en verde/amarillo/rojo y aviso si se pierden fotos (huecos de más de 0,3 s) */
 const CONEX = {ult: 0, huecos: [], aviso: 0};
@@ -2997,7 +3022,8 @@ function mueveMio(dt) {
   const v = VISTA.get(YO); if (!v) return; if (!S) estructuras(VISTA.values());
   if (v.flagsE & 1) {MIO.x = v.x; MIO.z = v.z; return;}
   if (!MIO.listo || v.muerto >= 0) {MIO.x = v.x; MIO.z = v.z; MIO.listo = v.muerto < 0; return;}
-  const st = {vel: HEROES[v.tipo].vel * (v.inv.includes('botas') ? 1.12 : 1) * (v.inv.includes('capa') ? 1.18 : 1)};
+  /* 22/11: con la velocidad de verdad que manda el anfitrión (frenos, aceleraciones, Destello…): antes en línea tu héroe no se frenaba nunca */
+  const st = {vel: v.velE || HEROES[v.tipo].vel * (v.inv.includes('botas') ? 1.12 : 1) * (v.inv.includes('capa') ? 1.18 : 1)};
   {const oo = VIS.get(YO), marca = oo && oo.predT || 0; if (marca !== MIO.marcaAt) {if (MIO.marcaAt !== undefined && marca) MIO.para = performance.now() + Math.min(300, 300 / HEROES[v.tipo].vatq); MIO.marcaAt = marca;}}
   if (MIO.dash) {MIO.x += MIO.dash.vx * dt; MIO.z += MIO.dash.vz * dt; MIO.dash.t -= dt; if (MIO.dash.t <= 0) MIO.dash = null;}
   else if (performance.now() < (MIO.para || 0)) MIO.mueve = false;

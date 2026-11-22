@@ -37,10 +37,11 @@ function chocaRects(u, m) {
 }
 /* ¿cruza una manzana el segmento a-b? (con margen) — también los núcleos y las torres de las bases, que están en medio del paso */
 function cortaRects(a, b, m) {
-  for (const B of BASES) for (const [q, r] of [[B.nexo, 2.4], [B.torre, 1.9]]) if (distSeg(q.x, q.z, a, b) < r + m + 0.2 && Math.hypot(a.x - q.x, a.z - q.z) > r + 0.3) return true;
-  for (let i = 0; i < RECTS.length; i++) {const r = RECTS[i]; let t0 = 0, t1 = 1; const dx = b.x - a.x, dz = b.z - a.z;
-    const ej = [[-dx, a.x - (r[0] - m)], [dx, r[2] + m - a.x], [-dz, a.z - (r[1] - m)], [dz, r[3] + m - a.z]]; let fuera = false;
-    for (const [p, q] of ej) {if (p === 0) {if (q < 0) {fuera = true; break;}} else {const t = q / p; if (p < 0) {if (t > t1) {fuera = true; break;} if (t > t0) t0 = t;} else {if (t < t0) {fuera = true; break;} if (t < t1) t1 = t;}}}
+  for (const B of BASES) for (let j = 0; j < 2; j++) {const q = j ? B.torre : B.nexo, r = j ? 1.9 : 2.4; if (distSeg(q.x, q.z, a, b) < r + m + 0.2 && Math.hypot(a.x - q.x, a.z - q.z) > r + 0.3) return true;}
+  const dx = b.x - a.x, dz = b.z - a.z;
+  for (let i = 0; i < RECTS.length; i++) {const r = RECTS[i]; let t0 = 0, t1 = 1, fuera = false;
+    for (let k = 0; k < 4 && !fuera; k++) {const p = k === 0 ? -dx : k === 1 ? dx : k === 2 ? -dz : dz, q = k === 0 ? a.x - (r[0] - m) : k === 1 ? r[2] + m - a.x : k === 2 ? a.z - (r[1] - m) : r[3] + m - a.z;
+      if (p === 0) {if (q < 0) fuera = true;} else {const t = q / p; if (p < 0) {if (t > t1) fuera = true; else if (t > t0) t0 = t;} else {if (t < t0) fuera = true; else if (t < t1) t1 = t;}}}
     if (!fuera && t0 <= t1) return true;}
   return false;
 }

@@ -2156,6 +2156,55 @@ function cartelLagarto(e, el) {
 function cartelJefe(e) {""")
 html = sub(html, "@keyframes jefeLat{50%{transform:scale(1.1)}}", "#jefe.lf{border-color:#ff8a2a;box-shadow:0 0 24px #ff6a1aaa}#jefe.lf b{color:#ffe6d0;text-shadow:0 2px 0 #000,0 0 12px #ff6a1a}#jefe.lh{border-color:#6fe0ff;box-shadow:0 0 24px #4fd0ffaa}#jefe.lh b{color:#e0f8ff;text-shadow:0 2px 0 #000,0 0 12px #4fd0ff}\n@keyframes jefeLat{50%{transform:scale(1.1)}}", donde='html')
 
+# ---------- PULIDO WILD RIFT (22/11, Henar: «dale una mejora al juego entero, acércate al Wild Rift en balance, jugabilidad, mecánicas,
+# interacciones y fluidez»). Medido antes con tools/pruebas/t_bal.mjs (duelos entre bots), t_allin.mjs (peleas a muerte al mismo
+# nivel y oro) y /tmp/t_eco.mjs (nivel y objetos por minuto): se llegaba al nivel máximo a los 5 min y a 6 objetos a los 10 (en el
+# Wild Rift el nivel máximo llega hacia el minuto 18 y la build completa no se suele acabar). Dentro de la simulación: sims regenerados. ----------
+# (1) el Visor no tenía plan de compra: sus bots no compraban nada y en la tienda no le salía «Recomendado»
+js = sub(js, "  gollum: ['hoja', 'daga', 'guthwine', 'botas', 'hoja', 'hoja', 'herugrim', 'amuleto', 'capa', 'hoja', 'amuleto', 'hacha', 'cota', 'yelmo', 'escudo']};",
+  "  gollum: ['hoja', 'daga', 'guthwine', 'botas', 'hoja', 'hoja', 'herugrim', 'amuleto', 'capa', 'hoja', 'amuleto', 'hacha', 'cota', 'yelmo', 'escudo'],\n  visor: ['tomo', 'tomo', 'baculo', 'botas', 'tomo', 'manto', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'manto', 'cota', 'velo']};\nPLAN_BOT.hobbit = ['daga', 'hoja', 'guthwine', 'botas', 'hoja', 'hoja', 'herugrim', 'amuleto', 'capa', 'hoja', 'amuleto', 'hacha', 'cota', 'yelmo', 'escudo']; /* 22/11: Birdie es tirador: velocidad de ataque y críticos (antes robo de vida primero) */")
+# (2) progresión al ritmo del Wild Rift: experiencia por nivel mayor (nivel 4 —la definitiva— hacia el minuto 4-5, nivel 9 hacia el 15-17)
+js = sub(js, "function xpNivel(n) {return 100 + 60 * (n - 1);}", "function xpNivel(n) {return XP_BASE + XP_SUBE * (n - 1);}\nconst XP_BASE = 300, XP_SUBE = 95;")
+#     y la experiencia de los soldados se reparte si hay dos héroes cerca (como en el LoL: un 65 % para cada uno)
+js = sub(js, "    for (const h of heroes()) if (h.eq !== d.eq && !h.muerto && dist(h, d) < 12) ganaXp(h, sd.xp);",
+  "    {const cerca = heroes().filter((h) => h.eq !== d.eq && !h.muerto && dist(h, d) < 12), k = cerca.length > 1 ? 0.65 : 1; for (const h of cerca) ganaXp(h, sd.xp * k);}")
+# (3) objetos un 75 % más caros (la economía de oro ya era la del Wild Rift: ~5.000 a los 10 min; lo barato eran los objetos):
+#     primer legendario hacia el minuto 6-8, tres hacia el 15; se empieza con 700 para comprar un componente
+js = sub(js, "const PLAN_BOT = {", "for (const k in OBJ) OBJ[k].c = Math.round(OBJ[k].c * 1.75 / 25) * 25; /* 22/11: precios del Wild Rift (ver PULIDO WILD RIFT) */\nconst PLAN_BOT = {")
+js = sub(js, "oro: 500, vg: 1,", "oro: 650, vg: 1,")
+# (4) oro por derribo como el Wild Rift: recompensa por racha (de 150 a 700) a quien la corta, menos oro por quien ya ha muerto varias
+#     veces seguidas (de 300 a 100: no se premia rematar al que va mal) y asistencias = la mitad del oro repartida (antes 120 fijos)
+js = sub(js, "      let oro = 300 + (rachaVictima >= 3 ? 150 : 0); asesino.oro += oro; ganaXp(asesino, 120 + 25 * d.nivel);",
+  "      const rm = d.rachaM || 0, recomp = rachaVictima >= 3 ? Math.min(700, 150 + 100 * (rachaVictima - 3)) : 0;\n      let oro = [300, 274, 220, 176, 140, 112, 100][Math.min(6, rm)] + recomp; asesino.oro += oro; asesino.rachaM = 0; ganaXp(asesino, 120 + 25 * d.nivel);\n      if (recomp) ev(['aviso', 0, '💰 Racha cortada: +' + recomp + ' de recompensa']);")
+js = sub(js, "    d.muertes++; const rachaVictima = d.racha; d.racha = 0;", "    d.muertes++; const rachaVictima = d.racha; d.racha = 0; const rmAntes = d.rachaM || 0;")
+js = sub(js, "      for (const a of heroes()) if (a.eq === asesino.eq && a !== asesino && d.danos[a.id] > S.t - 8) {a.asist++; a.oro += 120; ganaXp(a, 60);}",
+  "      {const as = heroes().filter((a) => a.eq === asesino.eq && a !== asesino && d.danos[a.id] > S.t - 10); for (const a of as) {a.asist++; a.oro += Math.round(oro * 0.5 / as.length); a.rachaM = 0; ganaXp(a, 60 + 12 * d.nivel);}}")
+js = sub(js, "    d.danos = {};\n    ev(['baja', asesino ? asesino.id : 0, d.id, txt]);", "    d.danos = {}; d.rachaM = rmAntes + 1;\n    ev(['baja', asesino ? asesino.id : 0, d.id, txt]);")
+# (5) torres que se calientan (Wild Rift/LoL): cada disparo seguido al mismo héroe pega un 35 % más, hasta +105 %; meterse bajo torre se paga
+js = sub(js, "  if (o.k === 't') {o.ac++; const n = d.k === 'h' ? 130 + 12 * Math.floor(S.t / 60) : 110;",
+  "  if (o.k === 't') {o.ac++; if (d.k === 'h' && o.calorDe === d.id) o.calor = Math.min(3, (o.calor || 0) + 1); else o.calor = 0; o.calorDe = d.k === 'h' ? d.id : 0; const n = d.k === 'h' ? (130 + 12 * Math.floor(S.t / 60)) * (1 + 0.35 * o.calor) : 110;")
+
+# (6) EQUILIBRIO (22/11, medido con t_bal.mjs —duelos entre bots— y t_allin.mjs —peleas a muerte al mismo nivel y oro—):
+#     Birdie perdía todo (menos daño que los demás tiradores); Grub ganaba el 100 % de los cuerpo a cuerpo; Moha y Vael, algo fuertes.
+js = sub(js, "for (const k in OBJ) OBJ[k].c = Math.round(OBJ[k].c * 1.75 / 25) * 25;", """for (const k in OBJ) OBJ[k].c = Math.round(OBJ[k].c * 1.75 / 25) * 25;
+{const A = (t, k, o) => Object.assign(k ? HEROES[t].hab[k] : HEROES[t], o); /* equilibrio 22/11 (PULIDO WILD RIFT) */
+ A('hobbit', null, {dano: 56, crecD: 4.5, vida: 585, alcance: 6.8}); A('hobbit', 'q', {dano: 125, cd: 6}); A('hobbit', 'e', {dano: 120, alc: 6});
+ A('orco', 'q', {curaH: 0.07, d: 'Gira la espada de energía: hiere a los de alrededor y se cura un 7 % de la vida que le falta por cada héroe que toca.'});
+ A('rohan', null, {dano: 59}); A('elfo', null, {vida: 555, crecV: 80}); A('elfo', 'q', {dano: 135}); A('gandalf', 'q', {aturde: 1.1, d: 'Lanza un orbe de fuego que atrapa 1,1 s al primero que toca.'}); A('enano', 'q', {dano: 125});}""")
+js = sub(js, "if (h.buf.furiaO > 0) st.dano *= 1.4;", "if (h.buf.furiaO > 0) st.dano *= 1.3;")
+#     el sangrado de Grub hacía (4 + 2×nivel) por carga y segundo, daño puro: 80 por segundo a nivel 6 con 5 cargas (el de Darius, unas 3 veces
+#     menos): ahora (2 + 0,8×nivel) por carga y segundo, físico (lo frena la armadura)
+js = sub(js, "dana(ob || null, h, (4 + 2 * (ob ? ob.nivel : 1)) * h.sang.n, 'pura');", "dana(ob || null, h, (2 + 0.8 * (ob ? ob.nivel : 1)) * h.sang.n, 'fis');")
+js = sub(js, "con 5, +40 % de daño durante 5 s.", "con 5, +30 % de daño durante 5 s.")
+
+# (7) «VUELTA A CASA» (Homeguard del LoL/Wild Rift): al reaparecer o volver a la base, +40 % de velocidad 8 s mientras no pegues ni te peguen;
+#     se vuelve antes al camino y las partidas fluyen (antes había ~25-30 s de paseo tras cada muerte en un mapa de 104 m)
+js = sub(js, "h.vida = stats(h).vida; h.mana = stats(h).mana; ev(['vive', h.id]);} continue;}", "h.vida = stats(h).vida; h.mana = stats(h).mana; h.buf.casa = 8; ev(['vive', h.id]);} continue;}")
+js = sub(js, "    if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined;}}", "    if (o.t === 'volver') {if (!h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; h.buf.casa = 8;}}")
+js = sub(js, "  if (h.buf.azogue > 0) ve += 0.5;", "  if (h.buf.azogue > 0) ve += 0.5;\n  if (h.buf.casa > 0) ve += 0.4;")
+js = sub(js, "(q.buf.azogue > 0 || q.buf.alfa > 0 ? 32 : 0)", "(q.buf.azogue > 0 || q.buf.alfa > 0 || q.buf.casa > 0 ? 32 : 0)")
+js = sub(js, "  if (!d || d.vida <= 0 || d.muerto) return;\n  if (S.facil", "  if (!d || d.vida <= 0 || d.muerto) return;\n  if (d.buf && d.buf.casa) d.buf.casa = 0; if (o && o.buf && o.buf.casa && d.k !== 's' && d.k !== 'j') o.buf.casa = 0;\n  if (S.facil")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

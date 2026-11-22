@@ -8,7 +8,7 @@ export function creaSim() {
 
 const $ = (id) => document.getElementById(id);
 const rnd = (a, b) => a + Math.random() * (b - a);
-const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+const dist = (a, b) => {const dx = a.x - b.x, dz = a.z - b.z; return Math.sqrt(dx * dx + dz * dz);}; /* 22/11: sqrt en vez de hypot (hypot es varias veces más lento y dist es lo que más se llama) */
 const ICO = (n) => n.includes('/') ? n : '../abismo/iconos/' + n + '.webp';
 
 /* ---------- datos ---------- */
@@ -92,7 +92,9 @@ const OBJ = {
   velo: {t: 'Velo de Galadriel', i: '../batalla/ui/obj_velo.webp', leg: 1, rec: ['manto', 'cota'], c: 450, st: {vida: 300, rm: 50, regen: 3}, p: 'Mucha resistencia mágica: contra magos.'},
   mithril: {t: 'Cota de mithril', i: 'obj_14', leg: 1, rec: ['cota', 'cota', 'amuleto'], c: 550, st: {vida: 450, arm: 30, rm: 30, regen: 4}, p: 'Ligera y casi irrompible: protege del acero y de la magia.'},
 };
-const PLAN_BOT = {gandalf: ['tomo', 'tomo', 'baculo', 'botas', 'manto', 'tomo', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'cota', 'manto', 'velo'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha']};
+const PLAN_BOT = {gandalf: ['tomo', 'tomo', 'baculo', 'botas', 'manto', 'tomo', 'narya', 'amuleto', 'capa', 'tomo', 'tomo', 'baculo', 'cota', 'manto', 'velo'], orco: ['hoja', 'cota', 'hacha', 'yelmo', 'escudo', 'botas', 'amuleto', 'cota', 'mithril', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'amuleto', 'hacha'], rohan: ['hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'botas', 'amuleto', 'capa', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], enano: ['cota', 'yelmo', 'escudo', 'hoja', 'amuleto', 'hacha', 'cota', 'cota', 'amuleto', 'mithril', 'hoja', 'hoja', 'herugrim', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], elfo: ['daga', 'hoja', 'guthwine', 'botas', 'amuleto', 'capa', 'hoja', 'hoja', 'herugrim', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'], hobbit: ['hoja', 'amuleto', 'hacha', 'botas', 'amuleto', 'capa', 'hoja', 'daga', 'guthwine', 'cota', 'yelmo', 'escudo', 'hoja', 'daga', 'guthwine', 'hoja', 'amuleto', 'hacha'],
+  /* 22/11: Gollum no tenía plan: los bots no compraban NADA con él (por eso perdía todos los duelos) y en la tienda no salía «Recomendado» */
+  gollum: ['hoja', 'daga', 'guthwine', 'botas', 'hoja', 'hoja', 'herugrim', 'amuleto', 'capa', 'hoja', 'amuleto', 'hacha', 'cota', 'yelmo', 'escudo']};
 /* El mapa en «ojo» (dibujo de Arturo, 14/11): dos caminos curvos de la base de Rohan (abajo a la izquierda) a la de Isengard
    (arriba a la derecha), la espesura en medio con el Uruk azul en el centro y el río (el vado) cruzando por la mitad.
    Todo es simétrico girando 180° alrededor del centro. */
@@ -753,7 +755,12 @@ function ia(h, dt, st) {
     for (const k of ['r', 'q', 'e', 'w']) {
       const H = HEROES[h.tipo].hab[k]; if (h.cd[k] > 0 || !(h.rk[k] > 0) || h.mana < costeMn(h.tipo, k, h.rk[k])) continue;
       const d0 = dist(h, heroeEn), alc = H.alc || H.dist || H.radio || 4;
-      if (['escudo', 'reduce', 'rafaga', 'suerte', 'invis'].includes(H.tipo)) {if (d0 < 6) {usaHab(h, k, heroeEn.x - h.x, heroeEn.z - h.z, heroeEn.x, heroeEn.z); break;} continue;}
+      /* 22/11: las de uno mismo cuando sirven (antes solo a menos de 6 m: los de lejos no las usaban nunca) — escudo y coraza al recibir,
+         velocidad de ataque al tener a tiro, curación con la vida baja, invisibilidad para entrar si va ganando o para huir */
+      if (['escudo', 'reduce', 'rafaga', 'suerte', 'invis'].includes(H.tipo)) {
+        const aTiro = d0 < st.alcance + 2.5, pe = heroeEn.vida / stats(heroeEn).vida;
+        const sirve = H.tipo === 'rafaga' ? d0 < st.alcance + 1 : H.tipo === 'suerte' ? aTiro && (pv < 0.7 || pe < 0.45) : H.tipo === 'invis' ? (pv < 0.35 && d0 < 8) || (d0 < 10 && pe < pv + 0.1) : aTiro && pv < 0.9;
+        if (sirve) {usaHab(h, k, heroeEn.x - h.x, heroeEn.z - h.z, heroeEn.x, heroeEn.z); break;} continue;}
       if (d0 < alc + 0.5) {usaHab(h, k, heroeEn.x - h.x, heroeEn.z - h.z, heroeEn.x, heroeEn.z); break;}
     }
   }
@@ -782,7 +789,12 @@ function ia(h, dt, st) {
   const torreEn = torres.sort((a, b) => dist(h, a) - dist(h, b))[0];
   const enTorre = (p) => S.u.some((t) => t.k === 't' && t.eq !== h.eq && t.vida > 0 && dist(t, p) < 10);
   let objetivo = null;
-  if (heroeEn && dist(h, heroeEn) < st.alcance + 4 && (heroeEn.vida / stats(heroeEn).vida < pv + 0.15) && !enTorre(heroeEn)) objetivo = heroeEn;
+  /* 22/11: los de cuerpo a cuerpo con un salto o una carga lista entran desde más lejos (antes solo a su alcance + 4 m: los de lejos
+     les pegaban sin que se acercaran nunca); los asesinos se atreven antes */
+  let alcEnt = st.alcance + 4;
+  for (const k of ['q', 'w', 'e', 'r']) {const H = HEROES[h.tipo].hab[k]; if (['salto', 'dash', 'ejecuta'].includes(H.tipo) && h.rk[k] > 0 && h.cd[k] <= 0 && h.mana >= costeMn(h.tipo, k, h.rk[k])) alcEnt = Math.max(alcEnt, (H.dist || H.alc || 0) + st.alcance);}
+  const osadia = h.tipo === 'gollum' ? 0.25 : 0.15;
+  if (heroeEn && dist(h, heroeEn) < alcEnt && (heroeEn.vida / stats(heroeEn).vida < pv + osadia) && !enTorre(heroeEn)) objetivo = heroeEn;
   if (!objetivo) {const c = masCercano(h, en.filter((e) => e.k === 's' && !enTorre(e)), st.alcance + 3); if (c) objetivo = c;}
   const nadieDefiende = torreEn && !en.some((e) => e.k === 'h' && dist(e, torreEn) < 14);
   const torreOcupada = torreEn && torreEn.k === 't' && torreEn.obj && (S.porId.get(torreEn.obj) || {}).k === 's';
@@ -864,7 +876,7 @@ function aplicaMando(h, o) {
   }
 function foto() {
   const u = S.u.map((q) => q.k === 'h'
-    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT), Math.round(q.mana), Math.round(stats(q).mana), q.bot ? 0 : (q.tcIn || 0)]
+    ? [q.id, 'h', q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(stats(q).vida), q.mueve || q.dash ? 1 : 0, q.ac, q.hc, q.hk, q.muerto ? Math.max(0, Math.ceil(q.resp - S.t)) : -1, q.tipo, q.nivel, Math.floor(q.oro), q.inv.join(','), ['q', 'w', 'e', 'r'].map((k) => +q.cd[k].toFixed(1)).join(','), (q.buf.invis > 0 ? 1 : 0) | (q.aturd > S.t ? 2 : 0) | (q.buf.escudo > 0 ? 4 : 0) | (q.hierba >= 0 && !(q.revela > S.t) ? 8 : 0), q.nombre, q.slot, +(q.xp / xpNivel(q.nivel)).toFixed(2), q.hierba ?? -1, ['q', 'w', 'e', 'r'].map((k) => q.rk[k]).join(''), q.pts, [q.kills, q.muertes, q.asist, q.cs].join('/'), +q.cd.d.toFixed(1), +q.cd.f.toFixed(1), Math.round(q.buf.troll || 0), Math.round(q.buf.huorn || 0), q.atacaT > S.t ? q.atacaA : 0, q.enc, +(q.cd.enc || 0).toFixed(1), (q.buf.estasis > 0 ? 1 : 0) | (q.buf.gargola > 0 ? 2 : 0), q.fijo || 0, q.hf, q.vg, Math.ceil(q.vgT), Math.round(q.mana), Math.round(stats(q).mana), q.bot ? 0 : (q.tcIn || 0), +stats(q).vel.toFixed(2)]
     : [q.id, q.k, q.eq, +q.x.toFixed(2), +q.z.toFixed(2), +(q.rot || 0).toFixed(2), Math.round(q.vida), Math.round(q.max), q.mueve ? 1 : 0, q.ac || 0, q.obj || 0, (q.k === 't' || q.k === 'n') ? (q.vida > 0 && protegida(q) ? 'P' : '') + (q.inhib ? 'I' : '') : q.k === 'j' ? q.elem || '' : q.fuerte ? 'F' : '', q.muerto ? 0 : -1, q.tipo || q.n || 0]);
   const be = S.bufEq.map((b) => Math.max(0, Math.round((b.uruk || 0) - S.t))), dr = S.bufEq.map((b) => [b.drF || 0, b.drH || 0, b.alma || 0]);
   const cp = S.campos.map((c) => c.vivos > 0 ? -1 : Math.max(0, Math.round(c.resp - S.t)));
