@@ -12,3 +12,7 @@
 .eOp button{width:42px;height:42px;border-radius:50%;border:2px solid #ff4ad8;background:#0b1220f0;box-shadow:0 0 10px #ff4ad866;font-size:22px;padding:0;touch-action:none;animation:burbIn .2s ease-out both}
 #anuncio.tuyo{filter:drop-shadow(0 0 10px #ffb400) drop-shadow(0 0 22px #ff8a00aa)}
 #emo{display:none}body.jugando #emo{display:flex}body.cine #emo{display:none}
+#latido{position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;background:radial-gradient(ellipse at center,#0000 55%,#b0001899 100%);transition:opacity .4s}
+#latido.on{animation:latido 1s ease-in-out infinite}
+@keyframes latido{0%,100%{opacity:.35}15%{opacity:.95}30%{opacity:.45}45%{opacity:.8}}
+body.cine #latido{display:none}

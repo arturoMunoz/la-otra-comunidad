@@ -65,3 +65,10 @@ function animaAlma(dt) {
   if (!VAPOR.p) VAPOR.p = NAV.nodos.filter((n, i) => i % 3 === 1 && Math.abs(n.z) < 36 && Math.abs(Math.abs(n.x) - 17) > 5).map((n) => ({x: n.x + 1.3, z: n.z - 0.9, t: Math.random() * 4}));
   for (const q of VAPOR.p) {q.t -= dt; if (q.t > 0) continue; q.t = 3 + Math.random() * 3.5; if (Math.hypot(q.x - camM.x, q.z - camM.z) < 22) flip('humo', q.x, q.z, 2.4 + Math.random(), false, undefined, 0.4);}
 }
+/* con poca vida (menos del 25 %), un latido rojo en los bordes; y al caer el núcleo, los héroes del equipo que gana celebran */
+let latidoOn = false;
+function latidoVida() {
+  const v = VISTA.get(YO), bajo = !!v && !(v.muerto >= 0) && v.vida > 0 && v.vida < (v.max || 1) * 0.25 && ESTADO === 'juego';
+  if (bajo === latidoOn) return; latidoOn = bajo; let el = $('latido'); if (!el) {el = document.createElement('div'); el.id = 'latido'; document.body.appendChild(el);} el.classList.toggle('on', bajo);
+}
+function celebraGanadores(ganador) {for (const [id, v] of VISTA) if (v.k === 'h' && v.eq === ganador && !(v.muerto >= 0)) {const o = VIS.get(id); if (o && o.todos && o.todos.celebrar) {o.ocup = 4; o.celeb = 0; animaClip(o, 'celebrar'); setTimeout(() => {if (o.todos.celebrar) animaClip(o, 'celebrar');}, 1700);}}}

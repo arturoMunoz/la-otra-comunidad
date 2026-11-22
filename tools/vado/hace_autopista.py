@@ -2434,7 +2434,8 @@ js = sub(js, "function efectoLocal(e) {\n  const t = e[0];", (RAIZ / 'tools/auto
 js = sub(js, "  toca($('bPing'), () => $('pings').classList.toggle('abierto'));", "  toca($('bPing'), () => $('pings').classList.toggle('abierto'));\n  toca($('bEmo'), () => $('emo').classList.toggle('abierto'));\n  for (const b of document.querySelectorAll('#emo button[data-e]')) toca(b, () => {$('emo').classList.remove('abierto'); emoteMio(b.dataset.e);});")
 js = sub(js, "        const corre = v.mueve || o.vel > 0.6;\n", "        const corre = v.mueve || o.vel > 0.6; if (o.celeb && corre) {o.celeb = 0; o.ocup = 0;} /* ALMA: si echa a andar, deja de celebrar */\n")
 js = sub(js, "  const yoPego = de === YO, meDan = id === YO;\n", "  const yoPego = de === YO, meDan = id === YO; if (fuerte && (yoPego || meDan)) parónGolpe(id, de); /* ALMA: micro-parón */\n")
-js = sub(js, "  try {animaJefes();} catch (e) {}\n", "  try {animaJefes();} catch (e) {}\n  try {animaAlma(dt);} catch (e) {}\n")
+js = sub(js, "  try {animaJefes();} catch (e) {}\n", "  try {animaJefes();} catch (e) {}\n  try {animaAlma(dt); latidoVida();} catch (e) {}\n")
+js = sub(js, "  if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z};", "  if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z}; try {celebraGanadores(ganador);} catch (e) {}")
 js = sub(js, "document.body.classList.add('jugando'); ESTADO = 'juego';", "document.body.classList.add('jugando'); ESTADO = 'juego'; setTimeout(saludosInicio, 1500);")
 js = sub(js, "window._vado = {efecto: (e) => efectoLocal(e),", "window._vado = {alma: {burbuja, BURB, almaEfecto}, efecto: (e) => efectoLocal(e),")
 html = sub(html, '<div id="pings" class="hidden">', '<div id="emo"><button id="bEmo" aria-label="Emoticonos">😀</button><div class="eOp"><button data-e="hola" aria-label="Saludo">👋</button><button data-e="risa" aria-label="Risa">😂</button><button data-e="burla" aria-label="Burla">😜</button><button data-e="gg" aria-label="Bien jugado">👍</button></div></div><div id="pings" class="hidden">', donde='html')
@@ -2457,7 +2458,7 @@ js = sub(js, "function efectoLocal(e) {\n  const t = e[0]; try {almaEfecto(e);}"
 js = sub(js, "  $('bOtra').onclick = () => location.reload();", "  try {finNuevo(f, ganador);} catch (er) {console.warn('fin', er);}\n  $('bOtra').onclick = () => location.reload();")
 js = sub(js, "function pintaMenu() {", "function pintaMenu() {try {pintaPerfilChip();} catch (e) {}")
 js = sub(js, "'\" data-h=\"' + k + '\"><img src=\"ui/ap_splash_' + k + '.webp\" alt=\"\"></button>').join('')", "'\" data-h=\"' + k + '\"><img src=\"ui/ap_splash_' + k + '.webp\" alt=\"\">' + maeBadge(k) + '</button>').join('')")
-js = sub(js, "  try {animaAlma(dt);} catch (e) {}\n", "  try {animaAlma(dt);} catch (e) {}\n  try {progTick();} catch (e) {}\n")
+js = sub(js, "  try {animaAlma(dt); latidoVida();} catch (e) {}\n", "  try {animaAlma(dt); latidoVida();} catch (e) {}\n  try {progTick();} catch (e) {}\n")
 html = sub(html, '</head>', '<style>\n' + (RAIZ / 'tools/autopista/progreso/prog.css').read_text() + '</style>\n</head>', donde='html')
 # ---------- BOTS QUE ESQUIVAN (22/11): la máquina ve venir tus habilidades en línea y, a veces (55 %), se aparta de lado. Reacción humana:
 # solo si el disparo ya ha recorrido 1,5 m (lo que sale a bocajarro no da tiempo) y le va a llegar en menos de 0,6 s. Dentro de la simulación.

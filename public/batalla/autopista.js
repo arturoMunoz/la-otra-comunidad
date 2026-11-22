@@ -2755,6 +2755,13 @@ function animaAlma(dt) {
   if (!VAPOR.p) VAPOR.p = NAV.nodos.filter((n, i) => i % 3 === 1 && Math.abs(n.z) < 36 && Math.abs(Math.abs(n.x) - 17) > 5).map((n) => ({x: n.x + 1.3, z: n.z - 0.9, t: Math.random() * 4}));
   for (const q of VAPOR.p) {q.t -= dt; if (q.t > 0) continue; q.t = 3 + Math.random() * 3.5; if (Math.hypot(q.x - camM.x, q.z - camM.z) < 22) flip('humo', q.x, q.z, 2.4 + Math.random(), false, undefined, 0.4);}
 }
+/* con poca vida (menos del 25 %), un latido rojo en los bordes; y al caer el núcleo, los héroes del equipo que gana celebran */
+let latidoOn = false;
+function latidoVida() {
+  const v = VISTA.get(YO), bajo = !!v && !(v.muerto >= 0) && v.vida > 0 && v.vida < (v.max || 1) * 0.25 && ESTADO === 'juego';
+  if (bajo === latidoOn) return; latidoOn = bajo; let el = $('latido'); if (!el) {el = document.createElement('div'); el.id = 'latido'; document.body.appendChild(el);} el.classList.toggle('on', bajo);
+}
+function celebraGanadores(ganador) {for (const [id, v] of VISTA) if (v.k === 'h' && v.eq === ganador && !(v.muerto >= 0)) {const o = VIS.get(id); if (o && o.todos && o.todos.celebrar) {o.ocup = 4; o.celeb = 0; animaClip(o, 'celebrar'); setTimeout(() => {if (o.todos.celebrar) animaClip(o, 'celebrar');}, 1700);}}}
 /* PROGRESO (22/11, Henar: «dale otra vuelta a todo»): lo que hace que apetezca jugar otra. Todo en este móvil (localStorage 'auto.perfil'):
    nivel de cuenta con experiencia por partida, MAESTRÍA de cada héroe (I-V, como la del Wild Rift), LOGROS de partida (primera sangre,
    dobles, intocable, cazador de Nasor…), historial de las últimas 12 partidas y una pantalla final nueva con MVP, daño a héroes,
@@ -2996,7 +3003,7 @@ function apuntaCam(R, F, hw, hh) {
 function camara(dt) {
   try {animaRim();} catch (e) {}
   try {animaJefes();} catch (e) {}
-  try {animaAlma(dt);} catch (e) {}
+  try {animaAlma(dt); latidoVida();} catch (e) {}
   try {progTick();} catch (e) {}
   const v = CAM_FIN ? {x: CAM_FIN.x, z: CAM_FIN.z, rot: 0} : VISTA.get(YO); if (!v) return;
   const {F, R} = ejes(); let x = v.xi ?? v.x, z = v.zi ?? v.z;
@@ -3705,7 +3712,7 @@ function pintaTabla() {
 function acaba(ganador) {
   if (ESTADO === 'fin') return;
   const nx = ganador >= 0 && [...VISTA.values()].find((q) => q.k === 'n' && q.eq === 1 - ganador);
-  if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z}; document.body.classList.add('cine'); MANDO.mx = MANDO.mz = 0;
+  if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z}; try {celebraGanadores(ganador);} catch (e) {} document.body.classList.add('cine'); MANDO.mx = MANDO.mz = 0;
     const o = VIS.get(nx.id), golpe = (k) => {flip('explosion', nx.x + rnd(-2.5, 2.5), nx.z + rnd(-2.5, 2.5), 5 + k * 1.5); flip('polvoA', nx.x, nx.z, 7 + k * 2, true); tiemblaCam = Math.max(tiemblaCam, 0.4 + k * 0.25); suena(k === 3 ? 'derrumbe' : 'explosion', 0.9, nx.x, nx.z); try {navigator.vibrate && navigator.vibrate(60 + k * 40);} catch (er) {}};
     [0, 500, 950, 1500].forEach((ms, k) => setTimeout(() => golpe(k), ms));
     setTimeout(() => {if (o) o.raiz.visible = false; flip('ondaC', nx.x, nx.z, 14, true); flip('grietas', nx.x, nx.z, 12, true);}, 1550);
