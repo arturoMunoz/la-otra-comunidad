@@ -2850,6 +2850,11 @@ function abrePerfil() {
   el.classList.remove('hidden'); $('pX').onclick = () => el.classList.add('hidden'); el.onclick = (e) => {if (e.target === el) el.classList.add('hidden');};
   el.querySelectorAll('[data-t]').forEach((b) => b.onclick = () => {el.querySelectorAll('[data-t]').forEach((q) => q.classList.toggle('on', q === b)); el.querySelectorAll('[data-c]').forEach((q) => q.classList.toggle('oculto', q.dataset.c !== b.dataset.t));});
 }
+/* en elegir héroe: su frase de presentación y tu maestría con él */
+function eligeExtra(k) {
+  const F = typeof FRASES !== 'undefined' && FRASES[k], h = perfil().heroes[k], m = h ? nivelMae(h.pts).n : 0;
+  return (F ? '<i class="eFrase">«' + F.hola[0] + '»</i>' : '') + '<small class="eMae">' + (m ? '<i class="maeB m' + m + '">' + romano(m) + '</i>' : '') + MAE_N[m] + (h && h.p ? ' · ' + h.p + ' partidas · ' + Math.round(h.v / h.p * 100) + ' %' : '') + '</small>';
+}
 function efectoLocal(e) {
   const t = e[0]; try {progEfecto(e);} catch (er) {} try {almaEfecto(e);} catch (er) {console.warn('alma', er);}
   if (t === 'num') {if (e[4] === 'o' && e[5] !== YO) return; if ((e[4] === '' || e[4] === 'c') && e[6] !== undefined && e[5] !== YO && e[6] !== YO) return; /* como en el Wild Rift: solo los números de tus golpes y de los que te dan */ if (e[6] === YO && e[4] !== 'c') e[4] = 'r'; numero(e[1], e[2], e[3], e[4]); if (e[4] === 'o') {suena('moneda', 0.3); flip('monedas', e[1], e[2], 1.8, false, 0, 1.4); monedaVuela(e[1], e[2]);}}
@@ -3983,7 +3988,7 @@ function eligeHeroe(titulo, listo, conRival) {
     let det;
     if (habSel === 'p') det = '<b>' + PASIVA[eligeSel].n + ' <i class="eTag">pasiva</i></b><small>' + PASIVA[eligeSel].d + '</small>';
     else {const A = H.hab[habSel]; det = '<b>' + A.n + ' <i class="eTag">' + (habSel === 'r' ? 'definitiva' : habSel.toUpperCase()) + '</i></b><small>' + (A.d || '') + '</small><em class="eNums">' + habNums(A) + '</em>';}
-    el.innerHTML = '<div class="eRet"><img src="ui/ap_splash_' + eligeSel + '.webp" alt=""><div class="eNom"><b>' + H.nombre + '</b><em>' + ROL_H[eligeSel] + '</em></div></div>' +
+    el.innerHTML = '<div class="eRet"><img src="ui/ap_splash_' + eligeSel + '.webp" alt=""><div class="eNom"><b>' + H.nombre + '</b><em>' + ROL_H[eligeSel] + '</em>' + eligeExtra(eligeSel) + '</div></div>' +
       '<div class="eDer"><div class="eTit">' + titulo + '</div>' +
       '<div class="eLista">' + Object.keys(HEROES).map((k) => '<button class="eH' + (k === eligeSel ? ' on' : '') + '" data-h="' + k + '"><img src="ui/ap_splash_' + k + '.webp" alt="">' + maeBadge(k) + '</button>').join('') + '</div>' +
       '<div class="eBarras">' + barra('Vida', H.vida, max.vida) + barra('Daño', H.dano, max.dano) + barra('Alcance', H.alcance, max.alcance) + barra('Velocidad', H.vel, max.vel) + '<button class="eInfo" id="eInfo">ⓘ Estadísticas y daño</button></div>' +

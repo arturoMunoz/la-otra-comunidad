@@ -2457,6 +2457,7 @@ js = sub(js, "[q.kills, q.muertes, q.asist, q.cs].join('/')", "[q.kills, q.muert
 js = sub(js, "function efectoLocal(e) {\n  const t = e[0]; try {almaEfecto(e);}", (RAIZ / 'tools/autopista/progreso/prog.js').read_text() + "function efectoLocal(e) {\n  const t = e[0]; try {progEfecto(e);} catch (er) {} try {almaEfecto(e);}")
 js = sub(js, "  $('bOtra').onclick = () => location.reload();", "  try {finNuevo(f, ganador);} catch (er) {console.warn('fin', er);}\n  $('bOtra').onclick = () => location.reload();")
 js = sub(js, "function pintaMenu() {", "function pintaMenu() {try {pintaPerfilChip();} catch (e) {}")
+js = sub(js, "'</b><em>' + ROL_H[eligeSel] + '</em></div></div>'", "'</b><em>' + ROL_H[eligeSel] + '</em>' + eligeExtra(eligeSel) + '</div></div>'")
 js = sub(js, "'\" data-h=\"' + k + '\"><img src=\"ui/ap_splash_' + k + '.webp\" alt=\"\"></button>').join('')", "'\" data-h=\"' + k + '\"><img src=\"ui/ap_splash_' + k + '.webp\" alt=\"\">' + maeBadge(k) + '</button>').join('')")
 js = sub(js, "  try {animaAlma(dt); latidoVida();} catch (e) {}\n", "  try {animaAlma(dt); latidoVida();} catch (e) {}\n  try {progTick();} catch (e) {}\n")
 html = sub(html, '</head>', '<style>\n' + (RAIZ / 'tools/autopista/progreso/prog.css').read_text() + '</style>\n</head>', donde='html')

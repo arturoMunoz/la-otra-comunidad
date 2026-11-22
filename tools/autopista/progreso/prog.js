@@ -86,3 +86,8 @@ function abrePerfil() {
   el.classList.remove('hidden'); $('pX').onclick = () => el.classList.add('hidden'); el.onclick = (e) => {if (e.target === el) el.classList.add('hidden');};
   el.querySelectorAll('[data-t]').forEach((b) => b.onclick = () => {el.querySelectorAll('[data-t]').forEach((q) => q.classList.toggle('on', q === b)); el.querySelectorAll('[data-c]').forEach((q) => q.classList.toggle('oculto', q.dataset.c !== b.dataset.t));});
 }
+/* en elegir héroe: su frase de presentación y tu maestría con él */
+function eligeExtra(k) {
+  const F = typeof FRASES !== 'undefined' && FRASES[k], h = perfil().heroes[k], m = h ? nivelMae(h.pts).n : 0;
+  return (F ? '<i class="eFrase">«' + F.hola[0] + '»</i>' : '') + '<small class="eMae">' + (m ? '<i class="maeB m' + m + '">' + romano(m) + '</i>' : '') + MAE_N[m] + (h && h.p ? ' · ' + h.p + ' partidas · ' + Math.round(h.v / h.p * 100) + ' %' : '') + '</small>';
+}

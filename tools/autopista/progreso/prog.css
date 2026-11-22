@@ -63,3 +63,5 @@
 #perfil .pR{position:relative;display:flex;flex-direction:column;padding:5px 8px 5px 44px;border-radius:9px;background:#0b1424;border-left:4px solid #555}#perfil .pR.g{border-left-color:#3ad1ff}#perfil .pR.p{border-left-color:#ff4a5e}
 #perfil .pR img{position:absolute;left:6px;top:6px;width:30px;height:30px;border-radius:50%;object-fit:cover}#perfil .pR small{color:#8ea2bb;font-size:10px}
 #perfil .pVacio{color:#8ea2bb}
+#elige .eFrase{font-style:italic;font-size:11.5px;color:#d9f6ff;text-shadow:0 1px 3px #000;background:#05080fb0;padding:1px 8px;border-radius:8px}
+#elige .eMae{position:relative;display:inline-flex;align-items:center;gap:5px;font:800 10px system-ui;color:#ffd24a;background:#05080fc0;padding:1px 8px;border-radius:8px}#elige .eMae .maeB{position:static}
