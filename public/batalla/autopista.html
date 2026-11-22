@@ -884,7 +884,7 @@ body[data-heroe=visor] #bAt::after{background-image:url(ui/ap_aro_at_visor.webp)
 #tienda .tI img{width:52px !important;height:52px;flex:0 0 auto}
 #tienda .tI em{display:block;width:100%;font:650 10.5px/1.1 system-ui,'Segoe UI',Roboto,sans-serif;font-style:normal;color:#d6e4f4;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 2px}
 #tienda .tI b{font-size:11.5px !important;margin-top:auto}
-#tienda .tI.sel,#tienda .tPaso.sel,#tienda .tSig.sel,#tienda .tHueco.sel{border-color:#3ad8ff !important;box-shadow:0 0 0 1px #3ad8ff,0 0 12px #3ad8ff88 !important}
+#tienda .tPaso.sel,#tienda .tSig.sel,#tienda .tHueco.sel{border-color:#3ad8ff !important;box-shadow:0 0 0 1px #3ad8ff,0 0 12px #3ad8ff88 !important}
 #tienda .tI.bloq{opacity:.55}
 #tienda .tI.mio{border-color:#7dff6a}
 #tienda .tSig{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin-bottom:8px;padding:6px 10px;border-radius:12px;border:2px solid #e0a91c;background:linear-gradient(90deg,#2a1d06e6,#0c1724cc);color:#fff1c9}
@@ -903,13 +903,20 @@ body[data-heroe=visor] #bAt::after{background-image:url(ui/ap_aro_at_visor.webp)
 #tienda .tFl{align-self:center;color:#5a6b82;font-size:16px}
 #tienda .tInv{gap:4px !important}
 #tienda button.tHueco{padding:0;cursor:pointer}
-#tienda .tDesh{flex:0 0 auto;height:32px;padding:0 10px;border-radius:16px;border:1.5px solid #ff8a5a;background:#2a0e06cc;color:#ffd0b8;font:800 12px system-ui,'Segoe UI',Roboto,sans-serif}
+#tienda .tDesh{flex:0 0 auto;height:32px;padding:0 10px 0 3px;display:flex;align-items:center;gap:4px;border-radius:16px;border:1.5px solid #ff8a5a;background:#2a0e06cc;color:#ffd0b8;font:800 12px system-ui,'Segoe UI',Roboto,sans-serif}
 #tienda .tBots{display:flex;gap:6px;margin-top:auto;align-items:stretch}
 #tienda .tBots .tBuy{margin-top:0 !important;flex:1 1 auto;min-width:0}
-#tienda .tSell{flex:0 0 auto;min-height:54px;padding:0 12px;border:0;background:url(ui/ap_m_secundario.webp) center/100% 100% no-repeat;color:#ffd0b8;font:900 12.5px system-ui,'Segoe UI',Roboto,sans-serif;text-shadow:0 2px 0 #000;line-height:1.05}
-#tienda .tSell b{display:block;color:#ffd24a;font-size:13px}
+#tienda .tSell{flex:1 1 0;min-width:0;align-self:center;height:50px;padding:0 10px 0 8px;border:0;display:flex;align-items:center;gap:5px;background:url(ui/ap_t_vender.webp) center/100% 100% no-repeat;color:#fff3e8;font:900 12px system-ui,'Segoe UI',Roboto,sans-serif;text-shadow:0 1px 0 #000,0 0 4px #000;line-height:1.05;text-align:left}
+#tienda .tSell b{display:block;color:#ffe27a;font-size:12.5px}
 #tienda .tLista{overflow-y:auto}
 @media (max-height:380px){#tienda .tI img{width:38px !important;height:38px}#tienda .tSig img{width:44px;height:44px}#tienda .tPaso img{width:34px;height:34px}}
+/* Pack Autopista 58 ART: marcos de tarjeta (común, legendario, elegido) con border-image y los iconos de Vender y Deshacer */
+#tienda .tI{border-style:solid !important;border-color:transparent !important;border-width:9px 7px 9px 7px !important;border-image:url(ui/ap_t_marco.webp) 58 46 60 45 fill / 9px 7px 9px 7px / 0 stretch !important;background:linear-gradient(180deg,#14233366,#060b12cc) padding-box !important;box-shadow:none !important;border-radius:0 !important}
+#tienda .tI.leg{border-image-source:url(ui/ap_t_marco_leg.webp) !important;border-image-slice:59 47 61 45 fill !important}
+#tienda .tI.sel{border-image:url(ui/ap_t_marco_sel.webp) 80 58 83 58 fill / 12px 9px 12px 9px / 3px stretch !important;box-shadow:none !important}
+#tienda .tDesh img{width:26px;height:26px;border-radius:50%}
+#tienda .tSell img{width:30px;height:30px;flex:0 0 auto;border-radius:50%}
+#tienda .tBots:has(.tSell) .tBuy{flex:1 1 0 !important;min-height:50px !important;height:50px;font-size:15px !important;letter-spacing:.01em !important;padding:0 6px !important}
 </style>
 </head>
 <body>

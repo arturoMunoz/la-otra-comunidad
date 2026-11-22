@@ -100,7 +100,7 @@ ART = chat normal de ChatGPT (no gasta tokens). WORK = modo agente (gasta tokens
 - [x] ~~19/11 · Pack Autopista 55 WORK — vegetación y rocas del 2v2 realistas, mismas piezas (adjuntar Pack55_vegetacion.zip)~~ metido 19/11
 - [x] ~~19/11 · Pack Autopista 56 WORK — carrera de Fu (Quaternius UAL, CC0)~~ metido 19/11
 - [ ] 19/11 · Pack Autopista 57 WORK — carreras de los otros 7 héroes con el mismo método (adjuntar Pack57_heroes.zip)
-- [ ] 22/11 · Pack Autopista 58 ART — Taller: icono de Magia, Vender, Deshacer, marcos de tarjeta y botón Vender, 2 imágenes (adjuntar Pack58_referencia.zip; prompt en `docs/prompts-autopista.md`). Al llegar: `TAB_ICO.mag` = 'ap_tab_mag', marcos con `border-image` en `.tI`/`.tI.leg`/`.tI.sel` y `.tSell` con el botón rojo (tools/autopista/taller).
+- [x] 22/11 · Pack Autopista 58 ART — Taller: icono de Magia, Vender, Deshacer, marcos de tarjeta y botón Vender, 2 imágenes (adjuntar Pack58_referencia.zip; prompt en `docs/prompts-autopista.md`). Al llegar: `TAB_ICO.mag` = 'ap_tab_mag', marcos con `border-image` en `.tI`/`.tI.leg`/`.tI.sel` y `.tSell` con el botón rojo (tools/autopista/taller). **Metido el 22/11** (`tools/autopista/procesa_pack58.py`).
 
 ## ElevenLabs · Efectos de sonido de A-6 (18/11, Henar: «el sonido es horrible») — EN ESPERA: sin tokens de ElevenLabs (18/11)
 No es ChatGPT: en ElevenLabs → Sound Effects. Cada uno 3 veces (3 versiones), bajar en mp3 y llamarlos `nombre_1.mp3`, `nombre_2.mp3`, `nombre_3.mp3`; pasar todo en un zip. Al llegar se normalizan con ffmpeg y van a `public/batalla/sonidos_ap/fx/` (mismos nombres que `SON_LISTA`). Prompts en `docs/prompts-autopista.md` («Sonidos ElevenLabs»).

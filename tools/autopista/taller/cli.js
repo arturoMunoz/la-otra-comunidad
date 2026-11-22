@@ -3,7 +3,7 @@
    cada objeto con su NOMBRE debajo, «Para ti» con la siguiente compra y la ruta del héroe (lo que ya tienes marcado), y VENDER
    (70 % de lo que vale entero, como en el LoL) y DESHACER la última compra o venta mientras sigas en la fuente. */
 let tDesh = false;
-const TAB_ICO = {rec: 'ap_tab_rec', atq: 'ap_tab_atq', mag: 'ap_obj_baculo' /* hasta el Pack 58: ap_tab_mag */, def: 'ap_tab_def', mov: 'ap_tab_mov', enc: 'ap_tab_enc'};
+const TAB_ICO = {rec: 'ap_tab_rec', atq: 'ap_tab_atq', mag: 'ap_tab_mag', def: 'ap_tab_def', mov: 'ap_tab_mov', enc: 'ap_tab_enc'};
 /* nombre corto debajo de cada icono (el entero va en la ficha de la derecha) */
 const NOM_C = {hoja: 'Barra', daga: 'Navaja', cota: 'Chaleco', yelmo: 'Casco', manto: 'Mono ignífugo', tomo: 'Batería', botas: 'Zapatillas', amuleto: 'Termo', herugrim: 'Bate', guthwine: 'Machetes', escudo: 'Escudo', capa: 'Patinete', hacha: 'Motosierra', baculo: 'Bobina', narya: 'Generador', velo: 'Traje aislante', mithril: 'Kevlar'};
 const nomCorto = (id) => NOM_C[id] || (OBJ[id] ? OBJ[id].t : id);
@@ -47,11 +47,11 @@ function pintaTienda() {
       '<div class="tSt">' + Object.entries(o.st).map(([k, x]) => '<span>' + (ST_TXT[k] ? ST_TXT[k](x) : k) + '</span>').join('') + '</div>' + (o.p ? '<p class="tPas">' + o.p + '</p>' : '') + efectoEnHeroe(v, tSel) +
       (o.rec ? '<div class="tRec"><small>Se forja con</small><div>' + (() => {const q = [...v.inv]; return o.rec.map((r) => {const k = q.indexOf(r), ten = k >= 0; if (ten) q.splice(k, 1); return '<span class="' + (ten ? 'ten' : '') + '" data-id="' + r + '"><img src="' + ICO(OBJ[r].i) + '" alt="">' + (ten ? '<i>✓</i>' : '') + '</span>';}).join('<em>+</em>');})() + '</div></div>' : '') +
       (usos.length ? '<div class="tRec"><small>Sirve para</small><div>' + usos.map((u) => '<span data-id="' + u + '"><img src="' + ICO(OBJ[u].i) + '" alt=""></span>').join('') + '</div></div>' : '') +
-      '<div class="tBots">' + (ya ? '<button class="tSell" id="tVender">Vender <b>+' + Math.floor(valorObj(tSel) * 0.7) + '</b></button>' : '') +
+      '<div class="tBots">' + (ya ? '<button class="tSell" id="tVender"><img src="ui/ap_t_vende_ico.webp" alt=""><span>Vender <b>+' + Math.floor(valorObj(tSel) * 0.7) + '</b></span></button>' : '') +
       '<button class="tBuy" id="tComprar"' + (puede ? '' : ' disabled') + '>' + (v.oro < pr ? 'Faltan ' + (pr - v.oro) : !puede ? 'No caben' : 'Comprar') + '</button></div>';
   }
   t.innerHTML = '<div class="tCab"><button class="tX" id="tX" aria-label="Volver">←</button><b>Taller</b><div class="tInv">' + Array.from({length: 6}, (_, i) => v.inv[i] ? '<button class="tHueco lleno' + (v.inv[i] === tSel ? ' sel' : '') + '" data-id="' + v.inv[i] + '"><img src="' + ICO(OBJ[v.inv[i]].i) + '" alt=""></button>' : '<span class="tHueco"></span>').join('') + '</div>' +
-    (tDesh ? '<button class="tDesh" id="tDesh" aria-label="Deshacer la última compra o venta">↶ Deshacer</button>' : '') + '<span class="tOro">🪙 ' + v.oro + '</span><button class="tAyuda" id="tAyuda" aria-label="Tu héroe y cómo funciona el daño">?</button></div>' +
+    (tDesh ? '<button class="tDesh" id="tDesh" aria-label="Deshacer la última compra o venta"><img src="ui/ap_t_deshaz.webp" alt="">Deshacer</button>' : '') + '<span class="tOro">🪙 ' + v.oro + '</span><button class="tAyuda" id="tAyuda" aria-label="Tu héroe y cómo funciona el daño">?</button></div>' +
     '<div class="tCuerpo"><nav class="tCats">' + T_CATS.map(([k, n]) => '<button data-cat="' + k + '" class="' + (k === tCat ? 'on' : '') + '"><img src="ui/' + TAB_ICO[k] + '.webp" alt=""><span>' + n + '</span></button>').join('') + '</nav>' +
     '<div class="tLista">' + centro + '</div><div class="tDet">' + det + '</div></div>';
   t.querySelectorAll('[data-id]').forEach((b) => b.onclick = () => {tSel = b.dataset.id; pintaTienda();});
