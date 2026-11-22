@@ -1237,7 +1237,7 @@ function nuevaPartida(jugadores, modo) {
     const tipo = j && j.heroe && HEROES[j.heroe] ? j.heroe : Object.keys(HEROES)[(slot * 5 + 1) % Object.keys(HEROES).length];
     const eq = slot % 2, f = BASES[eq].fuente, x = f.x + (slot >= 2 ? 1.5 : -1.5), z0 = f.z - signo(eq) * 2.5;
     const b = HEROES[tipo] || HEROES.rohan;
-    S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: esBot, nombre: !esBot ? j.nombre : 'Bot ' + b.nombre.split(/[ ,]/)[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
+    S.u.push({id: idSig++, k: 'h', eq, tipo, slot, bot: esBot, nombre: !esBot ? j.nombre : 'Bot ' + b.nombre.replace(/^(El|La) /, '').split(/[ ,]/)[0], x, z: z0, rot: eq ? 0 : Math.PI, carril: slot >= 2 && modo === '2v2' ? 1 : 0,
       vida: b.vida, max: b.vida, mana: b.mana, nivel: 1, xp: 0, oro: 650, vg: 1, vgT: 210, inv: [], enc: '', hf: j && j.hech === 'c' ? 'c' : 'f', modoAt: '', fijo: 0, cd: {q: 0, w: 0, e: 0, r: 0, a: 0, d: 0, f: 0}, rk: {q: 0, w: 0, e: 0, r: 0}, pts: 1, muertes: 0, asist: 0, cs: 0, racha: 0, hierba: -1, multi: 0, multiT: -99, danos: {}, buf: {}, resp: 0, muerto: false, ac: 0, hc: 0, hk: '', mueve: false, ataca: false, mx: 0, mz: 0, kills: 0, plan: 0});
   }
   for (const eq of [0, 1]) {
@@ -2810,6 +2810,7 @@ function finNuevo(f, ganador) {
   const c1 = nivelCuenta(P.xp), m1 = nivelMae(H.pts);
   if (ganador >= 0) {P.partidas++; if (gana) P.victorias++; H.p++; if (gana) H.v++; H.k += s.k; H.d += s.d; H.a += s.a;}
   for (const l of PART.logros) P.logros[l] = (P.logros[l] || 0) + 1;
+  const LM = progLigaMisiones(P, ganador, s, !!(mvp && mvp.id === YO)), rg = rangoDe(P.pl || 0);
   P.hist.unshift({f: Date.now(), h: hk, g: gana ? 1 : ganador === -1 ? -1 : 0, kda: s.k + '/' + s.d + '/' + s.a, m: MODO, t: Math.round(seg)}); P.hist = P.hist.slice(0, 12);
   guardaPerfil(P);
   /* pintar */
@@ -2824,7 +2825,8 @@ function finNuevo(f, ganador) {
     '<div class="fDer"><div class="fCab"><span></span><span>K/D/A</span><span>Daño a héroes</span><span>Valor</span><span>Soldados</span></div>' + eqs +
     '<div class="fPremios">' + barra('cuenta', 'Cuenta · Nv ' + c1.n, c1.n > c0.n ? 0 : pc(c0.r, c0.sig), pc(c1.r, c1.sig), c1.n > c0.n, '+' + xp + ' XP' + (c1.n > c0.n ? ' · ¡Subes a nivel ' + c1.n + '!' : '')) +
     barra('mae', HEROES[hk].nombre.split(',')[0] + ' · ' + MAE_N[m1.n], m1.n > m0.n ? 0 : pc(m0.r, m0.sig), m1.n === 5 ? 100 : pc(m1.r, m1.sig), m1.n > m0.n, '+' + pts + ' maestría' + (m1.n > m0.n ? ' · ¡' + MAE_N[m1.n] + '!' : '')) +
-    (logros ? '<div class="fLogs">' + logros + '</div>' : '<div class="fLogs vacio">Sin logros esta vez. La próxima.</div>') + '</div>' +
+    (logros ? '<div class="fLogs">' + logros + '</div>' : '<div class="fLogs vacio">Sin logros esta vez. La próxima.</div>') +
+    (ganador >= 0 ? '<div class="fLiga">' + rangoBadge(P.pl || 0) + '<b>Liga: ' + rg.n + '</b><span class="' + (LM.pl >= 0 ? 'lMas' : 'lMenos') + '">' + (LM.pl >= 0 ? '+' : '') + LM.pl + ' PL</span>' + LM.hechas.map((id) => '<em>' + MISIONES[id][0] + ' Misión cumplida: ' + MISIONES[id][1] + ' · +80 XP</em>').join('') + '</div>' : '') + '</div>' +
     '<button class="bt" id="bOtra">Seguir</button></div></div>';
   setTimeout(() => f.querySelectorAll('.fBarI i').forEach((i) => {i.style.width = i.dataset.a + '%'; if (i.dataset.sube === '1') i.parentNode.parentNode.classList.add('sube');}), 450);
   if (c1.n > c0.n || m1.n > m0.n) setTimeout(() => suena('nivel', 0.8), 900);
@@ -2835,7 +2837,8 @@ function progTick() {const seg = +($('marcador').dataset.t || 0); if (PART.kMita
 function pintaPerfilChip() {
   const menu = $('menu'); if (!menu) return; let c = $('perfilChip'); const P = perfil(), n = nivelCuenta(P.xp);
   if (!c) {c = document.createElement('button'); c.id = 'perfilChip'; menu.appendChild(c); c.onclick = abrePerfil;}
-  c.innerHTML = '<img src="' + RET(heroeElegido) + '" alt=""><span><b>' + (localStorage.getItem('vado.nombre') || 'Jugador') + '</b><small>Nivel ' + n.n + '</small><i><u style="width:' + Math.round(n.r / n.sig * 100) + '%"></u></i></span>';
+  const ms = misionesHoy(P), pend = ms.l.filter((m) => !m.ok).length; guardaPerfil(P);
+  c.innerHTML = '<img src="' + RET(heroeElegido) + '" alt=""><span><b>' + (localStorage.getItem('vado.nombre') || 'Jugador') + '</b><small>Nivel ' + n.n + ' · ' + rangoDe(P.pl || 0).n + '</small><i><u style="width:' + Math.round(n.r / n.sig * 100) + '%"></u></i></span>' + rangoBadge(P.pl || 0) + (pend ? '<em class="pcMis">' + pend + '</em>' : '');
 }
 function abrePerfil() {
   const P = perfil(), n = nivelCuenta(P.xp); let el = $('perfil'); if (!el) {el = document.createElement('div'); el.id = 'perfil'; document.body.appendChild(el);}
@@ -2843,10 +2846,11 @@ function abrePerfil() {
   const heroes = Object.keys(HEROES).map((k) => {const h = P.heroes[k] || {pts: 0, p: 0, v: 0, k: 0, d: 0, a: 0}, m = nivelMae(h.pts);
     return '<div class="pH"><img src="' + RET(k) + '" alt="">' + (m.n ? '<i class="maeB m' + m.n + '">' + romano(m.n) + '</i>' : '') + '<b>' + HEROES[k].nombre.split(',')[0] + '</b><small>' + MAE_N[m.n] + '</small><span class="pBar"><u style="width:' + (m.n === 5 ? 100 : Math.round(m.r / m.sig * 100)) + '%"></u></span><small>' + h.p + ' partidas · ' + pct(h.v, h.p) + (h.p ? ' · ' + ((h.k + h.a) / Math.max(1, h.d)).toFixed(1) + ' KDA' : '') + '</small></div>';}).join('');
   const logros = Object.entries(LOGROS).map(([k, l]) => '<div class="pL' + (P.logros[k] ? ' on' : '') + '" title="' + l[2] + '"><i>' + l[0] + '</i><b>' + l[1] + '</b><small>' + (P.logros[k] ? '×' + P.logros[k] : l[2]) + '</small></div>').join('');
+  const misiones = misionesHoy(P).l.map((m) => {const M_ = MISIONES[m.id]; return '<div class="pM' + (m.ok ? ' ok' : '') + '"><i>' + M_[0] + '</i><b>' + M_[1] + '</b><span class="pBar"><u style="width:' + Math.round(m.n / M_[2] * 100) + '%"></u></span><small>' + (m.ok ? '✅ Hecha · +80 XP' : m.n.toLocaleString('es') + ' / ' + M_[2].toLocaleString('es') + ' · +80 XP') + '</small></div>';}).join('') + '<p class="pVacio">Cambian cada día a medianoche. Liga: +25 PL si ganas (+5 si eres el MVP), −15 si pierdes.</p>'; guardaPerfil(P);
   const hist = P.hist.length ? P.hist.map((q) => '<div class="pR ' + (q.g === 1 ? 'g' : q.g === 0 ? 'p' : '') + '"><img src="' + RET(q.h) + '" alt=""><b>' + (q.g === 1 ? 'Victoria' : q.g === 0 ? 'Derrota' : 'Fin') + '</b><span>' + q.kda + '</span><small>' + (q.m === '2v2' ? 'Batalla' : 'Duelo') + ' · ' + Math.floor(q.t / 60) + ' min</small></div>').join('') : '<p class="pVacio">Aún no has jugado ninguna partida.</p>';
-  el.innerHTML = '<div class="pCaja"><button class="pX" id="pX">✕</button><div class="pCab"><img src="' + RET(heroeElegido) + '" alt=""><div><b>' + (localStorage.getItem('vado.nombre') || 'Jugador') + '</b><small>Nivel ' + n.n + ' · ' + n.r + '/' + n.sig + ' XP</small><span class="pBar"><u style="width:' + Math.round(n.r / n.sig * 100) + '%"></u></span></div><div class="pTot"><b>' + P.partidas + '</b><small>partidas</small></div><div class="pTot"><b>' + pct(P.victorias, P.partidas) + '</b><small>victorias</small></div></div>' +
-    '<div class="pTabs"><button data-t="h" class="on">Maestría</button><button data-t="l">Logros</button><button data-t="r">Historial</button></div>' +
-    '<div class="pCont" data-c="h">' + heroes + '</div><div class="pCont oculto" data-c="l">' + logros + '</div><div class="pCont oculto" data-c="r">' + hist + '</div></div>';
+  el.innerHTML = '<div class="pCaja"><button class="pX" id="pX">✕</button><div class="pCab"><img src="' + RET(heroeElegido) + '" alt=""><div><b>' + (localStorage.getItem('vado.nombre') || 'Jugador') + '</b><small>Nivel ' + n.n + ' · ' + n.r + '/' + n.sig + ' XP</small><span class="pBar"><u style="width:' + Math.round(n.r / n.sig * 100) + '%"></u></span></div><div class="pTot pRg">' + rangoBadge(P.pl || 0, true) + '<b>' + rangoDe(P.pl || 0).n + '</b><small>' + (P.pl || 0) + ' PL' + (rangoDe(P.pl || 0).sig ? ' · faltan ' + (rangoDe(P.pl || 0).sig - rangoDe(P.pl || 0).r) : '') + '</small></div><div class="pTot"><b>' + P.partidas + '</b><small>partidas</small></div><div class="pTot"><b>' + pct(P.victorias, P.partidas) + '</b><small>victorias</small></div></div>' +
+    '<div class="pTabs"><button data-t="m" class="on">Misiones</button><button data-t="h">Maestría</button><button data-t="l">Logros</button><button data-t="r">Historial</button></div>' +
+    '<div class="pCont pMis" data-c="m">' + misiones + '</div><div class="pCont oculto" data-c="h">' + heroes + '</div><div class="pCont oculto" data-c="l">' + logros + '</div><div class="pCont oculto" data-c="r">' + hist + '</div></div>';
   el.classList.remove('hidden'); $('pX').onclick = () => el.classList.add('hidden'); el.onclick = (e) => {if (e.target === el) el.classList.add('hidden');};
   el.querySelectorAll('[data-t]').forEach((b) => b.onclick = () => {el.querySelectorAll('[data-t]').forEach((q) => q.classList.toggle('on', q === b)); el.querySelectorAll('[data-c]').forEach((q) => q.classList.toggle('oculto', q.dataset.c !== b.dataset.t));});
 }
@@ -2855,8 +2859,46 @@ function eligeExtra(k) {
   const F = typeof FRASES !== 'undefined' && FRASES[k], h = perfil().heroes[k], m = h ? nivelMae(h.pts).n : 0;
   return (F ? '<i class="eFrase">«' + F.hola[0] + '»</i>' : '') + '<small class="eMae">' + (m ? '<i class="maeB m' + m + '">' + romano(m) + '</i>' : '') + MAE_N[m] + (h && h.p ? ' · ' + h.p + ' partidas · ' + Math.round(h.v / h.p * 100) + ' %' : '') + '</small>';
 }
+/* ---------- LIGA (22/11): puntos de liga (PL) por partida acabada: +25 si ganas (+5 si eres MVP), −15 si pierdes; 7 rangos ---------- */
+const RANGOS = [['Asfalto', 0, '#8a8f98'], ['Bronce', 100, '#c07a3a'], ['Plata', 250, '#c9d4e2'], ['Oro', 450, '#ffcf3a'], ['Platino', 700, '#3ad8c0'], ['Diamante', 1000, '#5aa8ff'], ['Leyenda de la A-6', 1400, '#ff4ad8']];
+function rangoDe(pl) {let i = 0; while (i < RANGOS.length - 1 && pl >= RANGOS[i + 1][1]) i++; const sig = RANGOS[i + 1]; return {i, n: RANGOS[i][0], col: RANGOS[i][2], r: pl - RANGOS[i][1], sig: sig ? sig[1] - RANGOS[i][1] : 0};}
+const rangoBadge = (pl, grande) => {const r = rangoDe(pl); return '<i class="rgB' + (grande ? ' g' : '') + '" style="--rc:' + r.col + '">' + (r.i + 1) + '</i>';};
+/* ---------- MISIONES DEL DÍA (22/11): 3 al día (las mismas para todo el día, elegidas con la fecha), +80 XP cada una ---------- */
+const MISIONES = {
+  jugar2: ['🎮', 'Juega 2 partidas', 2, (r) => r.acaba], gana1: ['🏆', 'Gana una partida', 1, (r) => r.gana], derr5: ['⚔️', 'Consigue 5 derribos', 5, (r) => r.k],
+  asis6: ['🤝', 'Consigue 6 asistencias', 6, (r) => r.a], sold80: ['🗡️', 'Remata 80 soldados', 80, (r) => r.cs], dano8: ['💥', 'Haz 8.000 de daño a héroes', 8000, (r) => r.dH],
+  batalla: ['🏙️', 'Juega una Batalla 2 contra 2', 1, (r) => r.batalla], jefe: ['🐛', 'Da el último golpe a Nasor o al lagarto', 1, (r) => r.jefe],
+  torre: ['🏗️', 'Derriba una torre', 1, (r) => r.torres], logro3: ['🌟', 'Saca 3 logros en una partida', 1, (r) => r.logros >= 3 ? 1 : 0],
+};
+const hoyKey = () => {const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();};
+function misionesHoy(P) {
+  const k = hoyKey(); if (P.mis && P.mis.dia === k) return P.mis;
+  let s = 0; for (const c of k) s = (s * 31 + c.charCodeAt(0)) >>> 0; const ids = Object.keys(MISIONES), el = [];
+  while (el.length < 3) {s = (s * 1103515245 + 12345) >>> 0; const id = ids[s % ids.length]; if (!el.includes(id)) el.push(id);}
+  P.mis = {dia: k, l: el.map((id) => ({id, n: 0, ok: 0}))}; return P.mis;
+}
+/* lo que ha pasado en la partida, para las misiones y la liga (se llama desde finNuevo antes de guardar) */
+function progLigaMisiones(P, ganador, s, mvpYo) {
+  const out = {pl: 0, hechas: []}; if (ganador < 0) return out;
+  const gana = ganador === MI_EQ; P.pl = Math.max(0, (P.pl || 0) + (gana ? 25 + (mvpYo ? 5 : 0) : -15)); out.pl = gana ? 25 + (mvpYo ? 5 : 0) : -15;
+  const r = {acaba: 1, gana: gana ? 1 : 0, k: s.k, a: s.a, cs: s.cs, dH: s.dH, batalla: MODO === '2v2' ? 1 : 0, jefe: PART.logros.has('nasor') || PART.logros.has('lagarto') ? 1 : 0, torres: PART.torres, logros: PART.logros.size};
+  for (const m of misionesHoy(P).l) {if (m.ok) continue; const M_ = MISIONES[m.id]; m.n = Math.min(M_[2], m.n + (M_[3](r) || 0)); if (m.n >= M_[2]) {m.ok = 1; P.xp += 80; out.hechas.push(m.id);}}
+  return out;
+}
+/* resumen de muerte (como el del Wild Rift): quién te ha quitado la vida en los últimos 12 s */
+const DANO_R = []; let RECAP = '';
+function recibeDano(e) {if (e[0] !== 'num' || e[6] !== YO || typeof e[3] !== 'number' || e[4] === 'o') return; DANO_R.push([performance.now(), e[5] || 0, e[3]]); while (DANO_R.length && performance.now() - DANO_R[0][0] > 12000) DANO_R.shift();}
+function recapMuerte(v) {
+  if (!(v.muerto >= 0)) {RECAP = ''; return '';} if (RECAP) return RECAP;
+  const por = new Map(); let tot = 0; for (const [t, de, n] of DANO_R) {if (performance.now() - t > 12000) continue; const q = VISTA.get(de), key = !q ? 'otro' : q.k === 'h' ? de : q.k === 's' ? 'sold' : q.k === 't' || q.k === 'n' ? 'torre' : 'bestia'; por.set(key, (por.get(key) || 0) + n); tot += n;}
+  if (!tot) return (RECAP = ' ');
+  const filas = [...por.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, n]) => {const q = typeof k === 'number' ? VISTA.get(k) : null, mag = q && q.k === 'h' && typeof esMagico === 'function' && esMagico(q.tipo);
+    const img = q ? RET(q.tipo) : k === 'torre' ? '../abismo/iconos/torre.webp' : k === 'sold' ? 'ui/ap_b_subditos.webp' : 'ui/ap_mm_troll.webp', nom = q ? q.nombre : {torre: 'Torre', sold: 'Soldados', bestia: 'Bestias', otro: 'Otros'}[k];
+    return '<div class="dR"><img src="' + img + '" alt=""><span>' + nom + '<small>' + (q ? (mag ? 'daño mágico' : 'daño físico') : '') + '</small></span><i><u class="' + (mag ? 'mag' : '') + '" style="width:' + Math.round(n / tot * 100) + '%"></u></i><b>' + Math.round(n) + '</b></div>';}).join('');
+  return (RECAP = '<div class="dRecap"><div class="dT">Daño recibido · ' + Math.round(tot) + '</div>' + filas + '</div>');
+}
 function efectoLocal(e) {
-  const t = e[0]; try {progEfecto(e);} catch (er) {} try {almaEfecto(e);} catch (er) {console.warn('alma', er);}
+  const t = e[0]; try {progEfecto(e); recibeDano(e);} catch (er) {} try {almaEfecto(e);} catch (er) {console.warn('alma', er);}
   if (t === 'num') {if (e[4] === 'o' && e[5] !== YO) return; if ((e[4] === '' || e[4] === 'c') && e[6] !== undefined && e[5] !== YO && e[6] !== YO) return; /* como en el Wild Rift: solo los números de tus golpes y de los que te dan */ if (e[6] === YO && e[4] !== 'c') e[4] = 'r'; numero(e[1], e[2], e[3], e[4]); if (e[4] === 'o') {suena('moneda', 0.3); flip('monedas', e[1], e[2], 1.8, false, 0, 1.4); monedaVuela(e[1], e[2]);}}
   if (t === 'fx') {if (e[1] === 'onda') flip('onda', e[2], e[3], e[4], true); else if (e[1] !== 'tajo') flip(e[1], e[2], e[3], e[4]); if (e[1] === 'explosion') suena('explosion', 0.6, e[2], e[3]); if (e[1] === 'onda') suena('viento', 0.4, e[2], e[3]);}
   if (t === 'proy') {const o = PROY_AP[e[1]] ? proyAP(e[1], 0.7) : modeloProy(e[1]); if (!o.userData.tamFijo) o.scale.multiplyScalar(e[6] || 1); scene.add(o); const pr = {tipo: 'proy', k: e[1], o, x: e[2], z: e[3], y: e[7] || 1.2, d: e[4], v: e[5], t: 0};
@@ -3687,7 +3729,7 @@ function hud() {
     if (b._cd > 0 && !(cd > 0)) {b.classList.remove('lista'); void b.offsetWidth; b.classList.add('lista');} b._cd = cd; const sm = rk > 0 && v.mana < costeMn(v.tipo, k, rk); if (b._sm !== sm) {b._sm = sm; b.classList.toggle('sinMana', sm);}
     const pr = !(cd > 0) && rk > 0 && v.muerto < 0 && !sm; if (b._pr !== pr) {b._pr = pr; b.classList.toggle('pronta', pr);}
   });;
-  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); pon_(m, 'innerHTML', (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en el taller</small>');} else m.classList.add('hidden');
+  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); pon_(m, 'innerHTML', (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en el taller</small>' + recapMuerte(v));} else {m.classList.add('hidden'); RECAP = '';}
   const enFuente = enF;
   $('bTienda').style.opacity = enFuente ? 1 : 0.45;
 }
@@ -3851,7 +3893,7 @@ function efectoEnHeroe(v, id) {
   if (dif('regen')) fila('Regeneración', f1(a.regen), f1(b.regen) + ' vida/s');
   if (dif('vel')) fila('Velocidad', f1(a.vel), f1(b.vel) + ' m/s');
   if (dif('mana')) fila('Maná', Math.round(a.mana), Math.round(b.mana));
-  return out.length ? '<div class="tEf"><small>En tu ' + HEROES[v.tipo].nombre.split(/[ ,]/)[0] + ' (nivel ' + (v.nivel || 1) + ')</small>' + out.join('') + '</div>' : '';
+  return out.length ? '<div class="tEf"><small>En tu ' + HEROES[v.tipo].nombre.replace(/^(El|La) /, '').split(/[ ,]/)[0] + ' (nivel ' + (v.nivel || 1) + ')</small>' + out.join('') + '</div>' : '';
 }
 /* ======== TALLER NUEVO (22/11, Henar: «mejora la tienda») ========
    Como el del Wild Rift: pestañas que caben sin desplazar (Ataque y Magia por separado: los magos ya no buscan entre armas),
@@ -3886,7 +3928,7 @@ function pintaTienda() {
     const paso = (id) => {const o = OBJ[id], ya = tiene(id), rec = o.rec || [], q = [...v.inv]; let n = 0; for (const r of rec) {const k = q.indexOf(r); if (k >= 0) {q.splice(k, 1); n++;}}
       return '<button class="tPaso' + (ya ? ' ya' : '') + (id === tSel ? ' sel' : '') + '" data-id="' + id + '"><img src="' + ICO(o.i) + '" alt=""><em>' + nomCorto(id) + '</em><small>' + (ya ? '✓ lo tienes' : n ? n + ' de ' + rec.length + ' piezas' : '🪙 ' + precio(v.inv, id)) + '</small></button>';};
     centro = '<h4>Siguiente compra</h4>' + (sg ? (() => {const o = OBJ[sg]; return '<button class="tSig' + (sg === tSel ? ' sel' : '') + '" data-id="' + sg + '"><img src="' + ICO(o.i) + '" alt=""><div><b>' + o.t + '</b><span>' + Object.entries(o.st).map(([k, x]) => ST_TXT[k] ? ST_TXT[k](x) : k).join(' · ') + '</span></div><u>🪙 ' + precio(v.inv, sg) + '</u></button>';})() : '<p class="tVacio">Ya tienes toda la ruta: mira Defensa si te revientan.</p>') +
-      '<h4>Ruta de ' + HEROES[v.tipo].nombre.split(/[ ,]/)[0] + '</h4><div class="tRuta2">' + legs.map(paso).join('<span class="tFl">›</span>') + '</div>';
+      '<h4>Ruta de ' + HEROES[v.tipo].nombre.replace(/^(El|La) /, '').split(/[ ,]/)[0] + '</h4><div class="tRuta2">' + legs.map(paso).join('<span class="tFl">›</span>') + '</div>';
   } else if (tCat === 'enc') centro = '<h4>Encantamientos de botas' + (tieneBotas(v.inv) ? '' : ' · antes, unas zapatillas o el patinete') + '</h4><div class="tRej">' + Object.keys(ENC).map((id) => ficha(id)).join('') + '</div>';
   else {const l = CAT_OBJ[tCat], b = l.filter((id) => !OBJ[id].leg), g = l.filter((id) => OBJ[id].leg); centro = (b.length ? '<h4>Piezas</h4><div class="tRej">' + b.map((id) => ficha(id)).join('') + '</div>' : '') + (g.length ? '<h4>Legendarios</h4><div class="tRej">' + g.map((id) => ficha(id)).join('') + '</div>' : '');}
   /* ficha de la derecha */
@@ -4139,4 +4181,4 @@ bucle();
 /* primero que se vea el menú (retrato, fondo y letras) y después, los modelos: si no, los 16 MB se comen la conexión y el retrato tarda */
 {const img = $('mSplash'); const listo = () => new Promise((r) => {if (img.complete && img.naturalWidth) r(); else {img.addEventListener('load', r, {once: true}); img.addEventListener('error', r, {once: true});}});
  Promise.race([Promise.all([listo(), document.fonts ? document.fonts.ready : 0]), new Promise((r) => setTimeout(r, 2500))]).then(() => cargaTodo());}
-window._vado = {alma: {burbuja, BURB, almaEfecto}, efecto: (e) => efectoLocal(e), get MIO() {return MIO;}, MANDO, PRED, CONEX, get INTERP() {return INTERP_MS;}, MIRA_H, get MIRA_ACT() {return MIRA_ACT;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};
+window._vado = {alma: {burbuja, BURB, almaEfecto}, dana, efecto: (e) => efectoLocal(e), get MIO() {return MIO;}, MANDO, PRED, CONEX, get INTERP() {return INTERP_MS;}, MIRA_H, get MIRA_ACT() {return MIRA_ACT;}, AUD, SON, camera, montar, renderer, scene, PR, PERF, AROS, flip, FXP, rinde, RELIQ_V, M, alto, VIS, THREE, get mira() {return mira;}, get S() {return S;}, get VISTA() {return VISTA;}, get YO() {return YO;}, MIO, HEROES, usaHab, compra, empieza, NET, paso, foto, recibeFotoLocal, get ESTADO() {return ESTADO;}, ATQ: {ejes, abanicoR, zonaHab, muestraMira, miraAtaque, telegrafo, FX_BORDE, IND_R, ABAN, tamR, alcBasico, destinoMov, get mira() {return mira;}, FL}};

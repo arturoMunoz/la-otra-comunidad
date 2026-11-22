@@ -15,6 +15,10 @@ async def main():
             if await pg.evaluate("window._vado && window._vado.ESTADO") == 'juego': break
         await pg.wait_for_timeout(2000)
         await pg.evaluate("""() => {const V = window._vado; for (let i = 0; i < 30*480; i++) V.paso(1/30); const yo = V.S.u.find(q => q.id === V.YO), en = V.S.u.find(q => q.k === 'h' && q.eq !== yo.eq);
+          for (let i = 0; i < 5; i++) V.efecto(['num', yo.x, yo.z, 180 + i * 20, '', en.id, V.YO]); V.efecto(['num', yo.x, yo.z, 90, '', 0, V.YO]); const so = V.S.u.find(q => q.k === 's' && q.eq !== yo.eq); if (so) V.efecto(['num', yo.x, yo.z, 60, '', so.id, V.YO]);
+          yo.bot = true; yo.vida = 5; V.dana(en, yo, 999, 'hab'); for (let i = 0; i < 3; i++) V.paso(1/30);}""")
+        await pg.wait_for_timeout(2500); await pg.screenshot(path='/home/claude/pruebas/muerte_recap.png')
+        await pg.evaluate("""() => {const V = window._vado; const yo = V.S.u.find(q => q.id === V.YO), en = V.S.u.find(q => q.k === 'h' && q.eq !== yo.eq);
           V.efecto(['baja', V.YO, en.id, '¡Primera sangre!']); V.efecto(['baja', V.YO, en.id, '¡Doble derribo!']); V.efecto(['baja', V.YO, 0, 'Nasor ha caído']);
           setTimeout(() => V.efecto(['fin', yo.eq]), 1500);}""")
         for i in range(30):
@@ -24,6 +28,7 @@ async def main():
         await pg.goto('http://localhost:8799/batalla/autopista.html'); await pg.wait_for_timeout(3000)
         await pg.screenshot(path='/home/claude/pruebas/menu_perfil.png')
         await pg.click('#perfilChip'); await pg.wait_for_timeout(800); await pg.screenshot(path='/home/claude/pruebas/perfil.png')
+        await pg.click('#perfil [data-t="h"]'); await pg.wait_for_timeout(300); await pg.screenshot(path='/home/claude/pruebas/perfil_h.png')
         await pg.click('#perfil [data-t="l"]'); await pg.wait_for_timeout(500); await pg.screenshot(path='/home/claude/pruebas/perfil_l.png')
         print(errs[:6]); print(await pg.evaluate("localStorage.getItem('auto.perfil')"))
         await b.close()

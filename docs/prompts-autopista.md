@@ -608,3 +608,16 @@ ART · Pack Autopista 59 · imagen 2 de 2 · PEGATINAS DE EMOTICONO y botón de 
   4) BIEN JUGADO: pulgar arriba, ojos de luz contentos, pequeñas chispas.
  Y a la derecha 1 botón redondo de 300x300: aro de metal oscuro con filo de neón cian y dentro un bocadillo de cómic con una carita sonriente de neón.
 ```
+
+## 22/11 · Pack Autopista 60 ART — Emblemas de la LIGA (adjuntar Pack60_referencia.zip; 1 imagen)
+
+```
+ART · Pack Autopista 60 · Emblemas de RANGO de la liga de A-6, un juego móvil tipo Wild Rift ambientado en una autopista española (HUD cyberpunk serio: metal oscuro, neón y colores vivos). En el zip van capturas del perfil, del menú y de la pantalla final donde irán, y los medallones que ya tengo (mismo estilo y acabado). 7 emblemas SIN TEXTO NI NÚMEROS, de 300x300 cada uno, todos con la misma silueta base (escudo de placa de matrícula/señal de tráfico con alas de metal, mirando de frente), cada uno más grande, brillante y adornado que el anterior, sobre fondo magenta liso #FF00FF, separados, en una imagen de 2100x600 (7 en fila, centrados):
+ 1) ASFALTO: asfalto gris con una raya blanca de carretera, sin brillo, sin alas.
+ 2) BRONCE: bronce con remaches, alas pequeñas.
+ 3) PLATA: plata pulida con filo blanco y alas medianas.
+ 4) ORO: oro con un piloto ámbar encendido en el centro, alas grandes.
+ 5) PLATINO: platino con neón turquesa y un cristal turquesa brillante.
+ 6) DIAMANTE: metal negro con un diamante azul eléctrico enorme en el centro, neón azul y alas de cristal.
+ 7) LEYENDA DE LA A-6: holográfico fucsia-dorado, corona de neón encima, alas enormes, halo de chispas: el máximo.
+```

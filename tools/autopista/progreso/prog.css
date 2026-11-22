@@ -65,3 +65,17 @@
 #perfil .pVacio{color:#8ea2bb}
 #elige .eFrase{font-style:italic;font-size:11.5px;color:#d9f6ff;text-shadow:0 1px 3px #000;background:#05080fb0;padding:1px 8px;border-radius:8px}
 #elige .eMae{position:relative;display:inline-flex;align-items:center;gap:5px;font:800 10px system-ui;color:#ffd24a;background:#05080fc0;padding:1px 8px;border-radius:8px}#elige .eMae .maeB{position:static}
+/* liga, misiones y resumen de muerte (22/11) — insignias provisionales hasta el Pack 60 ART */
+.rgB{display:inline-flex;align-items:center;justify-content:center;width:20px;height:22px;font:900 11px system-ui;font-style:normal;color:#05080f;background:var(--rc);clip-path:polygon(50% 0,100% 22%,100% 70%,50% 100%,0 70%,0 22%);filter:drop-shadow(0 0 4px var(--rc));flex:0 0 auto}
+.rgB.g{width:34px;height:38px;font-size:16px}
+#perfilChip .rgB{margin-left:2px}#perfilChip .pcMis{position:absolute;right:-6px;top:-6px;min-width:18px;height:18px;border-radius:9px;background:#ff4a5e;color:#fff;font:900 11px/18px system-ui;font-style:normal;text-align:center;box-shadow:0 0 8px #ff4a5e}
+#perfil .pRg{display:flex;align-items:center;gap:6px;text-align:left}#perfil .pRg b{font-size:13px}
+#perfil .pMis{grid-template-columns:1fr}#perfil .pM{position:relative;display:flex;flex-direction:column;gap:3px;padding:8px 10px 8px 46px;border-radius:9px;background:#0b1424;border:1px solid #ffffff14}
+#perfil .pM i{position:absolute;left:10px;top:50%;margin-top:-13px;font-style:normal;font-size:22px}#perfil .pM.ok{border-color:#3ad1ff88;box-shadow:0 0 10px #3ad1ff33}#perfil .pM.ok .pBar u{background:linear-gradient(90deg,#2bd46a,#9bff7a)}#perfil .pM small{color:#8ea2bb}
+#fin .fLiga{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-weight:800}#fin .fLiga .lMas{color:#7dff9a}#fin .fLiga .lMenos{color:#ff7a8a}
+#fin .fLiga em{font-style:normal;font-size:11px;padding:2px 8px;border-radius:10px;background:#123a24;border:1px solid #2bd46a88;color:#bfffcf}
+#muerto .dRecap{margin-top:6px;width:min(330px,80%);padding:6px 9px;border-radius:10px;background:#05060cd8;border:1px solid #ff4a5e55;font:700 11px system-ui,'Segoe UI',Roboto,sans-serif;color:#eef3f9;text-align:left}
+#muerto .dT{color:#ff9a8a;font-weight:900;margin-bottom:3px}
+#muerto .dR{display:grid;grid-template-columns:26px minmax(0,1fr) 90px 40px;align-items:center;gap:6px;margin:2px 0}#muerto .dR img{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid #ff4a5e}
+#muerto .dR span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}#muerto .dR small{display:block;color:#8ea2bb;font-size:9.5px}
+#muerto .dR i{height:7px;border-radius:4px;background:#0009;overflow:hidden}#muerto .dR u{display:block;height:100%;background:linear-gradient(90deg,#ff8a3a,#ffcf3a)}#muerto .dR u.mag{background:linear-gradient(90deg,#8a5aff,#d07aff)}#muerto .dR b{text-align:right}

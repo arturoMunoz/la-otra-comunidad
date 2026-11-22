@@ -2437,7 +2437,7 @@ js = sub(js, "  const yoPego = de === YO, meDan = id === YO;\n", "  const yoPego
 js = sub(js, "  try {animaJefes();} catch (e) {}\n", "  try {animaJefes();} catch (e) {}\n  try {animaAlma(dt); latidoVida();} catch (e) {}\n")
 js = sub(js, "  if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z};", "  if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z}; try {celebraGanadores(ganador);} catch (e) {}")
 js = sub(js, "document.body.classList.add('jugando'); ESTADO = 'juego';", "document.body.classList.add('jugando'); ESTADO = 'juego'; setTimeout(saludosInicio, 1500);")
-js = sub(js, "window._vado = {efecto: (e) => efectoLocal(e),", "window._vado = {alma: {burbuja, BURB, almaEfecto}, efecto: (e) => efectoLocal(e),")
+js = sub(js, "window._vado = {efecto: (e) => efectoLocal(e),", "window._vado = {alma: {burbuja, BURB, almaEfecto}, dana, efecto: (e) => efectoLocal(e),")
 html = sub(html, '<div id="pings" class="hidden">', '<div id="emo"><button id="bEmo" aria-label="Emoticonos">😀</button><div class="eOp"><button data-e="hola" aria-label="Saludo">👋</button><button data-e="risa" aria-label="Risa">😂</button><button data-e="burla" aria-label="Burla">😜</button><button data-e="gg" aria-label="Bien jugado">👍</button></div></div><div id="pings" class="hidden">', donde='html')
 html = sub(html, '</head>', '<style>\n' + (RAIZ / 'tools/autopista/alma/alma.css').read_text() + '</style>\n</head>', donde='html')
 # ALMA · ENTORNO (22/11): mapa de reflejos para que lo metálico tenga color (las torres salían negras). tools/autopista/alma/entorno.js.
@@ -2454,9 +2454,12 @@ js = sub(js, "function ambienteMapa(ciudad) {ambienteMapa0(ciudad);", (RAIZ / 't
 # La simulación cuenta el daño a héroes (`dH`, 5.º número de `kda`); lo demás va en este móvil (localStorage 'auto.perfil').
 js = sub(js, "  d.vida -= n; ev(['num', d.x, d.z, Math.round(n),", "  if (o && o.k === 'h' && d.k === 'h' && o.eq !== d.eq) o.dH = (o.dH || 0) + Math.max(0, Math.min(n, d.vida)); /* PROGRESO: daño a héroes */\n  d.vida -= n; ev(['num', d.x, d.z, Math.round(n),")
 js = sub(js, "[q.kills, q.muertes, q.asist, q.cs].join('/')", "[q.kills, q.muertes, q.asist, q.cs, Math.round(q.dH || 0)].join('/')")
-js = sub(js, "function efectoLocal(e) {\n  const t = e[0]; try {almaEfecto(e);}", (RAIZ / 'tools/autopista/progreso/prog.js').read_text() + "function efectoLocal(e) {\n  const t = e[0]; try {progEfecto(e);} catch (er) {} try {almaEfecto(e);}")
+js = sub(js, "function efectoLocal(e) {\n  const t = e[0]; try {almaEfecto(e);}", (RAIZ / 'tools/autopista/progreso/prog.js').read_text() + "function efectoLocal(e) {\n  const t = e[0]; try {progEfecto(e); recibeDano(e);} catch (er) {} try {almaEfecto(e);}")
 js = sub(js, "  $('bOtra').onclick = () => location.reload();", "  try {finNuevo(f, ganador);} catch (er) {console.warn('fin', er);}\n  $('bOtra').onclick = () => location.reload();")
 js = sub(js, "function pintaMenu() {", "function pintaMenu() {try {pintaPerfilChip();} catch (e) {}")
+js = sub(js, ".nombre.split(/[ ,]/)[0]", ".nombre.replace(/^(El|La) /, '').split(/[ ,]/)[0]", n=3)  # «Bot Visor», no «Bot El»
+js = sub(js, "'<div class=\"mVuelta\">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en el taller</small>');}", "'<div class=\"mVuelta\">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en el taller</small>' + recapMuerte(v));}")
+js = sub(js, " else m.classList.add('hidden');", " else {m.classList.add('hidden'); RECAP = '';}")
 js = sub(js, "'</b><em>' + ROL_H[eligeSel] + '</em></div></div>'", "'</b><em>' + ROL_H[eligeSel] + '</em>' + eligeExtra(eligeSel) + '</div></div>'")
 js = sub(js, "'\" data-h=\"' + k + '\"><img src=\"ui/ap_splash_' + k + '.webp\" alt=\"\"></button>').join('')", "'\" data-h=\"' + k + '\"><img src=\"ui/ap_splash_' + k + '.webp\" alt=\"\">' + maeBadge(k) + '</button>').join('')")
 js = sub(js, "  try {animaAlma(dt); latidoVida();} catch (e) {}\n", "  try {animaAlma(dt); latidoVida();} catch (e) {}\n  try {progTick();} catch (e) {}\n")
