@@ -581,3 +581,30 @@ ART · Pack Autopista 58 · imagen 2 de 2 · Marcos de TARJETA de objeto y botó
   Los tres con la misma forma exterior y el mismo grosor, para cambiarlos sin mover nada; las esquinas decoradas y los lados rectos (se estiran).
  Abajo, 1 botón VENDER de 900x300 (proporción 3:1) del mismo estilo y forma que el «Comprar» amarillo del zip pero en ROJO-NARANJA con franjas de peligro negras, superficie lisa en el centro para poner el texto.
 ```
+
+## 22/11 · Pack Autopista 59 ART — Maestría, MVP y emoticonos (adjuntar Pack59_referencia.zip; 2 imágenes, una por mensaje)
+
+Imagen 1:
+```
+ART · Pack Autopista 59 · imagen 1 de 2 · Emblemas de MAESTRÍA de héroe e insignias MVP para A-6, un juego móvil tipo Wild Rift ambientado en una autopista española (HUD cyberpunk serio: metal oscuro, neón y colores vivos). En el zip van los medallones que ya tengo (ap_tab_*.png) y capturas de la pantalla final y del perfil donde irán: mismo estilo y acabado. Todo SIN TEXTO NI NÚMEROS, sobre fondo magenta liso #FF00FF, separados, en una imagen de 1536x1024:
+ Arriba, 5 emblemas de maestría de 256x256, del mismo tamaño y forma base (escudo hexagonal con alas pequeñas), cada uno más lujoso que el anterior y con un número de puntas o galones que crece (1 a 5):
+  I) acero pavonado y bronce, sin brillo.
+  II) plata pulida con filo blanco.
+  III) oro con un rubí en el centro.
+  IV) metal negro con filo de neón cian y un cristal azul eléctrico que brilla.
+  V) holográfico fucsia-dorado, alas más grandes, halo de chispas: el máximo.
+ Abajo, 2 insignias de 320x200:
+  MVP) corona de oro con neón amarillo sobre una placa negra con alas, muy brillante.
+  SVP) estrella de plata con neón azul claro sobre una placa negra, más discreta.
+```
+
+Imagen 2:
+```
+ART · Pack Autopista 59 · imagen 2 de 2 · PEGATINAS DE EMOTICONO y botón de emoticonos para A-6 (mismo juego y estilo que la imagen 1; en el zip va una captura de la partida con los bocadillos donde saldrán). Todo SIN TEXTO, sobre fondo magenta liso #FF00FF, separados, en una imagen de 1536x512:
+ 4 pegatinas redondas de 300x300, estilo pegatina con borde blanco grueso y sombra, caras de un robot-casco cyberpunk simpático (el mismo personaje en las cuatro, NO una cara humana de emoji):
+  1) SALUDO: levanta una mano y guiña un ojo de luz.
+  2) RISA: se parte de risa, ojos de luz cerrados en arco y lágrimas de neón.
+  3) BURLA: saca una lengua de neón y pone ojos en rendija, chulesco.
+  4) BIEN JUGADO: pulgar arriba, ojos de luz contentos, pequeñas chispas.
+ Y a la derecha 1 botón redondo de 300x300: aro de metal oscuro con filo de neón cian y dentro un bocadillo de cómic con una carita sonriente de neón.
+```
