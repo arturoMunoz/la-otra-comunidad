@@ -3056,6 +3056,20 @@ function apuntaCam(R, F, hw, hh) {
   const l = Math.hypot(m.dx, m.dy) || 1, k = Math.min(1, l / 90) * (m === MIRA_AT ? 0.12 : 0.28), sx = m.dx / l, sy = -m.dy / l;
   return [(R.x * sx * hw + F.x * sy * hh) * k, (R.z * sx * hw + F.z * sy * hh) * k, 1];
 }
+let CAM_PEEK = null, CAM_PEEK_V = 0;
+function peekDe(e) {
+  const c = $('mini'), r = c.getBoundingClientRect(), L = GIRO ? r.top : r.left, T = topC(c), W0 = GIRO ? r.height : r.width, H0 = GIRO ? r.width : r.height;
+  const X = (PX(e) - L) / W0 * c.width, Y = (PY(e) - T) / H0 * c.height, s = signo(MI_EQ), KX = TIPO_MAPA === 'linea' ? 16 : 34;
+  const u = APAI ? Y : X, v = APAI ? c.width - X : Y; return {x: (u - 48) * KX / 48 * s, z: (v - 98) * 59 / 98 * s};
+}
+function enganchaPeek() {
+  const c = $('mini'); if (!c || c._peek) return; c._peek = 1; let dedo = null;
+  c.addEventListener('pointerdown', (e) => {if (ESTADO !== 'juego') return; e.preventDefault(); e.stopPropagation(); dedo = e.pointerId; try {c.setPointerCapture(dedo);} catch (er) {} CAM_PEEK = peekDe(e); document.body.classList.add('peek');});
+  c.addEventListener('pointermove', (e) => {if (e.pointerId !== dedo) return; CAM_PEEK = peekDe(e);});
+  const fin = (e) => {if (e.pointerId !== dedo) return; dedo = null; CAM_PEEK = null; CAM_PEEK_V = 1; document.body.classList.remove('peek');};
+  c.addEventListener('pointerup', fin); c.addEventListener('pointercancel', fin);
+}
+setTimeout(enganchaPeek, 500);
 function camara(dt) {
   try {animaRim();} catch (e) {}
   try {animaJefes();} catch (e) {}
@@ -3072,7 +3086,7 @@ function camara(dt) {
    const ap = CAM_FIN ? [0, 0] : apuntaCam(R, F, hw, hh), bR = 0.12, bF = 0.2; /* héroe un poco abajo a la izquierda, como en el Wild Rift */
    const ox = CAM_FIN ? 0 : R.x * (fr * 0.12 + bR) * hw + F.x * (ff * 0.12 + bF) * hh + ap[0], oz = CAM_FIN ? 0 : R.z * (fr * 0.12 + bR) * hw + F.z * (ff * 0.12 + bF) * hh + ap[1];
    const kc = Math.min(1, dt * (ap[2] ? 6 : 3)); L.ox = (L.ox || 0) + (ox - (L.ox || 0)) * kc; L.oz = (L.oz || 0) + (oz - (L.oz || 0)) * kc;}
-  if (CAM_FIN) {camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);} else {camM.x = x + CAM_LEAD.ox; camM.z = z + CAM_LEAD.oz;}
+  if (CAM_FIN) {camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);} else if (CAM_PEEK) {const k = Math.min(1, dt * 14); camM.x += (CAM_PEEK.x - camM.x) * k; camM.z += (CAM_PEEK.z - camM.z) * k;} else if (CAM_PEEK_V > 0) {CAM_PEEK_V = Math.max(0, CAM_PEEK_V - dt * 5); const k = Math.max(1 - CAM_PEEK_V, Math.min(1, dt * 14)); camM.x += (x + CAM_LEAD.ox - camM.x) * k; camM.z += (z + CAM_LEAD.oz - camM.z) * k;} else {camM.x = x + CAM_LEAD.ox; camM.z = z + CAM_LEAD.oz;}
   camGolpe = Math.max(0, camGolpe - dt * 1.5); const zg = 1 - 0.16 * Math.sin(Math.min(1, camGolpe) * Math.PI), z0 = ZOOMS[zoomI], zz = [z0[0] * zg, z0[1] * zg]; tiemblaCam = Math.max(0, tiemblaCam - dt * 1.6); const tb = tiemblaCam * tiemblaCam * 1.6, ox = (Math.random() - 0.5) * tb, oz = (Math.random() - 0.5) * tb;
   camera.position.set(camM.x - F.x * zz[1] + ox, zz[0], camM.z - F.z * zz[1] + oz); camera.lookAt(camM.x + ox, 0, camM.z + oz); ponTapa(x, z);
   luces(); {const p = Math.round(camM.x / 6) * 6, q = Math.round(camM.z / 6) * 6; if (p !== SOL_C.x || q !== SOL_C.z) {SOL_C.x = p; SOL_C.z = q; SOL_C.forzar = true; sol.position.set(p + 10, 40, q + 8); sol.target.position.set(p, 0, q);}}

@@ -2522,6 +2522,31 @@ for a, b in [("'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras
              ("'Vuelta a la fuente cancelada'", "'Vuelta a la base cancelada'")]:
     js = js.replace(a, b)
 
+# ---------- PULIDO 23/11: mirar el mapa arrastrando el dedo por el minimapa (como en el Wild Rift) ----------
+# Mientras el dedo está en el minimapa la cámara va a ese punto (se ve lo que tus aliados ven: la niebla sigue igual); al soltar vuelve a tu héroe.
+js = sub(js, "  if (CAM_FIN) {camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);} else {camM.x = x + CAM_LEAD.ox; camM.z = z + CAM_LEAD.oz;}",
+             "  if (CAM_FIN) {camM.x += (x + CAM_LEAD.ox - camM.x) * Math.min(1, dt * 6); camM.z += (z + CAM_LEAD.oz - camM.z) * Math.min(1, dt * 6);} else if (CAM_PEEK) {const k = Math.min(1, dt * 14); camM.x += (CAM_PEEK.x - camM.x) * k; camM.z += (CAM_PEEK.z - camM.z) * k;} else if (CAM_PEEK_V > 0) {CAM_PEEK_V = Math.max(0, CAM_PEEK_V - dt * 5); const k = Math.max(1 - CAM_PEEK_V, Math.min(1, dt * 14)); camM.x += (x + CAM_LEAD.ox - camM.x) * k; camM.z += (z + CAM_LEAD.oz - camM.z) * k;} else {camM.x = x + CAM_LEAD.ox; camM.z = z + CAM_LEAD.oz;}")
+js = sub(js, "function camara(dt) {", r"""let CAM_PEEK = null, CAM_PEEK_V = 0;
+function peekDe(e) {
+  const c = $('mini'), r = c.getBoundingClientRect(), L = GIRO ? r.top : r.left, T = topC(c), W0 = GIRO ? r.height : r.width, H0 = GIRO ? r.width : r.height;
+  const X = (PX(e) - L) / W0 * c.width, Y = (PY(e) - T) / H0 * c.height, s = signo(MI_EQ), KX = TIPO_MAPA === 'linea' ? 16 : 34;
+  const u = APAI ? Y : X, v = APAI ? c.width - X : Y; return {x: (u - 48) * KX / 48 * s, z: (v - 98) * 59 / 98 * s};
+}
+function enganchaPeek() {
+  const c = $('mini'); if (!c || c._peek) return; c._peek = 1; let dedo = null;
+  c.addEventListener('pointerdown', (e) => {if (ESTADO !== 'juego') return; e.preventDefault(); e.stopPropagation(); dedo = e.pointerId; try {c.setPointerCapture(dedo);} catch (er) {} CAM_PEEK = peekDe(e); document.body.classList.add('peek');});
+  c.addEventListener('pointermove', (e) => {if (e.pointerId !== dedo) return; CAM_PEEK = peekDe(e);});
+  const fin = (e) => {if (e.pointerId !== dedo) return; dedo = null; CAM_PEEK = null; CAM_PEEK_V = 1; document.body.classList.remove('peek');};
+  c.addEventListener('pointerup', fin); c.addEventListener('pointercancel', fin);
+}
+setTimeout(enganchaPeek, 500);
+function camara(dt) {""")
+html = sub(html, '</head>', """<style>/* 23/11: el minimapa se puede tocar y arrastrar para mirar el mapa */
+#mini{pointer-events:auto !important;touch-action:none}
+body.peek #mini{box-shadow:0 0 0 2px #5ff4ff,0 0 14px #5ff4ffaa !important}
+</style>
+</head>""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

@@ -1025,6 +1025,10 @@ body.cine #latido{display:none}
 #fin .fYoMvp img{width:120px;filter:drop-shadow(0 0 12px #ffb400aa)}#fin .fYoMvp.s img{width:104px;filter:drop-shadow(0 0 10px #8fb0ffaa)}
 #fin .fYoMvp b{margin-top:-6px;font:900 13px system-ui;color:#ffe46a;text-shadow:0 2px 3px #000}#fin .fYoMvp.s b{color:#d9e6ff;font-size:11px}
 </style>
+<style>/* 23/11: el minimapa se puede tocar y arrastrar para mirar el mapa */
+#mini{pointer-events:auto !important;touch-action:none}
+body.peek #mini{box-shadow:0 0 0 2px #5ff4ff,0 0 14px #5ff4ffaa !important}
+</style>
 </head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>
