@@ -154,6 +154,10 @@ function ponCiudad() {
   PLANTAS = [...CIU.plantas, ...CIU.plantas.map((q) => ({...q, ...gira(q)}))];
   ORILLA = [];
   RECTS = [...CIU.bloques, ...CIU.bloques.map((b) => [-b[2], -b[3], -b[0], -b[1]])];
+  /* 23/11 (Pack 63 WORK): los muros de los fosos de Nasor y del lagarto (franja de 1,5 m al fondo y a los lados, como los modelos); el 5.º número
+     marca que no son manzanas (no llevan edificios, zócalo ni suelo de acera) */
+  const F = PIT, fo = [[F.x - 6, F.z - 10, F.x - 4.5, F.z + 10], [F.x - 6, F.z + 8.5, F.x + 6, F.z + 10], [F.x - 6, F.z - 10, F.x + 6, F.z - 8.5]];
+  for (const r of fo) RECTS.push([...r, 1], [-r[2], -r[3], -r[0], -r[1], 1]);
 }
 /* empuja fuera de las manzanas (por el lado más corto) */
 function chocaRects(u, m) {

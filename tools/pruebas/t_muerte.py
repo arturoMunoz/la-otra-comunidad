@@ -15,7 +15,7 @@ async def main():
         await pg.wait_for_timeout(4000)
         await pg.evaluate("() => {const V = window._vado, h = V.S.u.find((u) => u.id === V.YO), e = V.S.u.find((u) => u.k === 'h' && u.id !== V.YO); h.x = 0; h.z = 0; e.x = 1.5; e.z = 0; V.S.u.forEach(() => {}); h.vida = 1; h.golpeDe = e.id;}")
         await pg.wait_for_timeout(300)
-        await pg.evaluate("() => {const V = window._vado, h = V.S.u.find((u) => u.id === V.YO), e = V.S.u.find((u) => u.k === 'h' && u.id !== V.YO); if (V.dana) V.dana(h, 50, e, 'pura'); else h.vida = 0;}")
+        await pg.evaluate("() => {const V = window._vado, h = V.S.u.find((u) => u.id === V.YO), e = V.S.u.find((u) => u.k === 'h' && u.id !== V.YO); if (V.dana) V.dana(e, h, 50, 'pura'); else h.vida = 0;}")
         await pg.wait_for_timeout(2500)
         await pg.screenshot(path='/home/claude/pruebas/muerte.png')
         print(await pg.evaluate("() => !document.getElementById('muerto').classList.contains('hidden')"))

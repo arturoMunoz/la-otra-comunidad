@@ -161,6 +161,10 @@ function ponCiudad() {
   PLANTAS = [...CIU.plantas, ...CIU.plantas.map((q) => ({...q, ...gira(q)}))];
   ORILLA = [];
   RECTS = [...CIU.bloques, ...CIU.bloques.map((b) => [-b[2], -b[3], -b[0], -b[1]])];
+  /* 23/11 (Pack 63 WORK): los muros de los fosos de Nasor y del lagarto (franja de 1,5 m al fondo y a los lados, como los modelos); el 5.º número
+     marca que no son manzanas (no llevan edificios, zócalo ni suelo de acera) */
+  const F = PIT, fo = [[F.x - 6, F.z - 10, F.x - 4.5, F.z + 10], [F.x - 6, F.z + 8.5, F.x + 6, F.z + 10], [F.x - 6, F.z - 10, F.x + 6, F.z - 8.5]];
+  for (const r of fo) RECTS.push([...r, 1], [-r[2], -r[3], -r[0], -r[1], 1]);
 }
 /* empuja fuera de las manzanas (por el lado más corto) */
 function chocaRects(u, m) {
@@ -399,10 +403,10 @@ const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30,
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['ap_ciudad', 'ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'ap_visor', 'vado_arboles', 'vado_rocas', 'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
+const VADO = ['ap_ciudad', 'ap_foso_nasor', 'ap_foso_lagarto', 'ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'ap_visor', 'vado_arboles', 'vado_rocas', 'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
 /* modelos: los de la jungla solo hacen falta en la Batalla (2 contra 2) y se bajan después; los que no se usaban (capitán, estandartes, barriles…: casi 3 MB) ya no se bajan.
    Los del Abismo van adelgazados en modelos_l/ (sin los clips que aquí no se usan y con las texturas en WebP: tools/vado/adelgaza.py). */
-const JUNGLA = ['ap_ciudad', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla'];
+const JUNGLA = ['ap_ciudad', 'ap_foso_nasor', 'ap_foso_lagarto', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla'];
 const LIGEROS = ['warg', 'huargo_alfa', 'troll', 'orco', 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'ballestero2', 'arquero_rohan2', 'uruk', 'q_arquero', 'brasero', 'tienda'];
 const NOMBRES = [...VADO.filter((n) => !JUNGLA.includes(n) && n !== 'palantir'), 'rohan_kk', 'enano_kk', 'elfo_kk', 'hobbit_kk', 'proyectiles', 'brasero', 'tienda'];
 async function cargaModelo(n) {
@@ -604,7 +608,7 @@ function construyeCiudad(scene_) {
   const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);
   const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
   const BX = MAPA.ancho + 14, BZ = MAPA.largo + 12;
-  const R4 = RECTS.map((r) => new THREE.Vector4(r[0], r[1], r[2], r[3])); while (R4.length < 40) R4.push(new THREE.Vector4(999, 999, 999, 999));
+  const R4 = RECTS.filter((r) => !r[4]).map((r) => new THREE.Vector4(r[0], r[1], r[2], r[3])); while (R4.length < 40) R4.push(new THREE.Vector4(999, 999, 999, 999));
   const C3 = CAMPOS.filter((c) => !NEUTRO[c.tipo].pasiva && !NEUTRO[c.tipo].jefe && !NEUTRO[c.tipo].draco).map((c) => new THREE.Vector3(c.x, c.z, NEUTRO[c.tipo].grande ? 3.9 : 3.1)); while (C3.length < 12) C3.push(new THREE.Vector3(999, 999, 0));
   const bakeU = {tH: {value: tH}, tB: {value: tB}, tC: {value: tC}, uA: {value: v2(CARRILES[0])}, uB: {value: v2(CARRILES[1])}, uR: {value: R4}, uC: {value: C3},
     uPit: {value: new THREE.Vector2(PIT.x, PIT.z)}, uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)},
@@ -702,7 +706,7 @@ function construyeCiudad(scene_) {
   /* zócalo de hormigón de cada manzana: se lee como sólida aunque entre dos edificios quede un hueco */
   const tZ = tC.clone(); tZ.source = tC.source; tZ.repeat.set(1, 1); tZ.wrapS = tZ.wrapT = THREE.RepeatWrapping;
   const mZ = new THREE.MeshLambertMaterial({map: tZ, color: '#9aa0a8'}); 
-  for (const r of RECTS) {const w = r[2] - r[0], d = r[3] - r[1]; if (Math.abs(r[0]) > 60) continue; const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.32, d), mZ); b.position.set((r[0] + r[2]) / 2, 0.16, (r[1] + r[3]) / 2); b.receiveShadow = true; b.castShadow = false;
+  for (const r of RECTS) {if (r[4]) continue; const w = r[2] - r[0], d = r[3] - r[1]; if (Math.abs(r[0]) > 60) continue; const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.32, d), mZ); b.position.set((r[0] + r[2]) / 2, 0.16, (r[1] + r[3]) / 2); b.receiveShadow = true; b.castShadow = false;
     const uv = b.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 3, uv.getY(i) * d / 3); scene_.add(b);}
   /* matorrales (la hierba alta de las calles: zarzas que han crecido entre el asfalto) */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
@@ -736,7 +740,7 @@ function edificiosCiudad(al) {
   /* manzanas de fuera: una franja de 2,4 m mirando a la autopista con árboles y coches aparcados; los edificios, detrás */
   const verde = {}, coches = [];
   for (const r0 of RECTS) {
-    let r = r0;
+    if (r0[4]) continue; let r = r0;
     if (Math.abs(r0[0] + r0[2]) / 2 > 20 && r0[2] - r0[0] > 8) {
       const este = r0[0] > 0, xb = este ? r0[0] + 1.2 : r0[2] - 1.2; r = este ? [r0[0] + 2.4, r0[1], r0[2], r0[3]] : [r0[0], r0[1], r0[2] - 2.4, r0[3]];
       for (let z = r0[1] + 2.5; z < r0[3] - 1.5; z += 4.6) {const n = al() < 0.55 ? 'eucalipto_' + (1 + Math.floor(al() * 2)) : 'pino_' + (1 + Math.floor(al() * 3)); (verde[n] = verde[n] || []).push({x: xb + (al() - 0.5) * 0.4, z: z + (al() - 0.5), y: 0.32, ry: al() * 6.28, s: 0.6 + al() * 0.2});
@@ -802,12 +806,20 @@ function decoradoCiudad(al) {
   const I = M.ap_ciudad ? infoCiudad() : null, ind = {};
   const mete = (n, x, z, s, ry = 0) => {if (!I || !I[n]) return; const k = I[n]; (ind[n] = ind[n] || []).push({x: x - k.cx * s, z: z - k.cz * s, y: 0.32 - k.y0 * s, ry, s});};
   if (I) {
-    const P2 = PIT2; mete('i_chimney_large', P2.x + 4.2, P2.z - 4.6, 3.2); mete('i_chimney_large', P2.x + 4.4, P2.z + 4.8, 3.2); mete('i_chimney_medium', P2.x + 5.5, P2.z + 0.2, 4.5);
-    mete('i_detail_tank', P2.x + 2.2, P2.z + 5.4, 3.4, Math.PI / 2); mete('i_detail_tank', P2.x + 2.2, P2.z - 5.3, 3.4, Math.PI / 2);
     
     for (const n in ind) {const n0 = BOSQUE.length; instancias('ap_ciudad', n, ind[n], true); for (const im of BOSQUE.slice(n0)) {im.userData.ciudad = true; im.userData.fijo = true;}}
   }
-  colector(G);
+  fososCiudad(G);
+}
+/* 23/11 (Pack 63 WORK): el colector de Nasor y la central del lagarto (antes, cajas y cilindros): el lado abierto de cada modelo mira a +X,
+   hacia su autopista; el del lagarto está girado 180°. Si la jungla aún no ha llegado, se esperan. */
+function fososCiudad(G) {
+  if (!M.ap_foso_nasor || !M.ap_foso_lagarto) {const t = setInterval(() => {if (MAPA_G !== G) clearInterval(t); else if (M.ap_foso_nasor && M.ap_foso_lagarto) {clearInterval(t); fososCiudad(G);}}, 300); return;}
+  for (const [n, P, ry] of [['ap_foso_nasor', PIT, 0], ['ap_foso_lagarto', PIT2, Math.PI]]) {
+    const o = M[n].scene.clone(true); o.position.set(P.x, 0, P.z); o.rotation.y = ry;
+    o.traverse((q) => {if (!q.isMesh) return; q.castShadow = true; q.receiveShadow = true; const m = q.material; if (m && m.name === 'luz') {m.emissiveIntensity = Math.max(m.emissiveIntensity || 1, 2.2); q.castShadow = false;} q.userData.fijo = true;});
+    G.add(o);
+  }
 }
 /* el colector de Nasor: muro de hormigón al fondo con la boca de un tubo enorme (oscura por dentro), dos tubos pequeños y un hilo de agua */
 function colector(G) {
@@ -3205,7 +3217,7 @@ function subeMia(k) {
 let volverBase = 0, volverVida = 0, circVuelta = null; const VOLVER_T = 4.5;
 let mira = null;
 /* miras en el suelo con los indicadores de ChatGPT (blancos, se tiñen): alcance alrededor del héroe + flecha, cono o círculo */
-const IND = {}; const IND_AP = {ind_alcance: 'ap_alcance'};
+const IND = {}; const IND_AP = {ind_alcance: 'ap_m_alcance', ind_area: 'ap_m_area'};
 function indicador(n, color) {
   if (!IND[n]) {const t = cargaTex('../batalla/ui/' + (IND_AP[n] || n) + '.webp'); IND[n] = t;}
   const g = new THREE.PlaneGeometry(1, 1); g.rotateX(-Math.PI / 2);
@@ -3241,10 +3253,10 @@ function flechaAP(tipo, x, z, wx, wz, alc, W) {
     FL.cuerpo = pieza('ap_fl_cuerpo', true); FL.punta = pieza('ap_fl_punta'); FL.inicio = pieza('ap_fl_inicio'); scene.add(FL.g);
   }
   const c = COLOR_FL[tipo] || '#ffffff'; for (const m of [FL.cuerpo, FL.punta, FL.inicio]) m.material.color.set(c).multiplyScalar(2.2);
-  const k = W / 82.5, kh = Math.min(W / 155, alc / 360), ks = W / 100, finCuerpo = Math.max(0.05, alc - 306 * kh + 2 * kh);
-  FL.punta.scale.set(318 * kh, 1, 320 * kh); FL.punta.position.set(alc - (312 - 159) * kh, 0, 0);
-  FL.cuerpo.scale.set(finCuerpo, 1, 103 * k); FL.cuerpo.position.set(finCuerpo / 2, 0, 0); FL.cuerpo.material.map.repeat.x = finCuerpo / (1056 * k); FL.cuerpo.material.map.offset.x = -(performance.now() / 1000) * 0.6 % 1;
-  FL.inicio.scale.set(192 * ks, 1, 200 * ks); FL.inicio.position.set((96 - 187) * ks, 0, 0);
+  const k = W / 130.5, kh = Math.min(1.8 * W / 629, alc * 0.35 / 622), ks = W / 661, finCuerpo = Math.max(0.05, alc - 622 * kh + 4 * kh);
+  FL.punta.scale.set(654 * kh, 1, 661 * kh); FL.punta.position.set(alc - (638 - 327) * kh, 0, 0);
+  FL.cuerpo.scale.set(finCuerpo, 1, 164 * k); FL.cuerpo.position.set(finCuerpo / 2, 0, 0); FL.cuerpo.material.map.repeat.x = finCuerpo / (1280 * k); FL.cuerpo.material.map.offset.x = -(performance.now() / 1000) * 0.6 % 1;
+  FL.inicio.scale.set(363 * ks, 1, 693 * ks); FL.inicio.position.set((181.5 - 345) * ks, 0, 0);
   FL.g.position.set(x, 0.11, z); FL.g.rotation.y = Math.atan2(-wz, wx); FL.g.visible = true; FL.vivo = performance.now();
 }
 function marcaH(tipo, k, forma) {
@@ -3314,7 +3326,7 @@ function flipR(n, x, z, R, suelo = true, rot, y, dur) {return flip(n, x, z, tamR
 /* línea de neón de las marcas circulares (fracción del radio de la imagen) */
 const IND_R = {ap_ind_enano_e: 0.84, ap_ind_gandalf_e: 0.845, ap_ind_rohan_e: 0.835, ap_ind_enano_r: 0.805, ap_ind_gollum_q: 0.805, ap_ind_orco_q: 0.9, ap_ind_elfo_r: 0.985, ap_ind_orco_r: 0.965,
   ap_ind_elfo_alcance: 0.935, ap_ind_enano_alcance: 0.89, ap_ind_gandalf_alcance: 0.89, ap_ind_gollum_alcance: 0.91, ap_ind_hobbit_alcance: 0.885, ap_ind_orco_alcance: 0.955, ap_ind_rohan_alcance: 0.935,
-  ind_area: 0.915, ind_alcance: 0.88 /* en A-6 es ap_alcance */, ap_zona_torre: 0.88, aro: 0.815};
+  ind_area: 559.5 / 622, ind_alcance: 514.6 / 625 /* en A-6: ap_m_area y ap_m_alcance (Pack 61) */, ap_zona_torre: 0.88, aro: 0.815};
 /* abanicos: vértice (xa, ya) en la imagen (y hacia abajo, fracción del fotograma), eje a 'cen' grados (0 = arriba), semiabertura 'an' y radio 'rn'
    del borde que se ve; 'ae' y 're' = hasta dónde se dibuja (el marco metálico de las marcas va por fuera de la línea de neón).
    Se dibujan deformados sobre un abanico de verdad: la abertura y el largo quedan exactos sea cual sea el ángulo de la habilidad. */
@@ -3324,8 +3336,9 @@ const ABAN = {
   ap_ind_hobbit_e: {xa: 0.5, ya: 1.137, cen: 0, an: 26.7, ae: 30.9, rn: 1.03, re: 1.137},
   ind_cono: {xa: 0.5, ya: 0.8223, cen: 0, an: 44.5, ae: 46, rn: 0.64, re: 0.665},
   ap_visor_abanico: {xa: 0.5, ya: 0.96, cen: 0, an: 48, ae: 62, rn: 0.9, re: 0.95},
-  ap_enano_tajo: {xa: 0.04, ya: 0.94, cen: 47, an: 36, ae: 41, rn: 1, re: 1.04}};
-const CONO_DE = {enano: 'ap_ind_enano_q', orco: 'ap_ind_orco_w', hobbit: 'ap_ind_hobbit_e', visor: 'ap_ind_enano_q'};
+  ap_enano_tajo: {xa: 0.04, ya: 0.94, cen: 47, an: 36, ae: 41, rn: 1, re: 1.04},
+  ap_m_cono: {xa: 625 / 1254, ya: 1132 / 1254, cen: 0, an: 43.5, ae: 45.5, rn: 820 / 1254, re: 850 / 1254}};
+const CONO_DE = {};
 const GEO_AB = new Map();
 function geoAbanico(P, R, A, clave) {
   const an = P.an || A * 180 / Math.PI, ae = P.ae || an, key = clave + '|' + R.toFixed(2) + '|' + A.toFixed(3);
@@ -3356,9 +3369,9 @@ function abanicoR(n, x, z, rot, R, A, op = 1, dur) {
 /* marca de cono (la de cada héroe, deformada a su abertura y largo de verdad) */
 function marcaCono(n, x, z, wx, wz, R, A, color) {
   const key = 'cono:' + n; let m = MIRA_H[key];
-  if (!m) {const t = cargaTex('../batalla/ui/' + n + '.webp'), gen = n === 'ind_cono'; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  if (!m) {const t = cargaTex('../batalla/ui/' + n + '.webp'), gen = n === 'ind_cono' || n === 'ap_m_cono'; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
     m = new THREE.Mesh(GEO_SUELO, new THREE.MeshBasicMaterial({map: t, transparent: true, depthWrite: false, opacity: gen ? 1 : 0.85, blending: gen ? THREE.AdditiveBlending : THREE.NormalBlending})); if (color) m.material.color.set(color); m.renderOrder = 4; scene.add(m); MIRA_H[key] = m;}
-  m.geometry = geoAbanico(ABAN[n], R, A, n); m.position.set(x, 0.11, z); m.rotation.set(0, Math.atan2(-wz, wx), 0); m.visible = true; return m;
+  if (color) m.material.color.set(color).multiplyScalar(1.6); m.geometry = geoAbanico(ABAN[n], R, A, n); m.position.set(x, 0.11, z); m.rotation.set(0, Math.atan2(-wz, wx), 0); m.visible = true; return m;
 }
 /* adónde llega de verdad un salto o una carga: el mismo cálculo que la simulación (paredes, torres, núcleos y árboles incluidos) */
 function destinoMov(x, z, wx, wz, d0, T) {const p = {k: 'h', x, z}, v = d0 / T; let t = T; while (t > 1e-6) {const pt = Math.min(1 / 30, t); t -= 1 / 30; p.x += wx * v * pt; p.z += wz * v * pt; limita(p);} return p;}
@@ -3375,7 +3388,7 @@ function zonaHab(H, x, z, wx, wz, d) {
   return null;
 }
 function aroAlcance(t, x, z, R) {
-  const a = marcaH(t, 'alcance', 'area'), n = 'ap_ind_' + t + '_alcance';
+  const a = null, n = 'ap_ind_' + t + '_alcance'; mira.alc.material.color.set(COLOR_FL[t] || '#ffffff').lerp(new THREE.Color('#ffffff'), 0.5);
   if (a && IND_R[n]) {a.visible = true; a.position.set(x, 0.09, z); a.scale.setScalar(2 * R / IND_R[n]);}
   else {mira.alc.visible = true; mira.alc.position.set(x, 0.09, z); mira.alc.scale.setScalar(2 * R / IND_R.ind_alcance);}
 }
@@ -3394,8 +3407,8 @@ function muestraMira(k, dx, dy) {
   for (const n of ['alc', 'area', 'flecha', 'cono']) mira[n].visible = false; for (const n in MIRA_H) MIRA_H[n].visible = false; if (FL.g) FL.g.visible = false;
   const Z = zonaHab(H, x, z, wx, wz, alc * k2); if (!Z) {ocultaMira(); return;}
   aroAlcance(t, x, z, Z.alc);
-  if (Z.f === 'c') {const n = 'ap_ind_' + t + '_' + k, a = IND_R[n] ? marcaH(t, k, 'area') : null, m = a || mira.area; m.visible = true; m.scale.setScalar(2 * Z.r / (a ? IND_R[n] : IND_R.ind_area)); m.position.set(Z.cx, 0.11, Z.cz);}
-  else if (Z.f === 'v') marcaCono(CONO_DE[t] || 'ind_cono', x, z, wx, wz, Z.r, Z.a, CONO_DE[t] ? null : '#ffe9a8');
+  if (Z.f === 'c') {const n = 'ap_ind_' + t + '_' + k, a = null, m = mira.area; m.material.color.set(COLOR_FL[t] || '#ffe9a8').multiplyScalar(1.6); m.visible = true; m.scale.setScalar(2 * Z.r / (a ? IND_R[n] : IND_R.ind_area)); m.position.set(Z.cx, 0.11, Z.cz);}
+  else if (Z.f === 'v') marcaCono('ap_m_cono', x, z, wx, wz, Z.r, Z.a, COLOR_FL[t] || '#ffe9a8');
   else {let lar = Z.lar;
     if (H.tipo === 'linea') {const pr = primeroEnLinea(x, z, wx, wz, alc, H, dx !== null); if (pr.iman) {wx = pr.wx; wz = pr.wz;}
       /* se para en el primero que toque: la punta queda donde acaba el disparo (su borde de delante) */
@@ -3419,7 +3432,7 @@ function telegrafo(H, x, z, dx, dz, px, pz) {
   if (!APUNTABLE[H.tipo]) return; const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l;
   const Z = zonaHab(H, x, z, dx, dz, Math.hypot(px - x, pz - z) || 0); if (!Z) return; let m;
   if (Z.f === 'c') {m = indicador('ind_area', '#ff3a2a'); m.scale.setScalar(2 * Z.r / IND_R.ind_area); m.position.set(Z.cx, 0.12, Z.cz);}
-  else if (Z.f === 'v') {if (!TELE_CONO) TELE_CONO = cargaTex('../batalla/ui/ind_cono.webp'); m = new THREE.Mesh(geoAbanico(ABAN.ind_cono, Z.r, Z.a, 'ind_cono'), new THREE.MeshBasicMaterial({map: TELE_CONO, color: '#ff3a2a', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending})); m.userData.geoFija = 1; m.renderOrder = 4; m.position.set(x, 0.12, z); m.rotation.y = Math.atan2(-dz, dx); scene.add(m);}
+  else if (Z.f === 'v') {if (!TELE_CONO) TELE_CONO = cargaTex('../batalla/ui/ap_m_cono.webp'); m = new THREE.Mesh(geoAbanico(ABAN.ap_m_cono, Z.r, Z.a, 'ap_m_cono'), new THREE.MeshBasicMaterial({map: TELE_CONO, color: '#ff3a2a', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending})); m.userData.geoFija = 1; m.renderOrder = 4; m.position.set(x, 0.12, z); m.rotation.y = Math.atan2(-dz, dx); scene.add(m);}
   else {m = indicador('ind_flecha', '#ff3a2a'); const L = Z.lar / 0.975; m.scale.set(L, 1, Z.w / 0.27); m.position.set(x + dx * L / 2, 0.12, z + dz * L / 2); m.rotation.y = Math.atan2(-dz, dx);}
   m.visible = true; m.material.opacity = 0.9; TELE.push({m, t: 0});
 }
@@ -3812,7 +3825,7 @@ function hud() {
     if (b._cd > 0 && !(cd > 0)) {b.classList.remove('lista'); void b.offsetWidth; b.classList.add('lista');} b._cd = cd; const sm = rk > 0 && v.mana < costeMn(v.tipo, k, rk); if (b._sm !== sm) {b._sm = sm; b.classList.toggle('sinMana', sm);}
     const pr = !(cd > 0) && rk > 0 && v.muerto < 0 && !sm; if (b._pr !== pr) {b._pr = pr; b.classList.toggle('pronta', pr);}
   });;
-  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); pon_(m, 'innerHTML', (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en el taller</small>' + recapMuerte(v));} else {m.classList.add('hidden'); RECAP = '';}
+  const m = $('muerto'); if (v.muerto >= 0) {m.classList.remove('hidden'); const k = ULTIMA_BAJA && VISTA.get(ULTIMA_BAJA); pon_(m, 'innerHTML', '<div class="mReloj"><b>' + v.muerto + '</b><i>vuelves en</i><span>' + (k ? (k.k === 'h' ? '<img src="' + retratoDe(ULTIMA_BAJA) + '" alt="">' : '') + '<em>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</em>' : 'Derribado') + '</span></div><small>Mientras, puedes comprar en el taller</small>' + recapMuerte(v));} else {m.classList.add('hidden'); RECAP = '';}
   const enFuente = enF;
   $('bTienda').style.opacity = enFuente ? 1 : 0.45;
 }

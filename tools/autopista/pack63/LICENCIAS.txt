@@ -1,0 +1,15 @@
+A-6 · Pack Autopista 63
+El Colector y La Central
+
+La geometría de los dos escenarios y sus dos atlas de 1024 × 1024
+se han creado para este pack. Se ofrecen bajo CC0 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Las capturas muestran los escenarios a 50° sobre la horizontal con los
+modelos ap_nasor.glb y ap_lagarto.glb proporcionados por el proyecto A-6.
+Los derechos y las licencias previas de los monstruos siguen correspondiendo
+a sus titulares. ap_ciudad.glb se ha usado como referencia visual.
+
+El pavimento y la iluminación de las capturas forman parte de la presentación.
+Los GLB contienen exclusivamente el decorado de cada foso. Origen en el
+centro del combate, +Y arriba, +X hacia la entrada, una unidad por metro.

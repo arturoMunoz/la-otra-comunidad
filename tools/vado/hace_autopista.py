@@ -2589,6 +2589,53 @@ js = sub(js, "const r = ob.k === 't' ? 2.2 : ob.k === 'n' ? 2.6 : ob.k === 'j' &
 js = sub(js, "const d = Math.hypot((q.xi ?? q.x) - MIO.x, (q.zi ?? q.z) - MIO.z) - (RADIO_V[q.k] || 0.6); if (d < alc && (d < md", "const d = Math.hypot((q.xi ?? q.x) - MIO.x, (q.zi ?? q.z) - MIO.z) - radioVis(q); if (d < alc && (d < md")   # el golpe que predice tu móvil mide los cuerpos igual que la simulación
 js = sub(js, "v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 :", "v.k === 'j' ? NEUTRO[v.tipo].alto * 0.82 + 0.5 :")   # la barra de las bestias pegada a su cabeza (Nasor mide ~4,6 m de verdad)
 
+# ---------- PACK 63 WORK (23/11): los fosos de Nasor y del lagarto en 3D (`fososCiudad` en tools/autopista/ciudad/cli.js; muros con choque en sim.js) ----------
+js = sub(js, "const JUNGLA = ['ap_ciudad', 'ap_nasor',", "const JUNGLA = ['ap_ciudad', 'ap_foso_nasor', 'ap_foso_lagarto', 'ap_nasor',")
+js = sub(js, "const VADO = ['ap_ciudad', 'ap_farola',", "const VADO = ['ap_ciudad', 'ap_foso_nasor', 'ap_foso_lagarto', 'ap_farola',")
+
+# ---------- PACK 61 ART (23/11, Henar: «las flechas, que sean metibles, que no queden mal»): marcas de apuntar nuevas ----------
+# Todas blancas sobre negro, sumadas como luz y teñidas del color de cada héroe (`COLOR_FL`); medidas en tools/autopista/procesa_pack61.py.
+# Flecha: cuerpo de 10 chevrones (1280 px) que se repite y fluye, franja de 130,5 px entre líneas = lo que golpea; punta con la base 1,8 veces
+# la franja (como en el Wild Rift) y como mucho el 35 % del largo; inicio en forma de «D» con el lado recto en los pies.
+# Conos, círculos de área y aro de alcance: los mismos para todos los héroes (antes cada uno con su dibujo del Pack 18 y otros a medias).
+js = sub(js, "  const k = W / 82.5, kh = Math.min(W / 155, alc / 360), ks = W / 100, finCuerpo = Math.max(0.05, alc - 306 * kh + 2 * kh);\n",
+             "  const k = W / 130.5, kh = Math.min(1.8 * W / 629, alc * 0.35 / 622), ks = W / 661, finCuerpo = Math.max(0.05, alc - 622 * kh + 4 * kh);\n")
+js = sub(js, "  FL.punta.scale.set(318 * kh, 1, 320 * kh); FL.punta.position.set(alc - (312 - 159) * kh, 0, 0);\n",
+             "  FL.punta.scale.set(654 * kh, 1, 661 * kh); FL.punta.position.set(alc - (638 - 327) * kh, 0, 0);\n")
+js = sub(js, "FL.cuerpo.scale.set(finCuerpo, 1, 103 * k); FL.cuerpo.position.set(finCuerpo / 2, 0, 0); FL.cuerpo.material.map.repeat.x = finCuerpo / (1056 * k);",
+             "FL.cuerpo.scale.set(finCuerpo, 1, 164 * k); FL.cuerpo.position.set(finCuerpo / 2, 0, 0); FL.cuerpo.material.map.repeat.x = finCuerpo / (1280 * k);")
+js = sub(js, "  FL.inicio.scale.set(192 * ks, 1, 200 * ks); FL.inicio.position.set((96 - 187) * ks, 0, 0);\n",
+             "  FL.inicio.scale.set(363 * ks, 1, 693 * ks); FL.inicio.position.set((181.5 - 345) * ks, 0, 0);\n")
+js = sub(js, "const IND = {}; const IND_AP = {ind_alcance: 'ap_alcance'};", "const IND = {}; const IND_AP = {ind_alcance: 'ap_m_alcance', ind_area: 'ap_m_area'};")
+js = sub(js, "  ind_area: 0.915, ind_alcance: 0.88 /* en A-6 es ap_alcance */,", "  ind_area: 559.5 / 622, ind_alcance: 514.6 / 625 /* en A-6: ap_m_area y ap_m_alcance (Pack 61) */,")
+js = sub(js, "  ap_enano_tajo: {xa: 0.04, ya: 0.94, cen: 47, an: 36, ae: 41, rn: 1, re: 1.04}};",
+             "  ap_enano_tajo: {xa: 0.04, ya: 0.94, cen: 47, an: 36, ae: 41, rn: 1, re: 1.04},\n  ap_m_cono: {xa: 625 / 1254, ya: 1132 / 1254, cen: 0, an: 43.5, ae: 45.5, rn: 820 / 1254, re: 850 / 1254}};")
+js = sub(js, "const CONO_DE = {enano: 'ap_ind_enano_q', orco: 'ap_ind_orco_w', hobbit: 'ap_ind_hobbit_e', visor: 'ap_ind_enano_q'};", "const CONO_DE = {};")
+js = sub(js, "gen = n === 'ind_cono'; t.anisotropy", "gen = n === 'ind_cono' || n === 'ap_m_cono'; t.anisotropy")
+js = sub(js, "  m.geometry = geoAbanico(ABAN[n], R, A, n); m.position.set(x, 0.11, z); m.rotation.set(0, Math.atan2(-wz, wx), 0); m.visible = true; return m;",
+             "  if (color) m.material.color.set(color).multiplyScalar(1.6); m.geometry = geoAbanico(ABAN[n], R, A, n); m.position.set(x, 0.11, z); m.rotation.set(0, Math.atan2(-wz, wx), 0); m.visible = true; return m;")
+js = sub(js, "  else if (Z.f === 'v') marcaCono(CONO_DE[t] || 'ind_cono', x, z, wx, wz, Z.r, Z.a, CONO_DE[t] ? null : '#ffe9a8');",
+             "  else if (Z.f === 'v') marcaCono('ap_m_cono', x, z, wx, wz, Z.r, Z.a, COLOR_FL[t] || '#ffe9a8');")
+js = sub(js, "  if (Z.f === 'c') {const n = 'ap_ind_' + t + '_' + k, a = IND_R[n] ? marcaH(t, k, 'area') : null, m = a || mira.area; m.visible = true;",
+             "  if (Z.f === 'c') {const n = 'ap_ind_' + t + '_' + k, a = null, m = mira.area; m.material.color.set(COLOR_FL[t] || '#ffe9a8').multiplyScalar(1.6); m.visible = true;")
+js = sub(js, "  const a = marcaH(t, 'alcance', 'area'), n = 'ap_ind_' + t + '_alcance';\n", "  const a = null, n = 'ap_ind_' + t + '_alcance'; mira.alc.material.color.set(COLOR_FL[t] || '#ffffff').lerp(new THREE.Color('#ffffff'), 0.5);\n")
+js = sub(js, "if (!TELE_CONO) TELE_CONO = cargaTex('../batalla/ui/ind_cono.webp'); m = new THREE.Mesh(geoAbanico(ABAN.ind_cono, Z.r, Z.a, 'ind_cono')",
+             "if (!TELE_CONO) TELE_CONO = cargaTex('../batalla/ui/ap_m_cono.webp'); m = new THREE.Mesh(geoAbanico(ABAN.ap_m_cono, Z.r, Z.a, 'ap_m_cono')")
+
+# ---------- PACK 62 ART (23/11): reloj de reaparición (`ui/ap_reloj.webp`, tools/autopista/procesa_pack62.py) ----------
+# Los segundos van en el hueco redondo (centro al 50 % / 42 %, radio 29,5 % del ancho) y quién te ha derribado en el hueco de abajo (88 %).
+js = sub(js, """pon_(m, 'innerHTML', (k ? '<div class="mRec"><img src="' + retratoDe(ULTIMA_BAJA) + '" alt=""><span>Te ha derribado<b>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</b></span></div>' : '') + '<div class="mVuelta">Vuelves en <b>' + v.muerto + '</b> s</div><small>Mientras, puedes comprar en el taller</small>' + recapMuerte(v));""",
+             """pon_(m, 'innerHTML', '<div class="mReloj"><b>' + v.muerto + '</b><i>vuelves en</i><span>' + (k ? (k.k === 'h' ? '<img src="' + retratoDe(ULTIMA_BAJA) + '" alt="">' : '') + '<em>' + (k.nombre || (k.k === 't' ? 'una torre' : k.k === 'j' ? NEUTRO[k.tipo].nombre : 'una horda')) + '</em>' : 'Derribado') + '</span></div><small>Mientras, puedes comprar en el taller</small>' + recapMuerte(v));""")
+html = sub(html, '</head>', """<style>/* 23/11: reloj de reaparición del Pack 62 */
+.mReloj{position:relative;width:min(178px,calc(var(--vh) * 44));aspect-ratio:1083/1190;background:url(ui/ap_reloj.webp) center/100% 100% no-repeat;flex:none;filter:drop-shadow(0 0 14px #ff2a5a66)}
+.mReloj b{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font:900 calc(var(--vh) * 12.5)/1 'Arial Black',system-ui,sans-serif;color:#fff;text-shadow:0 0 12px #ff3a6a,0 2px 4px #000}
+.mReloj i{position:absolute;left:0;right:0;top:24%;text-align:center;font:700 10px system-ui,sans-serif;font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:#ffb3c4}
+.mReloj span{position:absolute;left:9%;right:9%;top:88%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;gap:5px;font:700 12px system-ui,sans-serif;color:#ffd0da;white-space:nowrap;overflow:hidden}
+.mReloj span img{width:18px;height:18px;border-radius:50%;border:1.5px solid #ff5a7a;object-fit:cover}
+.mReloj span em{font-style:normal;color:#fff;font-weight:900;overflow:hidden;text-overflow:ellipsis}
+</style>
+</head>""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

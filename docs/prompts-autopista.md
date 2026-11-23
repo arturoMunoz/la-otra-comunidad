@@ -655,3 +655,18 @@ MEDIDAS (las dos iguales; muy importante, el juego choca con estas medidas): ori
 
 Técnico: 8.000-15.000 triángulos cada uno, UNA textura de 1024 (atlas) por modelo y un material aparte llamado «luz» para lo que brilla (dentro del colector, luces de la central), sin esqueleto ni animaciones, mirando a +X como se dice arriba. Entrega un zip con los dos .glb, una captura de cada uno vista desde arriba a 50° con el monstruo dentro y las licencias en un txt (CC0 si usas piezas de Kenney/Quaternius).
 ```
+
+## 23/11 · Pack Autopista 64 WORK — la base: núcleo y plataforma de salida en 3D (adjuntar `Pack64_adjuntos.zip`: `ap_estructuras.glb`, `ap_moha.glb`, `ap_foso_nasor.glb`)
+
+Henar: «no me gusta nada el spawn». Ahora el núcleo es un bloque azul teñido, la fuente una columna negra y la plataforma un dibujo plano (Pack 45).
+
+```
+WORK · Pack Autopista 64 · La BASE de cada equipo en A-6, juego móvil tipo Wild Rift con cámara desde arriba a ~51° (ciudad española con autopistas al atardecer, cyberpunk serio: hormigón, acero, neón). Cada base está junto a un peaje de autopista. Te adjunto lo que hay ahora (`ap_estructuras.glb`: el núcleo y la fuente que NO me gustan), un héroe (`ap_moha.glb`) para la escala y `ap_foso_nasor.glb` para el estilo que SÍ me gusta. Dos modelos:
+
+1) `ap_nucleo.glb` — EL NÚCLEO (lo que hay que destruir para ganar, como el nexo del LoL): el centro de control del peaje convertido en un reactor: una base octogonal de hormigón y acero con escalones, cuatro pilares inclinados que sujetan una jaula, y dentro un NÚCLEO de energía (esfera o cristal) que flota, con un ANILLO alrededor. Debe leerse desde arriba como lo más importante de la base. Medidas: cabe en un círculo de 2,4 m de radio (4,8 m de diámetro) y mide como mucho 5,5 m de alto; origen en el centro del suelo.
+2) `ap_salida.glb` — la PLATAFORMA DE SALIDA (donde reaparecen los héroes y se curan): un hexágono de hormigón pulido y placas de acero de 10,5 m de vértice a vértice y 0,35 m de alto, con rampa suave en sus 6 lados, marcas de pista de aterrizaje en el suelo (círculo central y flechas), y en 3 vértices alternos un poste de luz de 2,5-3 m con una baliza encima. El CENTRO (círculo de 3 m) totalmente libre y plano: ahí salen los héroes. Origen en el centro del suelo.
+
+Para el color de cada equipo: todo lo que brilla (el núcleo, el anillo, las juntas de neón, las balizas) en un material aparte llamado «luz», en BLANCO: el juego lo tiñe de azul o de rojo. El núcleo y el anillo, además, como nodos separados llamados «nucleo» y «anillo» (el juego los hace girar y latir).
+
+Técnico: 6.000-12.000 triángulos cada uno, UNA textura de 1024 (atlas) por modelo más el material «luz», sin esqueleto ni animaciones, +Y arriba, unidad = metro. Entrega un zip con los dos .glb, una captura de cada uno a 50° junto a `ap_moha.glb` para ver la escala y las licencias en un txt.
+```

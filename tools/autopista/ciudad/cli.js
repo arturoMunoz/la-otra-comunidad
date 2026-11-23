@@ -18,7 +18,7 @@ function construyeCiudad(scene_) {
   const tH = cargaTex('texturas/campo.webp', true), tB = cargaTex('../batalla/texturas/ap_asfalto.webp', true), tC = cargaTex('../batalla/texturas/ap_hormigon.webp', true);
   const v2 = (L) => L.map((p) => new THREE.Vector2(p.x, p.z));
   const BX = MAPA.ancho + 14, BZ = MAPA.largo + 12;
-  const R4 = RECTS.map((r) => new THREE.Vector4(r[0], r[1], r[2], r[3])); while (R4.length < 40) R4.push(new THREE.Vector4(999, 999, 999, 999));
+  const R4 = RECTS.filter((r) => !r[4]).map((r) => new THREE.Vector4(r[0], r[1], r[2], r[3])); while (R4.length < 40) R4.push(new THREE.Vector4(999, 999, 999, 999));
   const C3 = CAMPOS.filter((c) => !NEUTRO[c.tipo].pasiva && !NEUTRO[c.tipo].jefe && !NEUTRO[c.tipo].draco).map((c) => new THREE.Vector3(c.x, c.z, NEUTRO[c.tipo].grande ? 3.9 : 3.1)); while (C3.length < 12) C3.push(new THREE.Vector3(999, 999, 0));
   const bakeU = {tH: {value: tH}, tB: {value: tB}, tC: {value: tC}, uA: {value: v2(CARRILES[0])}, uB: {value: v2(CARRILES[1])}, uR: {value: R4}, uC: {value: C3},
     uPit: {value: new THREE.Vector2(PIT.x, PIT.z)}, uPit2: {value: new THREE.Vector2(PIT2.x, PIT2.z)},
@@ -116,7 +116,7 @@ function construyeCiudad(scene_) {
   /* zócalo de hormigón de cada manzana: se lee como sólida aunque entre dos edificios quede un hueco */
   const tZ = tC.clone(); tZ.source = tC.source; tZ.repeat.set(1, 1); tZ.wrapS = tZ.wrapT = THREE.RepeatWrapping;
   const mZ = new THREE.MeshLambertMaterial({map: tZ, color: '#9aa0a8'}); 
-  for (const r of RECTS) {const w = r[2] - r[0], d = r[3] - r[1]; if (Math.abs(r[0]) > 60) continue; const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.32, d), mZ); b.position.set((r[0] + r[2]) / 2, 0.16, (r[1] + r[3]) / 2); b.receiveShadow = true; b.castShadow = false;
+  for (const r of RECTS) {if (r[4]) continue; const w = r[2] - r[0], d = r[3] - r[1]; if (Math.abs(r[0]) > 60) continue; const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.32, d), mZ); b.position.set((r[0] + r[2]) / 2, 0.16, (r[1] + r[3]) / 2); b.receiveShadow = true; b.castShadow = false;
     const uv = b.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 3, uv.getY(i) * d / 3); scene_.add(b);}
   /* matorrales (la hierba alta de las calles: zarzas que han crecido entre el asfalto) */
   const matas = {}, mata = (n, x, z, s) => (matas[n] = matas[n] || []).push({x, z, ry: al() * 6.28, s});
@@ -150,7 +150,7 @@ function edificiosCiudad(al) {
   /* manzanas de fuera: una franja de 2,4 m mirando a la autopista con árboles y coches aparcados; los edificios, detrás */
   const verde = {}, coches = [];
   for (const r0 of RECTS) {
-    let r = r0;
+    if (r0[4]) continue; let r = r0;
     if (Math.abs(r0[0] + r0[2]) / 2 > 20 && r0[2] - r0[0] > 8) {
       const este = r0[0] > 0, xb = este ? r0[0] + 1.2 : r0[2] - 1.2; r = este ? [r0[0] + 2.4, r0[1], r0[2], r0[3]] : [r0[0], r0[1], r0[2] - 2.4, r0[3]];
       for (let z = r0[1] + 2.5; z < r0[3] - 1.5; z += 4.6) {const n = al() < 0.55 ? 'eucalipto_' + (1 + Math.floor(al() * 2)) : 'pino_' + (1 + Math.floor(al() * 3)); (verde[n] = verde[n] || []).push({x: xb + (al() - 0.5) * 0.4, z: z + (al() - 0.5), y: 0.32, ry: al() * 6.28, s: 0.6 + al() * 0.2});
@@ -216,12 +216,20 @@ function decoradoCiudad(al) {
   const I = M.ap_ciudad ? infoCiudad() : null, ind = {};
   const mete = (n, x, z, s, ry = 0) => {if (!I || !I[n]) return; const k = I[n]; (ind[n] = ind[n] || []).push({x: x - k.cx * s, z: z - k.cz * s, y: 0.32 - k.y0 * s, ry, s});};
   if (I) {
-    const P2 = PIT2; mete('i_chimney_large', P2.x + 4.2, P2.z - 4.6, 3.2); mete('i_chimney_large', P2.x + 4.4, P2.z + 4.8, 3.2); mete('i_chimney_medium', P2.x + 5.5, P2.z + 0.2, 4.5);
-    mete('i_detail_tank', P2.x + 2.2, P2.z + 5.4, 3.4, Math.PI / 2); mete('i_detail_tank', P2.x + 2.2, P2.z - 5.3, 3.4, Math.PI / 2);
     
     for (const n in ind) {const n0 = BOSQUE.length; instancias('ap_ciudad', n, ind[n], true); for (const im of BOSQUE.slice(n0)) {im.userData.ciudad = true; im.userData.fijo = true;}}
   }
-  colector(G);
+  fososCiudad(G);
+}
+/* 23/11 (Pack 63 WORK): el colector de Nasor y la central del lagarto (antes, cajas y cilindros): el lado abierto de cada modelo mira a +X,
+   hacia su autopista; el del lagarto está girado 180°. Si la jungla aún no ha llegado, se esperan. */
+function fososCiudad(G) {
+  if (!M.ap_foso_nasor || !M.ap_foso_lagarto) {const t = setInterval(() => {if (MAPA_G !== G) clearInterval(t); else if (M.ap_foso_nasor && M.ap_foso_lagarto) {clearInterval(t); fososCiudad(G);}}, 300); return;}
+  for (const [n, P, ry] of [['ap_foso_nasor', PIT, 0], ['ap_foso_lagarto', PIT2, Math.PI]]) {
+    const o = M[n].scene.clone(true); o.position.set(P.x, 0, P.z); o.rotation.y = ry;
+    o.traverse((q) => {if (!q.isMesh) return; q.castShadow = true; q.receiveShadow = true; const m = q.material; if (m && m.name === 'luz') {m.emissiveIntensity = Math.max(m.emissiveIntensity || 1, 2.2); q.castShadow = false;} q.userData.fijo = true;});
+    G.add(o);
+  }
 }
 /* el colector de Nasor: muro de hormigón al fondo con la boca de un tubo enorme (oscura por dentro), dos tubos pequeños y un hilo de agua */
 function colector(G) {

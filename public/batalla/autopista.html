@@ -1040,6 +1040,14 @@ body.peek #mini{box-shadow:0 0 0 2px #5ff4ff,0 0 14px #5ff4ffaa !important}
 .bv.t.jf i{width:118px !important;height:9px !important;box-shadow:0 0 0 1.5px #000,0 0 10px #ff5cf0aa !important}
 .bv.t.jf b{font-size:11px !important;color:#ffe7ff !important;text-shadow:0 1px 2px #000,0 0 6px #b04dff !important}
 </style>
+<style>/* 23/11: reloj de reaparición del Pack 62 */
+.mReloj{position:relative;width:min(178px,calc(var(--vh) * 44));aspect-ratio:1083/1190;background:url(ui/ap_reloj.webp) center/100% 100% no-repeat;flex:none;filter:drop-shadow(0 0 14px #ff2a5a66)}
+.mReloj b{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font:900 calc(var(--vh) * 12.5)/1 'Arial Black',system-ui,sans-serif;color:#fff;text-shadow:0 0 12px #ff3a6a,0 2px 4px #000}
+.mReloj i{position:absolute;left:0;right:0;top:24%;text-align:center;font:700 10px system-ui,sans-serif;font-style:normal;letter-spacing:.08em;text-transform:uppercase;color:#ffb3c4}
+.mReloj span{position:absolute;left:9%;right:9%;top:88%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;gap:5px;font:700 12px system-ui,sans-serif;color:#ffd0da;white-space:nowrap;overflow:hidden}
+.mReloj span img{width:18px;height:18px;border-radius:50%;border:1.5px solid #ff5a7a;object-fit:cover}
+.mReloj span em{font-style:normal;color:#fff;font-weight:900;overflow:hidden;text-overflow:ellipsis}
+</style>
 </head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>
