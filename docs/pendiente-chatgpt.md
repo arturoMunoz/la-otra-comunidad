@@ -111,3 +111,8 @@ No es ChatGPT: en ElevenLabs → Sound Effects. Cada uno 3 veces (3 versiones), 
 - [x] ~~18/11 · Pack Autopista 48 ART — arte del Visor, 4 imágenes (adjuntar Pack48_referencia.zip; prompt en `docs/prompts-autopista.md`)~~ (metido 18/11)
 - [x] ~~18/11 · Pack Autopista 49 ART — fondo propio en el retrato de cada héroe, 7 imágenes (adjuntar Pack49_retratos.zip; prompt en `docs/prompts-autopista.md`)~~ (metido 18/11)
 - [x] ~~18/11 · Pack Autopista 50 WORK — Ata más fiel a su retrato (adjuntar Pack50_ata.zip; prompt en `docs/prompts-autopista.md`)~~ (metido 18/11)
+
+## 23/11 (Henar: «pídemelos»)
+- [ ] Pack Autopista 61 ART — marcas de apuntar nuevas en 6 imágenes (sustituye al 32: flecha, conos, círculo y aro). Prompt en `docs/prompts-autopista.md`.
+- [ ] Pack Autopista 62 ART — reloj de reaparición (antes imagen 2 del Pack 44).
+- [ ] Pack Autopista 63 WORK — fosos de Nasor (el colector) y del lagarto (la central) en 3D; adjuntar `ap_nasor.glb`, `ap_lagarto.glb` y `ap_ciudad.glb`.

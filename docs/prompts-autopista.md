@@ -621,3 +621,37 @@ ART · Pack Autopista 60 · Emblemas de RANGO de la liga de A-6, un juego móvil
  6) DIAMANTE: metal negro con un diamante azul eléctrico enorme en el centro, neón azul y alas de cristal.
  7) LEYENDA DE LA A-6: holográfico fucsia-dorado, corona de neón encima, alas enormes, halo de chispas: el máximo.
 ```
+
+## 23/11 · Pack Autopista 61 ART — marcas de apuntar nuevas (sustituye al Pack 32 entero)
+
+Henar: «que sean metibles, que no queden mal; no sé si me gusta cómo está». Cada pieza en SU imagen y con medidas fijas para que el script las mida y recorte solas. Al llegar: `tools/autopista/pack61/<letra>.png` y un `procesa_pack61.py` que mida bordes y periodo (no recortar a ojo como en el 32).
+
+```
+ART · Pack Autopista 61 · Marcas de apuntar habilidades para A-6, juego móvil tipo Wild Rift visto desde arriba. Estilo: como las del Wild Rift pero cyberpunk serio: relleno blanco MUY translúcido y bordes blancos finos y nítidos con un brillo suave, limpio y elegante, nada de caramelo ni de 3D. TODO en BLANCO/gris sobre fondo NEGRO puro #000000 (el juego las suma como luz y las tiñe del color de cada héroe). Vista cenital plana, sin perspectiva, sin texto, sin marco, sin sombras. Una pieza por imagen y una imagen por mensaje (6 mensajes), siempre con mucho negro alrededor y perfectamente recta y simétrica.
+
+IMAGEN A (1536x1024) — CUERPO DE LA FLECHA: una franja horizontal que cruza la imagen de borde a borde (de x=0 a x=1536), centrada en vertical, de 128 px de alto (de y=448 a y=576). Dos bordes finos (4-6 px) y brillantes arriba y abajo, interior blanco al 15-20 % de opacidad con un patrón suave de chevrones (>) apuntando a la DERECHA que se repite EXACTAMENTE cada 128 px (12 repeticiones), para que se pueda repetir sin costura. Nada fuera de la franja salvo un brillo muy leve.
+IMAGEN B (1024x1024) — PUNTA DE LA FLECHA mirando a la DERECHA: triángulo con la base vertical en x=320 (de y=256 a y=768, 512 px de alto) y la punta en x=832, y=512. La base va ABIERTA (sin línea vertical): solo los dos lados inclinados brillantes y el interior translúcido igual que el cuerpo, para que empalme con él.
+IMAGEN C (1024x1024) — INICIO de la flecha (donde nace, a los pies del héroe): medio aro abierto hacia la DERECHA, centrado en la imagen, de 512 px de alto, mismo borde fino y mismo interior translúcido.
+IMAGEN D (1024x1024) — CONO de 90°: vértice EXACTO en (512, 944), abriéndose hacia ARRIBA con 45° a cada lado hasta un arco de radio 832 px; dos bordes rectos finos, arco exterior más brillante, interior translúcido con unas ondas concéntricas muy suaves.
+IMAGEN E (1024x1024) — CÍRCULO DE ÁREA: disco centrado de radio 448 px (diámetro 896), aro exterior fino y brillante, interior translúcido con una rejilla hexagonal muy suave.
+IMAGEN F (1024x1024) — ARO DE ALCANCE: solo un aro fino centrado de radio 448 px, con una marca corta cada 30° por fuera; dentro, negro.
+```
+
+## 23/11 · Pack Autopista 62 ART — reloj de reaparición (era la imagen 2 del Pack 44)
+
+```
+ART · Pack Autopista 62 · Reloj de reaparición de A-6 (juego móvil tipo Wild Rift en horizontal, autopista española de noche, cyberpunk con colores vivos). Una sola imagen 1024x1024, sin texto, sobre fondo magenta liso #FF00FF: un aro grande de neón rojo-rosa dividido en 12 segmentos como un cronómetro digital, con un hueco redondo grande y vacío en el centro (ahí va el número de segundos, negro translúcido), y debajo, pegado al aro, un hueco alargado vacío para el nombre de quien te derribó. Bordes nítidos, brillo solo dentro del dibujo (nada de humo ni chispas sueltas por el fondo).
+```
+
+## 23/11 · Pack Autopista 63 WORK — los fosos de Nasor y del lagarto en 3D (adjuntar `ap_nasor.glb`, `ap_lagarto.glb` y `ap_ciudad.glb`)
+
+```
+WORK · Pack Autopista 63 · Dos escenarios 3D para A-6, juego móvil tipo Wild Rift con cámara desde arriba a ~51° (ciudad española con autopistas al atardecer, cyberpunk serio). Son los «fosos» de los dos monstruos jefe; ahora están hechos con cajas y cilindros y se nota. Te adjunto los monstruos (`ap_nasor.glb`, `ap_lagarto.glb`) para el tamaño y `ap_ciudad.glb` para que case el estilo de los edificios.
+
+1) `ap_foso_nasor.glb` — EL COLECTOR: Nasor (gusano gigante acorazado) sale de una alcantarilla reventada. Al fondo, una boca de colector enorme de hormigón (4,5 m de diámetro) rota, con rejas dobladas, agua sucia que sale y un brillo morado dentro; muros de contención de hormigón con manchas, tuberías, escalerillas y señales de peligro en los TRES lados cerrados; en las esquinas, escombros, palés y bidones.
+2) `ap_foso_lagarto.glb` — LA CENTRAL: el lagarto vive junto a una subestación eléctrica: al fondo, dos transformadores grandes y una chimenea corta, aisladores de cerámica, cables gruesos que cuelgan y cuadros eléctricos con luces; vallas metálicas con banda de peligro amarilla y negra en los tres lados cerrados; en las esquinas, bobinas de cable y cajas.
+
+MEDIDAS (las dos iguales; muy importante, el juego choca con estas medidas): origen (0,0,0) = donde está el monstruo, en el suelo; unidad = metro; el lado ABIERTO (por donde entran los héroes) mira a +X. Lo que se construye ocupa solo una banda de 1,5 m por dentro del borde de un rectángulo de x∈[-6, 6] y z∈[-10, 10]: el fondo (x de -6 a -4,5) y los dos lados (z de -10 a -8,5 y de 8,5 a 10). Todo lo de dentro (x de -4,5 a 6, z de -8,5 a 8,5) queda LIBRE y sin suelo (el suelo ya lo pinta el juego); el lado +X, abierto del todo. ALTURA: el fondo hasta 6 m como mucho y los lados hasta 3 m (la cámara mira desde arriba y no puede tapar la pelea).
+
+Técnico: 8.000-15.000 triángulos cada uno, UNA textura de 1024 (atlas) por modelo y un material aparte llamado «luz» para lo que brilla (dentro del colector, luces de la central), sin esqueleto ni animaciones, mirando a +X como se dice arriba. Entrega un zip con los dos .glb, una captura de cada uno vista desde arriba a 50° con el monstruo dentro y las licencias en un txt (CC0 si usas piezas de Kenney/Quaternius).
+```
