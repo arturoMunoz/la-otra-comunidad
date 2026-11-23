@@ -262,11 +262,11 @@ function lineaLibre(a, b) {if (RECTS.length && cortaRects(a, b, 0.25)) return fa
 const NEUTRO = {
   warg: {nombre: 'Perro asilvestrado', vida: 560, dano: 26, alcance: 1.9, vatq: 0.9, vel: 5, oro: 45, xp: 55, modelo: 'ap_perro', alto: 1.2},
   orco: {nombre: 'Perro asilvestrado', vida: 430, dano: 22, alcance: 1.8, vatq: 1, vel: 4.4, oro: 35, xp: 40, modelo: 'ap_perro', alto: 1.2},
-  troll: {nombre: 'Toro negro', vida: 2200, dano: 60, alcance: 2.8, vatq: 0.55, vel: 3.6, oro: 120, xp: 200, modelo: 'ap_toro', alto: 2.86, buff: 'troll', grande: true},
+  troll: {rad: 1.3, nombre: 'Toro negro', vida: 2200, dano: 60, alcance: 2.8, vatq: 0.55, vel: 3.6, oro: 120, xp: 200, modelo: 'ap_toro', alto: 2.86, buff: 'troll', grande: true},
   /* la jungla del LoL a la manera de la Tierra Media (Pack Vado 9): rapaces → crebain, Gromp → sapo, azul → Huorn, dragón → draco, cangrejo → nutria */
   crebain: {nombre: 'Buitre', vida: 300, dano: 16, alcance: 1.6, vatq: 1.1, vel: 5, oro: 22, xp: 28, modelo: 'ap_buitre', alto: 0.3},
-  sapo: {nombre: 'Jabalí', vida: 1300, dano: 38, alcance: 2.2, vatq: 0.7, vel: 3.4, oro: 80, xp: 110, modelo: 'ap_jabali', alto: 1.4},
-  huorn: {nombre: 'Coloso del desguace', vida: 1900, dano: 46, alcance: 2.8, vatq: 0.6, vel: 3.2, oro: 110, xp: 180, modelo: 'ap_coloso', alto: 3.5, buff: 'huorn', grande: true},
+  sapo: {rad: 0.8, nombre: 'Jabalí', vida: 1300, dano: 38, alcance: 2.2, vatq: 0.7, vel: 3.4, oro: 80, xp: 110, modelo: 'ap_jabali', alto: 1.4},
+  huorn: {rad: 1.3, nombre: 'Coloso del desguace', vida: 1900, dano: 46, alcance: 2.8, vatq: 0.6, vel: 3.2, oro: 110, xp: 180, modelo: 'ap_coloso', alto: 3.5, buff: 'huorn', grande: true},
   draco: {nombre: 'Lagarto de la central', vida: 2800, dano: 72, alcance: 3.2, vatq: 0.6, vel: 3.6, oro: 150, xp: 260, modelo: 'ap_lagarto', alto: 2.6, grande: true, draco: true},
   nutria: {nombre: 'Rata de alcantarilla', vida: 900, dano: 0, alcance: 0, vatq: 1, vel: 3.2, oro: 70, xp: 90, modelo: 'ap_rata', alto: 0.6, pasiva: true},
   alfa: {nombre: 'Perro jefe', vida: 1800, dano: 50, alcance: 2.2, vatq: 0.8, vel: 5, oro: 110, xp: 180, modelo: 'ap_perro_jefe', alto: 2.0, buff: 'alfa', grande: true},
@@ -1603,7 +1603,7 @@ function paso(dt) {
     if (c.vivos > 0 || S.t < c.resp) return;
     const nd = NEUTRO[c.tipo], k = 1 + S.t / 600; c.vivos = c.n;
     if (nd.draco) {c.elem = S.dracoSig; ev(['jefe', 'lsale', c.x, c.z, 0, c.elem === 'f' ? 1 : 0]);}
-    for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, elem: c.elem, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6});
+    for (let i = 0; i < c.n; i++) S.u.push({id: idSig++, k: 'j', eq: 2, tipo: c.tipo, campo: ci, elem: c.elem, x: c.x + (i - (c.n - 1) / 2) * 1.5, z: c.z, cx: c.x + (i - (c.n - 1) / 2) * 1.5, cz: c.z, vida: nd.vida * k, max: nd.vida * k, cd: 0, ac: 0, rot: Math.atan2(-c.x, -c.z) || 0, rad: nd.rad || (nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6)});
     if (nd.jefe) ev(['jefe', 'sale', c.x, c.z]);
   });
   for (const u of S.u) {
@@ -1671,7 +1671,7 @@ function paso(dt) {
 
 /* habilidades: las resuelve quien simula. dx,dz: dirección; px,pz: punto */
 function frena(e, v, d) {if (e.k === 't' || e.k === 'n') return; if (e.buf) {e.buf.lento = d; e.buf.lentoV = v;} else e.lento = S.t + d;}
-function golpeLinea(h, e, H, n, T) {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}
+function golpeLinea(h, e, H, n, T) {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j' && !NEUTRO[e.tipo].grande)) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4 - radio(e) + 0.6); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; limita(e); if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}
 function avanzaTiroH(p, dt) {/* true = se acaba */
   const h = S.porId.get(p.o), H = p.H, d = Math.min(26 * dt, p.alc - p.rec); if (!h || d <= 0) return true;
   for (const e of enemigosDe(p.eq)) {
@@ -1705,7 +1705,7 @@ function usaHab(h, k, dx, dz, px, pz) {
   if (H.tipo === 'area') {for (const e of en()) if (dist(e, h) < H.radio + radio(e)) {dana(h, e, n, T); if (H.curaH && e.k === 'h') {const mx = st.vida, c = (mx - h.vida) * H.curaH + 15; h.vida = Math.min(mx, h.vida + c); ev(['num', h.x, h.z, '+' + Math.round(c), 'v']);} if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) {if (e.buf) {e.buf.lento = H.durL; e.buf.lentoV = H.lento;} else e.lento = S.t + H.durL;}} ev(['fx', 'onda', h.x, h.z, H.radio * 1.8]); ev(['fx', 'explosion', h.x, h.z, H.radio * 0.6]);}
   if (H.tipo === 'cono') {for (const e of en()) {const ex = e.x - h.x, ez = e.z - h.z, d0 = Math.hypot(ex, ez); if (enCono(ex, ez, dx, dz, H.alc, H.ang / 2, radio(e))) {dana(h, e, n, T); if (H.lento) frena(e, H.lento, H.durL);}} ev(['fx', 'tajo', h.x + dx * 1.8, h.z + dz * 1.8, H.alc]);}
   if (H.tipo === 'linea') {
-{const p = {o: h.id, eq: h.eq, x: h.x - dx * 0.5, z: h.z - dz * 0.5, dx, dz, rec: -0.5, alc: H.alc, n, T, H, toc: [], pid: (S.pidT = (S.pidT || 0) + 1)}; ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26, H.ancho || 0.5, p.pid, h.id]); if (!(h.lat > 0 && avanzaTiroH(p, h.lat))) (S.tirosH = S.tirosH || []).push(p);} if (0) {const e = null; (() => {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}})}
+{const p = {o: h.id, eq: h.eq, x: h.x - dx * 0.5, z: h.z - dz * 0.5, dx, dz, rec: -0.5, alc: H.alc, n, T, H, toc: [], pid: (S.pidT = (S.pidT || 0) + 1)}; ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26, H.ancho || 0.5, p.pid, h.id]); if (!(h.lat > 0 && avanzaTiroH(p, h.lat))) (S.tirosH = S.tirosH || []).push(p);} if (0) {const e = null; (() => {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j' && !NEUTRO[e.tipo].grande)) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4 - radio(e) + 0.6); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; limita(e); if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}})}
   }
   if (H.tipo === 'ejecuta') {/* la Guillotina de Darius: daño más el que le falta; si derriba, se recarga */
     const t = masCercano(h, en().filter((e) => e.k === 'h'), H.alc + 0.6); if (!t) {h.cd[k] = 0; h.hc--; h.mana += cm; return false;}
@@ -2500,7 +2500,7 @@ function dibuja(dt) {
     /* barra de vida */
     let b = BARRAS.get(v.id);
     if (!b) {b = document.createElement('div'); b.className = 'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].grande ? 't' : 'm'}[v.k] + (v.k === 'j' && NEUTRO[v.tipo] && (NEUTRO[v.tipo].jefe || NEUTRO[v.tipo].draco) ? ' jf' : '') + ' e' + (v.eq === 2 ? 2 : v.eq === MI_EQ ? 0 : 1) + (v.id === YO ? ' yo' : ''); b.innerHTML = (v.k === 'h' ? '<b></b>' : '') + '<i><s></s><u></u></i>' + (v.k === 'h' ? '<span class="mn"><u></u></span>' : ''); $('barras').appendChild(b); BARRAS.set(v.id, b);}
-    const altoB = v.k === 'h' ? (HEROES[v.tipo].alto || 2.05) * ESC_H + 0.55 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 : v.k === 't' ? 8 : 6;
+    const altoB = v.k === 'h' ? (HEROES[v.tipo].alto || 2.05) * ESC_H + 0.55 : v.k === 's' ? 2 : v.k === 'j' ? NEUTRO[v.tipo].alto * 0.82 + 0.5 : v.k === 't' ? 8 : 6;
     _p.set(x, altoB, z).project(camera);
     const vis = o.raiz.visible && !muerto && v.vida > 0 && _p.z < 1 && Math.abs(_p.x) < 1.2 && Math.abs(_p.y) < 1.2 && (v.k !== 'j' || v.vida < v.max || NEUTRO[v.tipo].grande);
     /* barras: solo se toca el DOM cuando algo cambia, y se mueven con transform (no recalcula la página entera en cada fotograma) */
@@ -3222,7 +3222,7 @@ const MIRA_H = {};
 const IND_BANDA = {"ap_ind_elfo_basico": 0.5, "ap_ind_elfo_e": 0.39, "ap_ind_elfo_q": 0.203, "ap_ind_enano_basico": 0.534, "ap_ind_gandalf_basico": 0.431, "ap_ind_gandalf_q": 0.659, "ap_ind_gandalf_r": 0.757, "ap_ind_gollum_basico": 0.469, "ap_ind_gollum_e": 0.673, "ap_ind_hobbit_basico": 0.526, "ap_ind_hobbit_q": 0.777, "ap_ind_orco_basico": 0.526, "ap_ind_orco_e": 0.459, "ap_ind_rohan_basico": 0.435, "ap_ind_rohan_q": 0.828, "ap_ind_rohan_r": 0.652};
 const COLOR_FL = {visor: '#5ff4ff', enano: '#9bdcff', gandalf: '#ff8a3a', orco: '#7dff5a', elfo: '#ff5a4a', hobbit: '#c4ff6a', gollum: '#c88bff', rohan: '#ffcf7a'};
 const FL = {};
-const radioVis = (q) => q.k === 's' && (q.tipo === 'a' || q.tipo === 'x') ? 0.8 : q.k === 'h' ? 0.75 : q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
+const radioVis = (q) => q.k === 's' && (q.tipo === 'a' || q.tipo === 'x') ? 0.8 : q.k === 'h' ? 0.75 : q.k === 'j' ? (NEUTRO[q.tipo].rad || (NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6)) : RADIO_V[q.k] || 0.5;
 function primeroEnLinea(x, z, wx, wz, alc, H, arrastra) {
   const r = {iman: false, wx, wz, q: null, t: 0}, vivos = [...VISTA.values()].filter((q) => q.eq !== MI_EQ && q.vida > 0 && q.k !== 'n' && q.k !== 't' && !(q.k === 'h' && (q.muerto >= 0 || q.escondido)) && !((q.k === 's' || q.k === 'j') && q.muerto === 0));
   if (arrastra) {let mejor = null, ma = 0.2; for (const q of vivos) {if (q.k !== 'h') continue; const qx = (q.xi ?? q.x) - x, qz = (q.zi ?? q.z) - z, d = Math.hypot(qx, qz); if (d < 0.5 || d > alc + 0.5) continue; const t0 = qx * wx + qz * wz, per = Math.abs(qx * wz - qz * wx); if (t0 <= 0 || per > H.ancho + radioVis(q) + 0.9) continue; const a = Math.acos(Math.min(1, t0 / d)); if (a < ma) {ma = a; mejor = {qx, qz, d};}}
@@ -3477,16 +3477,16 @@ function pintaAroAtaque(dt) {
   if (aroAt.visible) {aroAt.material.opacity = aroAt.op; aroAt.position.set(v.xi ?? v.x, 0.08, v.zi ?? v.z); aroAt.scale.setScalar(2 * alc / IND_R.ind_alcance);}
 }
 /* con el ataque pulsado y sin mover el joystick: si no hay nadie a tiro, camina hacia el enemigo más cercano (hasta 5 m más allá de su alcance) */
-const RADIO_V = {h: 0.6, s: 0.5, t: 1.6, n: 2};
+const RADIO_V = {h: 0.75, s: 0.5, t: 1.6, n: 2};
 function acercaAtaque(px, pz) {
   const v = VISTA.get(YO); if (!v || v.muerto >= 0 || !atacando() || MANDO.mx || MANDO.mz) return null;
   const alc = HEROES[v.tipo].alcance + 0.5, modo = modoAtaque(), fj = MANDO.fijo && VISTA.get(MANDO.fijo); let mejor = null, md = 1e9, enAlcance = false;
-  if (fj && fj.vida > 0 && !(fj.k === 'h' && (fj.muerto >= 0 || fj.escondido))) {const d = Math.hypot(fj.x - px, fj.z - pz) - (RADIO_V[fj.k] || 0.6); return d <= alc || d > 16 ? null : {x: fj.x - px, z: fj.z - pz};}
+  if (fj && fj.vida > 0 && !(fj.k === 'h' && (fj.muerto >= 0 || fj.escondido))) {const d = Math.hypot(fj.x - px, fj.z - pz) - radioVis(fj); return d <= alc || d > 16 ? null : {x: fj.x - px, z: fj.z - pz};}
   for (const q of VISTA.values()) {
     if (q.eq === MI_EQ || q.vida <= 0) continue;
     if (modo === 't' ? !(q.k === 't' || q.k === 'n') : modo === 's' ? !(q.k === 's' || q.k === 'j') : false) continue;
     if (q.k === 'h' ? q.muerto >= 0 || q.escondido : q.k === 's' || q.k === 'j' ? q.muerto === 0 : false) continue;
-    const r = q.k === 'j' ? (NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6) : RADIO_V[q.k] || 0.5;
+    const r = q.k === 'j' ? (NEUTRO[q.tipo].rad || (NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6)) : RADIO_V[q.k] || 0.5;
     const d = Math.hypot(q.x - px, q.z - pz) - r; if (d <= alc) {enAlcance = true; break;}
     const peso = d + (!modo && (q.k === 't' || q.k === 'n') ? 3 : 0) - (!modo && q.k === 'h' ? 2 : 0); /* sin nadie a tiro, va antes a por el héroe */ if (d < alc + (modo ? 9 : 5) && peso < md) {md = peso; mejor = q;}
   }
@@ -3502,7 +3502,7 @@ function prediceGolpe() {
   if (o.predAc > 0 && ahora - (o.predT || 0) > 900) o.predAc = 0;
   if (!(tap || atacando()) || ahora < PRED.lista) return;
   const alc = H.alcance + 0.6; let obj = null, md = 1e9;
-  for (const q of VISTA.values()) {if (q.eq === MI_EQ || q.vida <= 0 || (q.k === 'h' && (q.muerto >= 0 || q.escondido)) || q.k === 'p') continue; const d = Math.hypot((q.xi ?? q.x) - MIO.x, (q.zi ?? q.z) - MIO.z) - (RADIO_V[q.k] || 0.6); if (d < alc && (d < md || (q.k === 'h' && obj && obj.k !== 'h'))) {md = d; obj = q;}}
+  for (const q of VISTA.values()) {if (q.eq === MI_EQ || q.vida <= 0 || (q.k === 'h' && (q.muerto >= 0 || q.escondido)) || q.k === 'p') continue; const d = Math.hypot((q.xi ?? q.x) - MIO.x, (q.zi ?? q.z) - MIO.z) - radioVis(q); if (d < alc && (d < md || (q.k === 'h' && obj && obj.k !== 'h'))) {md = d; obj = q;}}
   if (!obj && !(tap && !(MANDO.mx || MANDO.mz))) return;
   PRED.lista = ahora + 1000 / (H.vatq * 1.05);
   const lista = BASICOS[v.tipo] || ['atacar']; o.ocup = animaClip(o, lista[((v.ac || 0) + 1 + (o.predAc || 0)) % lista.length], Math.max(1.15, 0.55 * H.vatq * 1.6)) * 0.9; o.predAc = (o.predAc || 0) + 1; o.predT = ahora; o.sqA = 0.1; o.sqT = o.sqD = 0.22; basicoFx(v, o, (v.ac || 0) + o.predAc, obj ? Math.atan2((obj.xi ?? obj.x) - MIO.x, (obj.zi ?? obj.z) - MIO.z) : MIO.rot);
@@ -3521,7 +3521,7 @@ function mueveMio(dt) {
   else {const ac = acercaAtaque(MIO.x, MIO.z), mx = ac ? ac.x : MANDO.mx, mz = ac ? ac.z : MANDO.mz; MIO.mueve = !!(mx || mz) && !(v.flags & 2); if (MIO.mueve) {const l = Math.hypot(mx, mz), k = ac ? 1 : Math.min(1, l); MIO.x += mx / l * st.vel * k * dt; MIO.z += mz / l * st.vel * k * dt; MIO.rot = Math.atan2(mx, mz);}}
   if (!MIO.dash) for (const q of VISTA.values()) {if (q.k !== 'h' || q.id === YO || q.muerto >= 0 || q.escondido) continue; const dx = MIO.x - (q.xi ?? q.x), dz = MIO.z - (q.zi ?? q.z), d = Math.hypot(dx, dz); if (d < CHOQUE_H) {const l = d > 0.001 ? d : 1, ux = d > 0.001 ? dx / l : 1, uz = d > 0.001 ? dz / l : 0; MIO.x += ux * (CHOQUE_H - d) * 0.6; MIO.z += uz * (CHOQUE_H - d) * 0.6;}} /* 17/11: en línea tu móvil manda tu posición: aquí te apartas tú de los demás héroes (el servidor aparta a los bots) */
   /* 23/11: tampoco te metes dentro de las bestias (lo mismo que hace la simulación) */
-  if (!MIO.dash) for (const q of VISTA.values()) {if (q.k !== 'j' || q.vida <= 0 || q.muerto === 0) continue; const nd = NEUTRO[q.tipo] || {}, m = (nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6) + 0.6, dx = MIO.x - (q.xi ?? q.x), dz = MIO.z - (q.zi ?? q.z), d = Math.hypot(dx, dz); if (d < m && d > 0.001) {MIO.x += dx / d * (m - d); MIO.z += dz / d * (m - d);}}
+  if (!MIO.dash) for (const q of VISTA.values()) {if (q.k !== 'j' || q.vida <= 0 || q.muerto === 0) continue; const nd = NEUTRO[q.tipo] || {}, m = (nd.rad || (nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6)) + 0.6, dx = MIO.x - (q.xi ?? q.x), dz = MIO.z - (q.zi ?? q.z), d = Math.hypot(dx, dz); if (d < m && d > 0.001) {MIO.x += dx / d * (m - d); MIO.z += dz / d * (m - d);}}
   limita(MIO);
   /* si el anfitrión me ve muy lejos (me han empujado, he reaparecido), manda él */
   if (Math.hypot(v.x - MIO.x, v.z - MIO.z) > 6 && !MIO.dash) {MIO.x = v.x; MIO.z = v.z;}
@@ -3805,7 +3805,7 @@ function hud() {
   aroTorre(v);
   if (!marcaObj) {marcaObj = indicador('ap_objetivo', '#ff4a3a'); marcaObj.renderOrder = 5;}
   const ob = v.objAt && VISTA.get(v.objAt); marcaObj.visible = !!ob && v.muerto < 0 && ob.vida > 0 && !ob.escondido;
-  if (marcaObj.visible) {const r = ob.k === 't' ? 2.2 : ob.k === 'n' ? 2.6 : ob.k === 'j' && NEUTRO[ob.tipo].grande ? 1.8 : 1; marcaObj.position.set(ob.xi ?? ob.x, 0.16, ob.zi ?? ob.z); marcaObj.scale.setScalar(2 * r * 256 / 235 * (1 + 0.06 * Math.sin(performance.now() / 90)));}
+  if (marcaObj.visible) {const r = ob.k === 't' ? 2.2 : ob.k === 'n' ? 2.6 : radioVis(ob) + 0.25; marcaObj.position.set(ob.xi ?? ob.x, 0.16, ob.zi ?? ob.z); marcaObj.scale.setScalar(2 * r * 256 / 235 * (1 + 0.06 * Math.sin(performance.now() / 90)));}
   ['q', 'w', 'e', 'r'].forEach((k, i) => {
     const b = $('b' + k.toUpperCase()), c = b.querySelector('.cd'), cd = v.cds ? v.cds[i] : 0, rk = v.rk ? v.rk[i] : 1, tot = HEROES[v.tipo].hab[k].cd * (1 - 0.08 * Math.max(0, rk - 1));
     c.classList.toggle('hidden', !(cd > 0)); c.textContent = cd > 0 ? (cd < 1 ? cd.toFixed(1) : Math.ceil(cd)) : ''; c.style.setProperty('--f', cd > 0 ? Math.min(100, cd / tot * 100) + '%' : '0%');

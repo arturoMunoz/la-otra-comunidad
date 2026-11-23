@@ -1047,7 +1047,7 @@ js = sub(js, "new THREE.WebGLRenderer({antialias: true, powerPreference: 'high-p
 js = sub(js, '    const ex0 = h.x, ez0 = h.z; let golpeados = 0;\n    const lista = en().map((e) => ({e, t: (e.x - ex0) * dx + (e.z - ez0) * dz})).filter((o) => o.t > 0 && o.t < H.alc).sort((a, b) => a.t - b.t);\n    for (const o of lista) {const px0 = ex0 + dx * o.t, pz0 = ez0 + dz * o.t; if (Math.hypot(o.e.x - px0, o.e.z - pz0) < H.ancho + radio(o.e)) {const e = o.e; luego(o.t / 26, () => {' + "dana(h, e, n, T);", "{const p = {o: h.id, eq: h.eq, x: h.x - dx * 0.5, z: h.z - dz * 0.5, dx, dz, rec: -0.5, alc: H.alc, n, T, H, toc: []}; if (!(h.lat > 0 && avanzaTiroH(p, h.lat))) (S.tirosH = S.tirosH || []).push(p);} if (0) {const e = null; (() => {dana(h, e, n, T);")
 js = sub(js, "}); golpeados++; if (!H.perfora) break;}}\n    ev(['tiro', H.proy, ex0, ez0, ex0 + dx * H.alc, ez0 + dz * H.alc, 26]);", "})}\n    ev(['tiro', H.proy, h.x, h.z, h.x + dx * H.alc, h.z + dz * H.alc, 26]);")
 js = sub(js, "/* quemadura de la brasa del troll */", """mueveTirosH(dt); /* quemadura de la brasa del troll */""")
-js = sub(js, "function usaHab(h, k, dx, dz, px, pz) {", """function golpeLinea(h, e, H, n, T) {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j')) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}
+js = sub(js, "function usaHab(h, k, dx, dz, px, pz) {", """function golpeLinea(h, e, H, n, T) {dana(h, e, n, T); if (H.aturde && e.k !== 't') e.aturd = S.t + H.aturde; if (H.lento) frena(e, H.lento, H.durL); if (H.tira && e.vida > 0 && (e.k === 'h' || e.k === 's' || e.k === 'j' && !NEUTRO[e.tipo].grande)) {const l2 = Math.hypot(e.x - h.x, e.z - h.z) || 1, q = Math.max(0, l2 - 1.4 - radio(e) + 0.6); e.x -= (e.x - h.x) / l2 * q; e.z -= (e.z - h.z) / l2 * q; limita(e); if (e.k === 'h') {e.dash = null; e.px = undefined;} limita(e); ev(['tp', e.id, e.x, e.z]);}}
 function avanzaTiroH(p, dt) {/* true = se acaba */
   const h = S.porId.get(p.o), H = p.H, d = Math.min(26 * dt, p.alc - p.rec); if (!h || d <= 0) return true;
   for (const e of enemigosDe(p.eq)) {
@@ -2569,6 +2569,25 @@ html = sub(html, '</head>', """<style>/* 23/11: barra grande de Nasor y del laga
 </head>""")
 
 js = sub(js, "      if (v.k === 'h' && b.dataset.max !== String(v.max))", "      if (v.k === 'j' && b.classList.contains('jf')) {const t = NEUTRO[v.tipo].nombre + ' · ' + Math.ceil(v.vida); if (b._t !== t) {b._t = t; if (!b._b) {b._b = document.createElement('b'); b.prepend(b._b);} b._b.textContent = t;}}\n      if (v.k === 'h' && b.dataset.max !== String(v.max))")
+
+# ---------- CUERPOS A SU TAMAÑO (23/11, Henar: «mejora las interacciones entre personajes y las hitboxes») ----------
+# Medido con tools/pruebas/t_huella.py (lo que ocupa cada dibujo visto desde arriba): el toro (2,3 × 4 m) y el coloso (3 m) tenían cuerpo de 1,1 m
+# y el jabalí (1,1 × 2,8 m) de 0,6: se les pegaba «en el aire» o se metía uno dentro. Ahora toro y coloso 1,3 y jabalí 0,8 (`rad` en NEUTRO),
+# lo mismo en la simulación, en el aro de debajo, en el acercarse para pegar y en el choque. Y el héroe fijado como objetivo se mide con su cuerpo de
+# verdad (0,75; el cliente usaba 0,6).
+js = sub(js, "rad: nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6}", "rad: nd.rad || (nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6)}")
+assert js.count("(NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6)") == 2, 'radios cliente'
+js = js.replace("(NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6)", "(NEUTRO[q.tipo].rad || (NEUTRO[q.tipo].jefe ? 1.9 : NEUTRO[q.tipo].draco ? 1.4 : NEUTRO[q.tipo].grande ? 1.1 : 0.6))")
+js = sub(js, "m = (nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6) + 0.6", "m = (nd.rad || (nd.jefe ? 1.9 : nd.draco ? 1.4 : nd.grande ? 1.1 : 0.6)) + 0.6")
+js = sub(js, "sapo: {nombre: 'Jabalí', vida: 1300,", "sapo: {rad: 0.8, nombre: 'Jabalí', vida: 1300,")
+js = sub(js, "troll: {nombre: 'Toro negro',", "troll: {rad: 1.3, nombre: 'Toro negro',")
+js = sub(js, "huorn: {nombre: 'Coloso del desguace',", "huorn: {rad: 1.3, nombre: 'Coloso del desguace',")
+js = sub(js, "const RADIO_V = {h: 0.6, s: 0.5, t: 1.6, n: 2};", "const RADIO_V = {h: 0.75, s: 0.5, t: 1.6, n: 2};")
+js = sub(js, "const d = Math.hypot(fj.x - px, fj.z - pz) - (RADIO_V[fj.k] || 0.6);", "const d = Math.hypot(fj.x - px, fj.z - pz) - radioVis(fj);")
+js = sub(js, "const r = ob.k === 't' ? 2.2 : ob.k === 'n' ? 2.6 : ob.k === 'j' && NEUTRO[ob.tipo].grande ? 1.8 : 1; marcaObj.position",
+             "const r = ob.k === 't' ? 2.2 : ob.k === 'n' ? 2.6 : radioVis(ob) + 0.25; marcaObj.position")   # la marca de lo que atacas, por fuera de su cuerpo (en Nasor salía por dentro)
+js = sub(js, "const d = Math.hypot((q.xi ?? q.x) - MIO.x, (q.zi ?? q.z) - MIO.z) - (RADIO_V[q.k] || 0.6); if (d < alc && (d < md", "const d = Math.hypot((q.xi ?? q.x) - MIO.x, (q.zi ?? q.z) - MIO.z) - radioVis(q); if (d < alc && (d < md")   # el golpe que predice tu móvil mide los cuerpos igual que la simulación
+js = sub(js, "v.k === 'j' ? NEUTRO[v.tipo].alto + 0.6 :", "v.k === 'j' ? NEUTRO[v.tipo].alto * 0.82 + 0.5 :")   # la barra de las bestias pegada a su cabeza (Nasor mide ~4,6 m de verdad)
 
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
