@@ -1,0 +1,19 @@
+A-6 · Pack Autopista 64 · Bases de equipo
+
+La geometría y los atlas de ap_nucleo.glb y ap_salida.glb se han creado
+para este pack y se ofrecen bajo CC0 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+El personaje de las dos capturas es ap_moha.glb del Pack 57 de A-6.
+Sus derechos y licencias previos corresponden a sus titulares.
+Las estructuras originales del peaje y el foso de Nasor se utilizaron
+como referencias. Los GLB entregados contienen solo las estructuras nuevas.
+
+Integración en Three.js
++Y arriba, metros. Colocar el nodo raíz en el centro a nivel del suelo.
+Los nodos nucleo y anillo son independientes. Ambos tienen el pivote en
+el centro de la cámara del reactor, a 3,21 m del suelo.
+El material luz es blanco en ambos GLB. Para dar color de equipo tanto
+a la superficie como a su emisión, asignar el mismo color a color y
+emissive del material. Si ambos equipos comparten una carga del GLB,
+clonar luz por equipo antes de teñirlo.

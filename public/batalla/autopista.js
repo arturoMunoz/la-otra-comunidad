@@ -403,7 +403,7 @@ const sol = new THREE.DirectionalLight('#ffe2b8', 2.2); sol.position.set(12, 30,
 sol.shadow.mapSize.set(2048, 2048); Object.assign(sol.shadow.camera, {left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 90}); scene.add(sol, sol.target);
 
 const loader = new GLTFLoader(), M = {}, TX = {};
-const VADO = ['ap_ciudad', 'ap_foso_nasor', 'ap_foso_lagarto', 'ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'ap_visor', 'vado_arboles', 'vado_rocas', 'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
+const VADO = ['ap_nucleo', 'ap_salida', 'ap_ciudad', 'ap_foso_nasor', 'ap_foso_lagarto', 'ap_farola', 'ap_quitamiedos', 'ap_coche_1', 'ap_coche_2', 'ap_coche_3', 'ap_camion', 'ap_cono', 'ap_senal', 'ap_valla', 'ap_brask', 'ap_vael', 'ap_grub', 'ap_ata', 'ap_birdie', 'ap_fu', 'ap_moha', 'ap_visor', 'vado_arboles', 'vado_rocas', 'ap_estructuras', 'vado_cubiles', 'ap_sub_azul_m', 'ap_sub_azul_r', 'ap_sub_rojo_m', 'ap_sub_rojo_r', 'ap_super_azul', 'ap_super_rojo', 'ap_vegetacion', 'ap_borde', 'ap_suelo_props', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla', 'palantir', 'gandalf_kk', 'orco_kk', 'gollum'];
 /* modelos: los de la jungla solo hacen falta en la Batalla (2 contra 2) y se bajan después; los que no se usaban (capitán, estandartes, barriles…: casi 3 MB) ya no se bajan.
    Los del Abismo van adelgazados en modelos_l/ (sin los clips que aquí no se usan y con las texturas en WebP: tools/vado/adelgaza.py). */
 const JUNGLA = ['ap_ciudad', 'ap_foso_nasor', 'ap_foso_lagarto', 'ap_nasor', 'ap_lagarto', 'ap_toro', 'ap_coloso', 'ap_perro', 'ap_perro_jefe', 'ap_buitre', 'ap_jabali', 'ap_rata', 'ap_jungla'];
@@ -1094,7 +1094,28 @@ const UT = {value: 0}, FUENTE_AROS = []; let LUCES_AIRE = null;
 function colorFuentes() {for (const a of FUENTE_AROS) a.material.color.set(a.userData.eq === MI_EQ ? '#4fb6ff' : '#ff5a4a'); ponFuentesA6();}
 const FUENTES_A6 = [];
 let TEX_HOR_PL = null, PLAT_TEX = null;
+const COL_EQ = (eq) => eq === MI_EQ ? '#2f8cff' : '#ff2a3a';
+function luzEquipo(o, col, k) {const luz = []; o.traverse((q) => {if (!q.isMesh || !q.material) return; q.material = [].concat(q.material).map((m) => {if (m.name !== 'luz') {if (!m.userData.frio) {m.userData.frio = 1; m.color.multiply(new THREE.Color(0.8, 0.86, 0.98));} return m;} /* la piedra beis, más fría (hormigón) */ m = m.clone(); m.color.set(col); if (m.emissive) {m.emissive.set(col); m.emissiveIntensity = k;} luz.push(m); return m;}); if (q.material.length === 1) q.material = q.material[0];}); return luz;}
+function nucleoA6(v) {
+  const g = new THREE.Group(), b = pieza('ap_nucleo', 'ap_nucleo'), luz = luzEquipo(b, COL_EQ(v.eq), 1.1);
+  g.add(b); g.rotation.y = v.eq ? 0 : Math.PI;
+  return {raiz: g, nuc: b.getObjectByName('nucleo'), ani: b.getObjectByName('anillo'), luz, t0: Math.random() * 5};
+}
+function animaNucleo(o, v, dt) {
+  const t = performance.now() / 1000 + o.t0, pv = Math.max(0, v.vida / (v.max || 1));
+  if (o.ani) {o.ani.rotation.y += dt * (0.5 + (1 - pv) * 1.8); o.ani.rotation.x = 0.16 * Math.sin(t * 0.7); o.ani.rotation.z = 0.16 * Math.cos(t * 0.55);}
+  if (o.nuc) {o.nuc.position.y = 3.21 + 0.08 * Math.sin(t * 1.6); o.nuc.rotation.y -= dt * 0.35; o.nuc.scale.setScalar(1 + 0.035 * Math.sin(t * 3.2));}
+  const k = pv < 0.3 ? (Math.random() < 0.1 ? 0.2 : 1 + 0.5 * Math.sin(t * 11)) : 1.05 + 0.35 * Math.sin(t * 3.2);
+  for (const m of o.luz) m.emissiveIntensity = k;
+}
+function salidaA6(eq) {
+  const f = BASES[eq].fuente, n = BASES[eq].nexo, o = pieza('ap_salida', 'ap_salida'); luzEquipo(o, COL_EQ(eq), 1);
+  o.traverse((q) => {if (q.isMesh) q.receiveShadow = true;});
+  const a = Math.atan2(n.z - f.z, n.x - f.x); o.rotation.y = Math.PI / 3 - a; /* el hueco entre farolas (a 60°) mira al núcleo y al mapa */
+  o.scale.setScalar(0.82); o.position.set(f.x - Math.cos(a) * 1.6, 0, f.z - Math.sin(a) * 1.6); o.userData.salida = 1; /* más pequeña y 1,6 m hacia atrás: no se monta en el núcleo */ (MAPA_G || scene).add(o); FUENTES_A6.push(o);
+}
 function plataformaSalida(eq) {
+  if (M.ap_salida) {salidaA6(eq); return;}
   const f = BASES[eq].fuente, col = eq === MI_EQ ? '#2f9cff' : '#ff2a3a', g = new THREE.Group();
   if (!TEX_HOR_PL) {TEX_HOR_PL = cargaTex('../batalla/texturas/ap_hormigon.webp', true); TEX_HOR_PL.repeat.set(3, 3);}
   const losa = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.6, 0.36, 6), new THREE.MeshLambertMaterial({map: TEX_HOR_PL, color: '#8a909a'})); losa.position.y = 0.18; losa.receiveShadow = true; g.add(losa);
@@ -1107,7 +1128,7 @@ function plataformaSalida(eq) {
 function ponFuentesA6() {
   for (const o of FUENTES_A6) o.parent && o.parent.remove(o); FUENTES_A6.length = 0;
   for (const eq of [0, 1]) plataformaSalida(eq);
-  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja'); fusiona(o); o.position.set(f.x, 0, f.z); o.rotation.y = eq ? 0 : Math.PI; (MAPA_G || scene).add(o); FUENTES_A6.push(o);}
+  if (!M.ap_salida) for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja'); fusiona(o); o.position.set(f.x, 0, f.z); o.rotation.y = eq ? 0 : Math.PI; (MAPA_G || scene).add(o); FUENTES_A6.push(o);}
 }
 const GLSL_RUIDO = `float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
   float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1,0)),f.x),mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x),f.y);}
@@ -2107,8 +2128,9 @@ function creaVis(v) {
     const mats = []; g.traverse((q) => {if (q.isMesh) {q.material = q.material.clone(); q.material.transparent = true; mats.push(q.material);}});
     o = {raiz: g, est, mats}; luzFuego(1.6, v.z);
   } else if (v.k === 'n') {
+    if (M.ap_nucleo) {o = nucleoA6(v); luzFuego(0, v.z);} else {
     const g = new THREE.Group(), b = pieza('ap_estructuras', v.eq === MI_EQ ? 'nexo_azul' : 'nexo_rojo'); fusiona(b); b.scale.setScalar(0.6); {const c = new THREE.Color(v.eq === MI_EQ ? '#2f8cff' : '#ff2a3a'); b.traverse((q) => {if (q.isMesh && q.material) {q.material = q.material.clone(); q.material.color.lerp(c, 0.3); if (q.material.emissive) {q.material.emissive.copy(c); q.material.emissiveIntensity = 0.22;}}});} g.add(b); g.rotation.y = v.eq ? 0 : Math.PI;
-    o = {raiz: g}; luzFuego(0, v.z);
+    o = {raiz: g}; luzFuego(0, v.z);}
   }
   o.raiz.position.set(v.x, 0, v.z); scene.add(o.raiz); o.ac = v.ac; o.hc = v.hc;
   if (o.clips) pon(o, 'quieto');
@@ -2507,7 +2529,7 @@ function dibuja(dt) {
       const yo = VISTA.get(YO), ej = ejes(), hx = (yo ? (yo.xi ?? yo.x) : 0) - x, hz = (yo ? (yo.zi ?? yo.z) : 0) - z, delante = hx * ej.F.x + hz * ej.F.z, tapa = yo && Math.abs(hx * ej.R.x + hz * ej.R.z) < 3.2 && delante > -1 && delante < 6.5;
       const op = tapa ? 0.35 : 1; if (o.op !== op) {o.op = op; for (const m of o.mats) {m.opacity = op; m.depthWrite = op === 1;}}
     }
-    else if (v.k === 'n') o.raiz.visible = v.vida > 0;
+    else if (v.k === 'n') {o.raiz.visible = v.vida > 0; if (o.nuc) animaNucleo(o, v, dt);}
     if (o.aro) {o.aro.position.set(x, 0.05, z); o.aro.visible = o.raiz.visible && !muerto; if (v.k === 'h') o.aro.rotation.y += dt * 0.6;}
     /* barra de vida */
     let b = BARRAS.get(v.id);

@@ -2636,6 +2636,40 @@ html = sub(html, '</head>', """<style>/* 23/11: reloj de reaparición del Pack 6
 </style>
 </head>""")
 
+# ---------- PACK 64 WORK: NÚCLEO Y PLATAFORMA DE SALIDA EN 3D (23/11, Henar: «no me gusta nada el spawn»; originales en tools/autopista/pack64) ----------
+# ap_nucleo = reactor con el núcleo y el anillo sueltos (pivote a 3,21 m): el anillo gira (más deprisa cuanto más herido), el núcleo flota y late,
+# y con menos del 30 % de vida la luz parpadea. ap_salida = plataforma hexagonal con 3 farolas (a 0°, ±120°): se gira para que el hueco entre
+# dos farolas mire hacia el centro del mapa. Material «luz» blanco: se clona por equipo con color y emisión del equipo (azul el tuyo).
+js = sub(js, "const VADO = ['ap_ciudad',", "const VADO = ['ap_nucleo', 'ap_salida', 'ap_ciudad',")
+js = sub(js, "    const g = new THREE.Group(), b = pieza('ap_estructuras', v.eq === MI_EQ ? 'nexo_azul' : 'nexo_rojo'); fusiona(b); b.scale.setScalar(0.6);",
+         "    if (M.ap_nucleo) {o = nucleoA6(v); luzFuego(0, v.z);} else {\n    const g = new THREE.Group(), b = pieza('ap_estructuras', v.eq === MI_EQ ? 'nexo_azul' : 'nexo_rojo'); fusiona(b); b.scale.setScalar(0.6);")
+js = sub(js, "    o = {raiz: g}; luzFuego(0, v.z);\n  }", "    o = {raiz: g}; luzFuego(0, v.z);}\n  }")
+js = sub(js, "    else if (v.k === 'n') o.raiz.visible = v.vida > 0;", "    else if (v.k === 'n') {o.raiz.visible = v.vida > 0; if (o.nuc) animaNucleo(o, v, dt);}")
+js = sub(js, "  for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja');",
+         "  if (!M.ap_salida) for (const eq of [0, 1]) {const f = BASES[eq].fuente, o = pieza('ap_estructuras', eq === MI_EQ ? 'fuente_azul' : 'fuente_roja');")
+js = sub(js, "function plataformaSalida(eq) {", """const COL_EQ = (eq) => eq === MI_EQ ? '#2f8cff' : '#ff2a3a';
+function luzEquipo(o, col, k) {const luz = []; o.traverse((q) => {if (!q.isMesh || !q.material) return; q.material = [].concat(q.material).map((m) => {if (m.name !== 'luz') {if (!m.userData.frio) {m.userData.frio = 1; m.color.multiply(new THREE.Color(0.8, 0.86, 0.98));} return m;} /* la piedra beis, más fría (hormigón) */ m = m.clone(); m.color.set(col); if (m.emissive) {m.emissive.set(col); m.emissiveIntensity = k;} luz.push(m); return m;}); if (q.material.length === 1) q.material = q.material[0];}); return luz;}
+function nucleoA6(v) {
+  const g = new THREE.Group(), b = pieza('ap_nucleo', 'ap_nucleo'), luz = luzEquipo(b, COL_EQ(v.eq), 1.1);
+  g.add(b); g.rotation.y = v.eq ? 0 : Math.PI;
+  return {raiz: g, nuc: b.getObjectByName('nucleo'), ani: b.getObjectByName('anillo'), luz, t0: Math.random() * 5};
+}
+function animaNucleo(o, v, dt) {
+  const t = performance.now() / 1000 + o.t0, pv = Math.max(0, v.vida / (v.max || 1));
+  if (o.ani) {o.ani.rotation.y += dt * (0.5 + (1 - pv) * 1.8); o.ani.rotation.x = 0.16 * Math.sin(t * 0.7); o.ani.rotation.z = 0.16 * Math.cos(t * 0.55);}
+  if (o.nuc) {o.nuc.position.y = 3.21 + 0.08 * Math.sin(t * 1.6); o.nuc.rotation.y -= dt * 0.35; o.nuc.scale.setScalar(1 + 0.035 * Math.sin(t * 3.2));}
+  const k = pv < 0.3 ? (Math.random() < 0.1 ? 0.2 : 1 + 0.5 * Math.sin(t * 11)) : 1.05 + 0.35 * Math.sin(t * 3.2);
+  for (const m of o.luz) m.emissiveIntensity = k;
+}
+function salidaA6(eq) {
+  const f = BASES[eq].fuente, n = BASES[eq].nexo, o = pieza('ap_salida', 'ap_salida'); luzEquipo(o, COL_EQ(eq), 1);
+  o.traverse((q) => {if (q.isMesh) q.receiveShadow = true;});
+  const a = Math.atan2(n.z - f.z, n.x - f.x); o.rotation.y = Math.PI / 3 - a; /* el hueco entre farolas (a 60°) mira al núcleo y al mapa */
+  o.scale.setScalar(0.82); o.position.set(f.x - Math.cos(a) * 1.6, 0, f.z - Math.sin(a) * 1.6); o.userData.salida = 1; /* más pequeña y 1,6 m hacia atrás: no se monta en el núcleo */ (MAPA_G || scene).add(o); FUENTES_A6.push(o);
+}
+function plataformaSalida(eq) {
+  if (M.ap_salida) {salidaA6(eq); return;}""")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

@@ -116,4 +116,4 @@ No es ChatGPT: en ElevenLabs → Sound Effects. Cada uno 3 veces (3 versiones), 
 - [x] (METIDO 23/11) Pack Autopista 61 ART — marcas de apuntar nuevas en 6 imágenes (sustituye al 32: flecha, conos, círculo y aro). Prompt en `docs/prompts-autopista.md`.
 - [x] (METIDO 23/11) Pack Autopista 62 ART — reloj de reaparición (antes imagen 2 del Pack 44).
 - [x] (METIDO 23/11) Pack Autopista 63 WORK — fosos de Nasor (el colector) y del lagarto (la central) en 3D; adjuntar `ap_nasor.glb`, `ap_lagarto.glb` y `ap_ciudad.glb`.
-- [ ] Pack Autopista 64 WORK — la base: núcleo (`ap_nucleo.glb`) y plataforma de salida (`ap_salida.glb`) en 3D; adjuntar `Pack64_adjuntos.zip`.
+- [x] (METIDO 23/11, `tools/autopista/pack64`) Pack Autopista 64 WORK — la base: núcleo (`ap_nucleo.glb`) y plataforma de salida (`ap_salida.glb`) en 3D; adjuntar `Pack64_adjuntos.zip`.
