@@ -59,7 +59,7 @@ const HEROES = {
 const PASIVA = {
   gandalf: {n: 'Marca de brasas', d: 'Sus hechizos marcan al enemigo; su siguiente golpe básico contra él estalla con daño mágico extra.'},
   orco: {n: 'Disciplina', d: 'Sus golpes a héroes se acumulan (hasta 5); con 5, +30 % de daño durante 5 s.'},
-  gollum: {n: 'Acecho', d: 'Desde la hierba alta, su golpe básico es un salto hasta la presa (hasta 6 m).'},
+  gollum: {n: 'Acecho', d: 'Desde los matorrales, su golpe básico es un salto hasta la presa (hasta 6 m).'},
   rohan: {n: 'Ojo de halcón', d: 'El primer golpe a cada enemigo quita un 8 % de su vida actual; se repite cada 6 s por enemigo.'},
   visor: {n: 'Sobrecarga', d: 'Cada 4.º golpe básico es un rayo cargado: daño mágico extra.'},
   elfo: {n: 'Balas de goma', d: 'Sus disparos frenan un 25 % durante 1,5 s.'},
@@ -68,7 +68,7 @@ const PASIVA = {
 };
 const RET = (t) => {const h = HEROES[t] || HEROES.enano; return h.ret || '../abismo/ui/' + h.retrato + '.webp';};
 const NIVEL_R = 4, NIVEL_MAX = 9;
-/* maná que cuesta una habilidad: como en el LoL, las básicas cuestan un 10 % más por rango; la definitiva, siempre lo mismo */
+/* energía que cuesta una habilidad: como en el LoL, las básicas cuestan un 10 % más por rango; la definitiva, siempre lo mismo */
 const costeMn = (tipo, k, rk) => {const m = HEROES[tipo].hab[k].mn; return k === 'r' ? m : Math.round(m * (1 + 0.1 * Math.max(0, (rk || 1) - 1)));};
 /* rango máximo de cada habilidad según el nivel (Q/W/E hasta 4, R a nivel 4 y 8) */
 const rangoMax = (nivel, k) => k === 'r' ? (nivel >= 8 ? 2 : nivel >= 4 ? 1 : 0) : Math.min(4, Math.ceil(nivel / 2));
@@ -362,7 +362,7 @@ function stats(h) {
   for (const id of h.inv) {const o = OBJ[id].st; st.vida += o.vida || 0; st.dano += o.dano || 0; va += o.vatq || 0; ve += o.vel || 0; st.reduc += o.reduc || 0; st.arm += o.arm || 0; st.rm += o.rm || 0; st.poder += o.poder || 0; st.mana += o.mana || 0; st.regen += o.regen || 0; st.crit += o.crit || 0; st.robo += o.robo || 0; st.espinas += o.espinas || 0; st.esquiva += o.esquiva || 0;}
   const be = S && S.bufEq[h.eq] || {};
   if (be.drF) st.dano *= 1 + 0.06 * be.drF; if (be.drH) st.vida *= 1 + 0.06 * be.drH; if (be.alma) {st.dano *= 1.1; st.vida *= 1.1;}
-  if (h.buf.huorn > 0) {st.regen += 4; st.rmana += 3 + st.mana * 0.01;} /* la Savia es la «azul» del LoL: también da maná */
+  if (h.buf.huorn > 0) {st.regen += 4; st.rmana += 3 + st.mana * 0.01;} /* la Savia es la «azul» del LoL: también da energía */
   if (S && S.santuarios.some((z) => z.eq === h.eq && z.hasta > S.t && Math.hypot(h.x - z.x, h.z - z.z) < z.r)) ve += 0.3;
   if (h.buf.alfa > 0) {ve += 0.15; st.regen += 6;}
   if (S && be.uruk > S.t) {st.dano *= 1.3; if (st.poder) st.poder *= 1.3; st.regen += 12; st.vel *= 1.08;}
@@ -497,7 +497,7 @@ function muere(d, o) {
   if (d.k === 't') {ev(['fx', 'explosion', d.x, d.z, 5]); ev(['baja', o && o.k === 'h' ? o.id : 0, d.id, d.eq === 0 ? 'Torre de los azules destruida' : 'Torre de los rojos destruida']); for (const h of heroes()) if (h.eq !== d.eq) {h.oro += d.inhib ? 50 : 150; ganaXp(h, 80);}
     if (DUELO.activo && S.modo === '1v1' && S.fin < 0) {S.fin = 1 - d.eq; luego(1.5, () => ev(['fin', 1 - d.eq]));}
     /* inhibidor (Wild Rift 4.0a): la torre de la base vuelve a los 4 min (5 desde el 13, 6 desde el 18) pero ya no dispara; mientras esté caída, supersúbditos */
-    if (d.n === 2) {d.respInh = S.t + (S.t < 780 ? 240 : S.t < 1080 ? 300 : 360); ev(['aviso', 0, (d.eq ? '¡El equipo rojo' : '¡El equipo azul') + ' ha perdido su torre de la base: supersúbditos!']);}}
+    if (d.n === 2) {d.respInh = S.t + (S.t < 780 ? 240 : S.t < 1080 ? 300 : 360); ev(['aviso', 0, (d.eq ? '¡El equipo rojo' : '¡El equipo azul') + ' ha perdido su torre de la base: ¡supersoldados!']);}}
   if (d.k === 'n' && S.fin < 0) {S.fin = 1 - d.eq; ev(['fx', 'explosion', d.x, d.z, 8]); ev(['fin', 1 - d.eq]);}
 }
 /* golpes con retraso dentro de la simulación (no con setTimeout: así va igual a cualquier velocidad) */
@@ -632,7 +632,7 @@ function paso(dt) {
     h.hierba = enHierba(h);
     const enFuente = dist(h, BASES[h.eq].fuente) < 8; if (h.ultCompra && !h.muerto && !enFuente) h.ultCompra = null;
     h.vida = Math.min(st.vida, h.vida + (st.regen + (enFuente ? st.vida * 0.12 : 0)) * dt);
-    h.mana = Math.min(st.mana, h.mana + (st.rmana + (enFuente ? st.mana * 0.12 : 0)) * dt); /* maná: se recupera solo y deprisa en la fuente */
+    h.mana = Math.min(st.mana, h.mana + (st.rmana + (enFuente ? st.mana * 0.12 : 0)) * dt); /* energía: se recupera solo y deprisa en la fuente */
     if (h.bot) {ia(h, dt, st); esquivaBot(h);}
     if (h.dash) {
       const d = h.dash, pt = Math.min(dt, Math.max(0, d.t)); d.t -= dt; h.x += d.vx * pt; h.z += d.vz * pt; limita(h);
@@ -787,7 +787,7 @@ function enCono(ex, ez, dx, dz, R, A, r) {
 }
 function usaHab(h, k, dx, dz, px, pz) {
   if (!h || h.muerto || h.aturd > S.t || h.cd[k] > 0 || !(h.rk[k] > 0)) return false;
-  const H = HEROES[h.tipo].hab[k], cm = costeMn(h.tipo, k, h.rk[k]); if (h.mana < cm) return false; /* sin maná no se lanza */
+  const H = HEROES[h.tipo].hab[k], cm = costeMn(h.tipo, k, h.rk[k]); if (h.mana < cm) return false; /* sin energía no se lanza */
   const st = stats(h), escala = 1 + 0.22 * (h.rk[k] - 1) + 0.03 * (h.nivel - 1) + (H.mag ? st.poder / 160 : (st.dano - HEROES[h.tipo].dano) / 150), T = H.mag ? 'mag' : 'hab'; /* las mágicas crecen con el poder mágico; las físicas, con el daño */
   const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l; h.rot = Math.atan2(dx, dz);
   h.cd[k] = H.cd * (1 - 0.08 * (h.rk[k] - 1)) * (h.buf.huorn > 0 ? 0.8 : 1); h.mana -= cm; h.hc++; h.hk = k; h.revela = S.t + 1.2; if (h.buf.invis && H.tipo !== 'invis') h.buf.invis = 0;
@@ -975,7 +975,7 @@ function falta(h, id) {const o = OBJ[id]; if (!o.rec) return []; const q = [...h
 function valorObj(id) {const o = OBJ[id]; return o ? o.c + (o.rec || []).reduce((a, r) => a + valorObj(r), 0) : 0;}
 function fotoCompra(h) {h.ultCompra = {inv: [...h.inv], oro: h.oro, enc: h.enc};}
 function vende(h, id) {
-  if (!puedeComprar(h)) return 'Solo se vende en tu fuente';
+  if (!puedeComprar(h)) return 'Solo se vende en tu base';
   const i = h.inv.lastIndexOf(id); if (i < 0) return 'No lo llevas';
   fotoCompra(h); h.inv.splice(i, 1); const p = Math.floor(valorObj(id) * 0.7); h.oro += p; const st = stats(h); h.vida = Math.min(h.vida, st.vida); h.mana = Math.min(h.mana, st.mana);
   ev(['num', h.x, h.z, '+' + p, 'o', h.id]); return '';
@@ -986,12 +986,12 @@ function deshaz(h) {
 }
 function compra(h, id) {
   if (ENC[id]) {
-    const e = ENC[id]; if (!puedeComprar(h)) return 'Solo se compra en tu fuente (o mientras esperas a volver)';
+    const e = ENC[id]; if (!puedeComprar(h)) return 'Solo se compra en tu base (o mientras esperas a volver)';
     if (!tieneBotas(h.inv)) return 'Antes necesitas unas botas'; if (h.enc === id) return 'Ya lo tienes';
     if (h.oro < e.c) return 'Te falta oro'; fotoCompra(h); h.oro -= e.c; h.enc = id; h.cd.enc = Math.max(h.cd.enc || 0, 10); return '';
   }
   const o = OBJ[id]; if (!o) return 'No existe';
-  if (!puedeComprar(h)) return 'Solo se compra en tu fuente (o mientras esperas a volver)';
+  if (!puedeComprar(h)) return 'Solo se compra en tu base (o mientras esperas a volver)';
   const fl = falta(h, id), pr = precio(h.inv, id);
   if (h.oro < pr) return 'Te falta oro';
   /* se gastan los básicos que tengas de la receta; los que faltan van incluidos en el precio */

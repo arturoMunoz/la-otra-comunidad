@@ -2493,6 +2493,35 @@ js = sub(js, "<img src=\"ui/h_' + tipo + '_' + k + '.webp\" alt=\"\">", "<img sr
 
 js = js.replace("'../abismo/iconos/torre.webp'", "'ui/ap_b_torre.webp'")  # icono medieval de torre en el resumen de muerte y los carteles de baja
 
+# ---------- PULIDO 23/11: palabras de La Brecha que se colaban en A-6 (súbditos, estandarte, almenara, vado) ----------
+for a, b in [("' ha perdido su torre de la base: supersúbditos!'", "' ha perdido su torre de la base: ¡supersoldados!'"),
+             ("'Almenara: la siguiente en '", "'Baliza: la siguiente en '"),
+             ("'¡Al vado! Derriba las torres y el estandarte enemigo'", "'¡A la autopista! Derriba sus torres y su núcleo'"),
+             ("'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos'", "'Las torres pegan muy fuerte: entra con tus soldados delante, que reciban ellos'"),
+             ("'Ya sabes lo básico. Para ganar: tira la torre del camino, luego la de su base y por último su estandarte. ¡A por ellos!'", "'Ya sabes lo básico. Para ganar: tira la torre del camino, luego la de su base y por último su núcleo. ¡A por ellos!'"),
+             ("'¡Objetivo: el estandarte enemigo!'", "'¡Objetivo: el núcleo enemigo!'"),
+             ("'El estandarte enemigo ha caído.'", "'El núcleo enemigo ha caído.'"),
+             ("'Han derribado vuestro estandarte.'", "'Han derribado vuestro núcleo.'"),
+             ("'Defensa contra el daño físico: golpes básicos, súbditos, torres y habilidades físicas.'", "'Defensa contra el daño físico: golpes básicos, soldados, torres y habilidades físicas.'"),
+             ("los golpes básicos de todos, los súbditos, las torres", "los golpes básicos de todos, los soldados, las torres")]:
+    js = sub(js, a, b)
+html = sub(html, 'aria-label="Almenara (ver dentro de la hierba)"', 'aria-label="Baliza (ver dentro de los matorrales)"')
+js = sub(js, "'Dentro de la hierba alta los enemigos no te ven (salvo que estén a tu lado)'", "'Dentro de los matorrales los enemigos no te ven (salvo que estén a tu lado)'")
+js = sub(js, "'Desde la hierba alta, su golpe básico es un salto hasta la presa (hasta 6 m).'", "'Desde los matorrales, su golpe básico es un salto hasta la presa (hasta 6 m).'")
+
+# ---------- PULIDO 23/11: en A-6 se gasta ENERGÍA (la batería de arriba), no maná ----------
+js = sub(js, "'Cada habilidad gasta MANÁ: la botella fucsia de abajo. Se rellena sola poco a poco, y muy deprisa en tu campamento.'",
+             "'Cada habilidad gasta ENERGÍA: la batería fucsia junto a tu retrato. Se recarga sola poco a poco, y muy deprisa en tu base.'")
+js = sub(js, "'Cada habilidad gasta maná; sin maná no se lanzan. Se recarga solo, y muy rápido en tu fuente.'", "'Cada habilidad gasta energía; sin energía no se lanzan. Se recarga sola, y muy rápido en tu base.'")
+js = sub(js, "abre la Taller (arriba a la izquierda)", "abre el Taller (arriba a la izquierda)")
+js = js.replace('maná', 'energía').replace('Maná', 'Energía').replace('MANÁ', 'ENERGÍA')   # solo sale en textos y comentarios: los nombres del código van sin tilde
+for a, b in [("'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en el taller'", "'Con poca vida pulsa BASE: vuelves a tu peaje, te curas y compras en el Taller'"),
+             ("'En la fuente: ya puedes comprar'", "'En tu base: ya puedes comprar'"),
+             ("'Solo se compra en tu fuente (o mientras esperas a volver)'", "'Solo se compra en tu base (o mientras esperas a volver)'"),
+             ("'Solo se vende en tu fuente'", "'Solo se vende en tu base'"),
+             ("'Vuelta a la fuente cancelada'", "'Vuelta a la base cancelada'")]:
+    js = js.replace(a, b)
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

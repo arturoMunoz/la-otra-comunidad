@@ -66,7 +66,7 @@ const HEROES = {
 const PASIVA = {
   gandalf: {n: 'Marca de brasas', d: 'Sus hechizos marcan al enemigo; su siguiente golpe básico contra él estalla con daño mágico extra.'},
   orco: {n: 'Disciplina', d: 'Sus golpes a héroes se acumulan (hasta 5); con 5, +30 % de daño durante 5 s.'},
-  gollum: {n: 'Acecho', d: 'Desde la hierba alta, su golpe básico es un salto hasta la presa (hasta 6 m).'},
+  gollum: {n: 'Acecho', d: 'Desde los matorrales, su golpe básico es un salto hasta la presa (hasta 6 m).'},
   rohan: {n: 'Ojo de halcón', d: 'El primer golpe a cada enemigo quita un 8 % de su vida actual; se repite cada 6 s por enemigo.'},
   visor: {n: 'Sobrecarga', d: 'Cada 4.º golpe básico es un rayo cargado: daño mágico extra.'},
   elfo: {n: 'Balas de goma', d: 'Sus disparos frenan un 25 % durante 1,5 s.'},
@@ -75,7 +75,7 @@ const PASIVA = {
 };
 const RET = (t) => {const h = HEROES[t] || HEROES.enano; return h.ret || '../abismo/ui/' + h.retrato + '.webp';};
 const NIVEL_R = 4, NIVEL_MAX = 9;
-/* maná que cuesta una habilidad: como en el LoL, las básicas cuestan un 10 % más por rango; la definitiva, siempre lo mismo */
+/* energía que cuesta una habilidad: como en el LoL, las básicas cuestan un 10 % más por rango; la definitiva, siempre lo mismo */
 const costeMn = (tipo, k, rk) => {const m = HEROES[tipo].hab[k].mn; return k === 'r' ? m : Math.round(m * (1 + 0.1 * Math.max(0, (rk || 1) - 1)));};
 /* rango máximo de cada habilidad según el nivel (Q/W/E hasta 4, R a nivel 4 y 8) */
 const rangoMax = (nivel, k) => k === 'r' ? (nivel >= 8 ? 2 : nivel >= 4 ? 1 : 0) : Math.min(4, Math.ceil(nivel / 2));
@@ -1261,7 +1261,7 @@ function stats(h) {
   for (const id of h.inv) {const o = OBJ[id].st; st.vida += o.vida || 0; st.dano += o.dano || 0; va += o.vatq || 0; ve += o.vel || 0; st.reduc += o.reduc || 0; st.arm += o.arm || 0; st.rm += o.rm || 0; st.poder += o.poder || 0; st.mana += o.mana || 0; st.regen += o.regen || 0; st.crit += o.crit || 0; st.robo += o.robo || 0; st.espinas += o.espinas || 0; st.esquiva += o.esquiva || 0;}
   const be = S && S.bufEq[h.eq] || {};
   if (be.drF) st.dano *= 1 + 0.06 * be.drF; if (be.drH) st.vida *= 1 + 0.06 * be.drH; if (be.alma) {st.dano *= 1.1; st.vida *= 1.1;}
-  if (h.buf.huorn > 0) {st.regen += 4; st.rmana += 3 + st.mana * 0.01;} /* la Savia es la «azul» del LoL: también da maná */
+  if (h.buf.huorn > 0) {st.regen += 4; st.rmana += 3 + st.mana * 0.01;} /* la Savia es la «azul» del LoL: también da energía */
   if (S && S.santuarios.some((z) => z.eq === h.eq && z.hasta > S.t && Math.hypot(h.x - z.x, h.z - z.z) < z.r)) ve += 0.3;
   if (h.buf.alfa > 0) {ve += 0.15; st.regen += 6;}
   if (S && be.uruk > S.t) {st.dano *= 1.3; if (st.poder) st.poder *= 1.3; st.regen += 12; st.vel *= 1.08;}
@@ -1396,7 +1396,7 @@ function muere(d, o) {
   if (d.k === 't') {ev(['fx', 'explosion', d.x, d.z, 5]); ev(['baja', o && o.k === 'h' ? o.id : 0, d.id, d.eq === 0 ? 'Torre de los azules destruida' : 'Torre de los rojos destruida']); for (const h of heroes()) if (h.eq !== d.eq) {h.oro += d.inhib ? 50 : 150; ganaXp(h, 80);}
     if (DUELO.activo && S.modo === '1v1' && S.fin < 0) {S.fin = 1 - d.eq; luego(1.5, () => ev(['fin', 1 - d.eq]));}
     /* inhibidor (Wild Rift 4.0a): la torre de la base vuelve a los 4 min (5 desde el 13, 6 desde el 18) pero ya no dispara; mientras esté caída, supersúbditos */
-    if (d.n === 2) {d.respInh = S.t + (S.t < 780 ? 240 : S.t < 1080 ? 300 : 360); ev(['aviso', 0, (d.eq ? '¡El equipo rojo' : '¡El equipo azul') + ' ha perdido su torre de la base: supersúbditos!']);}}
+    if (d.n === 2) {d.respInh = S.t + (S.t < 780 ? 240 : S.t < 1080 ? 300 : 360); ev(['aviso', 0, (d.eq ? '¡El equipo rojo' : '¡El equipo azul') + ' ha perdido su torre de la base: ¡supersoldados!']);}}
   if (d.k === 'n' && S.fin < 0) {S.fin = 1 - d.eq; ev(['fx', 'explosion', d.x, d.z, 8]); ev(['fin', 1 - d.eq]);}
 }
 /* golpes con retraso dentro de la simulación (no con setTimeout: así va igual a cualquier velocidad) */
@@ -1531,7 +1531,7 @@ function paso(dt) {
     h.hierba = enHierba(h);
     const enFuente = dist(h, BASES[h.eq].fuente) < 8; if (h.ultCompra && !h.muerto && !enFuente) h.ultCompra = null;
     h.vida = Math.min(st.vida, h.vida + (st.regen + (enFuente ? st.vida * 0.12 : 0)) * dt);
-    h.mana = Math.min(st.mana, h.mana + (st.rmana + (enFuente ? st.mana * 0.12 : 0)) * dt); /* maná: se recupera solo y deprisa en la fuente */
+    h.mana = Math.min(st.mana, h.mana + (st.rmana + (enFuente ? st.mana * 0.12 : 0)) * dt); /* energía: se recupera solo y deprisa en la fuente */
     if (h.bot) {ia(h, dt, st); esquivaBot(h);}
     if (h.dash) {
       const d = h.dash, pt = Math.min(dt, Math.max(0, d.t)); d.t -= dt; h.x += d.vx * pt; h.z += d.vz * pt; limita(h);
@@ -1686,7 +1686,7 @@ function enCono(ex, ez, dx, dz, R, A, r) {
 }
 function usaHab(h, k, dx, dz, px, pz) {
   if (!h || h.muerto || h.aturd > S.t || h.cd[k] > 0 || !(h.rk[k] > 0)) return false;
-  const H = HEROES[h.tipo].hab[k], cm = costeMn(h.tipo, k, h.rk[k]); if (h.mana < cm) return false; /* sin maná no se lanza */
+  const H = HEROES[h.tipo].hab[k], cm = costeMn(h.tipo, k, h.rk[k]); if (h.mana < cm) return false; /* sin energía no se lanza */
   const st = stats(h), escala = 1 + 0.22 * (h.rk[k] - 1) + 0.03 * (h.nivel - 1) + (H.mag ? st.poder / 160 : (st.dano - HEROES[h.tipo].dano) / 150), T = H.mag ? 'mag' : 'hab'; /* las mágicas crecen con el poder mágico; las físicas, con el daño */
   const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l; h.rot = Math.atan2(dx, dz);
   h.cd[k] = H.cd * (1 - 0.08 * (h.rk[k] - 1)) * (h.buf.huorn > 0 ? 0.8 : 1); h.mana -= cm; h.hc++; h.hk = k; h.revela = S.t + 1.2; if (h.buf.invis && H.tipo !== 'invis') h.buf.invis = 0;
@@ -1874,7 +1874,7 @@ function falta(h, id) {const o = OBJ[id]; if (!o.rec) return []; const q = [...h
 function valorObj(id) {const o = OBJ[id]; return o ? o.c + (o.rec || []).reduce((a, r) => a + valorObj(r), 0) : 0;}
 function fotoCompra(h) {h.ultCompra = {inv: [...h.inv], oro: h.oro, enc: h.enc};}
 function vende(h, id) {
-  if (!puedeComprar(h)) return 'Solo se vende en tu fuente';
+  if (!puedeComprar(h)) return 'Solo se vende en tu base';
   const i = h.inv.lastIndexOf(id); if (i < 0) return 'No lo llevas';
   fotoCompra(h); h.inv.splice(i, 1); const p = Math.floor(valorObj(id) * 0.7); h.oro += p; const st = stats(h); h.vida = Math.min(h.vida, st.vida); h.mana = Math.min(h.mana, st.mana);
   ev(['num', h.x, h.z, '+' + p, 'o', h.id]); return '';
@@ -1885,12 +1885,12 @@ function deshaz(h) {
 }
 function compra(h, id) {
   if (ENC[id]) {
-    const e = ENC[id]; if (!puedeComprar(h)) return 'Solo se compra en tu fuente (o mientras esperas a volver)';
+    const e = ENC[id]; if (!puedeComprar(h)) return 'Solo se compra en tu base (o mientras esperas a volver)';
     if (!tieneBotas(h.inv)) return 'Antes necesitas unas botas'; if (h.enc === id) return 'Ya lo tienes';
     if (h.oro < e.c) return 'Te falta oro'; fotoCompra(h); h.oro -= e.c; h.enc = id; h.cd.enc = Math.max(h.cd.enc || 0, 10); return '';
   }
   const o = OBJ[id]; if (!o) return 'No existe';
-  if (!puedeComprar(h)) return 'Solo se compra en tu fuente (o mientras esperas a volver)';
+  if (!puedeComprar(h)) return 'Solo se compra en tu base (o mientras esperas a volver)';
   const fl = falta(h, id), pr = precio(h.inv, id);
   if (h.oro < pr) return 'Te falta oro';
   /* se gastan los básicos que tengas de la receta; los que faltan van incluidos en el precio */
@@ -3130,7 +3130,7 @@ function preparaMandos() {
     b.addEventListener('pointerdown', (e) => {e.preventDefault(); e.stopPropagation(); p0 = {x: PX(e), y: PY(e), id: e.pointerId, d: null}; try {b.setPointerCapture(e.pointerId);} catch (er) {} pinta(destino(null));});
     b.addEventListener('pointermove', (e) => {if (!p0 || e.pointerId !== p0.id) return; const dx = PX(e) - p0.x, dy = PY(e) - p0.y; if (Math.hypot(dx, dy) > 18) {p0.d = [dx, dy]; pinta(destino(dx, dy));}});
     b.addEventListener('pointerup', () => {if (!p0) return; const p = p0.d ? destino(p0.d[0], p0.d[1]) : destino(null); p0 = null; pinta(null); const v = VISTA.get(YO); if (!p || !v || v.muerto >= 0) return;
-      if (!(v.vg >= 1)) {aviso('Almenara: la siguiente en ' + Math.ceil(v.vgT) + ' s'); return;}
+      if (!(v.vg >= 1)) {aviso('Baliza: la siguiente en ' + Math.ceil(v.vgT) + ' s'); return;}
       if (S) ponAlmenara(S.u.find((q) => q.id === YO), p.x, p.z); else NET.manda({t: 'alm', px: p.x, pz: p.z, x: MIO.x, z: MIO.z});});
     b.addEventListener('pointercancel', () => {p0 = null; pinta(null);});}
   toca($('bEnc'), () => {
@@ -3421,7 +3421,7 @@ function lanzaMia(k, apunta) {
   const v = VISTA.get(YO); if (!v || v.muerto >= 0) return;
   const i = 'qwer'.indexOf(k); if (v.cds && v.cds[i] > 0) return; if (!(v.rk && v.rk[i] > 0)) {if (subeMia(k)) return; aviso(v.pts > 0 ? 'Pulsa el + de encima para aprender esta habilidad' : k === 'r' ? 'La definitiva se aprende a nivel 4' : 'Aún no la has aprendido: sube de nivel'); return;}
   const H = HEROES[v.tipo].hab[k], x = v.xi ?? v.x, z = v.zi ?? v.z; let dx, dz, px, pz;
-  {const cm = costeMn(v.tipo, k, v.rk[i]); if (v.mana < cm) {aviso('No tienes maná suficiente (' + cm + ')'); return;}}
+  {const cm = costeMn(v.tipo, k, v.rk[i]); if (v.mana < cm) {aviso('No tienes energía suficiente (' + cm + ')'); return;}}
   if (apunta && mira && mira.dir) {dx = mira.dir.wx; dz = mira.dir.wz; px = mira.dir.px; pz = mira.dir.pz;}
   else {/* toque: apunta solo al héroe enemigo más cercano (o a lo que tengas delante) */
     const mejor = autoObjetivo(H, x, z);
@@ -3545,7 +3545,7 @@ function empieza(jugadores, modo, simulo) {
   camM.set(BASES[MI_EQ].fuente.x, 0, BASES[MI_EQ].fuente.z); reloj0 = performance.now();
   pantallaVS(jugadores, modo);
   $('pings').classList.toggle('hidden', !(NET.online && modo === '2v2'));
-  aviso('¡Al vado! Derriba las torres y el estandarte enemigo'); suena('cuerno', 0.7);
+  aviso('¡A la autopista! Derriba sus torres y su núcleo'); suena('cuerno', 0.7);
 }
 const PRE_TEX = new WeakSet();
 function subeTex(t) {
@@ -3599,7 +3599,7 @@ function subeNivelFx(v) {
 }
 function marcador(m, t) {$('marcador').dataset.t = t;$('marcador').innerHTML = '<span class="a">' + m[MI_EQ] + '</span><i>' + Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') + '</i><span class="b">' + m[1 - MI_EQ] + '</span>';}
 let miniT = 0, consejoI = 0;
-const CONSEJOS = ['Pulsa el + verde encima de una habilidad para aprenderla: cada nivel te da un punto', 'Mueve con el joystick y mantén ⚔ para atacar. Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Dentro de la hierba alta los enemigos no te ven (salvo que estén a tu lado)', 'Los botones pequeños son Destello (un salto corto) y Curar (a ti y a tu compañero)', 'Las torres pegan muy fuerte: entra con tus súbditos delante, que reciban ellos', 'En la jungla, entre las dos calzadas, hay perros, buitres y un jabalí: dan oro y experiencia', 'El toro negro y el coloso del desguace dan una bendición durante 90 s; Nasor y el lagarto, a todo tu equipo', 'Con poca vida pulsa ⌂: vuelves a la fuente, te curas y compras en el taller'];
+const CONSEJOS = ['Pulsa el + verde encima de una habilidad para aprenderla: cada nivel te da un punto', 'Mueve con el joystick y mantén ⚔ para atacar. Toca una habilidad para lanzarla sola; arrástrala para apuntar tú', 'Dentro de los matorrales los enemigos no te ven (salvo que estén a tu lado)', 'Los botones pequeños son Destello (un salto corto) y Curar (a ti y a tu compañero)', 'Las torres pegan muy fuerte: entra con tus soldados delante, que reciban ellos', 'En la jungla, entre las dos calzadas, hay perros, buitres y un jabalí: dan oro y experiencia', 'El toro negro y el coloso del desguace dan una bendición durante 90 s; Nasor y el lagarto, a todo tu equipo', 'Con poca vida pulsa BASE: vuelves a tu peaje, te curas y compras en el Taller'];
 function consejos(t) {if (localStorage.getItem('auto.consejos') === '3') return; const i = Math.floor((t - 2) / 14); if (i >= 0 && i < CONSEJOS.length && i >= consejoI) {consejoI = i + 1; aviso('💡 ' + CONSEJOS[i]); if (i === CONSEJOS.length - 1) localStorage.setItem('auto.consejos', String(+(localStorage.getItem('auto.consejos') || 0) + 1));}}
 /* PARTIDA GUIADA (16/11): un Duelo contra la máquina con el Jinete, el rival pega menos (S.facil) y un cartel va explicando cada cosa.
    Cada paso se cumple haciendo lo que pide (ok) o, si solo informa, pasados unos segundos (seg). El aro verde (clase guiaOjo) señala el botón. */
@@ -3609,12 +3609,12 @@ const GUIA_PASOS = [
   {t: 'Arrastra el dedo por la parte IZQUIERDA de la pantalla para moverte. Camina hacia la derecha: allí está el equipo rojo.', ok: (v, g) => Math.hypot(v.x - g.x0, v.z - g.z0) > 6},
   {t: 'Pulsa el + verde de encima de una habilidad para aprenderla. Cada nivel que subes te da un punto.', ojo: () => 'mq', ok: (v) => v.rk && v.rk.some((n) => n > 0)},
   {t: 'Toca esa habilidad para lanzarla. Si la arrastras, apuntas tú; si solo la tocas, apunta sola.', ojo: (v) => 'b' + 'QWER'[Math.max(0, (v.rk || []).findIndex((n) => n > 0))], ok: (v, g) => v.hc !== g.hc0},
-  {t: 'Cada habilidad gasta MANÁ: la botella fucsia de abajo. Se rellena sola poco a poco, y muy deprisa en tu campamento.', ojo: () => 'vital', seg: 8},
+  {t: 'Cada habilidad gasta ENERGÍA: la batería fucsia junto a tu retrato. Se recarga sola poco a poco, y muy deprisa en tu base.', ojo: () => 'vital', seg: 8},
   {t: 'Mantén pulsado el botón grande para atacar. Remata a 3 soldados enemigos (los rojos): el ÚLTIMO golpe es el que da oro.', ojo: () => 'bAt', ok: (v, g) => csDe(v) >= g.cs0 + 3, cuenta: (v, g) => Math.min(3, csDe(v) - g.cs0) + ' / 3'},
   {t: 'La torre enemiga dispara a quien pisa su zona roja. Entra siempre DETRÁS de tus soldados (los azules): les pegará a ellos y no a ti.', seg: 10},
-  {t: 'Con el oro se compra equipo. Pulsa BASE para volver a tu peaje, abre la Taller (arriba a la izquierda) y compra algo.', ojo: (v) => enMiFuente(v) ? 'bTienda' : 'bBase', ok: (v, g) => (v.inv || []).length > g.inv0},
+  {t: 'Con el oro se compra equipo. Pulsa BASE para volver a tu peaje, abre el Taller (arriba a la izquierda) y compra algo.', ojo: (v) => enMiFuente(v) ? 'bTienda' : 'bBase', ok: (v, g) => (v.inv || []).length > g.inv0},
   {t: 'Si te quedas con poca vida, vuelve a la base: allí te curas. Morir le regala oro y tiempo al rival.', ojo: () => 'vital', seg: 8},
-  {t: 'Ya sabes lo básico. Para ganar: tira la torre del camino, luego la de su base y por último su estandarte. ¡A por ellos!', seg: 9},
+  {t: 'Ya sabes lo básico. Para ganar: tira la torre del camino, luego la de su base y por último su núcleo. ¡A por ellos!', seg: 9},
 ];
 const enMiFuente = (v) => {const f = BASES[MI_EQ].fuente; return Math.hypot(v.x - f.x, v.z - f.z) < 8;};
 function guiaEmpieza() {GUIA = {i: -1, t: 0}; document.body.classList.add('guiada'); $('guia').classList.remove('hidden'); guiaSiguiente();}
@@ -3638,7 +3638,7 @@ function objetivoTxt() {
   const caidas = [...VISTA.values()].filter((q) => q.k === 't' && q.eq === 1 - MI_EQ && q.tipo === 1 && q.vida <= 0).length;
   if (!caidas) return 'Objetivo: una torre de camino enemiga';
   if (en('t', 2)) return 'Objetivo: la torre de su base';
-  return '¡Objetivo: el estandarte enemigo!';
+  return '¡Objetivo: el núcleo enemigo!';
 }
 const PINGS = [];
 const MARCAS = {}; for (const n of ['m_huargo', 'm_troll', 'm_torre0', 'm_torre1']) {MARCAS[n] = new Image(); MARCAS[n].src = 'ui/' + n + '.webp';}
@@ -3691,7 +3691,7 @@ function minimapa() {
 }
 /* escribe en la página solo si cambia (cada escritura obliga al móvil a recolocar y repintar) */
 function pon_(el, p, v) {if (el['_' + p] !== v) {el['_' + p] = v; el[p] = v;}}
-/* botella de maná (Pack Vado 22): poner true cuando lleguen ui/ap_mana_vacia.webp y ui/ap_mana_llena.webp; BOT_Y0/BOT_Y1 = % de la altura donde empieza y acaba el líquido */
+/* botella de energía (Pack Vado 22): poner true cuando lleguen ui/ap_mana_vacia.webp y ui/ap_mana_llena.webp; BOT_Y0/BOT_Y1 = % de la altura donde empieza y acaba el líquido */
 const HAY_BOTELLA = true, BOT_Y0 = 17.9, BOT_Y1 = 84.5;
 function hud() {
   const v = VISTA.get(YO); if (!v || v.k !== 'h') return;
@@ -3776,7 +3776,7 @@ function acaba(ganador) {
   const f = $('fin'); f.classList.remove('hidden');
   pintaTabla(); const resumen = $('tabla').innerHTML.replace('<small>Toca para cerrar</small>', '');
   const yo = VISTA.get(YO), duelo = MODO === '1v1';
-  f.innerHTML = (yo ? '<img class="finSpl" src="ui/ap_splash_' + yo.tipo + '.webp" alt="">' : '') + '<h2 class="' + (ganador === MI_EQ ? 'gana' : 'pierde') + '">' + (ganador === MI_EQ ? '¡VICTORIA!' : ganador === -1 ? 'Partida terminada' : 'DERROTA') + '</h2><p>' + (ganador === -1 ? '' : duelo ? (ganador === MI_EQ ? 'Has ganado el duelo.' : 'Has perdido el duelo.') : ganador === MI_EQ ? 'El estandarte enemigo ha caído.' : 'Han derribado vuestro estandarte.') + '</p>' + resumen + '<button class="bt" id="bOtra">Volver al menú</button>';
+  f.innerHTML = (yo ? '<img class="finSpl" src="ui/ap_splash_' + yo.tipo + '.webp" alt="">' : '') + '<h2 class="' + (ganador === MI_EQ ? 'gana' : 'pierde') + '">' + (ganador === MI_EQ ? '¡VICTORIA!' : ganador === -1 ? 'Partida terminada' : 'DERROTA') + '</h2><p>' + (ganador === -1 ? '' : duelo ? (ganador === MI_EQ ? 'Has ganado el duelo.' : 'Has perdido el duelo.') : ganador === MI_EQ ? 'El núcleo enemigo ha caído.' : 'Han derribado vuestro núcleo.') + '</p>' + resumen + '<button class="bt" id="bOtra">Volver al menú</button>';
   try {finNuevo(f, ganador);} catch (er) {console.warn('fin', er);}
   $('bOtra').onclick = () => location.reload();
   document.body.classList.remove('jugando');
@@ -3796,13 +3796,13 @@ function bucle() {
       if (S && ESTADO === 'juego') {
         const h = S.u.find((q) => q.id === YO);
         if (h) {const ac = acercaAtaque(h.x, h.z); h.mx = ac ? ac.x : MANDO.mx; h.mz = ac ? ac.z : MANDO.mz; h.ataca = atacando(); if ((MANDO.golpes || 0) > (h.gVisto || 0)) {h.gVisto = MANDO.golpes; h.tap = S.t + 1.5;} h.prioHeroe = true; h.modoAt = modoAtaque(); h.fijo = MANDO.fijo || 0;}
-        if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0 && h && !h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; aviso('En la fuente: ya puedes comprar');}}
+        if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la base cancelada');} else if (volverBase <= 0 && h && !h.muerto) {const f = BASES[h.eq].fuente; h.x = f.x; h.z = f.z - signo(h.eq) * 2.5; h.px = undefined; aviso('En tu base: ya puedes comprar');}}
         acum += dt; let pasos = 0; const ts = performance.now(); while (acum >= 1 / 30 && pasos < 4) {paso(1 / 30); acum -= 1 / 30; pasos++;} if (acum > 0.1) acum = 0; ALFA = Math.min(1, acum * 30);
         fotoT -= dt;
         if (pasos) {const f = foto(); recibeFotoLocal(f); PERF.sim += performance.now() - ts; if (NET.online && fotoT <= 0) {fotoT = Math.max(fotoT + 1 / 15, 0); NET.manda({t: 'foto', f: {...f, ev: ENVIAR.splice(0)}});}}
       } else if (!S && ESTADO === 'juego') {
         mueveMio(dt);
-        if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la fuente cancelada');} else if (volverBase <= 0) {NET.manda({t: 'volver'}); MIO.listo = false;}}
+        if (volverBase > 0) {volverBase -= dt; const vv = VISTA.get(YO); if (MANDO.mx || MANDO.mz || (vv && vv.vida < volverVida - 1)) {volverBase = 0; aviso('Vuelta a la base cancelada');} else if (volverBase <= 0) {NET.manda({t: 'volver'}); MIO.listo = false;}}
         inT -= dt; const golpeNuevo = (MANDO.golpes || 0) !== NET.gEnv || atacando() !== NET.aEnv; if ((inT <= 0 || golpeNuevo) && MIO.listo) {inT = Math.max(inT + 1 / 30, 0); NET.gEnv = MANDO.golpes || 0; NET.aEnv = atacando(); /* 17/11: el golpe se manda al momento, sin esperar al siguiente envío (hasta 66 ms menos) */ NET.manda({t: 'in', x: +MIO.x.toFixed(2), z: +MIO.z.toFixed(2), rot: +MIO.rot.toFixed(2), m: !!(MANDO.mx || MANDO.mz), a: atacando(), mo: modoAtaque(), fi: MANDO.fijo || 0, g: MANDO.golpes || 0, rt: NET.ping || 0, ip: Math.round(ipVisto()), tc: Math.round(performance.now())});}
       }
       if (NET.online) {pingT -= dt; if (pingT <= 0) {pingT = 2; NET.manda({t: 'ping', c: performance.now()});}}
@@ -3834,7 +3834,7 @@ function sugerencia(v) {
 let tCat = 'rec';
 const T_CATS = [['rec', 'Para ti'], ['atq', 'Ataque'], ['mag', 'Magia'], ['def', 'Defensa'], ['mov', 'Movilidad'], ['enc', 'Encantar']];
 const CAT_OBJ = {atq: ['hoja', 'daga', 'herugrim', 'guthwine', 'hacha'], mag: ['tomo', 'baculo', 'narya'], def: ['cota', 'yelmo', 'manto', 'escudo', 'velo', 'mithril'], mov: ['botas', 'amuleto', 'capa']};
-const ST_TXT = {dano: (v) => '+' + v + ' daño', vatq: (v) => '+' + Math.round(v * 100) + ' % vel. ataque', vida: (v) => '+' + v + ' vida', reduc: (v) => '−' + Math.round(v * 100) + ' % daño recibido', arm: (v) => '+' + v + ' armadura', rm: (v) => '+' + v + ' resist. mágica', poder: (v) => '+' + v + ' poder mágico', mana: (v) => '+' + v + ' maná', vel: (v) => '+' + Math.round(v * 100) + ' % velocidad', regen: (v) => '+' + v + ' vida/s', crit: (v) => Math.round(v * 100) + ' % crítico', espinas: (v) => Math.round(v * 100) + ' % espinas', esquiva: (v) => Math.round(v * 100) + ' % esquiva', robo: (v) => Math.round(v * 100) + ' % robo de vida'};
+const ST_TXT = {dano: (v) => '+' + v + ' daño', vatq: (v) => '+' + Math.round(v * 100) + ' % vel. ataque', vida: (v) => '+' + v + ' vida', reduc: (v) => '−' + Math.round(v * 100) + ' % daño recibido', arm: (v) => '+' + v + ' armadura', rm: (v) => '+' + v + ' resist. mágica', poder: (v) => '+' + v + ' poder mágico', mana: (v) => '+' + v + ' energía', vel: (v) => '+' + Math.round(v * 100) + ' % velocidad', regen: (v) => '+' + v + ' vida/s', crit: (v) => Math.round(v * 100) + ' % crítico', espinas: (v) => Math.round(v * 100) + ' % espinas', esquiva: (v) => Math.round(v * 100) + ' % esquiva', robo: (v) => Math.round(v * 100) + ' % robo de vida'};
 /* ---------- FICHA DE ESTADÍSTICAS (18/11, Henar: «que se entienda el daño físico y mágico, las defensas, cómo se mueve… y en la tienda cómo afecta cada cosa al héroe»)
    statsDe() usa la MISMA stats() de la simulación con un héroe de mentira (sin efectos), así lo que se enseña es lo que vale de verdad */
 const f1 = (x) => (Math.round(x * 10) / 10).toLocaleString('es-ES');
@@ -3847,12 +3847,12 @@ const STAT_INFO = [
   ['vatq', 'Velocidad de ataque', (s) => f1(s.vatq) + ' golpes/s', 'Cuántos golpes básicos das por segundo.'],
   ['alcance', 'Alcance', (s) => f1(s.alcance) + ' m', 'Hasta dónde llega tu golpe básico. Menos de 3,5 m es cuerpo a cuerpo: hay que pegarse al rival.'],
   ['vel', 'Velocidad', (s) => f1(s.vel) + ' m/s', 'Lo rápido que andas: para perseguir, huir y llegar antes a los sitios.'],
-  ['arm', 'Armadura', (s) => Math.round(s.arm) + ' <small>−' + pctDef(s.arm) + ' % físico</small>', 'Defensa contra el daño físico: golpes básicos, súbditos, torres y habilidades físicas.'],
+  ['arm', 'Armadura', (s) => Math.round(s.arm) + ' <small>−' + pctDef(s.arm) + ' % físico</small>', 'Defensa contra el daño físico: golpes básicos, soldados, torres y habilidades físicas.'],
   ['rm', 'Resistencia mágica', (s) => Math.round(s.rm) + ' <small>−' + pctDef(s.rm) + ' % mágico</small>', 'Defensa contra el daño mágico: los hechizos de los magos.'],
-  ['mana', 'Maná', (s) => Math.round(s.mana) + ' <small>+' + f1(s.rmana) + '/s</small>', 'Cada habilidad gasta maná; sin maná no se lanzan. Se recarga solo, y muy rápido en tu fuente.'],
+  ['mana', 'Energía', (s) => Math.round(s.mana) + ' <small>+' + f1(s.rmana) + '/s</small>', 'Cada habilidad gasta energía; sin energía no se lanzan. Se recarga sola, y muy rápido en tu base.'],
 ];
 const GLOSARIO = '<div class="fGlo"><b>Cómo funciona el daño</b>' +
-  '<p><em class="fis">Físico</em>: los golpes básicos de todos, los súbditos, las torres y las habilidades de luchadores, tanques, tiradores y asesinos. Lo frena la <b>armadura</b>.</p>' +
+  '<p><em class="fis">Físico</em>: los golpes básicos de todos, los soldados, las torres y las habilidades de luchadores, tanques, tiradores y asesinos. Lo frena la <b>armadura</b>.</p>' +
   '<p><em class="mag">Mágico</em>: los hechizos de los magos. Lo frena la <b>resistencia mágica</b>.</p>' +
   '<p>Las dos defensas van igual: con 50 recibes un 33 % menos; con 100, la mitad; con 200, un tercio. Nunca te hacen inmune.</p>' +
   '<p>Las habilidades físicas suben con el <b>daño</b> que compras; las mágicas, con el <b>poder mágico</b>. Subir de rango una habilidad (el +) y de nivel también las hace pegar más.</p></div>';
@@ -3863,7 +3863,7 @@ function habNums(A) {
   if (A.tipo === 'escudo' && A.val) t.push('escudo de ' + A.val);
   const alc = A.alc || A.dist; if (alc) t.push('alcance ' + f1(alc) + ' m'); else if (A.radio) t.push('radio ' + f1(A.radio) + ' m');
   if (A.aturde) t.push('aturde ' + f1(A.aturde) + ' s'); if (A.lento) t.push('frena ' + Math.round(A.lento * 100) + ' %');
-  t.push('recarga ' + A.cd + ' s'); if (A.mn) t.push(A.mn + ' de maná');
+  t.push('recarga ' + A.cd + ' s'); if (A.mn) t.push(A.mn + ' de energía');
   return t.join(' · ');
 }
 /* hoja completa: estadísticas a nivel 1 → nivel máximo (o con tus objetos), barra comparada con los demás héroes, qué significa cada una, habilidades con números y el glosario */
@@ -3901,7 +3901,7 @@ function efectoEnHeroe(v, id) {
   if (dif('espinas')) fila('Espinas', Math.round(a.espinas * 100) + ' %', Math.round(b.espinas * 100) + ' %', 'devuelves parte de los golpes');
   if (dif('regen')) fila('Regeneración', f1(a.regen), f1(b.regen) + ' vida/s');
   if (dif('vel')) fila('Velocidad', f1(a.vel), f1(b.vel) + ' m/s');
-  if (dif('mana')) fila('Maná', Math.round(a.mana), Math.round(b.mana));
+  if (dif('mana')) fila('Energía', Math.round(a.mana), Math.round(b.mana));
   return out.length ? '<div class="tEf"><small>En tu ' + HEROES[v.tipo].nombre.replace(/^(El|La) /, '').split(/[ ,]/)[0] + ' (nivel ' + (v.nivel || 1) + ')</small>' + out.join('') + '</div>' : '';
 }
 /* ======== TALLER NUEVO (22/11, Henar: «mejora la tienda») ========
