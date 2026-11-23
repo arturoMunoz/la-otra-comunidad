@@ -2553,6 +2553,23 @@ import re as _re
 html = _re.sub(r'<link rel="preload" href="(ui/ap_menu_cielo\.webp|ui/ap_m_jugar\.webp|ui/ap_m_secundario\.webp|ui/ap_carta_duelo\.webp|ui/carta_batalla\.webp|fuentes/cinzel\.woff|fuentes/alegreya-Bold\.woff)"[^>]*>\n?', '', html)
 html = sub(html, '</head>', '<link rel="preload" href="ui/ap_tormenta_base.webp" as="image" fetchpriority="high">\n<link rel="preload" href="ui/ap_c_jugar.webp" as="image">\n</head>')
 
+# ---------- JEFES QUE SE PUEDEN MATAR (23/11, Henar: «al Nasor y al lagarto no se les puede pegar») ----------
+# Sí se les pegaba, pero con dos héroes no daba tiempo: Nasor salía con 10.400 de vida a los 6:00 (dos héroes de nivel 7 le quitan ~300 por
+# segundo → 35 s recibiendo 180 por golpe y el pisotón) y el lagarto con 5.250 a los 2:30. Ahora, pensado para 2 contra 2: Nasor 3.800 de base
+# (~6.000 al salir, ~20 s), lagarto 2.800 (~3.500, ~14 s) y pegan algo menos. Además: barra grande con su nombre y su vida (`jf`) para que se
+# vea cómo baja, y en la simulación tienen cuerpo (juego.js): no te metes dentro de ellos.
+js = sub(js, "uruk: {nombre: 'Nasor', vida: 6500, dano: 130,", "uruk: {nombre: 'Nasor', vida: 3800, dano: 105,")
+js = sub(js, "draco: {nombre: 'Lagarto de la central', vida: 4200, dano: 85,", "draco: {nombre: 'Lagarto de la central', vida: 2800, dano: 72,")
+js = sub(js, "'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].grande ? 't' : 'm'}[v.k]",
+             "'bv ' + {h: 'h', s: 'm', t: 't', n: 't', j: NEUTRO[v.tipo] && NEUTRO[v.tipo].grande ? 't' : 'm'}[v.k] + (v.k === 'j' && NEUTRO[v.tipo] && (NEUTRO[v.tipo].jefe || NEUTRO[v.tipo].draco) ? ' jf' : '')")
+html = sub(html, '</head>', """<style>/* 23/11: barra grande de Nasor y del lagarto */
+.bv.t.jf i{width:118px !important;height:9px !important;box-shadow:0 0 0 1.5px #000,0 0 10px #ff5cf0aa !important}
+.bv.t.jf b{font-size:11px !important;color:#ffe7ff !important;text-shadow:0 1px 2px #000,0 0 6px #b04dff !important}
+</style>
+</head>""")
+
+js = sub(js, "      if (v.k === 'h' && b.dataset.max !== String(v.max))", "      if (v.k === 'j' && b.classList.contains('jf')) {const t = NEUTRO[v.tipo].nombre + ' · ' + Math.ceil(v.vida); if (b._t !== t) {b._t = t; if (!b._b) {b._b = document.createElement('b'); b.prepend(b._b);} b._b.textContent = t;}}\n      if (v.k === 'h' && b.dataset.max !== String(v.max))")
+
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')
     print('\n'.join('  · ' + f for f in fallos))

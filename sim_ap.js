@@ -260,11 +260,11 @@ const NEUTRO = {
   crebain: {nombre: 'Buitre', vida: 300, dano: 16, alcance: 1.6, vatq: 1.1, vel: 5, oro: 22, xp: 28, modelo: 'ap_buitre', alto: 0.3},
   sapo: {nombre: 'Jabalí', vida: 1300, dano: 38, alcance: 2.2, vatq: 0.7, vel: 3.4, oro: 80, xp: 110, modelo: 'ap_jabali', alto: 1.4},
   huorn: {nombre: 'Coloso del desguace', vida: 1900, dano: 46, alcance: 2.8, vatq: 0.6, vel: 3.2, oro: 110, xp: 180, modelo: 'ap_coloso', alto: 3.5, buff: 'huorn', grande: true},
-  draco: {nombre: 'Lagarto de la central', vida: 4200, dano: 85, alcance: 3.2, vatq: 0.6, vel: 3.6, oro: 150, xp: 260, modelo: 'ap_lagarto', alto: 2.6, grande: true, draco: true},
+  draco: {nombre: 'Lagarto de la central', vida: 2800, dano: 72, alcance: 3.2, vatq: 0.6, vel: 3.6, oro: 150, xp: 260, modelo: 'ap_lagarto', alto: 2.6, grande: true, draco: true},
   nutria: {nombre: 'Rata de alcantarilla', vida: 900, dano: 0, alcance: 0, vatq: 1, vel: 3.2, oro: 70, xp: 90, modelo: 'ap_rata', alto: 0.6, pasiva: true},
   alfa: {nombre: 'Perro jefe', vida: 1800, dano: 50, alcance: 2.2, vatq: 0.8, vel: 5, oro: 110, xp: 180, modelo: 'ap_perro_jefe', alto: 2.0, buff: 'alfa', grande: true},
   /* el «Barón» del Vado: un uruk enorme y azulado en el centro; da la Furia del Uruk a todo el equipo */
-  uruk: {nombre: 'Nasor', vida: 6500, dano: 130, alcance: 3.2, vatq: 0.5, vel: 3.4, oro: 250, xp: 400, modelo: 'ap_nasor', alto: 5.6, buff: 'uruk', grande: true, jefe: true},
+  uruk: {nombre: 'Nasor', vida: 3800, dano: 105, alcance: 3.2, vatq: 0.5, vel: 3.4, oro: 250, xp: 400, modelo: 'ap_nasor', alto: 5.6, buff: 'uruk', grande: true, jefe: true},
 };
 for (const k in NEUTRO) {const n = NEUTRO[k]; if (n.jefe || n.draco) {n.oro = Math.round(n.oro * 1.3); continue;} if (n.pasiva) {n.oro = Math.round(n.oro * 1.4); n.xp = Math.round(n.xp * 1.3); continue;}
   n.vida = Math.round(n.vida * 0.7); n.dano = Math.round(n.dano * 0.65); n.oro = Math.round(n.oro * 1.4); n.xp = Math.round(n.xp * 1.3);}
@@ -736,6 +736,10 @@ function paso(dt) {
   for (const q of ss) {const cx = Math.floor(q.x / 1.2) + 512, cz = Math.floor(q.z / 1.2) + 512; for (let ox = -1; ox <= 1; ox++) for (let oz = -1; oz <= 1; oz++) {const c = CEL.get((cx + ox) * 1024 + cz + oz); if (c) for (const r of c) if (r._i > q._i) PARES.push(q, r);}}
   for (let pi = 0; pi < PARES.length; pi += 2) {const a = PARES[pi], b = PARES[pi + 1], hh = a.k === 'h' && b.k === 'h'; if (hh && (a.dash || b.dash)) continue; let dx = a.x - b.x, dz = a.z - b.z; if (dx > 1.2 || dx < -1.2 || dz > 1.2 || dz < -1.2) continue; let d0 = Math.hypot(dx, dz); const m = hh ? CHOQUE_H : 0.9; if (d0 < m) {if (d0 < 0.001) {dx = a.id < b.id ? 1 : -1; dz = 0; d0 = 1;} const p = (m - d0) / 2; if (a.k === 's' || hh) {a.x += dx / d0 * p; a.z += dz / d0 * p;} if (b.k === 's' || hh) {b.x -= dx / d0 * p; b.z -= dz / d0 * p;} if (hh) {choca(a); choca(b);}}}
   /* 17/11 (Henar): los héroes chocan entre sí, como en el Wild Rift (antes se atravesaban); en las cargas y saltos no */
+  /* 23/11: las bestias tienen cuerpo: héroes y soldados no se meten dentro (antes se veían metidos dentro de Nasor); la bestia no se mueve por eso */
+  for (const j of S.u) {if (j.k !== 'j' || j.muerto || j.vida <= 0) continue; const rj = radio(j);
+    for (const u of ss) {if (u.dash) continue; const m = rj + (u.k === 'h' ? 0.6 : 0.4); let dx = u.x - j.x, dz = u.z - j.z; if (dx > m || dx < -m || dz > m || dz < -m) continue; let d0 = Math.hypot(dx, dz); if (d0 >= m) continue;
+      if (d0 < 0.001) {dx = 1; dz = 0; d0 = 1;} u.x = j.x + dx / d0 * m; u.z = j.z + dz / d0 * m; limita(u);}}
   /* torres */
   const EN_T = {};
   for (const t of S.u) {
@@ -910,8 +914,16 @@ function ia(h, dt, st) {
   /* caza en la espesura cuando su camino está tranquilo */
   const empujando = S.u.some((t) => (t.k === 't' || t.k === 'n') && t.eq !== h.eq && t.vida > 0 && atacable(t) && aliados.some((a) => dist(a, t) < 13));
   const camTranquilo = !empujando && !S.u.some((u) => u.k === 's' && u.eq !== h.eq && !u.muerto && u.carril === l && dist(u, h) < 18);
+  /* 23/11: Nasor y el lagarto: van a por ellos aunque haya soldados en su camino (antes casi nunca les tocaban), en pareja o con mucho nivel,
+     si no hay héroes enemigos cerca del foso; y si su compañero ya le está pegando, van a ayudar */
+  if (pv > 0.55 && !(heroeEn && dist(h, heroeEn) < 9)) {
+    const jefe = S.u.find((u) => u.k === 'j' && !u.muerto && u.vida > 0 && (NEUTRO[u.tipo].jefe || NEUTRO[u.tipo].draco) && !en.some((e) => e.k === 'h' && dist(e, u) < 13) && (
+      u.agro && S.u.some((a) => a.id === u.agro && a.k === 'h' && a.eq === h.eq) && dist(h, u) < 45 ||
+      dist(h, u) < 30 && pv > 0.75 && (NEUTRO[u.tipo].draco ? h.nivel >= 4 : h.nivel >= 6) && (h.nivel >= 9 || S.u.some((a) => a.k === 'h' && a.eq === h.eq && a !== h && !a.muerto && a.vida > 0 && dist(a, u) < 30))));
+    if (jefe) {if (dist(h, jefe) - radio(jefe) > st.alcance) ve(h, jefe.x, jefe.z); else h.ataca = true; return;}
+  }
   if (camTranquilo && pv > 0.6 && !(heroeEn && dist(h, heroeEn) < 10)) {
-    const bestias = S.u.filter((u) => u.k === 'j' && !u.muerto && (NEUTRO[u.tipo].jefe ? h.nivel >= 8 && pv > 0.9 : NEUTRO[u.tipo].draco ? h.nivel >= 5 && pv > 0.85 : ladoDe(u) * avanza <= 4) && dist(h, u) < 26 && !en.some((e) => e.k === 'h' && dist(e, u) < 12));
+    const bestias = S.u.filter((u) => u.k === 'j' && !u.muerto && (NEUTRO[u.tipo].jefe ? (h.nivel >= 9 && pv > 0.9 || h.nivel >= 6 && pv > 0.75 && S.u.some((a) => a.k === 'h' && a.eq === h.eq && a !== h && !a.muerto && a.vida > 0 && (dist(a, u) < 16 || a.nivel >= 6 && dist(a, h) < 22))) : NEUTRO[u.tipo].draco ? h.nivel >= 5 && pv > 0.85 : ladoDe(u) * avanza <= 4) && (dist(h, u) < 26 || (NEUTRO[u.tipo].jefe || NEUTRO[u.tipo].draco) && u.agro && S.u.some((a) => a.id === u.agro && a.k === 'h' && a.eq === h.eq) && dist(h, u) < 40) && !en.some((e) => e.k === 'h' && dist(e, u) < 12));
     const b = bestias.sort((a, c) => dist(h, a) - dist(h, c))[0];
     if (b) {if (dist(h, b) - radio(b) > st.alcance) ve(h, b.x, b.z); else {h.ataca = true;} return;}
   }
