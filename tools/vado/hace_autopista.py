@@ -150,7 +150,8 @@ js = sub(js, 'vec3 musgo=hi*mix(vec3(1.55,2.15,.95),vec3(1.95,2.3,.85),smoothste
          'vec3 musgo=hi*mix(vec3(1.6,1.75,.85),vec3(1.95,1.85,.8),smoothstep(.35,.7,mh))*(.85+.3*fbm(w*.6+3.));')
 
 # ---------- en línea: salas aparte (prefijo X); con «Servidor» la partida la calcula Cloudflare con sim_ap.js (17/11) ----------
-js = sub(js, "base + '/api/sala/' + codigo", "base + '/api/sala/X' + codigo")
+assert js.count("base + '/api/sala/' + codigo") == 2, 'salas: esperaba 2'  # conecta y abreSala (volver a la partida)
+js = js.replace("base + '/api/sala/' + codigo", "base + '/api/sala/X' + codigo")
 # preferencias propias (el nombre se comparte con La Brecha y La Otra Comunidad)
 js = js.replace("'vado.nombre'", "'@@NOMBRE@@'").replace("'vado.", "'auto.").replace("'@@NOMBRE@@'", "'vado.nombre'")
 
@@ -2546,6 +2547,11 @@ html = sub(html, '</head>', """<style>/* 23/11: el minimapa se puede tocar y arr
 body.peek #mini{box-shadow:0 0 0 2px #5ff4ff,0 0 14px #5ff4ffaa !important}
 </style>
 </head>""")
+
+# ---------- PULIDO 23/11: al abrir, precargar lo que de verdad sale en el menú de A-6 (antes: el cielo viejo, la carta de La Brecha y dos letras que A-6 no usa) ----------
+import re as _re
+html = _re.sub(r'<link rel="preload" href="(ui/ap_menu_cielo\.webp|ui/ap_m_jugar\.webp|ui/ap_m_secundario\.webp|ui/ap_carta_duelo\.webp|ui/carta_batalla\.webp|fuentes/cinzel\.woff|fuentes/alegreya-Bold\.woff)"[^>]*>\n?', '', html)
+html = sub(html, '</head>', '<link rel="preload" href="ui/ap_tormenta_base.webp" as="image" fetchpriority="high">\n<link rel="preload" href="ui/ap_c_jugar.webp" as="image">\n</head>')
 
 if fallos:
     print('NO se ha generado nada. Sustituciones que fallan (La Brecha habrá cambiado):')

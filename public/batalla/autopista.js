@@ -1216,7 +1216,7 @@ addEventListener('popstate', () => {
   history.pushState({brecha: 1}, '');
   let c = document.getElementById('salirC');
   if (!c) {c = document.createElement('div'); c.id = 'salirC'; c.innerHTML = '<div class="ajC"><b>¿Salir de la partida?</b><p class="ajT" style="color:#e9dcc0;font:15px Alegreya Sans,sans-serif">' + (NET.online ? 'Tu héroe lo llevará la máquina y no podrás volver a esta partida.' : 'Perderás la partida.') + '</p><div class="ajSon"><button class="bt" id="salirNo">Seguir jugando</button><button class="bt" id="salirSi">Salir</button></div></div>'; document.body.appendChild(c);
-    c.querySelector('#salirNo').onclick = () => c.remove(); c.querySelector('#salirSi').onclick = () => {ATRAS_ON = false; removeEventListener('beforeunload', avisaCierre); location.reload();};}
+    c.querySelector('#salirNo').onclick = () => c.remove(); c.querySelector('#salirSi').onclick = () => {ATRAS_ON = false; NET.sale = true; borraRecon(); removeEventListener('beforeunload', avisaCierre); location.reload();};}
 });
 /* la app de Android pregunta aquí qué hacer con «atrás»: 'si' = lo hemos resuelto nosotros, 'no' = que cierre la app */
 window.brechaAtras = () => {
@@ -3521,15 +3521,60 @@ function conecta(codigo, modo, nombre, heroe) {
   const ws = new WebSocket(base + '/api/sala/X' + codigo + '?modo=' + modo + '&nombre=' + encodeURIComponent(nombre) + '&heroe=' + heroe + (SRV.get() === 'nube' ? '&srv=1' : ''));
   NET.ws = ws; NET.codigo = codigo; NET.online = true;
   ws.onmessage = (m) => {let o; try {o = JSON.parse(m.data);} catch (e) {return;} recibe(o);};
-  ws.onclose = () => {if (ESTADO === 'juego' && !S) {aviso('Se ha perdido la conexión'); setTimeout(() => acaba(-1), 1500);} else if (ESTADO === 'sala') msg('Conexión cerrada');};
+  ws.onclose = () => {if (NET.ws !== ws) return; if (ESTADO === 'juego' && !S && EN_SERVIDOR && !NET.sale) {reconecta(); return;} if (ESTADO === 'juego' && !S) {aviso('Se ha perdido la conexión'); setTimeout(() => acaba(-1), 1500);} else if (ESTADO === 'sala') msg('Conexión cerrada');};
   ws.onerror = () => msg('No se puede conectar con la sala (¿está activado el servidor en Cloudflare?)');
   ESTADO = 'sala';
 }
+/* 23/11: si se corta la conexión en una partida calculada en el servidor (el móvil se bloquea, pasas a WhatsApp, cambias de wifi a datos…),
+   el móvil vuelve a entrar solo con su plaza y su clave; mientras tanto tu héroe lo lleva la máquina. Si se ha cerrado la página, al abrir
+   otra vez sale «Volver a la partida» (`vado.recon`, 20 min). */
+const RECON_K = 'auto.recon';
+function guardaRecon() {try {localStorage.setItem(RECON_K, JSON.stringify({codigo: NET.codigo, slot: NET.soy, tok: NET.tok, modo: NET.modo, t: Date.now()}));} catch (e) {}}
+function borraRecon() {try {localStorage.removeItem(RECON_K);} catch (e) {}}
+function leeRecon() {try {const r = JSON.parse(localStorage.getItem(RECON_K) || 'null'); return r && r.tok && Date.now() - r.t < 20 * 60000 ? r : null;} catch (e) {return null;}}
+function abreSala(codigo, extra) {
+  const proto = location.protocol === 'https:' ? 'wss://' : 'ws://', base = window.SALA_URL || (proto + location.host);
+  return new WebSocket(base + '/api/sala/X' + codigo + '?' + extra);
+}
+function velo(txt) {let el = document.getElementById('reconV'); if (!txt) {if (el) el.remove(); return;} if (!el) {el = document.createElement('div'); el.id = 'reconV'; document.body.appendChild(el);} el.innerHTML = '<div><i></i><b>' + txt + '</b></div>';}
+function reconecta() {
+  if (NET.recon) return; const R = NET.recon = {n: 0, t0: performance.now()};
+  const intenta = () => {
+    if (NET.recon !== R || ESTADO !== 'juego') return;
+    if (performance.now() - R.t0 > 75000) {NET.recon = null; velo(''); borraRecon(); aviso('No se ha podido volver a la partida'); setTimeout(() => acaba(-1), 1500); return;}
+    R.n++; velo('Se ha cortado la conexión · volviendo a la partida' + '.'.repeat(1 + R.n % 3));
+    const ws = abreSala(NET.codigo, 'vuelve=' + NET.soy + '&tok=' + encodeURIComponent(NET.tok || '')); let vivo = false;
+    ws.onmessage = (m) => {let o; try {o = JSON.parse(m.data);} catch (e) {return;} if (o.t === 'error' && o.fin) {NET.recon = null; velo(''); borraRecon(); aviso('La partida ya ha terminado'); setTimeout(() => acaba(-1), 1500); return;} if (o.t === 'empieza') {vivo = true; NET.ws = ws; NET.recon = null; velo(''); aviso('¡De vuelta en la partida!'); conectaWs(ws);} recibe(o);};
+    ws.onclose = ws.onerror = () => {if (!vivo && NET.recon === R) {ws.onclose = ws.onerror = null; setTimeout(intenta, 2500);}};
+  };
+  intenta();
+}
+/* conecta los avisos de un WebSocket ya abierto (al volver a la partida) */
+function conectaWs(ws) {
+  ws.onmessage = (m) => {let o; try {o = JSON.parse(m.data);} catch (e) {return;} recibe(o);};
+  ws.onclose = () => {if (NET.ws !== ws) return; if (ESTADO === 'juego' && !S && EN_SERVIDOR && !NET.sale) reconecta();};
+  ws.onerror = null;
+}
+/* al abrir la página: si hay una partida en el servidor a medias, volver a ella */
+function retomaGuardada(r) {
+  NET.codigo = r.codigo; NET.soy = r.slot; NET.tok = r.tok; NET.online = true; ESTADO = 'sala';
+  const ws = abreSala(r.codigo, 'vuelve=' + r.slot + '&tok=' + encodeURIComponent(r.tok)); NET.ws = ws;
+  ws.onmessage = (m) => {let o; try {o = JSON.parse(m.data);} catch (e) {return;} if (o.t === 'error' && o.fin) {borraRecon(); ESTADO = 'menu'; msg('Esa partida ya ha terminado'); return;} recibe(o);};
+  ws.onclose = () => {if (NET.ws !== ws) return; if (ESTADO === 'juego' && !S && EN_SERVIDOR && !NET.sale) reconecta();};
+  ws.onerror = () => {if (ESTADO === 'sala') {ESTADO = 'menu'; msg('No se puede conectar con la partida');}};
+}
+function botonRetoma() {
+  const r = leeRecon(), old = document.getElementById('bRetoma'); if (old) old.remove(); if (!r || ESTADO !== 'menu') return;
+  const b = document.createElement('button'); b.id = 'bRetoma'; b.innerHTML = '↩ Volver a la partida<small>Partida ' + (r.modo === '2v2' ? '2 contra 2' : '1 contra 1') + ' en curso · ' + r.codigo + '</small>';
+  b.onclick = () => {b.remove(); apaisa(); trasCarga(() => retomaGuardada(r), r.modo === '2v2');}; document.body.appendChild(b);
+}
+setTimeout(botonRetoma, 1200);
 function recibe(o) {
-  if (o.t === 'hola') NET.soy = o.slot;
+  if (o.t === 'hola') {NET.soy = o.slot; if (o.tok) NET.tok = o.tok;}
+  if (o.t === 'vuelve') aviso(o.nombre + ' ha vuelto a la partida');
   if (o.t === 'error') msg(o.txt);
   if (o.t === 'sala') {NET.jugadores = o.jugadores; NET.anf = o.anfitrion; NET.modo = o.modo; NET.srv = !!o.srv; pintaSala();}
-  if (o.t === 'empieza') {NET.jugadores = o.jugadores; NET.modo = o.modo; EN_SERVIDOR = !!o.srv; empieza(o.jugadores, o.modo, !o.srv && NET.soy === NET.anf);}
+  if (o.t === 'empieza') {if (o.retoma && ESTADO === 'juego') return; const br = document.getElementById('bRetoma'); if (br) br.remove(); NET.jugadores = o.jugadores; NET.modo = o.modo; EN_SERVIDOR = !!o.srv; if (o.srv) guardaRecon(); empieza(o.jugadores, o.modo, !o.srv && NET.soy === NET.anf);}
   if (o.t === 'pong') {NET.ping = Math.round(performance.now() - o.c); pintaConexion();}
   if (o.t === 'foto' && !S) recibeFoto(o.f);
   if (S) {/* soy el anfitrión: mandos de los demás */
@@ -3780,7 +3825,7 @@ function pintaTabla() {
   $('tabla').innerHTML = '<div class="tbCaja"><b>Marcador</b>' + fil.map((q) => {const [k, d, a, cs] = (q.kda || '0/0/0/0').split('/'); return '<div class="tbFila ' + (q.eq === MI_EQ ? 'az' : 'ro') + '"><img src="' + RET(q.tipo) + '" alt=""><span class="n">' + q.nombre + '<small>Nv ' + q.nivel + '</small></span><span class="k">' + k + '/' + d + '/' + a + '</span><span class="c">🗡 ' + cs + '</span><span class="o">' + q.inv.map((i) => '<img src="' + ICO(OBJ[i].i) + '" alt="">').join('') + '</span></div>';}).join('') + '<small>Toca para cerrar</small></div>';
 }
 function acaba(ganador) {
-  if (ESTADO === 'fin') return;
+  if (ESTADO === 'fin') return; borraRecon(); velo(''); NET.recon = null;
   const nx = ganador >= 0 && [...VISTA.values()].find((q) => q.k === 'n' && q.eq === 1 - ganador);
   if (nx && !acaba.ya) {acaba.ya = 1; CAM_FIN = {x: nx.x, z: nx.z}; try {celebraGanadores(ganador);} catch (e) {} document.body.classList.add('cine'); MANDO.mx = MANDO.mz = 0;
     const o = VIS.get(nx.id), golpe = (k) => {flip('explosion', nx.x + rnd(-2.5, 2.5), nx.z + rnd(-2.5, 2.5), 5 + k * 1.5); flip('polvoA', nx.x, nx.z, 7 + k * 2, true); tiemblaCam = Math.max(tiemblaCam, 0.4 + k * 0.25); suena(k === 3 ? 'derrumbe' : 'explosion', 0.9, nx.x, nx.z); try {navigator.vibrate && navigator.vibrate(60 + k * 40);} catch (er) {}};

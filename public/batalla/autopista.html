@@ -6,11 +6,6 @@
 <meta name="theme-color" content="#0c1119">
 <title>A-6</title><link rel="icon" href="ui/ap_icono.png"><link rel="apple-touch-icon" href="ui/ap_icono_180.png"><meta property="og:title" content="A-6"><meta property="og:description" content="Duelos 1 contra 1 y batallas 2 contra 2 en la autopista. ¡Entra y juega!"><meta property="og:image" content="https://la-otra-comunidad.benbarek1903.workers.dev/batalla/ui/ap_compartir.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:url" content="https://la-otra-comunidad.benbarek1903.workers.dev/batalla/autopista.html"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image"><meta name="apple-mobile-web-app-title" content="A-6"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <!-- lo primero que se ve: el menú. Se pide antes que los modelos 3D -->
-<link rel="preload" href="ui/ap_menu_cielo.webp" as="image" fetchpriority="high">
-<link rel="preload" href="ui/ap_m_jugar.webp" as="image" fetchpriority="high">
-<link rel="preload" href="ui/ap_m_secundario.webp" as="image"><link rel="preload" href="ui/ap_carta_duelo.webp" as="image"><link rel="preload" href="ui/carta_batalla.webp" as="image">
-<link rel="preload" href="fuentes/cinzel.woff" as="font" type="font/woff" crossorigin>
-<link rel="preload" href="fuentes/alegreya-Bold.woff" as="font" type="font/woff" crossorigin>
 <script>try{var hv=localStorage.getItem('auto.heroe')||'rohan',l=document.createElement('link');l.rel='preload';l.as='image';l.href='ui/ap_splash_'+hv+'.webp';l.setAttribute('fetchpriority','high');document.head.appendChild(l);}catch(e){}</script>
 <script type="importmap">{"imports":{"three":"../abismo/three/three.module.js","three/addons/":"../abismo/three/addons/"}}</script>
 <style>
@@ -520,7 +515,17 @@ em.fis,em.mag{font-style:normal;font-weight:800;border-radius:5px;padding:0 4px}
 #tienda .tE.mal{display:block;color:#ffb070;font-weight:700}
 @media (max-width:620px){#fichaH .fRej{grid-template-columns:1fr}}
 #elige .eRival{display:flex;align-items:center;gap:5px;margin:2px 0;font-size:12px;color:#cfd8e6}#elige .eRival span{margin-right:2px}#elige .eRival button{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid #fff3;background:#0008;overflow:hidden;font-size:15px;line-height:26px}#elige .eRival button img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}#elige .eRival button.on{border-color:#ff5a4a;box-shadow:0 0 8px #ff5a4a}
-</style><style>
+</style><style>/* 23/11: volver a la partida tras cortarse la conexión */
+#reconV{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-start;justify-content:center;padding-top:calc(var(--vh) * 22);background:#0008;pointer-events:none}
+#reconV div{display:flex;align-items:center;gap:10px;padding:10px 18px;border-radius:12px;background:#0d1622ee;border:2px solid #5ff4ff;box-shadow:0 0 18px #5ff4ff66;color:#fff;font:700 15px system-ui,sans-serif}
+#reconV i{width:18px;height:18px;border-radius:50%;border:3px solid #5ff4ff;border-top-color:transparent;animation:reconG .8s linear infinite}
+@keyframes reconG{to{transform:rotate(360deg)}}
+#bRetoma{position:fixed;left:50%;top:calc(10px + var(--sat));transform:translateX(-50%);z-index:40;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 22px;border-radius:12px;border:2px solid #ffd24a;background:linear-gradient(#051d2a,#020c12);color:#ffe08a;font:800 16px system-ui,sans-serif;box-shadow:0 0 16px #ffb82a88;animation:retomaL 1.4s ease-in-out infinite}
+#bRetoma small{font:600 11px system-ui,sans-serif;color:#e9dcc0}
+@keyframes retomaL{50%{box-shadow:0 0 28px #ffd24acc}}
+body.jugando #bRetoma{display:none}
+</style>
+<style>
 /* A-6 · HUD de partida (17/11) */
 #mini{top:calc(6px + var(--sat)) !important;border:2px solid #4a6a8a !important;border-radius:10px !important}
 #bAjustes{top:calc(6px + var(--sat)) !important}
@@ -1029,6 +1034,8 @@ body.cine #latido{display:none}
 #mini{pointer-events:auto !important;touch-action:none}
 body.peek #mini{box-shadow:0 0 0 2px #5ff4ff,0 0 14px #5ff4ffaa !important}
 </style>
+<link rel="preload" href="ui/ap_tormenta_base.webp" as="image" fetchpriority="high">
+<link rel="preload" href="ui/ap_c_jugar.webp" as="image">
 </head>
 <body>
 <div id="cargaVelo" class="hidden"><div class="cvR"></div><p>Preparando la autopista</p><b>0 %</b></div>

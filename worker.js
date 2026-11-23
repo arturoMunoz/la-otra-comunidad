@@ -102,11 +102,11 @@ export class Sala {
   async est() { return (await this.ctx.storage.get('est')) || { modo: null, empezada: false }; }
   async ponEst(e) { await this.ctx.storage.put('est', e); }
   info(ws) { try { return ws.deserializeAttachment() || {}; } catch (e) { return {}; } }
-  lista() { return this.socks().map((ws) => this.info(ws)).filter((i) => i.slot !== undefined).sort((a, b) => a.slot - b.slot); }
+  lista() { return this.socks().map((ws) => this.info(ws)).filter((i) => i.slot !== undefined && !i.reemplazado).sort((a, b) => a.slot - b.slot); }
   anfitrion() { const l = this.lista(); return l.length ? l[0].slot : -1; }
   manda(ws, o) { try { ws.send(typeof o === 'string' ? o : JSON.stringify(o)); } catch (e) {} }
   todos(o, salvo) { const s = typeof o === 'string' ? o : JSON.stringify(o); for (const ws of this.socks()) if (ws !== salvo) this.manda(ws, s); }
-  async avisaLista() { const l = this.lista(), e = await this.est(); this.todos({ t: 'sala', jugadores: l, anfitrion: this.anfitrion(), modo: e.modo || '1v1', empezada: !!e.empezada, srv: !!e.srv }); }
+  async avisaLista() { const l = this.lista().map(({ tok, ...r }) => r), e = await this.est(); this.todos({ t: 'sala', jugadores: l, anfitrion: this.anfitrion(), modo: e.modo || '1v1', empezada: !!e.empezada, srv: !!e.srv }); }
   /* La Brecha con la partida calculada AQUÍ (servidor) en vez de en el móvil del anfitrión: misma simulación (sim_vado.js, sacada de juego.js),
      30 pasos por segundo y 15 fotos por segundo a todos. Si alguien se va, su héroe lo lleva la máquina. */
   arrancaSim(jugadores, modo, ap) {
@@ -128,6 +128,21 @@ export class Sala {
     if (req.headers.get('Upgrade') !== 'websocket') return new Response('solo websocket', { status: 426 });
     const u = new URL(req.url), modo = u.searchParams.get('modo') === '2v2' ? '2v2' : '1v1';
     const l = this.lista(); let e = await this.est();
+    /* 23/11: volver a una partida en curso tras cortarse la conexión (solo con la partida en el servidor): el móvil trae su plaza y su clave */
+    const vuelve = u.searchParams.get('vuelve');
+    if (vuelve !== null && vuelve !== '') {
+      const slot = +vuelve, tok = u.searchParams.get('tok') || '', par = new WebSocketPair(), [cli, srv] = Object.values(par);
+      this.ctx.acceptWebSocket(srv);
+      const ok = this.sim && this.ini && e.empezada && this.toks && this.toks[slot] && this.toks[slot] === tok;
+      if (!ok) { this.manda(srv, { t: 'error', txt: 'Esa partida ya ha terminado', fin: 1 }); srv.close(1000, 'no'); return new Response(null, { status: 101, webSocket: cli }); }
+      for (const w of this.socks()) { const i = this.info(w); if (i.slot === slot) { i.reemplazado = true; try { w.serializeAttachment(i); w.close(1000, 'otra'); } catch (er) {} } }
+      const j = this.ini.jugadores.find((q) => q.slot === slot) || { nombre: 'Jugador', heroe: 'rohan' };
+      srv.serializeAttachment({ slot, nombre: j.nombre, heroe: j.heroe, tok });
+      const h = this.sim.S.u.find((q) => q.k === 'h' && q.slot === slot); if (h) { h.bot = false; h.nombre = String(h.nombre).replace(/ \(bot\)$/, ''); }
+      this.manda(srv, { t: 'hola', slot, tok }); this.manda(srv, Object.assign({ t: 'empieza', retoma: true }, this.ini));
+      this.todos({ t: 'vuelve', slot, nombre: j.nombre }, srv);
+      return new Response(null, { status: 101, webSocket: cli });
+    }
     if (!l.length) { this.paraSim(); e = { modo, empezada: false, srv: u.searchParams.get('srv') === '1', ap: /\/sala\/X/.test(u.pathname) }; await this.ponEst(e); }
     const max = e.modo === '2v2' ? 4 : 2;
     const par = new WebSocketPair(), [cli, srv] = Object.values(par);
@@ -135,8 +150,9 @@ export class Sala {
     if (l.length >= max || e.empezada) { this.manda(srv, { t: 'error', txt: e.empezada ? 'La partida ya ha empezado' : 'La sala está llena' }); srv.close(1000, 'llena'); return new Response(null, { status: 101, webSocket: cli }); }
     const usados = new Set(l.map((i) => i.slot)); let slot = 0; while (usados.has(slot)) slot++;
     const nombre = (u.searchParams.get('nombre') || 'Jugador').slice(0, 16), heroe = (u.searchParams.get('heroe') || 'rohan').slice(0, 10);
-    srv.serializeAttachment({ slot, nombre, heroe });
-    this.manda(srv, { t: 'hola', slot });
+    const tok = crypto.randomUUID().slice(0, 12);
+    srv.serializeAttachment({ slot, nombre, heroe, tok });
+    this.manda(srv, { t: 'hola', slot, tok });
     await this.avisaLista();
     return new Response(null, { status: 101, webSocket: cli });
   }
@@ -144,7 +160,7 @@ export class Sala {
     let o; try { o = JSON.parse(msg); } catch (e) { return; }
     const yo = this.info(ws), anf = this.anfitrion();
     if (o.t === 'heroe') { yo.heroe = String(o.heroe).slice(0, 10); ws.serializeAttachment(yo); await this.avisaLista(); return; }
-    if (o.t === 'empezar') { if (yo.slot === anf) { const e = await this.est(); e.empezada = true; await this.ponEst(e); const jug = this.lista(); this.todos({ t: 'empieza', jugadores: jug, modo: e.modo, semilla: Date.now() % 100000, srv: !!e.srv }); if (e.srv) this.arrancaSim(jug, e.modo, e.ap); } return; }
+    if (o.t === 'empezar') { if (yo.slot === anf) { const e = await this.est(); e.empezada = true; await this.ponEst(e); const jug = this.lista(), toks = {}; for (const j of jug) { toks[j.slot] = j.tok; delete j.tok; } this.ini = { jugadores: jug, modo: e.modo, semilla: Date.now() % 100000, srv: !!e.srv }; this.toks = toks; this.todos(Object.assign({ t: 'empieza' }, this.ini)); if (e.srv) this.arrancaSim(jug, e.modo, e.ap); } return; }
     if (o.t === 'ping') { this.manda(ws, { t: 'pong', c: o.c }); return; }
     if (this.sim) { const S = this.sim.S, h = S && S.u.find((q) => q.k === 'h' && q.slot === yo.slot); if (h) try { this.sim.aplicaMando(h, o); } catch (e) {} return; }
     o.de = yo.slot; const s = JSON.stringify(o);
@@ -153,6 +169,7 @@ export class Sala {
   }
   async webSocketClose(ws) {
     const yo = this.info(ws); try { ws.close(1000, 'adios'); } catch (e) {}
+    if (yo.reemplazado) return;   /* 23/11: ha vuelto desde otra conexión: su héroe ya lo lleva él */
     const e = await this.est();
     if (e.empezada) this.todos({ t: 'se_fue', slot: yo.slot, nombre: yo.nombre, srv: !!this.sim });
     if (this.sim) { const h = this.sim.S.u.find((q) => q.k === 'h' && q.slot === yo.slot); if (h && !h.bot) { h.bot = true; h.nombre += ' (bot)'; } }
